@@ -16,10 +16,11 @@ body {
   overflow-x: hidden;
   margin: 0;
   padding: 0;
+  background-color: #0d1f4e;
 }
 
 body {
-  background: #1a6eb5;
+  background: #0d1f4e;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   margin: 0;
