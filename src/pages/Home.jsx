@@ -253,6 +253,57 @@ function Home({ onOpenWorship, worshipStatus }) {
             </div>
           </section>
 
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold text-white" style={{ textShadow: '0 1px 8px rgba(0,60,120,0.4)' }}>Tools</h2>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+              <Link
+                to="/scripture-art"
+                className="rounded-2xl p-4 shadow-sm"
+                style={{
+                  minWidth: '140px',
+                  flex: 1,
+                  background: 'rgba(255, 255, 255, 0.25)',
+                  backdropFilter: 'blur(14px)',
+                  border: '1px solid rgba(212, 168, 67, 0.6)',
+                  textDecoration: 'none',
+                }}
+              >
+                <p className="text-sm uppercase tracking-wide text-white/85">🎨 Scripture Art</p>
+                <p className="mt-1 text-xs text-white/70">Create shareable verse images</p>
+              </Link>
+              <Link
+                to="/reading-plans"
+                className="rounded-2xl p-4 shadow-sm"
+                style={{
+                  minWidth: '140px',
+                  flex: 1,
+                  background: 'rgba(255, 255, 255, 0.25)',
+                  backdropFilter: 'blur(14px)',
+                  border: '1px solid rgba(212, 168, 67, 0.6)',
+                  textDecoration: 'none',
+                }}
+              >
+                <p className="text-sm uppercase tracking-wide text-white/85">📅 Reading Plans</p>
+                <p className="mt-1 text-xs text-white/70">Follow structured daily journeys</p>
+              </Link>
+              <Link
+                to="/fasting"
+                className="rounded-2xl p-4 shadow-sm"
+                style={{
+                  minWidth: '140px',
+                  flex: 1,
+                  background: 'rgba(255, 255, 255, 0.25)',
+                  backdropFilter: 'blur(14px)',
+                  border: '1px solid rgba(212, 168, 67, 0.6)',
+                  textDecoration: 'none',
+                }}
+              >
+                <p className="text-sm uppercase tracking-wide text-white/85">🕐 Fasting Tracker</p>
+                <p className="mt-1 text-xs text-white/70">Track fasts and prayer notes</p>
+              </Link>
+            </div>
+          </section>
+
           <section
             className="rounded-2xl p-5 shadow-sm"
             style={{

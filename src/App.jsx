@@ -9,6 +9,9 @@ import Memorize from './pages/Memorize'
 import AICompanion from './pages/AICompanion'
 import FaithJourney from './pages/FaithJourney'
 import Devotional from './pages/Devotional'
+import ScriptureArt from './pages/ScriptureArt'
+import ReadingPlans from './pages/ReadingPlans'
+import FastingTracker from './pages/FastingTracker'
 import Support from './pages/Support'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsOfService from './pages/TermsOfService'
@@ -82,6 +85,9 @@ export default function App() {
             <Route path="/journal" element={<Journal />} />
             <Route path="/memorize" element={<Memorize />} />
             <Route path="/devotional" element={<Devotional />} />
+            <Route path="/scripture-art" element={<ScriptureArt />} />
+            <Route path="/reading-plans" element={<ReadingPlans />} />
+            <Route path="/fasting" element={<FastingTracker />} />
             <Route path="/ai-companion" element={<AICompanion />} />
             <Route path="/faith-journey" element={<FaithJourney />} />
             <Route path="/support" element={<Support />} />
