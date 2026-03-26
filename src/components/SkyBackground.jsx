@@ -55,7 +55,7 @@ export default function SkyBackground() {
       },
       night: {
         gradient: ['#070d25', '#10224c', '#1b3563', '#223f6e', '#274a78'],
-        sun: { x: 0.8, y: 0.15, r: 0, rays: false },
+        sun: { x: 0.8, y: 0.15, r: 26, rays: true },
         cloudShade: '#14223e',
         cross: { top: '#FFE8BF', mid: '#FFD275', low: '#C99137', edge: '#8B5A1F' },
         showStarsMoon: true,
@@ -127,6 +127,7 @@ export default function SkyBackground() {
 
     function drawSunRays(sx, sy, blendedTheme) {
       if (!blendedTheme.sun.rays || sun.r <= 0) return
+      const rayStrength = 0.32 + blendedTheme.nightFactor * 0.34
       for (let i = 0; i < 20; i++) {
         const angle = (i / 20) * Math.PI * 2 + sun.rayAngle
         const innerR = sun.r + 8
@@ -136,7 +137,7 @@ export default function SkyBackground() {
         const x2 = sx + Math.cos(angle) * outerR
         const y2 = sy + Math.sin(angle) * outerR
         const g = ctx.createLinearGradient(x1, y1, x2, y2)
-        g.addColorStop(0, 'rgba(255,230,100,0.32)')
+        g.addColorStop(0, `rgba(255,230,120,${rayStrength})`)
         g.addColorStop(1, 'rgba(255,220,60,0)')
         ctx.beginPath()
         ctx.moveTo(x1, y1)
@@ -149,16 +150,17 @@ export default function SkyBackground() {
 
     function drawSunOrMoon(sx, sy, blendedTheme) {
       if (blendedTheme.nightFactor > 0.55) {
-        const moonGlow = ctx.createRadialGradient(sx, sy, 0, sx, sy, 140)
-        moonGlow.addColorStop(0, 'rgba(255,255,220,0.35)')
-        moonGlow.addColorStop(1, 'rgba(255,255,220,0)')
+        const moonGlow = ctx.createRadialGradient(sx, sy, 0, sx, sy, 170)
+        moonGlow.addColorStop(0, 'rgba(255,220,120,0.55)')
+        moonGlow.addColorStop(0.45, 'rgba(255,210,110,0.25)')
+        moonGlow.addColorStop(1, 'rgba(255,210,110,0)')
         ctx.beginPath()
-        ctx.arc(sx, sy, 140, 0, Math.PI * 2)
+        ctx.arc(sx, sy, 170, 0, Math.PI * 2)
         ctx.fillStyle = moonGlow
         ctx.fill()
         ctx.beginPath()
-        ctx.arc(sx, sy, 38, 0, Math.PI * 2)
-        ctx.fillStyle = '#F2F4FF'
+        ctx.arc(sx, sy, 36, 0, Math.PI * 2)
+        ctx.fillStyle = '#FFE9B3'
         ctx.fill()
         return
       }
@@ -196,12 +198,13 @@ export default function SkyBackground() {
     function drawCloud(cloud, blendedTheme) {
       const h = H()
       const y = Math.min(cloud.y * h, 160)
+      const nightFactor = blendedTheme.nightFactor || 0
       ctx.save()
-      ctx.globalAlpha = cloud.alpha
+      ctx.globalAlpha = cloud.alpha * (1 + nightFactor * 0.18)
       ctx.translate(cloud.x, y)
       const s = cloud.scale
       ctx.save()
-      ctx.globalAlpha = cloud.alpha * 0.15
+      ctx.globalAlpha = cloud.alpha * (0.15 + nightFactor * 0.2)
       ctx.translate(6 * s, 14 * s)
       for (const p of cloud.puffs) {
         ctx.beginPath()
@@ -212,10 +215,10 @@ export default function SkyBackground() {
       ctx.restore()
       for (const p of cloud.puffs) {
         const pg = ctx.createRadialGradient(p.x * s, (p.y - p.ry * 0.2) * s, 0, p.x * s, p.y * s, p.rx * s)
-        pg.addColorStop(0, 'rgba(255,255,255,1)')
-        pg.addColorStop(0.55, 'rgba(240,248,255,0.97)')
-        pg.addColorStop(0.82, 'rgba(210,232,250,0.92)')
-        pg.addColorStop(1, 'rgba(180,215,240,0.75)')
+        pg.addColorStop(0, `rgba(255,255,255,${1})`)
+        pg.addColorStop(0.55, `rgba(245,250,255,${0.97 + nightFactor * 0.03})`)
+        pg.addColorStop(0.82, `rgba(225,240,255,${0.92 + nightFactor * 0.08})`)
+        pg.addColorStop(1, `rgba(200,228,250,${0.75 + nightFactor * 0.18})`)
         ctx.beginPath()
         ctx.ellipse(p.x * s, p.y * s, p.rx * s, p.ry * s, 0, 0, Math.PI * 2)
         ctx.fillStyle = pg
@@ -227,6 +230,7 @@ export default function SkyBackground() {
     function drawCross(w, h, blendedTheme) {
       const t = Date.now() / 1000
       const floatY = Math.sin(t * 0.5) * 5
+      const nightFactor = blendedTheme.nightFactor || 0
       ctx.save()
       ctx.translate(w * 0.5, h * 0.12 + floatY)
       const vW = 28
@@ -235,12 +239,12 @@ export default function SkyBackground() {
       const hH = 28
       const hY = -16
       ctx.globalAlpha = 1
-      const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, 100)
-      glow.addColorStop(0, 'rgba(255,220,80,0.45)')
-      glow.addColorStop(0.55, 'rgba(255,200,40,0.15)')
+      const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, 120)
+      glow.addColorStop(0, `rgba(255,220,90,${0.45 + nightFactor * 0.3})`)
+      glow.addColorStop(0.55, `rgba(255,200,50,${0.15 + nightFactor * 0.25})`)
       glow.addColorStop(1, 'rgba(255,180,0,0)')
       ctx.beginPath()
-      ctx.arc(0, 0, 100, 0, Math.PI * 2)
+      ctx.arc(0, 0, 120, 0, Math.PI * 2)
       ctx.fillStyle = glow
       ctx.fill()
       const cg = ctx.createLinearGradient(-hW / 2, -vH / 2, hW / 2, vH / 2)
@@ -248,8 +252,8 @@ export default function SkyBackground() {
       cg.addColorStop(0.25, blendedTheme.cross.mid)
       cg.addColorStop(0.6, blendedTheme.cross.low)
       cg.addColorStop(1, blendedTheme.cross.edge)
-      ctx.shadowColor = 'rgba(255,200,0,0.6)'
-      ctx.shadowBlur = 20
+      ctx.shadowColor = `rgba(255,200,40,${0.6 + nightFactor * 0.25})`
+      ctx.shadowBlur = 20 + nightFactor * 16
       ctx.beginPath()
       ctx.rect(-vW / 2, -vH / 2, vW, vH)
       ctx.fillStyle = cg
