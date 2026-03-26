@@ -6,8 +6,10 @@ import Journal from './pages/Journal'
 import Support from './pages/Support'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsOfService from './pages/TermsOfService'
+import Legal from './pages/Legal'
 import Navbar from './components/Navbar'
 import SkyBackground from './components/SkyBackground'
+import LegalModal from './components/LegalModal'
 
 export default function App() {
   return (
@@ -34,9 +36,11 @@ export default function App() {
             <Route path="/support" element={<Support />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/legal" element={<Legal />} />
           </Routes>
         </div>
       </div>
+      <LegalModal />
       <Navbar />
     </BrowserRouter>
   )
