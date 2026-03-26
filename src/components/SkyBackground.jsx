@@ -149,6 +149,8 @@ export default function SkyBackground() {
     }
 
     function drawSunOrMoon(sx, sy, blendedTheme) {
+      ctx.save()
+      ctx.globalAlpha = 0.9
       if (blendedTheme.nightFactor > 0.55) {
         const moonGlow = ctx.createRadialGradient(sx, sy, 0, sx, sy, 170)
         moonGlow.addColorStop(0, 'rgba(255,220,120,0.55)')
@@ -162,9 +164,13 @@ export default function SkyBackground() {
         ctx.arc(sx, sy, 36, 0, Math.PI * 2)
         ctx.fillStyle = '#FFE9B3'
         ctx.fill()
+        ctx.restore()
         return
       }
-      if (sun.r <= 0) return
+      if (sun.r <= 0) {
+        ctx.restore()
+        return
+      }
       const g1 = ctx.createRadialGradient(sx, sy, 0, sx, sy, sun.r * 4)
       g1.addColorStop(0, 'rgba(255,240,120,0.45)')
       g1.addColorStop(0.4, 'rgba(255,210,60,0.18)')
@@ -182,6 +188,7 @@ export default function SkyBackground() {
       ctx.arc(sx, sy, sun.r, 0, Math.PI * 2)
       ctx.fillStyle = g2
       ctx.fill()
+      ctx.restore()
     }
 
     function drawStars(w, h, ts, blendedTheme) {
@@ -198,13 +205,12 @@ export default function SkyBackground() {
     function drawCloud(cloud, blendedTheme) {
       const h = H()
       const y = Math.min(cloud.y * h, 160)
-      const nightFactor = blendedTheme.nightFactor || 0
       ctx.save()
-      ctx.globalAlpha = cloud.alpha * (1 + nightFactor * 0.18)
+      ctx.globalAlpha = 0.7
       ctx.translate(cloud.x, y)
       const s = cloud.scale
       ctx.save()
-      ctx.globalAlpha = cloud.alpha * (0.15 + nightFactor * 0.2)
+      ctx.globalAlpha = 0.7
       ctx.translate(6 * s, 14 * s)
       for (const p of cloud.puffs) {
         ctx.beginPath()
@@ -215,10 +221,10 @@ export default function SkyBackground() {
       ctx.restore()
       for (const p of cloud.puffs) {
         const pg = ctx.createRadialGradient(p.x * s, (p.y - p.ry * 0.2) * s, 0, p.x * s, p.y * s, p.rx * s)
-        pg.addColorStop(0, `rgba(255,255,255,${1})`)
-        pg.addColorStop(0.55, `rgba(245,250,255,${0.97 + nightFactor * 0.03})`)
-        pg.addColorStop(0.82, `rgba(225,240,255,${0.92 + nightFactor * 0.08})`)
-        pg.addColorStop(1, `rgba(200,228,250,${0.75 + nightFactor * 0.18})`)
+        pg.addColorStop(0, 'rgba(255,255,255,1)')
+        pg.addColorStop(0.55, 'rgba(245,250,255,0.98)')
+        pg.addColorStop(0.82, 'rgba(225,240,255,0.94)')
+        pg.addColorStop(1, 'rgba(200,228,250,0.86)')
         ctx.beginPath()
         ctx.ellipse(p.x * s, p.y * s, p.rx * s, p.ry * s, 0, 0, Math.PI * 2)
         ctx.fillStyle = pg

@@ -28,7 +28,6 @@ export default function App() {
   const [worshipVisible, setWorshipVisible] = useState(false)
   const [worshipAutoPlayToken, setWorshipAutoPlayToken] = useState(0)
   const [worshipStatus, setWorshipStatus] = useState({ isPlaying: false, currentTrack: 'Peaceful Worship', isVisible: false })
-  const isNight = theme === 'night'
 
   const handleToggleTheme = () => {
     setThemeState((prev) => setTheme(prev === 'night' ? 'day' : 'night'))
@@ -49,24 +48,6 @@ export default function App() {
     <BrowserRouter>
       <div style={{ minHeight: '100vh', position: 'relative', background: '#0d1f4e' }}>
         <AppBackground />
-        {isNight ? (
-          <div
-            style={{
-              position: 'fixed',
-              top: '64px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              zIndex: 5,
-              pointerEvents: 'none',
-              opacity: 0.9,
-            }}
-          >
-            <svg width="86" height="120" viewBox="0 0 86 120" fill="#D4A843" aria-hidden="true">
-              <rect x="38.5" y="8" width="9" height="104" rx="2" />
-              <rect x="14" y="39" width="58" height="9" rx="2" />
-            </svg>
-          </div>
-        ) : null}
 
         <div style={{ position: 'relative', zIndex: 10, isolation: 'isolate', paddingBottom: '80px' }}>
           <Routes>
