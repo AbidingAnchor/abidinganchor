@@ -301,6 +301,21 @@ function Home({ onOpenWorship, worshipStatus }) {
                 <p className="text-sm uppercase tracking-wide text-white/85">🕐 Fasting Tracker</p>
                 <p className="mt-1 text-xs text-white/70">Track fasts and prayer notes</p>
               </Link>
+              <Link
+                to="/support"
+                className="rounded-2xl p-4 shadow-sm"
+                style={{
+                  minWidth: '140px',
+                  flex: 1,
+                  background: 'rgba(255, 255, 255, 0.25)',
+                  backdropFilter: 'blur(14px)',
+                  border: '1px solid rgba(212, 168, 67, 0.6)',
+                  textDecoration: 'none',
+                }}
+              >
+                <p className="text-sm uppercase tracking-wide text-white/85">🤝 Support</p>
+                <p className="mt-1 text-xs text-white/70">Help sustain the ministry</p>
+              </Link>
             </div>
           </section>
 
