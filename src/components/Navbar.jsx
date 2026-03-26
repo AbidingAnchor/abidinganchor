@@ -4,6 +4,7 @@ const tabs = [
   { label: 'Home', path: '/', icon: '🏠' },
   { label: 'Read', path: '/reading-plan', icon: '📖' },
   { label: 'Search', path: '/search', icon: '🔍' },
+  { label: 'Journey', path: '/faith-journey', icon: '🧭' },
   { label: 'Prayer', path: '/prayer', icon: '🙏' },
   { label: 'Journal', path: '/journal', icon: '📓' },
 ]
