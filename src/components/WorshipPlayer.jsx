@@ -28,16 +28,22 @@ export default function WorshipPlayer({ visible, onClose, autoPlayToken = 0, onS
   }, [isPlaying, current.name, isVisible, onStatusChange])
 
   useEffect(() => {
-    const audio = audioRef.current
-    audio.src = tracks[currentTrack].file
-    audio.volume = volume
-    if (isPlaying) {
-      audio.play().catch(() => setIsPlaying(false))
-    }
-  }, [currentTrack, volume, isPlaying])
+    audioRef.current.src = tracks[currentTrack].file
+    if (isPlaying) audioRef.current.play().catch(() => setIsPlaying(false))
+  }, [currentTrack])
 
   useEffect(() => {
     const audio = audioRef.current
+    if (isPlaying) {
+      audio.play().catch(() => setIsPlaying(false))
+    } else {
+      audio.pause()
+    }
+  }, [isPlaying])
+
+  useEffect(() => {
+    const audio = audioRef.current
+    audio.volume = 0.5
     const handleEnded = () => {
       setCurrentTrack((prev) => (prev + 1) % tracks.length)
     }
@@ -56,22 +62,23 @@ export default function WorshipPlayer({ visible, onClose, autoPlayToken = 0, onS
   }, [autoPlayToken])
 
   const togglePlay = () => {
-    if (isPlaying) {
-      audioRef.current.pause()
-      setIsPlaying(false)
-      return
-    }
-    audioRef.current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false))
+    setIsPlaying((prev) => !prev)
   }
 
   const nextTrack = () => setCurrentTrack((prev) => (prev + 1) % tracks.length)
   const prevTrack = () => setCurrentTrack((prev) => (prev - 1 + tracks.length) % tracks.length)
 
   const closePlayer = () => {
-    audioRef.current.pause()
     setIsPlaying(false)
     setIsVisible(false)
     onClose?.()
+  }
+
+  // Volume change handler - ONLY change volume, never touch src
+  const handleVolumeChange = (e) => {
+    const newVolume = parseFloat(e.target.value)
+    setVolume(newVolume)
+    audioRef.current.volume = newVolume
   }
 
   if (!isVisible) return null
@@ -125,11 +132,7 @@ export default function WorshipPlayer({ visible, onClose, autoPlayToken = 0, onS
                 max="1"
                 step="0.01"
                 value={volume}
-                onChange={(e) => {
-                  const next = Number(e.target.value)
-                  setVolume(next)
-                  audioRef.current.volume = next
-                }}
+                onChange={handleVolumeChange}
                 className="w-full accent-yellow-400"
               />
               <span>🔊</span>

@@ -1,8 +1,8 @@
 import { NavLink } from 'react-router-dom'
 
 const tabs = [
-  { label: 'Home', path: '/', icon: '⌂' },
-  { label: 'Read', path: '/plan', icon: '📖' },
+  { label: 'Home', path: '/', icon: '🏠' },
+  { label: 'Read', path: '/reading-plan', icon: '📖' },
   { label: 'Search', path: '/search', icon: '🔍' },
   { label: 'Prayer', path: '/prayer', icon: '🙏' },
   { label: 'Journal', path: '/journal', icon: '📓' },
@@ -62,16 +62,7 @@ export default function Navbar({ theme = 'day', onToggleTheme }) {
             }
             style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', fontSize: '9px' }}
           >
-            <span style={{ fontSize: '14px' }}>
-              {tab.label === 'Home' ? (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                  <rect x="10.5" y="2" width="3" height="20" rx="1" />
-                  <rect x="3" y="8" width="18" height="3" rx="1" />
-                </svg>
-              ) : (
-                tab.icon
-              )}
-            </span>
+            <span style={{ fontSize: '14px' }}>{tab.icon}</span>
             <span>{tab.label}</span>
           </NavLink>
         ))}

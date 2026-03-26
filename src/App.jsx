@@ -16,6 +16,7 @@ import Navbar from './components/Navbar'
 import SkyBackground from './components/SkyBackground'
 import LegalModal from './components/LegalModal'
 import WorshipPlayer from './components/WorshipPlayer'
+import Footer from './components/Footer'
 import { getTheme, setTheme } from './utils/theme'
 
 export default function App() {
@@ -80,7 +81,7 @@ export default function App() {
         <div style={{ position: 'relative', zIndex: 10, isolation: 'isolate', paddingBottom: '80px' }}>
           <Routes>
             <Route path="/" element={<Home onOpenWorship={(startPlaying) => openWorship(startPlaying)} worshipStatus={worshipStatus} />} />
-            <Route path="/plan" element={<ReadingPlan onOpenWorship={(startPlaying) => openWorship(startPlaying)} />} />
+            <Route path="/reading-plan" element={<ReadingPlan onOpenWorship={(startPlaying) => openWorship(startPlaying)} />} />
             <Route path="/search" element={<Search onOpenWorship={(startPlaying) => openWorship(startPlaying)} />} />
             <Route path="/prayer" element={<Prayer />} />
             <Route path="/journal" element={<Journal />} />
@@ -101,6 +102,7 @@ export default function App() {
         autoPlayToken={worshipAutoPlayToken}
         onStatusChange={setWorshipStatus}
       />
+      <Footer />
       <Navbar theme={theme} onToggleTheme={handleToggleTheme} />
     </BrowserRouter>
   )
