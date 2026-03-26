@@ -20,10 +20,9 @@ import { getTheme, setTheme } from './utils/theme'
 
 export default function App() {
   const [theme, setThemeState] = useState(() => getTheme())
-  const [worshipOpen, setWorshipOpen] = useState(false)
-  const [isWorshipPlaying, setIsWorshipPlaying] = useState(false)
-  const [worshipPlaylist, setWorshipPlaylist] = useState(0)
-  const [worshipVolume, setWorshipVolume] = useState(55)
+  const [worshipVisible, setWorshipVisible] = useState(false)
+  const [worshipAutoPlayToken, setWorshipAutoPlayToken] = useState(0)
+  const [worshipStatus, setWorshipStatus] = useState({ isPlaying: false, currentTrack: 'Peaceful Worship', isVisible: false })
   const isNight = theme === 'night'
   const appBackground = useMemo(
     () => (isNight ? 'linear-gradient(180deg, #1a0e00 0%, #2d1a00 100%)' : 'transparent'),
@@ -32,6 +31,11 @@ export default function App() {
 
   const handleToggleTheme = () => {
     setThemeState((prev) => setTheme(prev === 'night' ? 'day' : 'night'))
+  }
+
+  const openWorship = (startPlaying = false) => {
+    setWorshipVisible(true)
+    if (startPlaying) setWorshipAutoPlayToken((t) => t + 1)
   }
 
   useEffect(() => {
@@ -75,9 +79,9 @@ export default function App() {
 
         <div style={{ position: 'relative', zIndex: 10, isolation: 'isolate', paddingBottom: '80px' }}>
           <Routes>
-            <Route path="/" element={<Home onOpenWorship={() => { setWorshipOpen(true); setIsWorshipPlaying(true) }} />} />
-            <Route path="/plan" element={<ReadingPlan onOpenWorship={() => { setWorshipOpen(true); setIsWorshipPlaying(true) }} />} />
-            <Route path="/search" element={<Search onOpenWorship={() => { setWorshipOpen(true); setIsWorshipPlaying(true) }} />} />
+            <Route path="/" element={<Home onOpenWorship={(startPlaying) => openWorship(startPlaying)} worshipStatus={worshipStatus} />} />
+            <Route path="/plan" element={<ReadingPlan onOpenWorship={(startPlaying) => openWorship(startPlaying)} />} />
+            <Route path="/search" element={<Search onOpenWorship={(startPlaying) => openWorship(startPlaying)} />} />
             <Route path="/prayer" element={<Prayer />} />
             <Route path="/journal" element={<Journal />} />
             <Route path="/memorize" element={<Memorize />} />
@@ -92,14 +96,10 @@ export default function App() {
       </div>
       <LegalModal />
       <WorshipPlayer
-        open={worshipOpen}
-        setOpen={setWorshipOpen}
-        isPlaying={isWorshipPlaying}
-        setIsPlaying={setIsWorshipPlaying}
-        currentPlaylist={worshipPlaylist}
-        setCurrentPlaylist={setWorshipPlaylist}
-        volume={worshipVolume}
-        setVolume={setWorshipVolume}
+        visible={worshipVisible}
+        onClose={() => setWorshipVisible(false)}
+        autoPlayToken={worshipAutoPlayToken}
+        onStatusChange={setWorshipStatus}
       />
       <Navbar theme={theme} onToggleTheme={handleToggleTheme} />
     </BrowserRouter>

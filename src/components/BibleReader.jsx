@@ -201,10 +201,10 @@ export default function BibleReader({
           </h2>
           <button
             type="button"
-            onClick={onOpenWorship}
-            className="mt-2 rounded-lg border border-[#D4A843] px-3 py-1 text-xs text-[#D4A843]"
+            onClick={() => onOpenWorship?.(true)}
+            className="mt-2 rounded-lg border border-white/30 px-3 py-1 text-xs text-white/70"
           >
-            🎵 Listen while you read
+            🎵 Worship Mode
           </button>
         </div>
 

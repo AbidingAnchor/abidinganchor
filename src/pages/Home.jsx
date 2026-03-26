@@ -9,7 +9,7 @@ function getTodaysVerse() {
   return getDailyVerse()
 }
 
-function Home({ onOpenWorship }) {
+function Home({ onOpenWorship, worshipStatus }) {
   const [todaysVerse, setTodaysVerse] = useState(() => getTodaysVerse())
   const [streak, setStreak] = useState(() => getStreak())
   const [toastTrigger, setToastTrigger] = useState(0)
@@ -205,12 +205,19 @@ function Home({ onOpenWorship }) {
                   flex: 1,
                   background: 'rgba(255, 255, 255, 0.25)',
                   backdropFilter: 'blur(14px)',
-                  border: '1px solid rgba(255, 255, 255, 0.5)',
+                  border: '1px solid rgba(212, 168, 67, 0.6)',
                 }}
               >
-                <p className="text-sm uppercase tracking-wide text-white/85">Worship Mode</p>
-                <button type="button" onClick={onOpenWorship} className="mt-2 rounded-lg border border-[#D4A843] px-3 py-1 text-sm text-[#D4A843]">
-                  🎵 Listen
+                <p className="text-sm uppercase tracking-wide text-white/85">🎵 Worship Mode</p>
+                <p className="mt-1 text-xs text-white/70">Listen while you read</p>
+                {worshipStatus?.isPlaying ? (
+                  <p className="mt-2 flex items-center gap-1 text-xs text-[#D4A843]">
+                    <span className="h-2 w-2 animate-pulse rounded-full bg-[#D4A843]" />
+                    Now Playing: {worshipStatus.currentTrack}
+                  </p>
+                ) : null}
+                <button type="button" onClick={() => onOpenWorship(true)} className="mt-2 rounded-lg border border-[#D4A843] px-3 py-1 text-sm text-[#D4A843]">
+                  Open Player
                 </button>
               </article>
               <article
