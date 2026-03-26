@@ -57,8 +57,8 @@ export default function Navbar({ theme = 'day', onToggleTheme }) {
             key={tab.path}
             to={tab.path}
             className={({ isActive }) =>
-              `text-center font-semibold transition-colors ${
-                isActive ? 'text-accent-gold' : 'text-[#8B7355] hover:text-[#8B7355]'
+              `text-center font-semibold transition-all ${
+                isActive ? 'nav-active' : 'text-[#8B7355] hover:text-[#8B7355]'
               }`
             }
             style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', fontSize: '9px' }}

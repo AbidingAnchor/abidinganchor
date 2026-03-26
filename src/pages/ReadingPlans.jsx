@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { readingPlans } from '../data/readingPlans'
 
 const KEY = 'abidinganchor-reading-plans'
@@ -29,6 +29,11 @@ export default function ReadingPlans() {
   const [store, setStore] = useState(() => readStore())
   const [selectedPlanId, setSelectedPlanId] = useState(null)
   const [celebratePlanId, setCelebratePlanId] = useState(null)
+  const [loading, setLoading] = useState(true)
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 220)
+    return () => clearTimeout(t)
+  }, [])
 
   const selectedPlan = selectedPlanId ? readingPlans.find((p) => p.id === selectedPlanId) : null
   const activePlanId = store.activePlanId || null
@@ -133,7 +138,12 @@ export default function ReadingPlans() {
       ) : null}
 
       <section className="mt-4 grid gap-3 sm:grid-cols-2">
-        {readingPlans.map((p) => (
+        {loading ? (
+          <>
+            <article className="rounded-2xl border border-white/20 bg-white/10 p-4"><div className="gold-skeleton" /><div className="mt-2 gold-skeleton" style={{ width: '75%' }} /></article>
+            <article className="rounded-2xl border border-white/20 bg-white/10 p-4"><div className="gold-skeleton" /><div className="mt-2 gold-skeleton" style={{ width: '75%' }} /></article>
+          </>
+        ) : readingPlans.map((p) => (
           <article key={p.id} className="rounded-2xl border border-white/20 bg-white/10 p-4 text-white backdrop-blur-md">
             <div className="flex items-center justify-between">
               <p className="text-lg font-semibold">{p.icon} {p.title}</p>

@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { deletePrayer, getPrayerEntries, savePrayer, toggleAnswered } from '../utils/prayer'
 
 export default function Prayer() {
   const [text, setText] = useState('')
   const [entries, setEntries] = useState(() => getPrayerEntries())
   const [showAnswered, setShowAnswered] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   const active = useMemo(() => entries.filter((p) => !p.answered), [entries])
   const answered = useMemo(() => entries.filter((p) => p.answered), [entries])
@@ -14,6 +15,11 @@ export default function Prayer() {
     setEntries(savePrayer({ text, date: new Date().toISOString(), answered: false }))
     setText('')
   }
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 220)
+    return () => clearTimeout(t)
+  }, [])
 
   return (
     <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
@@ -37,7 +43,18 @@ export default function Prayer() {
             </button>
           </article>
 
-          {entries.length === 0 ? <article className="rounded-2xl border border-white/20 bg-white/10 p-4 text-white/85 backdrop-blur-md">Your prayers are heard. Start writing below. 💛</article> : null}
+          {loading ? (
+            <article className="rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-md space-y-2">
+              <div className="gold-skeleton" />
+              <div className="gold-skeleton" style={{ width: '72%' }} />
+            </article>
+          ) : null}
+          {!loading && entries.length === 0 ? (
+            <article className="rounded-2xl border border-white/20 bg-white/10 p-5 text-center text-white/85 backdrop-blur-md">
+              <p className="text-4xl text-[#D4A843]">🫶</p>
+              <p className="mt-2 text-base font-semibold text-white">No prayers yet. Bring your heart to God.</p>
+            </article>
+          ) : null}
 
           {active.length > 0 && (
             <section className="space-y-2">

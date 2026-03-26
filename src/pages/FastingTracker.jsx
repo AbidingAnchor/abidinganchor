@@ -45,10 +45,15 @@ export default function FastingTracker() {
   const [customHours, setCustomHours] = useState(8)
   const [intention, setIntention] = useState('')
   const [note, setNote] = useState('')
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(t)
+  }, [])
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 220)
+    return () => clearTimeout(t)
   }, [])
 
   const active = store.active
@@ -152,12 +157,17 @@ export default function FastingTracker() {
         <p className="text-sm font-semibold text-[#D4A843]">History</p>
         <p className="mt-1 text-xs text-white/75">Total fasting hours: {totalHours.toFixed(1)} | Personal record: {personalRecord.toFixed(1)}h</p>
         <div className="mt-3 space-y-2">
-          {store.history.length ? store.history.map((h) => (
+          {loading ? (
+            <>
+              <div className="gold-skeleton" />
+              <div className="gold-skeleton" style={{ width: '72%' }} />
+            </>
+          ) : store.history.length ? store.history.map((h) => (
             <article key={h.id} className="rounded-xl border border-white/15 bg-black/15 p-3 text-sm">
               <p className="text-white/90">{h.typeLabel}</p>
               <p className="text-xs text-white/70">{h.date} - {(h.durationMs / 3600000).toFixed(1)}h</p>
             </article>
-          )) : <p className="text-sm text-white/70">No completed fasts yet.</p>}
+          )) : <p className="text-sm text-white/70">🕐 Your fasting journey begins here.</p>}
         </div>
       </section>
     </div>

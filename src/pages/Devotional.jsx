@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import DevotionalReader from '../components/DevotionalReader'
 import { devotionalTopics, devotionals } from '../data/devotionals'
 
@@ -46,6 +46,7 @@ export default function Devotional() {
   const [progress, setProgress] = useState(() => readJson(PROGRESS_KEY, { items: {}, completedDates: [] }))
   const [streak, setStreak] = useState(() => readJson(STREAK_KEY, { count: 0, lastDate: null, missedRecently: false }))
   const [favorites, setFavorites] = useState(() => readJson(FAVORITES_KEY, []))
+  const [loading, setLoading] = useState(true)
 
   const today = getTodayDevotional()
   const nextDay = devotionals[(today.day % devotionals.length)]
@@ -59,6 +60,10 @@ export default function Devotional() {
   }, [activeTopic])
 
   const selectedDevotional = selectedId ? devotionals.find((d) => d.id === selectedId) : null
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 220)
+    return () => clearTimeout(t)
+  }, [])
 
   const openReader = (devotional) => {
     const next = {
@@ -168,7 +173,7 @@ export default function Devotional() {
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-xl border border-white/20 bg-white/10 p-3 text-white backdrop-blur-md">
               <p className="text-xs uppercase tracking-[0.12em] text-white/75">Streak</p>
-              <p className="mt-1 text-xl font-bold" style={{ color: '#D4A843' }}>🔥 {streak.count || 0}</p>
+              <p className={`mt-1 text-xl font-bold ${streak.count ? 'streak-shimmer' : ''}`} style={{ color: '#D4A843' }}>🔥 {streak.count || 0}</p>
             </div>
             <div className="rounded-xl border border-white/20 bg-white/10 p-3 text-white backdrop-blur-md">
               <p className="text-xs uppercase tracking-[0.12em] text-white/75">Completed</p>
@@ -228,7 +233,12 @@ export default function Devotional() {
 
           <div className="rounded-2xl border border-white/20 bg-white/10 p-4 text-white backdrop-blur-md">
             <p className="text-sm font-semibold" style={{ color: '#D4A843' }}>Favorites</p>
-            {favorites.length ? (
+            {loading ? (
+              <div className="mt-2 space-y-2">
+                <div className="gold-skeleton" />
+                <div className="gold-skeleton" style={{ width: '70%' }} />
+              </div>
+            ) : favorites.length ? (
               <div className="mt-2 grid gap-2">
                 {devotionals
                   .filter((d) => favorites.includes(d.id))
@@ -240,7 +250,7 @@ export default function Devotional() {
                   ))}
               </div>
             ) : (
-              <p className="mt-2 text-sm text-white/75">No saved devotionals yet. Tap ❤️ in the reader to save favorites.</p>
+              <p className="mt-2 text-sm text-white/75">💛 Nothing saved yet.</p>
             )}
           </div>
         </section>

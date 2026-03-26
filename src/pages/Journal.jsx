@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { deleteJournalEntry, getJournalEntries, saveToJournal } from '../utils/journal'
 
 const filters = ['All', 'This Week', 'Saved Verses', 'Daily Verse', 'Prayers']
@@ -31,6 +31,7 @@ function Journal() {
   const [reference, setReference] = useState('')
   const [note, setNote] = useState('')
   const [entries, setEntries] = useState(() => getJournalEntries().map(normalizeEntry))
+  const [loading, setLoading] = useState(true)
   const glassCard = {
     background: 'rgba(255, 255, 255, 0.25)',
     backdropFilter: 'blur(14px)',
@@ -38,6 +39,11 @@ function Journal() {
   }
   const headingStyle = { color: '#ffffff', textShadow: '0 1px 8px rgba(0,60,120,0.4)' }
   const bodyStyle = { color: 'rgba(255,255,255,0.85)' }
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 220)
+    return () => clearTimeout(t)
+  }, [])
 
   const filteredEntries = useMemo(() => {
     if (activeFilter === 'All') return entries
@@ -155,7 +161,13 @@ function Journal() {
         ))}
       </section>
 
-      {filteredEntries.length > 0 ? (
+      {loading ? (
+        <section className="space-y-2 rounded-2xl p-4" style={glassCard}>
+          <div className="gold-skeleton" />
+          <div className="gold-skeleton" style={{ width: '80%' }} />
+          <div className="gold-skeleton" style={{ width: '60%' }} />
+        </section>
+      ) : filteredEntries.length > 0 ? (
         <section className="space-y-3">
           {filteredEntries.map((entry) => (
             <article key={entry.id} className="rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4" style={{ ...glassCard, isolation: 'isolate' }}>
@@ -181,9 +193,9 @@ function Journal() {
         </section>
       ) : (
         <section className="flex min-h-56 flex-col items-center justify-center rounded-2xl p-6 text-center" style={glassCard}>
-          <p className="text-4xl text-accent-gold">✝</p>
-          <p className="mt-3 text-lg font-semibold text-white" style={{ textShadow: '0 1px 8px rgba(0,60,120,0.4)' }}>Your journal is empty</p>
-          <p className="mt-1 text-sm" style={bodyStyle}>Start writing your first reflection</p>
+          <p className="text-4xl text-accent-gold">📜</p>
+          <p className="mt-3 text-lg font-semibold text-white" style={{ textShadow: '0 1px 8px rgba(0,60,120,0.4)' }}>Your journal is empty. Start writing today.</p>
+          <p className="mt-1 text-sm" style={bodyStyle}>Capture a verse, reflection, or prayer.</p>
           <button
             type="button"
             onClick={() => setShowForm(true)}
