@@ -17,6 +17,8 @@ exports.handler = async function (event) {
 
   try {
     const { messages, systemPrompt } = JSON.parse(event.body);
+    console.log("Received messages:", JSON.stringify(messages));
+    console.log("SystemPrompt length:", systemPrompt?.length);
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
@@ -59,7 +61,11 @@ exports.handler = async function (event) {
       body: JSON.stringify({ reply }),
     };
   } catch (err) {
-    console.error("ai-companion function error:", err);
-    return { statusCode: 500, headers, body: JSON.stringify({ error: "Internal server error" }) };
+    console.error("ai-companion error:", err.message, err.stack);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: err.message || "Internal server error" }),
+    };
   }
 };
