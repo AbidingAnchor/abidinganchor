@@ -28,6 +28,7 @@ const HISTORY_KEY = 'abidinganchor-ai-chats'
 export default function AICompanion() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const [messages, setMessages] = useState([{ id: 'welcome', role: 'assistant', content: welcomeMessage }])
   const [sessionId, setSessionId] = useState(() => `${Date.now()}`)
   const containerRef = useRef(null)
@@ -57,6 +58,7 @@ export default function AICompanion() {
   const resetConversation = () => {
     setMessages([{ id: 'welcome', role: 'assistant', content: welcomeMessage }])
     setInput('')
+    setError('')
     setSessionId(`${Date.now()}`)
   }
 
@@ -66,6 +68,7 @@ export default function AICompanion() {
     const userMessage = { id: `${Date.now()}-user`, role: 'user', content: text }
     setMessages((prev) => [...prev, userMessage])
     setInput('')
+    setError('')
     setLoading(true)
 
     try {
@@ -81,23 +84,23 @@ export default function AICompanion() {
       })
 
       if (!response.ok) {
-        const errText = await response.text()
-        console.error('Function error:', response.status, errText)
-        throw new Error(errText || 'AI service is temporarily unavailable. Please try again in a moment.')
+        const text = await response.text()
+        throw new Error(`${response.status}: ${text}`)
       }
 
       const data = await response.json()
       const aiText = typeof data?.reply === 'string' ? data.reply.trim() : ''
       const safeText = aiText || "I couldn't generate a response right now. Please try again."
       setMessages((prev) => [...prev, { id: `${Date.now()}-assistant`, role: 'assistant', content: safeText }])
-    } catch (error) {
-      console.error('AI companion request failed:', error)
+    } catch (err) {
+      console.error('Full error:', err)
+      setError(err?.message || JSON.stringify(err) || 'Unknown error')
       setMessages((prev) => [
         ...prev,
         {
           id: `${Date.now()}-assistant-error`,
           role: 'assistant',
-          content: 'Unable to connect. Please check your connection and try again.',
+          content: err?.message || JSON.stringify(err) || 'Unknown error',
         },
       ])
     } finally {
@@ -113,6 +116,7 @@ export default function AICompanion() {
             <h1 className="text-3xl font-bold" style={{ color: '#D4A843', textShadow: '0 1px 8px rgba(0,60,120,0.4)' }}>✦ AI Bible Study Companion</h1>
             <p className="text-white/85">Ask anything about God&apos;s Word</p>
             <p className="text-xs text-white/60">Responses are AI-generated. Always compare with Scripture and seek guidance from your church community.</p>
+            {error ? <p className="text-xs text-red-300">{error}</p> : null}
             <div className="flex justify-end gap-2">
               <button type="button" onClick={resetConversation} className="text-xs text-white/60 hover:text-white">Clear Conversation</button>
               <button type="button" onClick={resetConversation} className="text-xs text-white/60 hover:text-white">New Study Session</button>
