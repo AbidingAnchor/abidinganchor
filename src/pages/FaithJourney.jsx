@@ -63,24 +63,9 @@ export default function FaithJourney() {
   )
 
   return (
-    <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
-      {/* Faith Journey uses a consistent navy tint over the global sky */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 1,
-          pointerEvents: 'none',
-          background: 'linear-gradient(180deg, rgba(13,31,78,0.92) 0%, rgba(13,31,78,0.78) 55%, rgba(13,31,78,0.92) 100%)',
-        }}
-      />
-      <div
-        className="content-scroll"
-        style={{ padding: '0 16px', paddingTop: '220px', paddingBottom: '110px', maxWidth: '680px', margin: '0 auto', width: '100%', zIndex: 2 }}
-      >
-        {view === 'hub' ? (
-          <section className="space-y-4">
+    <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '110px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
+      {view === 'hub' ? (
+        <section className="space-y-4">
             <style>
               {`
                 @keyframes journey-glow {
@@ -135,17 +120,16 @@ export default function FaithJourney() {
               <br />
               <span className="text-xs text-white/60">— Hebrews 12:1</span>
             </footer>
-          </section>
-        ) : view === 'trivia' ? (
-          <BibleTrivia onExit={() => setView('hub')} />
-        ) : view === 'flashcards' ? (
-          <VerseFlashcards onExit={() => setView('hub')} />
-        ) : view === 'map' ? (
-          <JourneyMap onExit={() => setView('hub')} />
-        ) : (
-          <Achievements onExit={() => setView('hub')} />
-        )}
-      </div>
+        </section>
+      ) : view === 'trivia' ? (
+        <BibleTrivia onExit={() => setView('hub')} />
+      ) : view === 'flashcards' ? (
+        <VerseFlashcards onExit={() => setView('hub')} />
+      ) : view === 'map' ? (
+        <JourneyMap onExit={() => setView('hub')} />
+      ) : (
+        <Achievements onExit={() => setView('hub')} />
+      )}
     </div>
   )
 }
