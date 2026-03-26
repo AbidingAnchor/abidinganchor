@@ -1,6 +1,11 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
 export default function Legal() {
+  useEffect(() => {
+    document.title = 'Legal — AbidingAnchor'
+  }, [])
+
   return (
     <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
       <div
@@ -32,6 +37,12 @@ export default function Legal() {
 
           <article className="rounded-2xl border border-white/20 bg-white/10 p-5 text-center text-white/90 backdrop-blur-md">
             Questions? Contact us at <span style={{ color: '#D4A843', fontWeight: 700 }}>AbidingAnchor@outlook.com</span>
+          </article>
+
+          <article className="rounded-2xl border border-white/20 bg-white/10 p-5 text-white/90 backdrop-blur-md">
+            <p className="text-sm">
+              2026 Compliance Notice: AbidingAnchor follows a Privacy by Design model and may receive anonymized age-category signals from Apple and Google Play solely for age-appropriate experience compliance. We do not store personal data on our servers.
+            </p>
           </article>
         </section>
       </div>

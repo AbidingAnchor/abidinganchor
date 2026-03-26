@@ -65,7 +65,9 @@ export default function App() {
             <Route path="/faith-journey" element={<FaithJourney />} />
             <Route path="/support" element={<Support />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/legal" element={<Legal />} />
           </Routes>
         </div>

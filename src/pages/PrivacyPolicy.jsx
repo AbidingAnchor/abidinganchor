@@ -1,4 +1,10 @@
+import { useEffect } from 'react'
+
 export default function PrivacyPolicy() {
+  useEffect(() => {
+    document.title = 'Privacy Policy — AbidingAnchor'
+  }, [])
+
   return (
     <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
       <div
@@ -22,6 +28,7 @@ export default function PrivacyPolicy() {
               <p>- Personal Data: We do not collect Personal Data as defined by the GDPR or CCPA (such as names, emails, or phone numbers). No account registration is required.</p>
               <p>- Sensitive Data: We do not collect or store sensitive religious information, prayer requests, or personal notes on our servers.</p>
               <p>- Technical Identifiers: When you use the App, your device connects to external APIs (bolls.life and bible-api.com) to fetch Bible text. These services temporarily receive your IP Address to fulfill the request. We do not store this IP address or link it to you.</p>
+              <p>Technical Processing: While we do not collect or store your personal data, our third-party Bible API providers (bolls.life and bible-api.com) receive your device&apos;s IP Address temporarily to deliver scripture text as part of a standard internet request. We do not have access to this data, nor do we link it to any individual user.</p>
             </section>
 
             <section className="space-y-2">
@@ -40,6 +47,8 @@ export default function PrivacyPolicy() {
               <p>- Right to Know: Know what data we process (as outlined in this policy).</p>
               <p>- Right to Deletion: Since we store no data on our servers, deletion is managed by you clearing your device&apos;s cache/local storage.</p>
               <p>- Right to Opt-Out: We do not sell or share your personal information for advertising.</p>
+              <p>Age-Verification Signals: In accordance with 2026 state laws in Pennsylvania, Texas, and Utah, we may receive anonymized age-category signals (e.g., Under 13, 13-17, 18+) from the Apple and Google Play stores. We use these signals solely to ensure the app experience is age-appropriate. We do not store, track, or share this age information on our servers.</p>
+              <p>Pennsylvania Resident Rights: Under the PCDPA, Pennsylvania residents have the right to Confirm if we are processing data, Correct inaccuracies, and Delete any data. Since we store no data on our servers, these rights are fulfilled by you clearing your device&apos;s cache/local storage.</p>
             </section>
 
             <section className="space-y-2">
@@ -50,6 +59,11 @@ export default function PrivacyPolicy() {
             <section className="space-y-2">
               <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>VII. Contact Information</h2>
               <p>For any privacy-related inquiries, contact: AbidingAnchor@outlook.com</p>
+            </section>
+
+            <section className="space-y-2">
+              <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>VIII. Data Security</h2>
+              <p>We use industry-standard encryption (HTTPS) for all connections to external APIs to protect your reading activity in transit. As a &quot;Privacy by Design&quot; app, our primary security measure is that we never ask for or store the data that hackers typically target.</p>
             </section>
           </article>
         </section>

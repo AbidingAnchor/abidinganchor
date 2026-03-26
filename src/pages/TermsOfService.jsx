@@ -1,4 +1,10 @@
+import { useEffect } from 'react'
+
 export default function TermsOfService() {
+  useEffect(() => {
+    document.title = 'Terms of Service — AbidingAnchor'
+  }, [])
+
   return (
     <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
       <div
@@ -46,6 +52,11 @@ export default function TermsOfService() {
             <section className="space-y-2">
               <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>VII. Governing Law</h2>
               <p>These Terms are governed by the laws of the Commonwealth of Pennsylvania, USA, without regard to its conflict of law principles.</p>
+            </section>
+
+            <section className="space-y-2">
+              <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>VIII. 2026 Compliance Signals</h2>
+              <p>For app-store compliance in 2026, AbidingAnchor may receive anonymized age-category signals from Apple and Google Play to ensure age-appropriate app experiences. These signals are not stored on our servers and are not used for profiling or advertising.</p>
             </section>
           </article>
         </section>
