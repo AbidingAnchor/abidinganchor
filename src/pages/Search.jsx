@@ -5,7 +5,81 @@ import SaveToast from '../components/SaveToast'
 
 const quickSuggestionsRow1 = ['faith', 'love', 'peace', 'strength', 'hope']
 const quickSuggestionsRow2 = ['fear', 'greed', 'healing', 'forgiveness', 'anger']
-const FULL_BIBLE_PAGE_SIZE = 10
+const FULL_BIBLE_PAGE_SIZE = 20
+const MAX_FULL_BIBLE_RESULTS = 20
+
+const BOOK_NAMES = {
+  1: 'Genesis',
+  2: 'Exodus',
+  3: 'Leviticus',
+  4: 'Numbers',
+  5: 'Deuteronomy',
+  6: 'Joshua',
+  7: 'Judges',
+  8: 'Ruth',
+  9: '1 Samuel',
+  10: '2 Samuel',
+  11: '1 Kings',
+  12: '2 Kings',
+  13: '1 Chronicles',
+  14: '2 Chronicles',
+  15: 'Ezra',
+  16: 'Nehemiah',
+  17: 'Esther',
+  18: 'Job',
+  19: 'Psalms',
+  20: 'Proverbs',
+  21: 'Ecclesiastes',
+  22: 'Song of Solomon',
+  23: 'Isaiah',
+  24: 'Jeremiah',
+  25: 'Lamentations',
+  26: 'Ezekiel',
+  27: 'Daniel',
+  28: 'Hosea',
+  29: 'Joel',
+  30: 'Amos',
+  31: 'Obadiah',
+  32: 'Jonah',
+  33: 'Micah',
+  34: 'Nahum',
+  35: 'Habakkuk',
+  36: 'Zephaniah',
+  37: 'Haggai',
+  38: 'Zechariah',
+  39: 'Malachi',
+  40: 'Matthew',
+  41: 'Mark',
+  42: 'Luke',
+  43: 'John',
+  44: 'Acts',
+  45: 'Romans',
+  46: '1 Corinthians',
+  47: '2 Corinthians',
+  48: 'Galatians',
+  49: 'Ephesians',
+  50: 'Philippians',
+  51: 'Colossians',
+  52: '1 Thessalonians',
+  53: '2 Thessalonians',
+  54: '1 Timothy',
+  55: '2 Timothy',
+  56: 'Titus',
+  57: 'Philemon',
+  58: 'Hebrews',
+  59: 'James',
+  60: '1 Peter',
+  61: '2 Peter',
+  62: '1 John',
+  63: '2 John',
+  64: '3 John',
+  65: 'Jude',
+  66: 'Revelation',
+}
+
+function isVerseReferenceQuery(query) {
+  return /^[1-3]?\s?[A-Za-z][A-Za-z\s]+?\s\d+:\d+(-\d+)?$/i.test(query.trim())
+}
 
 const keywordVerses = {
   faith: [
@@ -170,6 +244,25 @@ function mapBibleApiToResults(data) {
   return []
 }
 
+async function fetchKeywordSearch(query) {
+  const encoded = encodeURIComponent(query.trim());
+  const url = `https://bolls.life/v2/find/WEB?search=${encoded}&match_case=false&match_whole=false&limit=20&page=1`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Search service unavailable. Try again shortly.");
+  const data = await res.json();
+
+  // API returns { exact_matches, total, results: [...] }
+  const verses = data.results || data; // fallback if bare array
+  if (!Array.isArray(verses) || verses.length === 0) {
+    throw new Error(`No results found for "${query}".`);
+  }
+
+  return verses.slice(0, 20).map((v) => ({
+    reference: `${BOOK_NAMES[v.book] || `Book ${v.book}`} ${v.chapter}:${v.verse}`,
+    text: v.text.replace(/<[^>]*>/g, "").trim(),
+  }));
+}
+
 function Search() {
   const [searchTerm, setSearchTerm] = useState('')
   const [testament, setTestament] = useState('new')
@@ -182,12 +275,13 @@ function Search() {
   const [showFullBibleResults, setShowFullBibleResults] = useState(false)
   const [fullBibleResults, setFullBibleResults] = useState([])
   const [isFullBibleLoading, setIsFullBibleLoading] = useState(false)
+  const [fullBibleError, setFullBibleError] = useState('')
   const [fullBiblePage, setFullBiblePage] = useState(1)
   const [toastTrigger, setToastTrigger] = useState(0)
 
   const visibleBooks = testament === 'new' ? books.new : books.old
   const trimmedSearch = searchTerm.trim()
-  const isVerseReference = /\d/.test(trimmedSearch)
+  const isVerseReference = isVerseReferenceQuery(trimmedSearch)
   const keyword = trimmedSearch.toLowerCase()
   const curatedResults = keywordVerses[keyword] ?? []
   const searchBorderClass = isFocused ? 'border-[#C9922A]' : 'border-white/40'
@@ -201,6 +295,7 @@ function Search() {
       setKeywordHint('')
       setShowFullBibleResults(false)
       setFullBibleResults([])
+      setFullBibleError('')
       setFullBiblePage(1)
       setIsLoading(false)
       return
@@ -211,6 +306,7 @@ function Search() {
       setKeywordHint(curatedResults.length > 0 ? '' : 'No curated topic yet. Try another keyword or search by reference.')
       setShowFullBibleResults(false)
       setFullBibleResults([])
+      setFullBibleError('')
       setFullBiblePage(1)
       return
     }
@@ -257,17 +353,14 @@ function Search() {
     if (!trimmedSearch || isVerseReference) return
     setShowFullBibleResults(true)
     setIsFullBibleLoading(true)
+    setFullBibleError('')
     setFullBiblePage(1)
     try {
-      const response = await fetch(`https://bible-api.com/${encodeURIComponent(trimmedSearch)}?translation=web`)
-      const data = await response.json()
-      if (!response.ok || data.error) {
-        setFullBibleResults([])
-        return
-      }
-      setFullBibleResults(mapBibleApiToResults(data))
-    } catch {
+      const parsedResults = await fetchKeywordSearch(trimmedSearch)
+      setFullBibleResults(parsedResults)
+    } catch (error) {
       setFullBibleResults([])
+      setFullBibleError(error instanceof Error ? error.message : 'Unable to complete full Bible search right now. Please try again.')
     } finally {
       setIsFullBibleLoading(false)
     }
@@ -378,20 +471,24 @@ function Search() {
                   </div>
                 )}
 
-                {!isVerseReference && curatedResults.length > 0 && (
+                {!isVerseReference && (
                   <div className="space-y-3">
-                    <p className="text-sm font-semibold uppercase tracking-[0.15em] text-accent-gold">Curated Verses for "{keyword}"</p>
-                    {curatedResults.map((result) => (
-                      <article key={result.ref} className="rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4" style={glassCard}>
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-gold">{result.ref}</p>
-                        <p className="mt-2 text-lg text-white [font-family:'Lora',serif] italic">{result.text}</p>
-                        <div className="mt-3 flex justify-end">
-                          <button type="button" onClick={() => handleSaveToJournal({ reference: result.ref, text: result.text })} className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
-                            Save to Journal
-                          </button>
-                        </div>
-                      </article>
-                    ))}
+                    {curatedResults.length > 0 ? (
+                      <>
+                        <p className="text-sm font-semibold uppercase tracking-[0.15em] text-accent-gold">Curated Verses for "{keyword}"</p>
+                        {curatedResults.map((result) => (
+                          <article key={result.ref} className="rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4" style={glassCard}>
+                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-gold">{result.ref}</p>
+                            <p className="mt-2 text-lg text-white [font-family:'Lora',serif] italic">{result.text}</p>
+                            <div className="mt-3 flex justify-end">
+                              <button type="button" onClick={() => handleSaveToJournal({ reference: result.ref, text: result.text })} className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
+                                Save to Journal
+                              </button>
+                            </div>
+                          </article>
+                        ))}
+                      </>
+                    ) : null}
 
                     <button type="button" onClick={handleSearchFullBible} className="w-full rounded-xl border border-accent-gold bg-accent-gold px-4 py-2 text-sm font-semibold text-[#1a1a1a]">
                       Search Full Bible
@@ -405,8 +502,8 @@ function Search() {
                     {isFullBibleLoading ? (
                       <article className="rounded-xl p-4" style={{ ...glassCard, ...bodyStyle }}>Searching full Bible...</article>
                     ) : fullBibleResults.length > 0 ? (
-                      pagedFullBibleResults.map((result) => (
-                        <article key={result.id} className="rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4" style={glassCard}>
+                      pagedFullBibleResults.map((result, index) => (
+                        <article key={`${result.reference}-${index}`} className="rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4" style={glassCard}>
                           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-gold">{result.reference}</p>
                           <p className="mt-2 text-lg text-white [font-family:'Lora',serif] italic">{result.text}</p>
                           <div className="mt-3 flex justify-end">
@@ -417,7 +514,9 @@ function Search() {
                         </article>
                       ))
                     ) : (
-                      <article className="rounded-xl p-4" style={{ ...glassCard, ...bodyStyle }}>No additional verses found for this keyword.</article>
+                      <article className="rounded-xl p-4" style={{ ...glassCard, ...bodyStyle }}>
+                        {fullBibleError || 'No additional verses found for this keyword.'}
+                      </article>
                     )}
                     {fullBibleResults.length > FULL_BIBLE_PAGE_SIZE ? (
                       <div className="flex items-center justify-between gap-3 rounded-xl p-3" style={glassCard}>

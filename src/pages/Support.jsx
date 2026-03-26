@@ -6,23 +6,6 @@ export default function Support() {
       overflow:'hidden', fontFamily:'sans-serif' }}>
       <div style={{ padding:'0 16px', paddingTop:'200px', paddingBottom:'120px', maxWidth:'680px', margin:'0 auto', width:'100%' }}>
 
-        <div style={{ textAlign:'center', marginBottom:'8px',
-          paddingTop:'20px' }}>
-          <svg width="48" height="68" viewBox="0 0 48 68">
-            <defs>
-              <linearGradient id="cg2" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#FFF8C0"/>
-                <stop offset="40%" stopColor="#FFE566"/>
-                <stop offset="100%" stopColor="#D4A020"/>
-              </linearGradient>
-            </defs>
-            <rect x="19" y="0" width="10" height="68" rx="3" 
-              fill="url(#cg2)"/>
-            <rect x="2" y="16" width="44" height="10" rx="3" 
-              fill="url(#cg2)"/>
-          </svg>
-        </div>
-
         <h1 style={{ textAlign:'center', color:'#fff', 
           fontSize:'26px', fontWeight:'bold', margin:'0 0 6px',
           textShadow:'0 2px 8px rgba(0,60,120,0.4)',

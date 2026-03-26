@@ -16,6 +16,7 @@ function getTodaysVerse() {
 function Home() {
   const [todaysVerse, setTodaysVerse] = useState(() => getTodaysVerse())
   const [toastTrigger, setToastTrigger] = useState(0)
+  const [shareToastVisible, setShareToastVisible] = useState(false)
 
   useEffect(() => {
     let timeoutId
@@ -48,6 +49,39 @@ function Home() {
     setToastTrigger((t) => t + 1)
   }, [])
 
+  const handleShare = useCallback(async () => {
+    const verseText = todaysVerse.text
+    const verseReference = todaysVerse.ref
+    const shareData = {
+      title: 'AbidingAnchor - Anchored in His Word',
+      text: `"${verseText}" - ${verseReference}`,
+      url: 'https://abidinganchor.netlify.app',
+    }
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData)
+        return
+      }
+
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(`"${verseText}" - ${verseReference}\n\nAbidingAnchor: https://abidinganchor.netlify.app`)
+        setShareToastVisible(true)
+        return
+      }
+
+      setShareToastVisible(true)
+    } catch {
+      alert('Unable to share right now. Please try again.')
+    }
+  }, [todaysVerse])
+
+  useEffect(() => {
+    if (!shareToastVisible) return
+    const timeoutId = setTimeout(() => setShareToastVisible(false), 2200)
+    return () => clearTimeout(timeoutId)
+  }, [shareToastVisible])
+
   const today = new Date()
   const formattedDate = today.toLocaleDateString('en-US', {
     weekday: 'long',
@@ -66,21 +100,27 @@ function Home() {
     <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
       <div
         className="content-scroll"
-        style={{ padding: '0 16px', paddingBottom: '100px', maxWidth: '680px', margin: '0 auto', width: '100%' }}
+        style={{
+          padding: '0 16px',
+          paddingTop: 'clamp(280px, 38vw, 320px)',
+          paddingBottom: '100px',
+          maxWidth: '680px',
+          margin: '0 auto',
+          width: '100%',
+        }}
       >
-        <div style={{ height: '180px' }} />
-        <div style={{ position: 'absolute', top: '24px', left: '24px' }}>
+        <div style={{ position: 'absolute', top: '24px', left: '24px', zIndex: 50 }}>
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-yellow-100">ABIDING ANCHOR</p>
           <p className="text-yellow-100/90" style={{ marginTop: '4px', fontSize: '11px', fontStyle: 'italic' }}>
             Anchored in His Word
           </p>
           <h1
             className="text-white"
-            style={{ marginTop: '8px', fontSize: '22px', fontWeight: 700, textShadow: '0 1px 8px rgba(0,60,120,0.4)', maxWidth: '280px' }}
+            style={{ marginTop: '8px', fontSize: '22px', fontWeight: 700, textShadow: '0 2px 8px rgba(0,0,0,0.8)', maxWidth: '280px' }}
           >
             Welcome to your quiet study space
           </h1>
-          <p className="text-blue-50" style={{ marginTop: '8px', fontSize: '12px' }}>
+          <p className="text-blue-50" style={{ marginTop: '8px', fontSize: '12px', textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
             {formattedDate}
           </p>
         </div>
@@ -119,6 +159,7 @@ function Home() {
               </button>
               <button
                 type="button"
+                onClick={handleShare}
                 style={{ minWidth: '140px', flex: 1 }}
                 className="rounded-xl border border-yellow-100/80 px-3 py-2 text-sm font-semibold text-yellow-100 transition hover:bg-white/10"
               >
@@ -216,6 +257,28 @@ function Home() {
           </section>
         </section>
         <SaveToast trigger={toastTrigger} />
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '132px',
+            left: '50%',
+            transform: `translateX(-50%) translateY(${shareToastVisible ? '0px' : '16px'})`,
+            opacity: shareToastVisible ? 1 : 0,
+            transition: 'opacity 0.3s ease, transform 0.3s ease',
+            zIndex: 9999,
+            pointerEvents: 'none',
+            background: 'rgba(10, 20, 50, 0.92)',
+            color: '#fff',
+            padding: '10px 16px',
+            borderRadius: '999px',
+            fontSize: '13px',
+            fontWeight: '600',
+            border: '1px solid rgba(255,255,255,0.3)',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          Verse copied to clipboard!
+        </div>
       </div>
     </div>
   )
