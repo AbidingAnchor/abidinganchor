@@ -21,11 +21,17 @@ export default function Prayer() {
         <section className="space-y-4">
           <header className="space-y-1">
             <h1 className="text-3xl font-bold" style={{ color: '#D4A843', textShadow: '0 1px 8px rgba(0,60,120,0.4)' }}>🙏 Prayer Journal</h1>
-            <p className="text-white/85">Bring everything to Him (Philippians 4:6)</p>
+            <p className="text-white/85">A private space to write your prayers to God. Only you can see these - they never leave your device. 🙏</p>
           </header>
 
+          <article className="rounded-2xl border border-white/20 bg-white/10 p-4 text-sm text-white/80 backdrop-blur-md">
+            <p>
+              💡 This is your personal prayer journal. Write your prayers, and when God answers them, mark them as answered to keep a record of His faithfulness.
+            </p>
+          </article>
+
           <article className="rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-md space-y-3">
-            <textarea value={text} onChange={(e) => setText(e.target.value)} rows={4} placeholder="Write your prayer request..." className="w-full rounded-xl border border-white/20 bg-black/10 p-3 text-white placeholder:text-white/60 focus:outline-none" />
+            <textarea value={text} onChange={(e) => setText(e.target.value)} rows={4} placeholder="Write your prayer to God... He hears every word. (Philippians 4:6-7)" className="w-full rounded-xl border border-white/20 bg-black/10 p-3 text-white placeholder:text-white/60 focus:outline-none" />
             <button type="button" onClick={addPrayer} className="rounded-xl px-4 py-2 text-sm font-semibold text-[#1a1a1a]" style={{ background: '#D4A843' }}>
               Add Prayer
             </button>
@@ -35,7 +41,7 @@ export default function Prayer() {
 
           {active.length > 0 && (
             <section className="space-y-2">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-[#D4A843]">Active Prayers</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-[#D4A843]">MY PRAYERS</h2>
               {active.map((entry) => (
                 <article key={entry.id} className="rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-md">
                   <p className="text-white">{entry.text}</p>

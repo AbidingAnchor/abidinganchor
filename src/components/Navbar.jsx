@@ -9,6 +9,7 @@ const tabs = [
 ]
 
 export default function Navbar({ theme = 'day', onToggleTheme }) {
+  const isNight = theme === 'night'
   return (
     <>
       <button
@@ -21,7 +22,7 @@ export default function Navbar({ theme = 'day', onToggleTheme }) {
           right: '16px',
           zIndex: 9998,
           border: '1px solid rgba(255,255,255,0.3)',
-          background: 'rgba(10, 31, 78, 0.8)',
+          background: isNight ? 'rgba(13, 7, 0, 0.9)' : 'rgba(10, 31, 78, 0.8)',
           color: '#fff',
           borderRadius: '999px',
           width: '40px',
@@ -37,7 +38,7 @@ export default function Navbar({ theme = 'day', onToggleTheme }) {
           left: 0,
           right: 0,
           zIndex: 9999,
-          background: 'rgba(10, 22, 50, 0.85)',
+          background: isNight ? 'rgba(26, 14, 0, 0.92)' : 'rgba(10, 22, 50, 0.85)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           borderTop: '1px solid rgba(255,255,255,0.15)',

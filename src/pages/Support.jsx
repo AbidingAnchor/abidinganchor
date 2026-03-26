@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import NotificationSettings from '../components/NotificationSettings'
 
 const BMAC_LINK = 'https://buymeacoffee.com/abidebibleapp'
 
@@ -67,6 +68,30 @@ export default function Support() {
           marginBottom:'10px' }}>
           Choose how you'd like to give
         </p>
+
+        <section style={{ marginBottom: '16px' }}>
+          <h2 style={{ color: '#D4A843', fontSize: '13px', fontWeight: 700, margin: '0 0 8px', letterSpacing: '0.06em' }}>
+            Features
+          </h2>
+          <div style={{ display: 'grid', gap: '10px' }}>
+            <Link to="/ai-companion" style={{ textDecoration: 'none' }}>
+              <article style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(14px)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.4)', padding: '14px 16px' }}>
+                <p style={{ color: '#D4A843', fontWeight: 700, margin: 0 }}>✦ AI Bible Companion</p>
+                <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '12px', margin: '4px 0 0' }}>Ask questions about any Scripture passage</p>
+              </article>
+            </Link>
+            <Link to="/faith-journey" style={{ textDecoration: 'none' }}>
+              <article style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(14px)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.4)', padding: '14px 16px' }}>
+                <p style={{ color: '#D4A843', fontWeight: 700, margin: 0 }}>✦ Faith Journey</p>
+                <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '12px', margin: '4px 0 0' }}>View your spiritual growth milestones</p>
+              </article>
+            </Link>
+          </div>
+        </section>
+
+        <section style={{ marginBottom: '16px' }}>
+          <NotificationSettings />
+        </section>
 
         {[
           { amount:'$3', label:'A Small Blessing', 

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { saveToJournal } from '../utils/journal'
 import { recordReadingToday } from '../utils/streak'
 import { getHighlightsForChapter, saveHighlight } from '../utils/highlights'
+import { recordChapterRead } from '../utils/readingHistory'
 import SaveToast from './SaveToast'
 import ShareVerse from './ShareVerse'
 
@@ -17,6 +18,7 @@ import ShareVerse from './ShareVerse'
  * @param {number} props.totalChapters
  * @param {string[]} [props.journalTags]
  * @param {boolean} [props.showChapterPicker]
+ * @param {() => void} [props.onOpenWorship]
  */
 export default function BibleReader({
   open,
@@ -28,6 +30,7 @@ export default function BibleReader({
   totalChapters,
   journalTags = ['Reading Plan'],
   showChapterPicker = false,
+  onOpenWorship,
 }) {
   const [verses, setVerses] = useState([])
   const [loading, setLoading] = useState(false)
@@ -59,6 +62,8 @@ export default function BibleReader({
         })),
       )
       recordReadingToday()
+      const oldBooks = new Set(['Genesis','Exodus','Leviticus','Numbers','Deuteronomy','Joshua','Judges','Ruth','1 Samuel','2 Samuel','1 Kings','2 Kings','1 Chronicles','2 Chronicles','Ezra','Nehemiah','Esther','Job','Psalms','Proverbs','Ecclesiastes','Song of Solomon','Isaiah','Jeremiah','Lamentations','Ezekiel','Daniel','Hosea','Joel','Amos','Obadiah','Jonah','Micah','Nahum','Habakkuk','Zephaniah','Haggai','Zechariah','Malachi'])
+      recordChapterRead({ book: bookDisplayName, chapter: chapterNumber, testament: oldBooks.has(bookDisplayName) ? 'old' : 'new' })
       const chapterHighlights = getHighlightsForChapter(bookDisplayName, chapterNumber)
       const byVerse = chapterHighlights.reduce((acc, entry) => {
         acc[entry.verse] = entry.color
@@ -194,6 +199,13 @@ export default function BibleReader({
           >
             {bookDisplayName} {chapterNumber}
           </h2>
+          <button
+            type="button"
+            onClick={onOpenWorship}
+            className="mt-2 rounded-lg border border-[#D4A843] px-3 py-1 text-xs text-[#D4A843]"
+          >
+            🎵 Listen while you read
+          </button>
         </div>
 
         {loading ? (

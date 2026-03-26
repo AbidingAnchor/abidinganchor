@@ -9,7 +9,7 @@ function getTodaysVerse() {
   return getDailyVerse()
 }
 
-function Home() {
+function Home({ onOpenWorship }) {
   const [todaysVerse, setTodaysVerse] = useState(() => getTodaysVerse())
   const [streak, setStreak] = useState(() => getStreak())
   const [toastTrigger, setToastTrigger] = useState(0)
@@ -72,8 +72,8 @@ function Home() {
     60: '60 days! You are an inspiration to the Kingdom. 👑',
     100: "100 days! A mighty warrior in God's Word! ⚔️",
   }
-  const currentStreak = streak?.currentStreak || 0
-  const streakMessage = streakMessages[currentStreak] || `Day ${currentStreak || 0} — Keep seeking Him with all your heart. 🙏`
+  const currentStreak = Math.max(1, streak?.currentStreak || 1)
+  const streakMessage = streakMessages[currentStreak] || `Day ${currentStreak} — Keep seeking Him with all your heart. 🙏`
 
   return (
     <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
@@ -159,7 +159,7 @@ function Home() {
           >
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-white" style={{ textShadow: '0 1px 8px rgba(0,60,120,0.4)' }}>Reading Streak</h2>
-              <p className="text-sm font-medium text-white/85">🔥 {Math.max(1, currentStreak)} Day Streak</p>
+              <p className="text-sm font-medium text-white/85">🔥 {currentStreak} Day Streak</p>
             </div>
             <p className="mb-3 text-sm" style={{ color: '#D4A843' }}>{streakMessage}</p>
             <div className="flex items-center justify-between gap-2" style={{ overflowX: 'auto' }}>
@@ -197,6 +197,21 @@ function Home() {
               >
                 <p className="text-sm uppercase tracking-wide text-white/85">Continue Reading</p>
                 <p className="mt-2 text-2xl font-semibold text-white">John 3</p>
+              </article>
+              <article
+                className="rounded-2xl p-4 shadow-sm"
+                style={{
+                  minWidth: '140px',
+                  flex: 1,
+                  background: 'rgba(255, 255, 255, 0.25)',
+                  backdropFilter: 'blur(14px)',
+                  border: '1px solid rgba(255, 255, 255, 0.5)',
+                }}
+              >
+                <p className="text-sm uppercase tracking-wide text-white/85">Worship Mode</p>
+                <button type="button" onClick={onOpenWorship} className="mt-2 rounded-lg border border-[#D4A843] px-3 py-1 text-sm text-[#D4A843]">
+                  🎵 Listen
+                </button>
               </article>
               <article
                 className="rounded-2xl p-4 shadow-sm"

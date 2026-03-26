@@ -7,10 +7,15 @@ function todayString(date = new Date()) {
 function read() {
   try {
     const raw = localStorage.getItem(STREAK_KEY)
-    if (!raw) return { currentStreak: 0, lastReadDate: null, longestStreak: 0 }
-    return JSON.parse(raw)
+    if (!raw) return { currentStreak: 1, lastReadDate: null, longestStreak: 1 }
+    const parsed = JSON.parse(raw)
+    return {
+      currentStreak: Math.max(1, parsed.currentStreak || 1),
+      lastReadDate: parsed.lastReadDate || null,
+      longestStreak: Math.max(1, parsed.longestStreak || 1),
+    }
   } catch {
-    return { currentStreak: 0, lastReadDate: null, longestStreak: 0 }
+    return { currentStreak: 1, lastReadDate: null, longestStreak: 1 }
   }
 }
 

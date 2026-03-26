@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useRef } from 'react'
 
+function incrementSharedCount() {
+  const raw = localStorage.getItem('abidinganchor-shared-count')
+  const count = raw ? Number(raw) || 0 : 0
+  localStorage.setItem('abidinganchor-shared-count', String(count + 1))
+}
+
 function wrapText(ctx, text, maxWidth) {
   const words = text.split(' ')
   const lines = []
@@ -69,6 +75,7 @@ export default function ShareVerse({ text, reference, onClose }) {
     link.href = url
     link.download = fileName
     link.click()
+    incrementSharedCount()
   }
 
   const handleShare = async () => {
@@ -83,6 +90,7 @@ export default function ShareVerse({ text, reference, onClose }) {
       const file = new File([blob], fileName, { type: 'image/png' })
       try {
         await navigator.share({ files: [file], title: reference, text })
+        incrementSharedCount()
       } catch {
         handleDownload()
       }

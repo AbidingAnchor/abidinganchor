@@ -73,7 +73,7 @@ const plans = [
   },
 ]
 
-function ReadingPlan() {
+function ReadingPlan({ onOpenWorship }) {
   const [activePlanId, setActivePlanId] = useState('nt30')
   const [selectedDay, setSelectedDay] = useState('Wed')
   const [toastTrigger, setToastTrigger] = useState(0)
@@ -125,6 +125,7 @@ function ReadingPlan() {
             onChapterChange={(n) => setReaderState((s) => ({ ...s, chapter: n }))}
             totalChapters={readerState.total}
             journalTags={['Reading Plan']}
+            onOpenWorship={onOpenWorship}
           />
         ) : (
         <section className="space-y-6">

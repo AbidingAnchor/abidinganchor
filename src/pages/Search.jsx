@@ -265,7 +265,7 @@ async function fetchKeywordSearch(query) {
   }));
 }
 
-function Search() {
+function Search({ onOpenWorship }) {
   const [searchMode, setSearchMode] = useState('keyword')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTopic, setSelectedTopic] = useState('')
@@ -396,6 +396,7 @@ function Search() {
             totalChapters={selectedBook.chapters}
             journalTags={['Search Result']}
             showChapterPicker
+            onOpenWorship={onOpenWorship}
           />
         ) : (
           <section className="space-y-6">
