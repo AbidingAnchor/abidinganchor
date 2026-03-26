@@ -57,6 +57,16 @@ export default function PrivacyPolicy() {
             </section>
 
             <section className="space-y-2">
+              <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>V. Global &amp; State Rights</h2>
+              <p>Global &amp; State Rights: In accordance with the GDPR, CCPA, and the 2026 Pennsylvania Consumer Data Privacy Act (PCDPA), users have the right to confirm, correct, or delete their data. Since AbidingAnchor stores no personal data on its servers, these rights are fulfilled by the user clearing their own device&apos;s cache or localStorage.</p>
+            </section>
+
+            <section className="space-y-2">
+              <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>VI. Children&apos;s Privacy</h2>
+              <p>Children&apos;s Privacy: We do not knowingly collect personal information from children under 13. In compliance with 2026 state laws (PA, TX, UT), we may receive anonymized age-category signals from the App Store to ensure an age-appropriate experience, but we do not store or track this information.</p>
+            </section>
+
+            <section className="space-y-2">
               <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>VII. Contact Information</h2>
               <p>For any privacy-related inquiries, contact: AbidingAnchor@outlook.com</p>
             </section>
