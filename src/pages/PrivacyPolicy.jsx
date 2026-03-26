@@ -1,0 +1,59 @@
+export default function PrivacyPolicy() {
+  return (
+    <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
+      <div
+        className="content-scroll"
+        style={{ padding: '0 16px', paddingTop: '220px', paddingBottom: '120px', maxWidth: '680px', margin: '0 auto', width: '100%' }}
+      >
+        <section className="space-y-4">
+          <header className="space-y-1 text-center">
+            <h1 className="text-3xl font-bold text-white" style={{ textShadow: '0 1px 8px rgba(0,60,120,0.4)' }}>Privacy Policy</h1>
+            <p className="text-sm text-white/80">Effective Date: March 26, 2026</p>
+          </header>
+
+          <article className="rounded-2xl border border-white/20 bg-white/10 p-5 backdrop-blur-md text-white/90 space-y-4">
+            <section className="space-y-2">
+              <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>I. Introduction &amp; Scope</h2>
+              <p>AbidingAnchor (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) handles information as described in this Privacy Policy. This policy applies globally to all users of our Bible application. We are committed to a &quot;Privacy by Design&quot; approach, meaning we aim to collect the absolute minimum data necessary to function.</p>
+            </section>
+
+            <section className="space-y-2">
+              <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>II. Information Collection &amp; Use</h2>
+              <p>- Personal Data: We do not collect Personal Data as defined by the GDPR or CCPA (such as names, emails, or phone numbers). No account registration is required.</p>
+              <p>- Sensitive Data: We do not collect or store sensitive religious information, prayer requests, or personal notes on our servers.</p>
+              <p>- Technical Identifiers: When you use the App, your device connects to external APIs (bolls.life and bible-api.com) to fetch Bible text. These services temporarily receive your IP Address to fulfill the request. We do not store this IP address or link it to you.</p>
+            </section>
+
+            <section className="space-y-2">
+              <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>III. Local Storage &amp; Cookies</h2>
+              <p>We do not use tracking cookies. We use localStorage on your device to save your preferences (e.g., last chapter read, journal entries). This data never leaves your device and you can delete it at any time by clearing your App data or uninstalling the App.</p>
+            </section>
+
+            <section className="space-y-2">
+              <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>IV. Third-Party Links &amp; Donations</h2>
+              <p>The App contains a link to Buy Me a Coffee. If you click this link, you are subject to the Buy Me a Coffee Privacy Policy. We do not receive your credit card or financial details.</p>
+            </section>
+
+            <section className="space-y-2">
+              <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>V. Global Rights (GDPR &amp; CCPA)</h2>
+              <p>Regardless of where you live, you have the right to:</p>
+              <p>- Right to Know: Know what data we process (as outlined in this policy).</p>
+              <p>- Right to Deletion: Since we store no data on our servers, deletion is managed by you clearing your device&apos;s cache/local storage.</p>
+              <p>- Right to Opt-Out: We do not sell or share your personal information for advertising.</p>
+            </section>
+
+            <section className="space-y-2">
+              <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>VI. Children&apos;s Privacy (COPPA)</h2>
+              <p>Our App is a general audience app. We do not knowingly collect personal information from children under 13.</p>
+            </section>
+
+            <section className="space-y-2">
+              <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>VII. Contact Information</h2>
+              <p>For any privacy-related inquiries, contact: AbidingAnchor@outlook.com</p>
+            </section>
+          </article>
+        </section>
+      </div>
+    </div>
+  )
+}

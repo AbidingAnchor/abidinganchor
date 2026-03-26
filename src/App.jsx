@@ -4,6 +4,8 @@ import ReadingPlan from './pages/ReadingPlan'
 import Search from './pages/Search'
 import Journal from './pages/Journal'
 import Support from './pages/Support'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsOfService from './pages/TermsOfService'
 import Navbar from './components/Navbar'
 import SkyBackground from './components/SkyBackground'
 
@@ -30,6 +32,8 @@ export default function App() {
             <Route path="/search" element={<Search />} />
             <Route path="/journal" element={<Journal />} />
             <Route path="/support" element={<Support />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
           </Routes>
         </div>
       </div>

@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 const BMAC_LINK = 'https://buymeacoffee.com/abidebibleapp'
 
 export default function Support() {
@@ -116,6 +118,15 @@ export default function Support() {
           All donations go directly to maintaining and growing AbidingAnchor.
           Thank you for being part of this mission. 🙏
         </p>
+
+        <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
+          <Link to="/privacy" style={{ color: '#D4A843', fontSize: '12px', textDecoration: 'none', fontWeight: 600 }}>
+            Privacy Policy
+          </Link>
+          <Link to="/terms" style={{ color: '#D4A843', fontSize: '12px', textDecoration: 'none', fontWeight: 600 }}>
+            Terms of Service
+          </Link>
+        </div>
 
       </div>
     </div>
