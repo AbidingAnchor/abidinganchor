@@ -1,5 +1,3 @@
-const fetch = require("node-fetch");
-
 exports.handler = async function (event) {
   const headers = {
     "Access-Control-Allow-Origin": "*",
@@ -23,24 +21,30 @@ exports.handler = async function (event) {
       return { statusCode: 500, headers, body: JSON.stringify({ error: "GEMINI_API_KEY not configured" }) };
     }
 
-    const response = await fetch(
+    const geminiPayload = JSON.stringify({
+      systemInstruction: { parts: [{ text: systemPrompt }] },
+      contents: messages,
+    });
+
+    const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: systemPrompt }] },
-          contents: messages,
-        }),
+        body: geminiPayload,
       }
     );
 
-    const data = await response.json();
-    console.log("Gemini response status:", response.status);
-    console.log("Gemini response:", JSON.stringify(data));
+    const data = await geminiRes.json();
+    console.log("Gemini status:", geminiRes.status);
+    console.log("Gemini data:", JSON.stringify(data));
 
-    if (!response.ok) {
-      return { statusCode: 500, headers, body: JSON.stringify({ error: data.error?.message || "Gemini error" }) };
+    if (!geminiRes.ok) {
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: data?.error?.message || "Gemini API error" }),
+      };
     }
 
     const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't generate a response.";
