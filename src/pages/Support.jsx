@@ -120,6 +120,9 @@ export default function Support() {
         </p>
 
         <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
+          <Link to="/memorize" style={{ color: '#D4A843', fontSize: '12px', textDecoration: 'none', fontWeight: 600 }}>
+            Memorize
+          </Link>
           <Link to="/legal" style={{ color: '#D4A843', fontSize: '12px', textDecoration: 'none', fontWeight: 600 }}>
             Legal &amp; Privacy
           </Link>

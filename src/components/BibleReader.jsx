@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { saveToJournal } from '../utils/journal'
+import { recordReadingToday } from '../utils/streak'
+import { getHighlightsForChapter, saveHighlight } from '../utils/highlights'
 import SaveToast from './SaveToast'
+import ShareVerse from './ShareVerse'
 
 /**
  * Calm, distraction-free chapter reader (WEB).
@@ -30,6 +33,11 @@ export default function BibleReader({
   const [loading, setLoading] = useState(false)
   const [fetchError, setFetchError] = useState(false)
   const [toastTrigger, setToastTrigger] = useState(0)
+  const [shareVerse, setShareVerse] = useState(null)
+  const [highlightMap, setHighlightMap] = useState({})
+  const [activePickerVerse, setActivePickerVerse] = useState(null)
+
+  const highlightColors = ['#FFD700', '#90EE90', '#ADD8E6', '#FFB6C1']
 
   const fetchChapter = useCallback(async () => {
     if (!open || !apiBookName) return
@@ -50,6 +58,13 @@ export default function BibleReader({
           text: (v.text ?? '').trim(),
         })),
       )
+      recordReadingToday()
+      const chapterHighlights = getHighlightsForChapter(bookDisplayName, chapterNumber)
+      const byVerse = chapterHighlights.reduce((acc, entry) => {
+        acc[entry.verse] = entry.color
+        return acc
+      }, {})
+      setHighlightMap(byVerse)
       setFetchError(false)
     } catch {
       setVerses([])
@@ -86,6 +101,12 @@ export default function BibleReader({
       tags: journalTags,
     })
     setToastTrigger((t) => t + 1)
+  }
+
+  const handleHighlight = (verse, color) => {
+    saveHighlight({ book: bookDisplayName, chapter: chapterNumber, verse: verse.verse, color, text: verse.text })
+    setHighlightMap((prev) => ({ ...prev, [verse.verse]: color }))
+    setActivePickerVerse(null)
   }
 
   if (!open) return null
@@ -229,7 +250,8 @@ export default function BibleReader({
               <div
                 key={verse.verse}
                 style={{
-                  background: 'rgba(255,255,255,0.07)',
+                  position: 'relative',
+                  background: highlightMap[verse.verse] ? `${highlightMap[verse.verse]}55` : 'rgba(255,255,255,0.07)',
                   backdropFilter: 'blur(10px)',
                   border: '1px solid rgba(255,255,255,0.12)',
                   borderRadius: '14px',
@@ -270,30 +292,20 @@ export default function BibleReader({
                   }}
                 >
                   {verse.text}
+                  {highlightMap[verse.verse] ? <span style={{ marginLeft: '6px' }}>🎨</span> : null}
                 </p>
-                <button
-                  type="button"
-                  onClick={() => handleSaveVerse(verse)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: 'rgba(212,168,67,0.6)',
-                    fontSize: '18px',
-                    padding: '0',
-                    flexShrink: 0,
-                    transition: 'color 0.2s',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.color = '#D4A843'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.color = 'rgba(212,168,67,0.6)'
-                  }}
-                  title="Save to Journal"
-                >
-                  🔖
-                </button>
+                <div className="flex flex-col items-center gap-2">
+                  <button type="button" onClick={() => handleSaveVerse(verse)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(212,168,67,0.8)', fontSize: '18px', padding: 0 }} title="Save to Journal">🔖</button>
+                  <button type="button" onClick={() => setShareVerse({ text: verse.text, reference: `${bookDisplayName} ${chapterNumber}:${verse.verse}` })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(212,168,67,0.8)', fontSize: '18px', padding: 0 }} title="Share as image">📤</button>
+                  <button type="button" onClick={() => setActivePickerVerse((prev) => (prev === verse.verse ? null : verse.verse))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(212,168,67,0.8)', fontSize: '18px', padding: 0 }} title="Highlight">🎨</button>
+                </div>
+                {activePickerVerse === verse.verse ? (
+                  <div className="absolute mt-20 ml-10 flex gap-2 rounded-full border border-white/20 bg-black/40 p-2">
+                    {highlightColors.map((color) => (
+                      <button key={color} type="button" onClick={() => handleHighlight(verse, color)} style={{ width: '20px', height: '20px', borderRadius: '999px', border: '1px solid rgba(255,255,255,0.5)', background: color }} />
+                    ))}
+                  </div>
+                ) : null}
               </div>
             ))}
 
@@ -350,6 +362,7 @@ export default function BibleReader({
       </section>
 
       <SaveToast trigger={toastTrigger} />
+      {shareVerse ? <ShareVerse text={shareVerse.text} reference={shareVerse.reference} onClose={() => setShareVerse(null)} /> : null}
     </>
   )
 }

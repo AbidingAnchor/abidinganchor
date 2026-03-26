@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import BibleReader from '../components/BibleReader'
 import { saveToJournal } from '../utils/journal'
 import SaveToast from '../components/SaveToast'
+import ShareVerse from '../components/ShareVerse'
+import { TOPIC_LIST, TOPIC_VERSES } from '../utils/topicVerses'
 
 const quickSuggestionsRow1 = ['faith', 'love', 'peace', 'strength', 'hope']
 const quickSuggestionsRow2 = ['fear', 'greed', 'healing', 'forgiveness', 'anger']
@@ -264,7 +266,9 @@ async function fetchKeywordSearch(query) {
 }
 
 function Search() {
+  const [searchMode, setSearchMode] = useState('keyword')
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedTopic, setSelectedTopic] = useState('')
   const [testament, setTestament] = useState('new')
   const [isFocused, setIsFocused] = useState(false)
   const [results, setResults] = useState([])
@@ -278,6 +282,7 @@ function Search() {
   const [fullBibleError, setFullBibleError] = useState('')
   const [fullBiblePage, setFullBiblePage] = useState(1)
   const [toastTrigger, setToastTrigger] = useState(0)
+  const [shareVerse, setShareVerse] = useState(null)
 
   const visibleBooks = testament === 'new' ? books.new : books.old
   const trimmedSearch = searchTerm.trim()
@@ -290,6 +295,7 @@ function Search() {
   const bodyStyle = { color: 'rgba(255,255,255,0.85)' }
 
   useEffect(() => {
+    if (searchMode === 'topic') return
     if (!trimmedSearch) {
       setResults([])
       setKeywordHint('')
@@ -338,7 +344,7 @@ function Search() {
       controller.abort()
       clearTimeout(timeoutId)
     }
-  }, [trimmedSearch, isVerseReference, curatedResults.length])
+  }, [trimmedSearch, isVerseReference, curatedResults.length, searchMode])
 
   const handleSaveToJournal = (result) => {
     saveToJournal({
@@ -399,6 +405,10 @@ function Search() {
             </header>
 
             <section className="space-y-3">
+              <div className="inline-flex rounded-xl p-1">
+                <button type="button" onClick={() => setSearchMode('keyword')} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${searchMode === 'keyword' ? 'bg-accent-gold text-white' : 'text-white'}`} style={searchMode === 'keyword' ? undefined : glassCard}>Search by Keyword</button>
+                <button type="button" onClick={() => setSearchMode('topic')} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${searchMode === 'topic' ? 'bg-accent-gold text-white' : 'text-white'}`} style={searchMode === 'topic' ? undefined : glassCard}>Search by Topic</button>
+              </div>
               <label htmlFor="scripture-search" className={`flex items-center gap-3 rounded-2xl border px-4 py-3 transition-colors ${searchBorderClass}`} style={glassCard}>
                 <svg className="h-5 w-5 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="11" cy="11" r="7" />
@@ -411,8 +421,9 @@ function Search() {
                   onChange={(event) => setSearchTerm(event.target.value)}
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
-                  placeholder="Search by reference or keyword (e.g. John 3:16, fear, love)"
+                  placeholder={searchMode === 'topic' ? 'Pick a topic below' : 'Search by reference or keyword (e.g. John 3:16, fear, love)'}
                   className="w-full bg-transparent text-white placeholder:text-white/70 focus:outline-none"
+                  disabled={searchMode === 'topic'}
                 />
               </label>
 
@@ -428,25 +439,62 @@ function Search() {
                 }}
               >
                 <div className="space-y-2">
-                  <div className="flex gap-2 overflow-x-auto pb-1">
-                    {quickSuggestionsRow1.map((suggestion) => (
-                      <button key={suggestion} type="button" onClick={() => setSearchTerm(suggestion)} className="shrink-0 rounded-full px-3 py-1.5 text-sm text-white transition hover:brightness-95" style={glassCard}>
-                        {suggestion}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="flex gap-2 overflow-x-auto pb-1">
-                    {quickSuggestionsRow2.map((suggestion) => (
-                      <button key={suggestion} type="button" onClick={() => setSearchTerm(suggestion)} className="shrink-0 rounded-full px-3 py-1.5 text-sm text-white transition hover:brightness-95" style={glassCard}>
-                        {suggestion}
-                      </button>
-                    ))}
-                  </div>
+                  {searchMode === 'keyword' ? (
+                    <>
+                      <div className="flex gap-2 overflow-x-auto pb-1">
+                        {quickSuggestionsRow1.map((suggestion) => (
+                          <button key={suggestion} type="button" onClick={() => setSearchTerm(suggestion)} className="shrink-0 rounded-full px-3 py-1.5 text-sm text-white transition hover:brightness-95" style={glassCard}>
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="flex gap-2 overflow-x-auto pb-1">
+                        {quickSuggestionsRow2.map((suggestion) => (
+                          <button key={suggestion} type="button" onClick={() => setSearchTerm(suggestion)} className="shrink-0 rounded-full px-3 py-1.5 text-sm text-white transition hover:brightness-95" style={glassCard}>
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                      {TOPIC_LIST.map((topic) => (
+                        <button key={topic} type="button" onClick={() => setSelectedTopic(topic)} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${selectedTopic === topic ? 'bg-accent-gold text-[#1a1a1a]' : 'text-[#D4A843]'}`} style={selectedTopic === topic ? undefined : glassCard}>
+                          {topic}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </section>
 
-            {trimmedSearch ? (
+            {searchMode === 'topic' ? (
+              <section className="space-y-3">
+                <h2 className="text-lg font-semibold" style={headingStyle}>Search Results</h2>
+                {selectedTopic ? (
+                  <div className="space-y-3">
+                    <p className="text-sm font-semibold uppercase tracking-[0.15em] text-accent-gold">Verses on {selectedTopic}</p>
+                    {(TOPIC_VERSES[selectedTopic.toLowerCase()] || []).map((result) => (
+                      <article key={result.ref} className="rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4" style={glassCard}>
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-gold">{result.ref}</p>
+                        <p className="mt-2 text-lg text-white [font-family:'Lora',serif] italic">{result.text}</p>
+                        <div className="mt-3 flex justify-end gap-2">
+                          <button type="button" onClick={() => handleSaveToJournal({ reference: result.ref, text: result.text })} className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
+                            Save to Journal
+                          </button>
+                          <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.ref })} className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
+                            Share as Image
+                          </button>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <article className="rounded-xl p-4" style={{ ...glassCard, ...bodyStyle }}>Pick a topic to begin.</article>
+                )}
+              </section>
+            ) : trimmedSearch ? (
               <section className="space-y-3">
                 <h2 className="text-lg font-semibold" style={headingStyle}>Search Results</h2>
                 {isLoading ? (
@@ -464,6 +512,9 @@ function Search() {
                         <div className="mt-3 flex justify-end">
                           <button type="button" onClick={() => handleSaveToJournal(result)} className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
                             Save to Journal
+                          </button>
+                          <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.reference })} className="ml-2 rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
+                            Share as Image
                           </button>
                         </div>
                       </article>
@@ -483,6 +534,9 @@ function Search() {
                             <div className="mt-3 flex justify-end">
                               <button type="button" onClick={() => handleSaveToJournal({ reference: result.ref, text: result.text })} className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
                                 Save to Journal
+                              </button>
+                              <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.ref })} className="ml-2 rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
+                                Share as Image
                               </button>
                             </div>
                           </article>
@@ -509,6 +563,9 @@ function Search() {
                           <div className="mt-3 flex justify-end">
                             <button type="button" onClick={() => handleSaveToJournal(result)} className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
                               Save to Journal
+                            </button>
+                            <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.reference })} className="ml-2 rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
+                              Share as Image
                             </button>
                           </div>
                         </article>
@@ -574,6 +631,7 @@ function Search() {
           </section>
         )}
         <SaveToast trigger={toastTrigger} />
+        {shareVerse ? <ShareVerse text={shareVerse.text} reference={shareVerse.reference} onClose={() => setShareVerse(null)} /> : null}
       </div>
     </div>
   )

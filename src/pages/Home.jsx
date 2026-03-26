@@ -1,27 +1,25 @@
 import { useCallback, useEffect, useState } from 'react'
-import { dailyVerses } from '../data/dailyVerses'
+import { getDailyVerse } from '../utils/dailyVerse'
 import { getJournalEntries, saveToJournal } from '../utils/journal'
+import { getStreak } from '../utils/streak'
 import SaveToast from '../components/SaveToast'
+import ShareVerse from '../components/ShareVerse'
 
 function getTodaysVerse() {
-  const now = new Date()
-  const start = new Date(now.getFullYear(), 0, 0)
-  const diff = now - start
-  const oneDay = 1000 * 60 * 60 * 24
-  const dayOfYear = Math.floor(diff / oneDay)
-  const index = (dayOfYear - 1) % dailyVerses.length
-  return dailyVerses[index]
+  return getDailyVerse()
 }
 
 function Home() {
   const [todaysVerse, setTodaysVerse] = useState(() => getTodaysVerse())
+  const [streak, setStreak] = useState(() => getStreak())
   const [toastTrigger, setToastTrigger] = useState(0)
-  const [shareToastVisible, setShareToastVisible] = useState(false)
+  const [shareModalOpen, setShareModalOpen] = useState(false)
 
   useEffect(() => {
     let timeoutId
     const scheduleNextMidnight = () => {
       setTodaysVerse(getTodaysVerse())
+      setStreak(getStreak())
       const now = new Date()
       const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0)
       const ms = Math.max(1000, nextMidnight - now)
@@ -34,7 +32,7 @@ function Home() {
   const handleSaveDailyVerse = useCallback(() => {
     saveToJournal({
       verse: todaysVerse.text,
-      reference: todaysVerse.ref,
+      reference: todaysVerse.reference,
       tags: ['Daily Verse'],
     })
     setToastTrigger((t) => t + 1)
@@ -49,39 +47,6 @@ function Home() {
     setToastTrigger((t) => t + 1)
   }, [])
 
-  const handleShare = useCallback(async () => {
-    const verseText = todaysVerse.text
-    const verseReference = todaysVerse.ref
-    const shareData = {
-      title: 'AbidingAnchor - Anchored in His Word',
-      text: `"${verseText}" - ${verseReference}`,
-      url: 'https://abidinganchor.netlify.app',
-    }
-
-    try {
-      if (navigator.share) {
-        await navigator.share(shareData)
-        return
-      }
-
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(`"${verseText}" - ${verseReference}\n\nAbidingAnchor: https://abidinganchor.netlify.app`)
-        setShareToastVisible(true)
-        return
-      }
-
-      setShareToastVisible(true)
-    } catch {
-      alert('Unable to share right now. Please try again.')
-    }
-  }, [todaysVerse])
-
-  useEffect(() => {
-    if (!shareToastVisible) return
-    const timeoutId = setTimeout(() => setShareToastVisible(false), 2200)
-    return () => clearTimeout(timeoutId)
-  }, [shareToastVisible])
-
   const today = new Date()
   const formattedDate = today.toLocaleDateString('en-US', {
     weekday: 'long',
@@ -95,6 +60,20 @@ function Home() {
   const todayIndex = dayToMonFirstIndex[today.getDay()]
   const streakLength = 3
   const journalCount = getJournalEntries().length
+  const streakMessages = {
+    1: 'Welcome! Every journey begins with one step. 🌱',
+    2: 'Two days strong! His Word is a lamp to your feet. 🕯️',
+    3: 'Three days! You are building something beautiful. ✨',
+    5: "Five days! 'Blessed is the one who reads...' Rev 1:3 📖",
+    7: 'One week! His mercies are new every morning. 🌅',
+    14: 'Two weeks! You are becoming rooted in His Word. 🌳',
+    21: '21 days! A habit is being formed for eternity. 🔥',
+    30: "30 days! 'I have hidden your word in my heart.' Ps 119:11 💛",
+    60: '60 days! You are an inspiration to the Kingdom. 👑',
+    100: "100 days! A mighty warrior in God's Word! ⚔️",
+  }
+  const currentStreak = streak?.currentStreak || 0
+  const streakMessage = streakMessages[currentStreak] || `Day ${currentStreak || 0} — Keep seeking Him with all your heart. 🙏`
 
   return (
     <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
@@ -141,7 +120,8 @@ function Home() {
               </p>
             </div>
 
-            <p className="mt-4 text-sm font-semibold uppercase tracking-[0.2em] text-yellow-100">{todaysVerse.ref}</p>
+            <p className="mt-4 text-sm font-semibold uppercase tracking-[0.2em] text-yellow-100">{todaysVerse.reference}</p>
+            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: '#D4A843' }}>✦ TODAY&apos;S VERSE ✦</p>
 
             <div className="my-5 flex items-center gap-3 text-yellow-100">
               <div className="h-px flex-1 bg-yellow-100/50" />
@@ -155,15 +135,15 @@ function Home() {
                 style={{ minWidth: '140px', flex: 1 }}
                 className="rounded-xl border border-[#F0B429] bg-[#F0B429] px-3 py-2 text-sm font-semibold text-[#1a1a1a] transition hover:brightness-95"
               >
-                Save to Journal
+                🙏 Save to Journal
               </button>
               <button
                 type="button"
-                onClick={handleShare}
+                onClick={() => setShareModalOpen(true)}
                 style={{ minWidth: '140px', flex: 1 }}
                 className="rounded-xl border border-yellow-100/80 px-3 py-2 text-sm font-semibold text-yellow-100 transition hover:bg-white/10"
               >
-                Share
+                📤 Share as Image
               </button>
             </div>
           </article>
@@ -174,12 +154,14 @@ function Home() {
               background: 'rgba(255, 255, 255, 0.25)',
               backdropFilter: 'blur(14px)',
               border: '1px solid rgba(255, 255, 255, 0.5)',
+              boxShadow: currentStreak >= 7 ? '0 0 0 1px rgba(212,168,67,0.8), 0 0 20px rgba(212,168,67,0.35)' : 'none',
             }}
           >
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-white" style={{ textShadow: '0 1px 8px rgba(0,60,120,0.4)' }}>Reading Streak</h2>
-              <p className="text-sm font-medium text-white/85">🔥 3 day streak</p>
+              <p className="text-sm font-medium text-white/85">🔥 {Math.max(1, currentStreak)} Day Streak</p>
             </div>
+            <p className="mb-3 text-sm" style={{ color: '#D4A843' }}>{streakMessage}</p>
             <div className="flex items-center justify-between gap-2" style={{ overflowX: 'auto' }}>
               {days.map((day, index) => {
                 const isToday = index === todayIndex
@@ -257,28 +239,7 @@ function Home() {
           </section>
         </section>
         <SaveToast trigger={toastTrigger} />
-        <div
-          style={{
-            position: 'fixed',
-            bottom: '132px',
-            left: '50%',
-            transform: `translateX(-50%) translateY(${shareToastVisible ? '0px' : '16px'})`,
-            opacity: shareToastVisible ? 1 : 0,
-            transition: 'opacity 0.3s ease, transform 0.3s ease',
-            zIndex: 9999,
-            pointerEvents: 'none',
-            background: 'rgba(10, 20, 50, 0.92)',
-            color: '#fff',
-            padding: '10px 16px',
-            borderRadius: '999px',
-            fontSize: '13px',
-            fontWeight: '600',
-            border: '1px solid rgba(255,255,255,0.3)',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          Verse copied to clipboard!
-        </div>
+        {shareModalOpen ? <ShareVerse text={todaysVerse.text} reference={todaysVerse.reference} onClose={() => setShareModalOpen(false)} /> : null}
       </div>
     </div>
   )

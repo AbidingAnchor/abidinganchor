@@ -2,58 +2,79 @@ import { NavLink } from 'react-router-dom'
 
 const tabs = [
   { label: 'Home', path: '/', icon: '⌂' },
-  { label: 'Plan', path: '/plan', icon: '📖' },
+  { label: 'Read', path: '/plan', icon: '📖' },
   { label: 'Search', path: '/search', icon: '🔍' },
-  { label: 'Journal', path: '/journal', icon: '📝' },
-  { label: 'Support', path: '/support', icon: '♥' },
+  { label: 'Prayer', path: '/prayer', icon: '🙏' },
+  { label: 'Journal', path: '/journal', icon: '📓' },
 ]
 
-export default function Navbar() {
+export default function Navbar({ theme = 'day', onToggleTheme }) {
   return (
-    <nav
-      style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: 9999,
-        background: 'rgba(10, 22, 50, 0.85)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderTop: '1px solid rgba(255,255,255,0.15)',
-        display: 'flex',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        padding: '10px 0 16px',
-        paddingBottom: 'env(safe-area-inset-bottom, 12px)',
-        paddingLeft: 'env(safe-area-inset-left, 0px)',
-        paddingRight: 'env(safe-area-inset-right, 0px)',
-      }}
-    >
-      {tabs.map((tab) => (
-        <NavLink
-          key={tab.path}
-          to={tab.path}
-          className={({ isActive }) =>
-            `text-center font-semibold transition-colors ${
-              isActive ? 'text-accent-gold' : 'text-[#8B7355] hover:text-[#8B7355]'
-            }`
-          }
-          style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', fontSize: '9px' }}
-        >
-          <span style={{ fontSize: '14px', color: tab.label === 'Support' ? '#FFD700' : undefined }}>
-            {tab.label === 'Home' ? (
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                <rect x="10.5" y="2" width="3" height="20" rx="1" />
-                <rect x="3" y="8" width="18" height="3" rx="1" />
-              </svg>
-            ) : (
-              tab.icon
-            )}
-          </span>
-          <span>{tab.label}</span>
-        </NavLink>
-      ))}
-    </nav>
+    <>
+      <button
+        type="button"
+        onClick={onToggleTheme}
+        aria-label="Toggle theme"
+        style={{
+          position: 'fixed',
+          top: '16px',
+          right: '16px',
+          zIndex: 9998,
+          border: '1px solid rgba(255,255,255,0.3)',
+          background: 'rgba(10, 31, 78, 0.8)',
+          color: '#fff',
+          borderRadius: '999px',
+          width: '40px',
+          height: '40px',
+        }}
+      >
+        {theme === 'night' ? '☀️' : '🌙'}
+      </button>
+      <nav
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 9999,
+          background: 'rgba(10, 22, 50, 0.85)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(255,255,255,0.15)',
+          display: 'flex',
+          justifyContent: 'space-around',
+          alignItems: 'center',
+          padding: '10px 0 16px',
+          paddingBottom: 'env(safe-area-inset-bottom, 12px)',
+          paddingLeft: 'env(safe-area-inset-left, 0px)',
+          paddingRight: 'env(safe-area-inset-right, 0px)',
+        }}
+      >
+        {tabs.map((tab) => (
+          <NavLink
+            key={tab.path}
+            to={tab.path}
+            className={({ isActive }) =>
+              `text-center font-semibold transition-colors ${
+                isActive ? 'text-accent-gold' : 'text-[#8B7355] hover:text-[#8B7355]'
+              }`
+            }
+            style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', fontSize: '9px' }}
+          >
+            <span style={{ fontSize: '14px' }}>
+              {tab.label === 'Home' ? (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="10.5" y="2" width="3" height="20" rx="1" />
+                  <rect x="3" y="8" width="18" height="3" rx="1" />
+                </svg>
+              ) : (
+                tab.icon
+              )}
+            </span>
+            <span>{tab.label}</span>
+          </NavLink>
+        ))}
+      </nav>
+    </>
   )
 }
