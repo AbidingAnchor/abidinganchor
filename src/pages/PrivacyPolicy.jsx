@@ -59,11 +59,13 @@ export default function PrivacyPolicy() {
             <section className="space-y-2">
               <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>V. Global &amp; State Rights</h2>
               <p>Global &amp; State Rights: In accordance with the GDPR, CCPA, and the 2026 Pennsylvania Consumer Data Privacy Act (PCDPA), users have the right to confirm, correct, or delete their data. Since AbidingAnchor stores no personal data on its servers, these rights are fulfilled by the user clearing their own device&apos;s cache or localStorage.</p>
+              <p>Tiers and perks are provided as a voluntary &quot;thank you&quot; and may be modified or removed at our discretion. All donations are final and non-refundable. Tier benefits do not constitute a service level agreement or contractual obligation of any kind.</p>
             </section>
 
             <section className="space-y-2">
               <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>VI. Children&apos;s Privacy</h2>
               <p>Children&apos;s Privacy: We do not knowingly collect personal information from children under 13. In compliance with 2026 state laws (PA, TX, UT), we may receive anonymized age-category signals from the App Store to ensure an age-appropriate experience, but we do not store or track this information.</p>
+              <p>This Service is for spiritual enrichment purposes only and does not provide professional medical, legal, financial, or psychological counseling. AbidingAnchor Ministry is not liable for any decisions made based on content within the app. Always seek qualified professional advice for medical, legal, or mental health concerns.</p>
             </section>
 
             <section className="space-y-2">
@@ -74,6 +76,11 @@ export default function PrivacyPolicy() {
             <section className="space-y-2">
               <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>VIII. Data Security</h2>
               <p>We use industry-standard encryption (HTTPS) for all connections to external APIs to protect your reading activity in transit. As a &quot;Privacy by Design&quot; app, our primary security measure is that we never ask for or store the data that hackers typically target.</p>
+            </section>
+
+            <section className="space-y-2">
+              <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>IX. Disclaimer of Warranties</h2>
+              <p>AbidingAnchor is provided &quot;as is&quot; without warranties of any kind. We do not guarantee uninterrupted access, accuracy of third-party Bible content, or fitness for any particular purpose. We are not responsible for data loss or device failure. Use of this app is at your own discretion.</p>
             </section>
           </article>
         </section>
