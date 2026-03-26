@@ -64,9 +64,20 @@ export default function FaithJourney() {
 
   return (
     <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
+      {/* Faith Journey uses a consistent navy tint over the global sky */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 1,
+          pointerEvents: 'none',
+          background: 'linear-gradient(180deg, rgba(13,31,78,0.92) 0%, rgba(13,31,78,0.78) 55%, rgba(13,31,78,0.92) 100%)',
+        }}
+      />
       <div
         className="content-scroll"
-        style={{ padding: '0 16px', paddingTop: '220px', paddingBottom: '110px', maxWidth: '680px', margin: '0 auto', width: '100%' }}
+        style={{ padding: '0 16px', paddingTop: '220px', paddingBottom: '110px', maxWidth: '680px', margin: '0 auto', width: '100%', zIndex: 2 }}
       >
         {view === 'hub' ? (
           <section className="space-y-4">
