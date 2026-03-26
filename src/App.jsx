@@ -17,6 +17,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsOfService from './pages/TermsOfService'
 import Legal from './pages/Legal'
 import Navbar from './components/Navbar'
+import AppBackground from './components/AppBackground'
 import LegalModal from './components/LegalModal'
 import WorshipPlayer from './components/WorshipPlayer'
 import Footer from './components/Footer'
@@ -47,16 +48,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <div style={{ minHeight: '100vh', position: 'relative', background: '#0d1f4e' }}>
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 0,
-            overflow: 'hidden',
-            pointerEvents: 'none',
-            background: '#0d1f4e',
-          }}
-        />
+        <AppBackground />
         {isNight ? (
           <div
             style={{
