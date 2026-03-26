@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 const quickPrompts = [
-  'Explain John 3:16',
-  'How do I deal with anxiety biblically?',
-  'What does grace mean?',
+  'Explain this verse',
+  'Give me a devotional',
+  'Help me understand grace',
   'How should I pray?',
-  'Explain the gospel',
+  'What does the gospel mean?',
 ]
 
 const welcomeMessage =
@@ -23,7 +23,7 @@ Guidelines:
 - End responses with a relevant Bible verse when appropriate.
 - If asked about controversial theological topics, present multiple Christian perspectives gracefully.`
 
-const HISTORY_KEY = 'abidinganchor-ai-history'
+const HISTORY_KEY = 'abidinganchor-ai-chats'
 
 export default function AICompanion() {
   const [input, setInput] = useState('')
@@ -33,7 +33,11 @@ export default function AICompanion() {
   const containerRef = useRef(null)
 
   const conversationHistory = useMemo(
-    () => messages.map((m) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content })),
+    () =>
+      messages.map((m) => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }],
+      })),
     [messages],
   )
 
@@ -65,35 +69,29 @@ export default function AICompanion() {
     setLoading(true)
 
     try {
-      const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY
-      if (!apiKey) throw new Error('Missing Anthropic API key. Set VITE_ANTHROPIC_API_KEY in your environment.')
-
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch('/.netlify/functions/ai-companion', {
         method: 'POST',
         headers: {
-          'content-type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'claude-3-5-sonnet-latest',
-          max_tokens: 900,
-          system: systemPrompt,
-          messages: [...conversationHistory, { role: 'user', content: text }],
+          systemPrompt,
+          messages: [...conversationHistory, { role: 'user', parts: [{ text }] }],
         }),
       })
 
       if (!response.ok) {
-        throw new Error('AI service is temporarily unavailable. Please try again in a moment.')
+        const errText = await response.text()
+        console.error('Function error:', response.status, errText)
+        throw new Error(errText || 'AI service is temporarily unavailable. Please try again in a moment.')
       }
 
       const data = await response.json()
-      const aiText = Array.isArray(data?.content)
-        ? data.content.filter((c) => c.type === 'text').map((c) => c.text).join('\n\n').trim()
-        : ''
+      const aiText = typeof data?.reply === 'string' ? data.reply.trim() : ''
       const safeText = aiText || "I couldn't generate a response right now. Please try again."
       setMessages((prev) => [...prev, { id: `${Date.now()}-assistant`, role: 'assistant', content: safeText }])
     } catch (error) {
+      console.error('AI companion request failed:', error)
       setMessages((prev) => [
         ...prev,
         {
