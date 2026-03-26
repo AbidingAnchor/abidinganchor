@@ -4,6 +4,7 @@ const KEY = 'abidinganchor-achievements'
 const TRIVIA_STATS_KEY = 'abidinganchor-trivia-stats'
 const STREAK_KEY = 'abidinganchor-trivia-streak'
 const VERSE_PROGRESS_KEY = 'abidinganchor-verse-progress'
+const DEVOTIONAL_PROGRESS_KEY = 'abidinganchor-devotional-progress'
 
 function readJson(key, fallback) {
   try {
@@ -27,7 +28,7 @@ const BADGES = [
   { id: 'psalm-master', icon: '👑', name: 'Psalm Master', desc: 'Answer 10 Psalm questions correctly', check: (s) => (s.psalmsCorrect || 0) >= 10 },
   { id: 'steady-student', icon: '🧠', name: 'Steady Student', desc: 'Memorize 5 verses', check: (s) => (s.memorizedTotal || 0) >= 5 },
   { id: 'trivia-champion', icon: '🏆', name: 'Trivia Champion', desc: 'Score 8+ in a round', check: (s) => (s.bestScore || 0) >= 8 },
-  { id: 'consistent', icon: '🕯️', name: 'Consistent', desc: 'Play trivia 3 days in a row', check: (s) => (s.triviaStreak || 0) >= 3 },
+  { id: 'quiet-time', icon: '🕯️', name: 'Quiet Time', desc: 'Complete your first devotional', check: (s) => (s.devotionalsCompleted || 0) >= 1 },
   { id: 'anchor-of-hope', icon: '⚓', name: 'Anchor of Hope', desc: 'Memorize a Hope verse', check: (s) => (s.memorizedHope || 0) >= 1 },
   { id: 'peacemaker', icon: '🕊️', name: 'Peacemaker', desc: 'Memorize a Peace verse', check: (s) => (s.memorizedPeace || 0) >= 1 },
   { id: 'love-walk', icon: '💛', name: 'Walk in Love', desc: 'Memorize a Love verse', check: (s) => (s.memorizedLove || 0) >= 1 },
@@ -37,6 +38,7 @@ function computeSnapshot() {
   const triviaStats = readJson(TRIVIA_STATS_KEY, { gamesCompleted: 0, bestScore: 0, psalmsCorrect: 0 })
   const streak = readJson(STREAK_KEY, { count: 0 })
   const verseProgress = readJson(VERSE_PROGRESS_KEY, {})
+  const devotionalProgress = readJson(DEVOTIONAL_PROGRESS_KEY, { completedDates: [] })
   const startDateRaw = localStorage.getItem('abidinganchor-start-date')
   const start = startDateRaw ? new Date(startDateRaw) : new Date()
   const appDays = Math.max(1, Math.floor((Date.now() - start.getTime()) / 86400000) + 1)
@@ -54,6 +56,7 @@ function computeSnapshot() {
   const memorizedHope = memorized.filter((p) => String(p.category || '').toLowerCase() === 'hope').length
   const memorizedPeace = memorized.filter((p) => String(p.category || '').toLowerCase() === 'peace').length
   const memorizedLove = memorized.filter((p) => String(p.category || '').toLowerCase() === 'love').length
+  const devotionalsCompleted = Array.isArray(devotionalProgress.completedDates) ? devotionalProgress.completedDates.length : 0
 
   return {
     ...triviaStats,
@@ -64,6 +67,7 @@ function computeSnapshot() {
     memorizedHope,
     memorizedPeace,
     memorizedLove,
+    devotionalsCompleted,
   }
 }
 

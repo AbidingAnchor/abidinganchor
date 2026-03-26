@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { getDailyVerse } from '../utils/dailyVerse'
 import { getJournalEntries, saveToJournal } from '../utils/journal'
 import { getStreak } from '../utils/streak'
@@ -198,6 +199,22 @@ function Home({ onOpenWorship, worshipStatus }) {
                 <p className="text-sm uppercase tracking-wide text-white/85">Continue Reading</p>
                 <p className="mt-2 text-2xl font-semibold text-white">John 3</p>
               </article>
+              <Link
+                to="/devotional"
+                className="rounded-2xl p-4 shadow-sm"
+                style={{
+                  minWidth: '140px',
+                  flex: 1,
+                  background: 'rgba(255, 255, 255, 0.25)',
+                  backdropFilter: 'blur(14px)',
+                  border: '1px solid rgba(212, 168, 67, 0.6)',
+                  textDecoration: 'none',
+                }}
+              >
+                <p className="text-sm uppercase tracking-wide text-white/85">📜 Daily Devotional</p>
+                <p className="mt-1 text-xs text-white/70">Quiet reflection with Scripture</p>
+                <p className="mt-2 text-sm font-semibold text-[#D4A843]">Open Today&apos;s Reading</p>
+              </Link>
               <article
                 className="rounded-2xl p-4 shadow-sm"
                 style={{

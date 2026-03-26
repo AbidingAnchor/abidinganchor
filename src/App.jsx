@@ -8,6 +8,7 @@ import Prayer from './pages/Prayer'
 import Memorize from './pages/Memorize'
 import AICompanion from './pages/AICompanion'
 import FaithJourney from './pages/FaithJourney'
+import Devotional from './pages/Devotional'
 import Support from './pages/Support'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsOfService from './pages/TermsOfService'
@@ -86,6 +87,7 @@ export default function App() {
             <Route path="/prayer" element={<Prayer />} />
             <Route path="/journal" element={<Journal />} />
             <Route path="/memorize" element={<Memorize />} />
+            <Route path="/devotional" element={<Devotional />} />
             <Route path="/ai-companion" element={<AICompanion />} />
             <Route path="/faith-journey" element={<FaithJourney />} />
             <Route path="/support" element={<Support />} />
