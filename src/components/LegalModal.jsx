@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-const LEGAL_STORAGE_KEY = 'abidinganchor-legal-agreed'
+const LEGAL_STORAGE_KEY = 'abidinganchor-welcomed'
+const LEGACY_KEY = 'abidinganchor-legal-agreed'
 
 export default function LegalModal() {
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
-    const alreadyAgreed = localStorage.getItem(LEGAL_STORAGE_KEY)
+    const alreadyAgreed = localStorage.getItem(LEGAL_STORAGE_KEY) || localStorage.getItem(LEGACY_KEY)
     if (!alreadyAgreed) setOpen(true)
   }, [])
 
@@ -20,17 +21,44 @@ export default function LegalModal() {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-4">
-      <article className="w-full max-w-md rounded-2xl border border-white/20 bg-white/10 p-6 text-center text-white backdrop-blur-md">
+      <article
+        className="w-full text-center text-white"
+        style={{
+          maxWidth: '420px',
+          padding: '40px 32px',
+          background: 'rgba(13, 31, 78, 0.92)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(212, 168, 67, 0.3)',
+          borderRadius: '24px',
+        }}
+      >
+        <style>
+          {`
+            @keyframes cross-glow {
+              0%, 100% { text-shadow: 0 0 10px rgba(212,168,67,0.35); }
+              50% { text-shadow: 0 0 22px rgba(212,168,67,0.75); }
+            }
+          `}
+        </style>
+
         <div className="mb-2 flex justify-center" style={{ color: '#D4A843' }}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <rect x="10.5" y="2" width="3" height="20" rx="1" />
-            <rect x="3" y="8" width="18" height="3" rx="1" />
-          </svg>
+          <span
+            aria-hidden="true"
+            style={{
+              fontSize: '48px',
+              lineHeight: 1,
+              animation: 'cross-glow 2.2s ease-in-out infinite',
+            }}
+          >
+            ✝
+          </span>
         </div>
-        <h2 className="text-2xl font-bold">Welcome to AbidingAnchor</h2>
-        <p className="mt-1 text-sm text-white/80">Anchored in His Word</p>
-        <p className="mt-4 text-sm leading-relaxed text-white/90">
-          By using this app, you agree to our Terms of Service and acknowledge our Privacy Policy.
+        <h2 style={{ fontSize: '28px', fontWeight: 800, color: '#fff' }}>Welcome to AbidingAnchor</h2>
+        <p className="mt-1" style={{ color: '#D4A843', fontStyle: 'italic', fontSize: '16px' }}>Anchored in His Word</p>
+        <p className="mt-2" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>Your quiet place with God&apos;s Word</p>
+        <div className="mx-auto mt-4 h-px w-full" style={{ background: 'rgba(212,168,67,0.65)' }} />
+        <p className="mt-4 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>
+          By using this app, you agree to our
         </p>
         <p className="mt-3 text-sm">
           <Link to="/terms" style={{ color: '#D4A843', fontWeight: 700, textDecoration: 'none' }}>
