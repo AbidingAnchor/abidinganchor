@@ -70,6 +70,7 @@ export default function App() {
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/legal" element={<Legal />} />
           </Routes>
+          <Footer />
         </div>
       </div>
       <LegalModal />
@@ -79,7 +80,6 @@ export default function App() {
         autoPlayToken={worshipAutoPlayToken}
         onStatusChange={setWorshipStatus}
       />
-      <Footer />
       <Navbar theme={theme} onToggleTheme={handleToggleTheme} />
     </BrowserRouter>
   )
