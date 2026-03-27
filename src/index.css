@@ -125,3 +125,11 @@ body {
   background-size: 200% 100%;
   animation: gold-pulse 1.2s ease-in-out infinite;
 }
+
+footer {
+  position: static !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: auto !important;
+  transform: none !important;
+}

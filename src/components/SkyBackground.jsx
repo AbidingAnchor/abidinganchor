@@ -55,7 +55,7 @@ export default function SkyBackground() {
       },
       night: {
         gradient: ['#070d25', '#10224c', '#1b3563', '#223f6e', '#274a78'],
-        sun: { x: 0.8, y: 0.15, r: 26, rays: true },
+        sun: { x: 0.8, y: 0.15, r: 0, rays: false },
         cloudShade: '#14223e',
         cross: { top: '#FFE8BF', mid: '#FFD275', low: '#C99137', edge: '#8B5A1F' },
         showStarsMoon: true,
