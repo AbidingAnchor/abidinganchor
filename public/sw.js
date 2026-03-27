@@ -44,7 +44,7 @@ async function maybeSendDailyVerseNotification() {
   const body = DAILY_VERSES[index].text.slice(0, 100);
   await self.registration.showNotification('✝️ AbidingAnchor — Daily Verse', {
     body,
-    icon: '/icons/icon-192.png',
+    icon: '/icon-192x192.png',
     data: { url: '/' },
   });
   await writeNotifState({ ...state, lastDate: today });
