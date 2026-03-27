@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import NotificationSettings from '../components/NotificationSettings'
 
-const BMAC_LINK = 'https://buymeacoffee.com/abidebibleapp'
+const BMAC_LINK = 'https://buymeacoffee.com/abidinganchor'
 
 export default function Support() {
   return (
@@ -101,14 +101,17 @@ export default function Support() {
           { amount:'$25', label:'A Ministry Partner', 
             desc:'Funds new features & spreading the Word' },
         ].map(tier => (
-          <div key={tier.amount}
-            onClick={() => window.open(BMAC_LINK, '_blank')}
+          <a key={tier.amount}
+            href={BMAC_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
             style={{ background:'rgba(255,255,255,0.18)',
               backdropFilter:'blur(14px)', borderRadius:'16px',
               border:'1px solid rgba(255,255,255,0.4)',
               padding:'14px 18px', marginBottom:'10px',
               cursor:'pointer', display:'flex',
-              alignItems:'center', gap:'14px' }}>
+              alignItems:'center', gap:'14px',
+              textDecoration:'none' }}>
             <div style={{ background:'rgba(255,210,60,0.25)',
               border:'1px solid rgba(255,210,60,0.5)',
               borderRadius:'12px', padding:'8px 14px',
@@ -124,17 +127,20 @@ export default function Support() {
             </div>
             <div style={{ color:'rgba(255,210,60,0.8)',
               fontSize:'20px' }}>›</div>
-          </div>
+          </a>
         ))}
 
-        <button onClick={() => window.open(BMAC_LINK, '_blank')}
+        <a href={BMAC_LINK}
+          target="_blank"
+          rel="noopener noreferrer"
           style={{ width:'100%', padding:'16px',
             background:'linear-gradient(135deg, #F0C040, #D4A020)',
             border:'none', borderRadius:'16px', color:'#1a0a00',
             fontSize:'16px', fontWeight:'700', cursor:'pointer',
-            marginTop:'8px', letterSpacing:'0.02em' }}>
+            marginTop:'8px', letterSpacing:'0.02em',
+            textDecoration:'none', display:'block', textAlign:'center' }}>
           ☕ Support on Buy Me a Coffee
-        </button>
+        </a>
 
         <p style={{ textAlign:'center', 
           color:'rgba(255,255,255,0.55)', fontSize:'11px',
