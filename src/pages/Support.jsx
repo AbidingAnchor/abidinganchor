@@ -139,7 +139,7 @@ export default function Support() {
             fontSize:'16px', fontWeight:'700', cursor:'pointer',
             marginTop:'8px', letterSpacing:'0.02em',
             textDecoration:'none', display:'block', textAlign:'center' }}>
-          ☕ Support on Buy Me a Coffee
+          Buy Me a Coffee ☕
         </a>
 
         <p style={{ textAlign:'center', 
