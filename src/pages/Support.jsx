@@ -1,29 +1,8 @@
 import { Link } from 'react-router-dom'
-import { useState } from 'react'
-import { requestNotificationPermission, scheduleLocalNotification, getNotificationStatus } from '../utils/notifications'
 
 const BMAC_LINK = 'https://buymeacoffee.com/abidinganchor'
 
 export default function Support() {
-  const [notificationStatus, setNotificationStatus] = useState(() => getNotificationStatus())
-  const [notificationMessage, setNotificationMessage] = useState('')
-
-  const handleNotificationClick = async () => {
-    const permission = await requestNotificationPermission()
-    
-    if (permission === 'granted') {
-      scheduleLocalNotification()
-      setNotificationStatus('granted')
-      setNotificationMessage('Notifications enabled! You\'ll receive daily verses at 8 AM 🙏')
-      setTimeout(() => setNotificationMessage(''), 5000)
-    } else if (permission === 'denied') {
-      setNotificationMessage('Please enable notifications in your browser settings')
-      setTimeout(() => setNotificationMessage(''), 5000)
-    } else {
-      setNotificationMessage('Notifications not supported on this device')
-      setTimeout(() => setNotificationMessage(''), 5000)
-    }
-  }
   return (
     <div style={{ position:'relative', minHeight:'100vh', 
       overflow:'hidden', fontFamily:'sans-serif' }}>
@@ -106,39 +85,6 @@ export default function Support() {
                 <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '12px', margin: '4px 0 0' }}>View your spiritual growth milestones</p>
               </article>
             </Link>
-          </div>
-        </section>
-
-        <section style={{ marginBottom: '16px' }}>
-          <h2 style={{ color: '#D4A843', fontSize: '13px', fontWeight: 700, margin: '0 0 8px', letterSpacing: '0.06em' }}>
-            Daily Notifications
-          </h2>
-          <div style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(14px)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.4)', padding: '14px 16px' }}>
-            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '12px', margin: '0 0 12px' }}>
-              Get daily Bible verses delivered to you at 8 AM every morning 🙏
-            </p>
-            <button 
-              type="button"
-              onClick={handleNotificationClick}
-              style={{ 
-                background: notificationStatus === 'granted' ? '#4CAF50' : '#D4A843',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '10px 16px',
-                fontSize: '14px',
-                fontWeight: '600',
-                color: '#1a1a1a',
-                cursor: 'pointer',
-                width: '100%'
-              }}
-            >
-              {notificationStatus === 'granted' ? 'Notifications On ✅' : 'Enable Daily Notifications 🔔'}
-            </button>
-            {notificationMessage && (
-              <p style={{ color: '#FFE066', fontSize: '11px', marginTop: '8px', textAlign: 'center' }}>
-                {notificationMessage}
-              </p>
-            )}
           </div>
         </section>
 
