@@ -3,6 +3,8 @@ import BibleReader from '../components/BibleReader'
 import { saveToJournal } from '../utils/journal'
 import SaveToast from '../components/SaveToast'
 import { books } from './Search'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../context/AuthContext'
 
 const BIBLE_FLAT = [...books.old, ...books.new]
 
@@ -74,11 +76,15 @@ const plans = [
 ]
 
 function ReadingPlan({ onOpenWorship }) {
+  const { user } = useAuth()
+  const [viewMode, setViewMode] = useState('plans')
   const [activePlanId, setActivePlanId] = useState('nt30')
   const [selectedDay, setSelectedDay] = useState('Wed')
   const [toastTrigger, setToastTrigger] = useState(0)
   const [readerOpen, setReaderOpen] = useState(false)
   const [readerState, setReaderState] = useState(() => parseTodayReading(plans[0].todayReading))
+  const [testament, setTestament] = useState('old')
+  const [chapterPickerBook, setChapterPickerBook] = useState(null)
   const activePlan = plans.find((plan) => plan.id === activePlanId) ?? plans[0]
   const completion = Math.round((activePlan.completedDays / activePlan.totalDays) * 100)
 
@@ -100,13 +106,22 @@ function ReadingPlan({ onOpenWorship }) {
   const headingStyle = { color: '#ffffff', textShadow: '0 1px 8px rgba(0,60,120,0.4)' }
   const bodyStyle = { color: 'rgba(255,255,255,0.85)' }
 
-  const handleSaveReadingToJournal = () => {
-    saveToJournal({
+  const handleSaveReadingToJournal = async () => {
+    await saveToJournal({
       verse: `${activePlan.todayReading} — ${activePlan.subtitle}`,
       reference: activePlan.todayReading,
       tags: ['Reading Plan'],
     })
     setToastTrigger((t) => t + 1)
+  }
+
+  const visibleBooks = testament === 'old' ? books.old : books.new
+
+  const handleContinueReading = async () => {
+    const { data } = await supabase.from('profiles').select('last_book,last_chapter').eq('id', user.id).single()
+    const targetBook = BIBLE_FLAT.find((book) => book.name === data?.last_book) || BIBLE_FLAT[0]
+    setReaderState({ name: targetBook.name, api: targetBook.apiName, chapter: Number(data?.last_chapter || 1), total: targetBook.chapters })
+    setReaderOpen(true)
   }
 
   return (
@@ -129,6 +144,16 @@ function ReadingPlan({ onOpenWorship }) {
           />
         ) : (
         <section className="space-y-6">
+      <div className="flex gap-2">
+        <button type="button" onClick={() => setViewMode('plans')} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${viewMode === 'plans' ? 'bg-accent-gold text-primary-dark' : 'text-white'}`} style={viewMode === 'plans' ? undefined : glassCard}>
+          Reading Plans
+        </button>
+        <button type="button" onClick={() => setViewMode('bible')} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${viewMode === 'bible' ? 'bg-accent-gold text-primary-dark' : 'text-white'}`} style={viewMode === 'bible' ? undefined : glassCard}>
+          Full Bible
+        </button>
+      </div>
+      {viewMode === 'plans' ? (
+      <>
       <header className="space-y-2">
         <h1 className="font-bold" style={{ ...headingStyle, fontSize: '24px' }}>Reading Plan</h1>
         <p style={bodyStyle}>Stay consistent in the Word</p>
@@ -258,6 +283,52 @@ function ReadingPlan({ onOpenWorship }) {
           </article>
         </div>
       </section>
+    </>
+      ) : (
+        <section className="space-y-3">
+          <header className="space-y-2">
+            <h1 className="font-bold" style={{ ...headingStyle, fontSize: '24px' }}>Read Scripture</h1>
+            <p style={bodyStyle}>Browse all 66 books and read chapter by chapter</p>
+            <button type="button" className="gold-btn" onClick={handleContinueReading}>Continue Reading</button>
+          </header>
+          <div className="inline-flex rounded-xl p-1">
+            <button type="button" onClick={() => setTestament('old')} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${testament === 'old' ? 'bg-accent-gold text-white' : 'text-white'}`} style={testament === 'old' ? undefined : glassCard}>Old Testament (39)</button>
+            <button type="button" onClick={() => setTestament('new')} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${testament === 'new' ? 'bg-accent-gold text-white' : 'text-white'}`} style={testament === 'new' ? undefined : glassCard}>New Testament (27)</button>
+          </div>
+          {chapterPickerBook ? (
+            <article className="rounded-2xl p-4" style={glassCard}>
+              <div className="mb-2 flex items-center justify-between">
+                <h2 className="text-white">{chapterPickerBook.name}</h2>
+                <button type="button" className="back-btn" onClick={() => setChapterPickerBook(null)}>Back</button>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(44px, 1fr))', gap: '8px' }}>
+                {Array.from({ length: chapterPickerBook.chapters }, (_, idx) => idx + 1).map((chapter) => (
+                  <button
+                    key={chapter}
+                    type="button"
+                    onClick={() => {
+                      setReaderState({ name: chapterPickerBook.name, api: chapterPickerBook.apiName, chapter, total: chapterPickerBook.chapters })
+                      setReaderOpen(true)
+                    }}
+                    className="rounded-lg border border-white/20 py-2 text-sm text-white"
+                  >
+                    {chapter}
+                  </button>
+                ))}
+              </div>
+            </article>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: '8px' }}>
+              {visibleBooks.map((book) => (
+                <button key={book.name} type="button" onClick={() => setChapterPickerBook(book)} className="rounded-lg p-3 text-left transition hover:brightness-95" style={glassCard}>
+                  <p className="text-sm font-semibold text-white">{book.name}</p>
+                  <p className="text-xs" style={bodyStyle}>{book.chapters} chapters</p>
+                </button>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
     </section>
         )}
         <SaveToast trigger={toastTrigger} />

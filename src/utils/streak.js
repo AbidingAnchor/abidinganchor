@@ -1,45 +1,53 @@
-const STREAK_KEY = 'abidinganchor-streak'
+import { supabase } from '../lib/supabase'
 
 function todayString(date = new Date()) {
   return date.toISOString().slice(0, 10)
 }
 
-function read() {
-  try {
-    const raw = localStorage.getItem(STREAK_KEY)
-    if (!raw) return { currentStreak: 1, lastReadDate: null, longestStreak: 1 }
-    const parsed = JSON.parse(raw)
-    return {
-      currentStreak: Math.max(1, parsed.currentStreak || 1),
-      lastReadDate: parsed.lastReadDate || null,
-      longestStreak: Math.max(1, parsed.longestStreak || 1),
-    }
-  } catch {
-    return { currentStreak: 1, lastReadDate: null, longestStreak: 1 }
+export async function getStreak() {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user?.id) return { currentStreak: 0, lastReadDate: null, longestStreak: 0 }
+  const { data } = await supabase.from('profiles').select('reading_streak,last_read_date,longest_streak').eq('id', user.id).single()
+  return {
+    currentStreak: Number(data?.reading_streak || 0),
+    lastReadDate: data?.last_read_date || null,
+    longestStreak: Number(data?.longest_streak || 0),
   }
 }
 
-function write(data) {
-  localStorage.setItem(STREAK_KEY, JSON.stringify(data))
-}
-
-export function getStreak() {
-  return read()
-}
-
-export function recordReadingToday() {
-  const data = read()
+export async function recordReadingToday() {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user?.id) return { currentStreak: 0, lastReadDate: null, longestStreak: 0 }
   const today = new Date()
   const todayKey = todayString(today)
-  if (data.lastReadDate === todayKey) return data
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id,created_at,streak_start_date,reading_streak,last_read_date,longest_streak')
+    .eq('id', user.id)
+    .single()
+  if (!profile) return { currentStreak: 0, lastReadDate: null, longestStreak: 0 }
+  const startDate = profile.streak_start_date || (profile.created_at || todayKey).slice(0, 10)
+  if (todayKey < startDate) return { currentStreak: 0, lastReadDate: null, longestStreak: 0 }
+  if (profile.last_read_date === todayKey) {
+    return {
+      currentStreak: Number(profile.reading_streak || 0),
+      longestStreak: Number(profile.longest_streak || 0),
+      lastReadDate: profile.last_read_date,
+    }
+  }
 
   const yesterday = new Date(today)
   yesterday.setDate(yesterday.getDate() - 1)
   const yesterdayKey = todayString(yesterday)
 
-  const currentStreak = data.lastReadDate === yesterdayKey ? (data.currentStreak || 0) + 1 : 1
-  const longestStreak = Math.max(data.longestStreak || 0, currentStreak)
+  const currentStreak = profile.last_read_date === yesterdayKey ? Number(profile.reading_streak || 0) + 1 : 1
+  const longestStreak = Math.max(Number(profile.longest_streak || 0), currentStreak)
   const next = { currentStreak, longestStreak, lastReadDate: todayKey }
-  write(next)
+  await supabase.from('profiles').update({
+    reading_streak: currentStreak,
+    last_read_date: todayKey,
+    longest_streak: longestStreak,
+    streak_start_date: startDate,
+  }).eq('id', user.id)
   return next
 }

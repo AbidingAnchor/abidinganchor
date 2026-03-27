@@ -1,22 +1,23 @@
 import { useEffect, useMemo, useState } from 'react'
 import { deleteJournalEntry, getJournalEntries, saveToJournal } from '../utils/journal'
 import { getHighlights } from '../utils/highlights'
+import { useAuth } from '../context/AuthContext'
 
 const filters = ['All', 'This Week', 'Saved Verses', 'Daily Verse', 'Prayers']
 const GRATITUDE_KEY = 'abidinganchor-gratitude'
 const gratitudeVerses = ['Philippians 4:6', '1 Thessalonians 5:18', 'Psalm 107:1', 'Colossians 3:17']
 
 function normalizeEntry(entry) {
-  const tag = entry.tag ?? (Array.isArray(entry.tags) && entry.tags.length > 0 ? entry.tags[0] : 'Reflection')
-  const savedDate = entry.date ?? (entry.savedAt ? new Date(entry.savedAt).toLocaleDateString('en-US', {
+  const tag = entry.entry_type || 'Reflection'
+  const savedDate = entry.created_at ? new Date(entry.created_at).toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
-  }) : '')
+  }) : ''
   return {
     id: String(entry.id),
-    reference: entry.reference ?? 'Saved Verse',
-    note: entry.note || entry.verse || '',
+    reference: entry.verse_reference ?? 'No verse reference',
+    note: entry.content || '',
     date: savedDate,
     tag,
   }
@@ -29,12 +30,13 @@ const todayDisplay = new Date().toLocaleDateString('en-US', {
 })
 
 function Journal() {
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('journal')
   const [showForm, setShowForm] = useState(false)
   const [activeFilter, setActiveFilter] = useState('All')
   const [reference, setReference] = useState('')
   const [note, setNote] = useState('')
-  const [entries, setEntries] = useState(() => getJournalEntries().map(normalizeEntry))
+  const [entries, setEntries] = useState([])
   const [gratitudeText, setGratitudeText] = useState('')
   const [gratitudeEntries, setGratitudeEntries] = useState(() => {
     try {
@@ -53,9 +55,18 @@ function Journal() {
   const bodyStyle = { color: 'rgba(255,255,255,0.85)' }
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 220)
-    return () => clearTimeout(t)
-  }, [])
+    let active = true
+    const load = async () => {
+      if (!user?.id) return
+      setLoading(true)
+      const data = await getJournalEntries(user.id)
+      if (!active) return
+      setEntries((data || []).map(normalizeEntry))
+      setLoading(false)
+    }
+    load()
+    return () => { active = false }
+  }, [user?.id])
 
   const filteredEntries = useMemo(() => {
     if (activeFilter === 'All') return entries
@@ -95,24 +106,26 @@ function Journal() {
     return streak
   }, [gratitudeEntries])
 
-  const handleSaveEntry = () => {
-    if (!reference.trim() || !note.trim()) return
-    const newEntry = saveToJournal({
-      verse: note.trim(),
-      reference: reference.trim(),
+  const handleSaveEntry = async () => {
+    if (!note.trim()) return
+    const newEntry = await saveToJournal({
+      verse: reference.trim() ? note.trim() : null,
+      reference: reference.trim() || null,
       note: note.trim(),
       tags: ['Reflection'],
+      userId: user?.id,
     })
+    if (!newEntry) return
     setEntries((prev) => [normalizeEntry(newEntry), ...prev])
     setReference('')
     setNote('')
     setShowForm(false)
   }
 
-  const handleDeleteEntry = (entry) => {
-    deleteJournalEntry(entry.id)
-    const nextEntries = getJournalEntries().map(normalizeEntry)
-    setEntries(nextEntries)
+  const handleDeleteEntry = async (entry) => {
+    await deleteJournalEntry(entry.id)
+    const nextEntries = await getJournalEntries(user?.id)
+    setEntries((nextEntries || []).map(normalizeEntry))
   }
 
   const saveGratitude = () => {

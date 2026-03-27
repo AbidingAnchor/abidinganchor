@@ -1,8 +1,10 @@
 import { NavLink } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 const tabs = [
   { label: 'Home', path: '/', icon: '🏠' },
-  { label: 'Read', path: '/reading-plan', icon: '📖' },
+  { label: 'Read', path: '/read', icon: '📖' },
   { label: 'Search', path: '/search', icon: '🔍' },
   { label: 'Journey', path: '/faith-journey', icon: '🧭' },
   { label: 'Prayer', path: '/prayer', icon: '🙏' },
@@ -10,9 +12,41 @@ const tabs = [
 ]
 
 export default function Navbar({ scenery = 'day', onToggleScenery, showSceneryTip = false }) {
+  const navigate = useNavigate()
+  const { user, signOut } = useAuth()
   const isNight = scenery === 'night'
+  const displayName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email || ''
   return (
     <>
+      <div
+        style={{
+          position: 'fixed',
+          top: 'calc(env(safe-area-inset-top, 0px) + 12px)',
+          left: '12px',
+          zIndex: 9998,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+        }}
+      >
+        {displayName ? (
+          <span style={{ background: 'rgba(10,22,50,0.75)', border: '1px solid rgba(255,255,255,0.25)', color: '#fff', borderRadius: '999px', padding: '6px 10px', fontSize: '11px', maxWidth: '140px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {displayName}
+          </span>
+        ) : null}
+        <button
+          type="button"
+          onClick={async () => {
+            const ok = window.confirm('Are you sure you want to sign out?')
+            if (!ok) return
+            await signOut()
+            navigate('/auth', { replace: true })
+          }}
+          style={{ border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(10,22,50,0.8)', color: '#fff', borderRadius: '999px', padding: '6px 10px', fontSize: '11px' }}
+        >
+          Sign Out
+        </button>
+      </div>
       <button
         type="button"
         onClick={onToggleScenery}

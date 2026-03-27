@@ -1,32 +1,41 @@
-// src/utils/journal.js
-const JOURNAL_KEY = 'abidinganchor-journal';
+import { supabase } from '../lib/supabase'
 
-export function getJournalEntries() {
-  try {
-    const raw = localStorage.getItem(JOURNAL_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
+export async function getJournalEntries(userIdArg) {
+  let userId = userIdArg
+  if (!userId) {
+    const { data: { user } } = await supabase.auth.getUser()
+    userId = user?.id
   }
+  if (!userId) return []
+  const { data } = await supabase
+    .from('journal_entries')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+  return data || []
 }
 
-export function saveToJournal({ verse, reference, note = '', tags = [] }) {
-  const entries = getJournalEntries();
-  const newEntry = {
-    id: Date.now().toString(),
-    verse,
-    reference,
-    note,
-    tags,
-    savedAt: new Date().toISOString(),
-  };
-  const updated = [newEntry, ...entries];
-  localStorage.setItem(JOURNAL_KEY, JSON.stringify(updated));
-  return newEntry;
+export async function saveToJournal({ verse, reference, note = '', tags = [], userId: userIdArg }) {
+  let userId = userIdArg
+  if (!userId) {
+    const { data: { user } } = await supabase.auth.getUser()
+    userId = user?.id
+  }
+  if (!userId) return null
+  const content = (note || verse || '').trim()
+  if (!content) return null
+  const payload = {
+    user_id: userId,
+    content,
+    verse: verse || null,
+    verse_reference: reference || null,
+    entry_type: tags?.[0] || 'Reflection',
+  }
+  const { data } = await supabase.from('journal_entries').insert(payload).select().single()
+  return data || null
 }
 
-export function deleteJournalEntry(id) {
-  const entries = getJournalEntries();
-  const updated = entries.filter((e) => e.id !== id);
-  localStorage.setItem(JOURNAL_KEY, JSON.stringify(updated));
+export async function deleteJournalEntry(id) {
+  if (!id) return
+  await supabase.from('journal_entries').delete().eq('id', id)
 }

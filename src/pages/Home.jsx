@@ -2,23 +2,25 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getDailyVerse } from '../utils/dailyVerse'
 import { getJournalEntries, saveToJournal } from '../utils/journal'
-import { getStreak } from '../utils/streak'
 import SaveToast from '../components/SaveToast'
+import { useAuth } from '../context/AuthContext'
 
 function getTodaysVerse() {
   return getDailyVerse()
 }
 
 function Home({ onOpenWorship, worshipStatus }) {
+  const { user, profile } = useAuth()
   const [todaysVerse, setTodaysVerse] = useState(() => getTodaysVerse())
-  const [streak, setStreak] = useState(() => getStreak())
+  const [streak, setStreak] = useState({ currentStreak: 0 })
   const [toastTrigger, setToastTrigger] = useState(0)
+  const [journalCount, setJournalCount] = useState(0)
 
   useEffect(() => {
     let timeoutId
     const scheduleNextMidnight = () => {
       setTodaysVerse(getTodaysVerse())
-      setStreak(getStreak())
+      setStreak({ currentStreak: profile?.reading_streak || 0 })
       const now = new Date()
       const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0)
       const ms = Math.max(1000, nextMidnight - now)
@@ -26,10 +28,10 @@ function Home({ onOpenWorship, worshipStatus }) {
     }
     scheduleNextMidnight()
     return () => clearTimeout(timeoutId)
-  }, [])
+  }, [profile?.reading_streak])
 
-  const handleSaveDailyVerse = useCallback(() => {
-    saveToJournal({
+  const handleSaveDailyVerse = useCallback(async () => {
+    await saveToJournal({
       verse: todaysVerse.text,
       reference: todaysVerse.reference,
       tags: ['Daily Verse'],
@@ -37,8 +39,8 @@ function Home({ onOpenWorship, worshipStatus }) {
     setToastTrigger((t) => t + 1)
   }, [todaysVerse])
 
-  const handleSaveVerseOfWeek = useCallback(() => {
-    saveToJournal({
+  const handleSaveVerseOfWeek = useCallback(async () => {
+    await saveToJournal({
       verse: 'The Lord is my shepherd; I shall not want.',
       reference: 'Psalm 23:1',
       tags: ['Daily Verse'],
@@ -134,7 +136,17 @@ function Home({ onOpenWorship, worshipStatus }) {
   const dayToMonFirstIndex = [6, 0, 1, 2, 3, 4, 5]
   const todayIndex = dayToMonFirstIndex[today.getDay()]
   const streakLength = 3
-  const journalCount = getJournalEntries().length
+  useEffect(() => {
+    let active = true
+    const loadCount = async () => {
+      if (!user?.id) return
+      const entries = await getJournalEntries(user.id)
+      if (!active) return
+      setJournalCount(entries.length)
+    }
+    loadCount()
+    return () => { active = false }
+  }, [user?.id, toastTrigger])
   const streakMessages = {
     1: 'Welcome! Every journey begins with one step. 🌱',
     2: 'Two days strong! His Word is a lamp to your feet. 🕯️',
@@ -147,7 +159,9 @@ function Home({ onOpenWorship, worshipStatus }) {
     60: '60 days! You are an inspiration to the Kingdom. 👑',
     100: "100 days! A mighty warrior in God's Word! ⚔️",
   }
-  const currentStreak = Math.max(1, streak?.currentStreak || 1)
+  const currentStreak = Math.max(0, Number(streak?.currentStreak || 0))
+  const firstName = profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || ''
+  const welcomeCopy = firstName ? `Welcome back, ${firstName} 🙏` : 'Welcome back 🙏'
   const streakMessage = streakMessages[currentStreak] || `Day ${currentStreak} — Keep seeking Him with all your heart. 🙏`
 
   return (
@@ -178,7 +192,7 @@ function Home({ onOpenWorship, worshipStatus }) {
               maxWidth: '280px',
             }}
           >
-            Welcome to your quiet study space
+            {welcomeCopy}
           </h1>
           <p className="text-blue-50" style={{ marginTop: '8px', fontSize: '12px', textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
             {formattedDate}

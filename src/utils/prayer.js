@@ -1,37 +1,36 @@
-const PRAYER_KEY = 'abidinganchor-prayers'
+import { supabase } from '../lib/supabase'
 
-function read() {
-  try {
-    const raw = localStorage.getItem(PRAYER_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch {
-    return []
+export async function getPrayerEntries(userIdArg) {
+  let userId = userIdArg
+  if (!userId) {
+    const { data: { user } } = await supabase.auth.getUser()
+    userId = user?.id
   }
+  if (!userId) return []
+  const { data } = await supabase.from('prayers').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+  return (data || []).map((entry) => ({ id: entry.id, text: entry.content, date: entry.created_at, answered: Boolean(entry.answered) }))
 }
 
-function write(entries) {
-  localStorage.setItem(PRAYER_KEY, JSON.stringify(entries))
+export async function savePrayer({ text, date, answered = false, userId: userIdArg }) {
+  let userId = userIdArg
+  if (!userId) {
+    const { data: { user } } = await supabase.auth.getUser()
+    userId = user?.id
+  }
+  if (!userId || !text?.trim()) return []
+  await supabase.from('prayers').insert({ user_id: userId, content: text.trim(), answered, created_at: date || new Date().toISOString() })
+  return getPrayerEntries(userId)
 }
 
-export function getPrayerEntries() {
-  return read()
+export async function toggleAnswered(id) {
+  const { data } = await supabase.from('prayers').select('answered,user_id').eq('id', id).single()
+  if (!data) return []
+  await supabase.from('prayers').update({ answered: !data.answered }).eq('id', id)
+  return getPrayerEntries(data.user_id)
 }
 
-export function savePrayer({ text, date, answered = false }) {
-  const entries = read()
-  const next = [{ id: `${Date.now()}-${Math.random().toString(16).slice(2)}`, text: text.trim(), date, answered }, ...entries]
-  write(next)
-  return next
-}
-
-export function toggleAnswered(id) {
-  const entries = read().map((entry) => (entry.id === id ? { ...entry, answered: !entry.answered } : entry))
-  write(entries)
-  return entries
-}
-
-export function deletePrayer(id) {
-  const entries = read().filter((entry) => entry.id !== id)
-  write(entries)
-  return entries
+export async function deletePrayer(id) {
+  const { data } = await supabase.from('prayers').select('user_id').eq('id', id).single()
+  await supabase.from('prayers').delete().eq('id', id)
+  return getPrayerEntries(data?.user_id)
 }

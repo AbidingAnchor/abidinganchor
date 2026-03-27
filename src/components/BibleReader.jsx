@@ -5,6 +5,7 @@ import { getHighlightsForChapter, saveHighlight } from '../utils/highlights'
 import { recordChapterRead } from '../utils/readingHistory'
 import SaveToast from './SaveToast'
 import ShareVerse from './ShareVerse'
+import { supabase } from '../lib/supabase'
 
 /**
  * Calm, distraction-free chapter reader (WEB).
@@ -66,7 +67,11 @@ export default function BibleReader({
           text: (v.text ?? '').trim(),
         })),
       )
-      recordReadingToday()
+      await recordReadingToday()
+      await supabase.from('profiles').update({
+        last_book: bookDisplayName,
+        last_chapter: chapterNumber,
+      }).eq('id', (await supabase.auth.getUser()).data.user?.id)
       const oldBooks = new Set(['Genesis','Exodus','Leviticus','Numbers','Deuteronomy','Joshua','Judges','Ruth','1 Samuel','2 Samuel','1 Kings','2 Kings','1 Chronicles','2 Chronicles','Ezra','Nehemiah','Esther','Job','Psalms','Proverbs','Ecclesiastes','Song of Solomon','Isaiah','Jeremiah','Lamentations','Ezekiel','Daniel','Hosea','Joel','Amos','Obadiah','Jonah','Micah','Nahum','Habakkuk','Zephaniah','Haggai','Zechariah','Malachi'])
       recordChapterRead({ book: bookDisplayName, chapter: chapterNumber, testament: oldBooks.has(bookDisplayName) ? 'old' : 'new' })
       const chapterHighlights = getHighlightsForChapter(bookDisplayName, chapterNumber)
@@ -104,8 +109,8 @@ export default function BibleReader({
     onChapterChange(chapterNumber + 1)
   }
 
-  const handleSaveVerse = (verse) => {
-    saveToJournal({
+  const handleSaveVerse = async (verse) => {
+    await saveToJournal({
       verse: verse.text,
       reference: `${bookDisplayName} ${chapterNumber}:${verse.verse}`,
       tags: journalTags,

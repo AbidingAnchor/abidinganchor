@@ -349,8 +349,8 @@ function Search({ onOpenWorship }) {
     }
   }, [trimmedSearch, isVerseReference, curatedResults.length, searchMode])
 
-  const handleSaveToJournal = (result) => {
-    saveToJournal({
+  const handleSaveToJournal = async (result) => {
+    await saveToJournal({
       verse: result.text,
       reference: result.reference,
       tags: ['Search Result'],

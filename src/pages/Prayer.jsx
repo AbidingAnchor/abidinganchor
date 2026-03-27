@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { deletePrayer, getPrayerEntries, savePrayer, toggleAnswered } from '../utils/prayer'
 import PrayerTimer from '../components/PrayerTimer'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../context/AuthContext'
 
 export default function Prayer() {
+  const { user } = useAuth()
   const [text, setText] = useState('')
-  const [entries, setEntries] = useState(() => getPrayerEntries())
+  const [entries, setEntries] = useState([])
   const [showAnswered, setShowAnswered] = useState(false)
   const [loading, setLoading] = useState(true)
   const [timerOpen, setTimerOpen] = useState(false)
@@ -12,16 +14,42 @@ export default function Prayer() {
   const active = useMemo(() => entries.filter((p) => !p.answered), [entries])
   const answered = useMemo(() => entries.filter((p) => p.answered), [entries])
 
-  const addPrayer = () => {
+  const loadPrayers = async () => {
+    if (!user?.id) return
+    const { data } = await supabase
+      .from('prayers')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+    setEntries((data || []).map((row) => ({
+      id: row.id,
+      text: row.content,
+      date: row.created_at,
+      answered: Boolean(row.answered),
+    })))
+  }
+
+  const addPrayer = async () => {
     if (!text.trim()) return
-    setEntries(savePrayer({ text, date: new Date().toISOString(), answered: false }))
+    await supabase.from('prayers').insert({
+      user_id: user.id,
+      content: text.trim(),
+      answered: false,
+    })
+    await loadPrayers()
     setText('')
   }
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 220)
-    return () => clearTimeout(t)
-  }, [])
+    let active = true
+    const boot = async () => {
+      setLoading(true)
+      await loadPrayers()
+      if (active) setLoading(false)
+    }
+    boot()
+    return () => { active = false }
+  }, [user?.id])
 
   return (
     <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
@@ -69,8 +97,8 @@ export default function Prayer() {
                   <p className="text-white">{entry.text}</p>
                   <p className="mt-2 text-xs text-white/65">{new Date(entry.date).toLocaleString()}</p>
                   <div className="mt-3 flex items-center justify-between">
-                    <button type="button" onClick={() => setEntries(toggleAnswered(entry.id))} className="rounded-lg border border-[#D4A843] px-3 py-1.5 text-xs font-semibold text-[#D4A843]">✓ Mark as Answered</button>
-                    <button type="button" onClick={() => setEntries(deletePrayer(entry.id))} className="text-sm text-red-300">🗑️</button>
+                    <button type="button" onClick={async () => { await supabase.from('prayers').update({ answered: !entry.answered }).eq('id', entry.id); await loadPrayers() }} className="rounded-lg border border-[#D4A843] px-3 py-1.5 text-xs font-semibold text-[#D4A843]">✓ Mark as Answered</button>
+                    <button type="button" onClick={async () => { await supabase.from('prayers').delete().eq('id', entry.id); await loadPrayers() }} className="text-sm text-red-300">🗑️</button>
                   </div>
                 </article>
               ))}
