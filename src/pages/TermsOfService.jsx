@@ -14,18 +14,20 @@ export default function TermsOfService() {
         <section className="space-y-4">
           <header className="space-y-1 text-center">
             <h1 className="text-3xl font-bold text-white" style={{ textShadow: '0 1px 8px rgba(0,60,120,0.4)' }}>Terms of Service</h1>
-            <p className="text-sm text-white/80">Last Updated: March 26, 2026</p>
+            <p className="text-sm text-white/80">Last Updated: March 27, 2026</p>
           </header>
 
           <article className="rounded-2xl border border-white/20 bg-white/10 p-5 backdrop-blur-md text-white/90 space-y-4">
             <section className="space-y-2">
               <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>I. Acceptance of Terms</h2>
               <p>By accessing or using AbidingAnchor (the &quot;Service&quot;), you agree to be bound by these Terms. If you do not agree, please do not use the Service.</p>
+              <p>We have updated these terms as of March 27, 2026 to reflect the addition of user accounts and data synchronization features.</p>
             </section>
 
             <section className="space-y-2">
-              <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>II. Non-Commercial Ministry Nature</h2>
+              <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>II. Use of Service</h2>
               <p>This Service is a free religious tool provided for spiritual and educational purposes. It is a ministry project, not a commercial product.</p>
+              <p>You must be at least 13 years old to use AbidingAnchor. By creating an account you represent that you meet this age requirement.</p>
             </section>
 
             <section className="space-y-2">
@@ -47,16 +49,32 @@ export default function TermsOfService() {
             <section className="space-y-2">
               <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>VI. Limitation of Liability</h2>
               <p>To the maximum extent permitted by law, AbidingAnchor shall not be liable for any direct, indirect, or incidental damages resulting from your use of the Service, including but not limited to data loss or device failure.</p>
+              <p>AbidingAnchor is not liable for any loss or damage arising from your failure to protect your login credentials, unauthorized access to your account resulting from your own negligence, or loss of data resulting from account deletion initiated by you.</p>
             </section>
 
             <section className="space-y-2">
-              <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>VII. Governing Law</h2>
-              <p>These Terms are governed by the laws of the Commonwealth of Pennsylvania, USA, without regard to its conflict of law principles.</p>
+              <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>VII. Tiers &amp; Support</h2>
+              <p>Tiers and perks are provided as a voluntary &quot;thank you&quot; and may be modified or removed at our discretion. All donations are final and non-refundable. Tier benefits do not constitute a service level agreement or contractual obligation of any kind.</p>
             </section>
 
             <section className="space-y-2">
               <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>VIII. 2026 Compliance Signals</h2>
               <p>For app-store compliance in 2026, AbidingAnchor may receive anonymized age-category signals from Apple and Google Play to ensure age-appropriate app experiences. These signals are not stored on our servers and are not used for profiling or advertising.</p>
+            </section>
+
+            <section className="space-y-2">
+              <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>IX. User Accounts &amp; Security</h2>
+              <p>IX. User Accounts &amp; Security. (1) Account Creation: You may create a free account to access personalized features. You agree to provide accurate information and keep it updated. (2) Account Security: You are solely responsible for maintaining the confidentiality of your password and all activity under your account. AbidingAnchor is not liable for any loss arising from unauthorized use of your account due to your failure to protect your credentials. Notify us immediately of any unauthorized use at AbidingAnchor@outlook.com. (3) Account Deletion: You may delete your account and all associated data at any time through App Settings or by contacting AbidingAnchor@outlook.com. Deletion is permanent and irreversible. All your journal entries, prayers, highlights, and progress will be permanently removed. (4) Termination by Us: AbidingAnchor reserves the right to suspend or permanently terminate any account that violates these Terms, is used for fraudulent activity, illegal purposes, or any activity that harms the integrity of the Service. (5) Prohibited Conduct: You agree not to scrape or harvest data from AbidingAnchor, attempt to gain unauthorized access to other users&apos; accounts, use the Service for any illegal purpose, or interfere with the normal operation of the Service.</p>
+            </section>
+
+            <section className="space-y-2">
+              <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>X. User Generated Content</h2>
+              <p>X. User Generated Content. You retain full ownership of all journal entries, prayers, notes, and other content you create in AbidingAnchor. By using the account sync feature, you grant AbidingAnchor a limited, non-exclusive, royalty-free license to store and transmit your content solely for the purpose of providing the Service to you. We will never read, sell, share, or use your personal spiritual content for any other purpose. You are responsible for the content you create.</p>
+            </section>
+
+            <section className="space-y-2">
+              <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>XI. Governing Law</h2>
+              <p>XI. Governing Law. These Terms are governed by the laws of the Commonwealth of Pennsylvania, United States. Any disputes arising from these Terms or your use of AbidingAnchor shall be resolved in the courts of Pennsylvania.</p>
             </section>
           </article>
         </section>
