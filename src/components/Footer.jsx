@@ -6,13 +6,13 @@ export default function Footer() {
       style={{
         position: 'static',
         width: '100%',
+        marginTop: 'auto',
         textAlign: 'center',
         fontSize: '12px',
         color: 'rgba(255,255,255,0.4)',
         padding: '10px 10px 88px',
         background: 'rgba(0,0,0,0.12)',
         backdropFilter: 'blur(6px)',
-        marginTop: '12px',
       }}
     >
       <span>© 2026 AbidingAnchor Ministry</span>

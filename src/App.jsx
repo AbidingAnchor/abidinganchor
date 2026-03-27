@@ -46,10 +46,10 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <div style={{ minHeight: '100vh', position: 'relative', background: '#0d1f4e' }}>
+      <div style={{ minHeight: '100vh', position: 'relative', background: '#0d1f4e', display: 'flex', flexDirection: 'column' }}>
         <AppBackground />
 
-        <div style={{ position: 'relative', zIndex: 10, isolation: 'isolate', paddingBottom: '80px' }}>
+        <div style={{ position: 'relative', zIndex: 10, isolation: 'isolate', flex: 1, display: 'flex', flexDirection: 'column', paddingBottom: '80px' }}>
           <Routes>
             <Route path="/" element={<Home onOpenWorship={(startPlaying) => openWorship(startPlaying)} worshipStatus={worshipStatus} />} />
             <Route path="/reading-plan" element={<ReadingPlan onOpenWorship={(startPlaying) => openWorship(startPlaying)} />} />
