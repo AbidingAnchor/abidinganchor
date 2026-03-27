@@ -40,7 +40,12 @@ export default function BibleReader({
   const [highlightMap, setHighlightMap] = useState({})
   const [activePickerVerse, setActivePickerVerse] = useState(null)
 
-  const highlightColors = ['#FFD700', '#90EE90', '#ADD8E6', '#FFB6C1']
+  const highlightColors = [
+    { id: 'yellow', label: '💛 Yellow', hex: '#FFD700' },
+    { id: 'green', label: '💚 Green', hex: '#90EE90' },
+    { id: 'blue', label: '💙 Blue', hex: '#ADD8E6' },
+    { id: 'pink', label: '🩷 Pink', hex: '#FFB6C1' },
+  ]
 
   const fetchChapter = useCallback(async () => {
     if (!open || !apiBookName) return
@@ -109,8 +114,16 @@ export default function BibleReader({
   }
 
   const handleHighlight = (verse, color) => {
-    saveHighlight({ book: bookDisplayName, chapter: chapterNumber, verse: verse.verse, color, text: verse.text })
-    setHighlightMap((prev) => ({ ...prev, [verse.verse]: color }))
+    const selected = highlightColors.find((entry) => entry.id === color)
+    saveHighlight({
+      book: bookDisplayName,
+      chapter: chapterNumber,
+      verse: verse.verse,
+      color: selected?.hex,
+      text: verse.text,
+      reference: `${bookDisplayName} ${chapterNumber}:${verse.verse}`,
+    })
+    setHighlightMap((prev) => ({ ...prev, [verse.verse]: selected?.hex ?? null }))
     setActivePickerVerse(null)
   }
 
@@ -294,6 +307,7 @@ export default function BibleReader({
                   {verse.verse}
                 </span>
                 <p
+                  onClick={() => setActivePickerVerse((prev) => (prev === verse.verse ? null : verse.verse))}
                   style={{
                     color: 'rgba(255,255,255,0.92)',
                     fontSize: '15px',
@@ -301,6 +315,7 @@ export default function BibleReader({
                     margin: 0,
                     fontFamily: 'Georgia, serif',
                     flex: 1,
+                    cursor: 'pointer',
                   }}
                 >
                   {verse.text}
@@ -312,10 +327,15 @@ export default function BibleReader({
                   <button type="button" onClick={() => setActivePickerVerse((prev) => (prev === verse.verse ? null : verse.verse))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(212,168,67,0.8)', fontSize: '18px', padding: 0 }} title="Highlight">🎨</button>
                 </div>
                 {activePickerVerse === verse.verse ? (
-                  <div className="absolute mt-20 ml-10 flex gap-2 rounded-full border border-white/20 bg-black/40 p-2">
+                  <div className="absolute left-10 top-20 flex flex-wrap gap-2 rounded-2xl border border-white/20 bg-black/50 p-2">
                     {highlightColors.map((color) => (
-                      <button key={color} type="button" onClick={() => handleHighlight(verse, color)} style={{ width: '20px', height: '20px', borderRadius: '999px', border: '1px solid rgba(255,255,255,0.5)', background: color }} />
+                      <button key={color.id} type="button" onClick={() => handleHighlight(verse, color.id)} className="rounded-full border border-white/40 px-2 py-1 text-xs text-white" style={{ background: `${color.hex}44` }}>
+                        {color.label}
+                      </button>
                     ))}
+                    <button type="button" onClick={() => handleHighlight(verse, null)} className="rounded-full border border-white/40 px-2 py-1 text-xs text-white">
+                      ❌ Remove highlight
+                    </button>
                   </div>
                 ) : null}
               </div>

@@ -9,17 +9,18 @@ const tabs = [
   { label: 'Journal', path: '/journal', icon: '📓' },
 ]
 
-export default function Navbar({ theme = 'day', onToggleTheme }) {
-  const isNight = theme === 'night'
+export default function Navbar({ scenery = 'day', onToggleScenery, showSceneryTip = false }) {
+  const isNight = scenery === 'night'
   return (
     <>
       <button
         type="button"
-        onClick={onToggleTheme}
-        aria-label="Toggle theme"
+        onClick={onToggleScenery}
+        aria-label="Toggle scenery"
+        title={`Switch to ${isNight ? 'day' : 'night'} scenery`}
         style={{
           position: 'fixed',
-          top: '16px',
+          top: 'calc(env(safe-area-inset-top, 0px) + 12px)',
           right: '16px',
           zIndex: 9998,
           border: '1px solid rgba(255,255,255,0.3)',
@@ -30,8 +31,26 @@ export default function Navbar({ theme = 'day', onToggleTheme }) {
           height: '40px',
         }}
       >
-        {theme === 'night' ? '☀️' : '🌙'}
+        {scenery === 'night' ? '☀️' : '🌙'}
       </button>
+      {showSceneryTip ? (
+        <div
+          style={{
+            position: 'fixed',
+            top: 'calc(env(safe-area-inset-top, 0px) + 56px)',
+            right: '12px',
+            zIndex: 9998,
+            fontSize: '11px',
+            color: '#fff',
+            background: 'rgba(10,22,50,0.8)',
+            border: '1px solid rgba(255,255,255,0.25)',
+            borderRadius: '10px',
+            padding: '6px 10px',
+          }}
+        >
+          Switch to {isNight ? 'day' : 'night'} scenery
+        </div>
+      ) : null}
       <nav
         style={{
           position: 'fixed',

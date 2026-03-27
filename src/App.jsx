@@ -21,16 +21,21 @@ import AppBackground from './components/AppBackground'
 import LegalModal from './components/LegalModal'
 import WorshipPlayer from './components/WorshipPlayer'
 import Footer from './components/Footer'
-import { getTheme, setTheme } from './utils/theme'
+import { getScenery, toggleScenery } from './utils/scenery'
 
 export default function App() {
-  const [theme, setThemeState] = useState(() => getTheme())
+  const [scenery, setScenery] = useState(() => getScenery())
+  const [showSceneryTip, setShowSceneryTip] = useState(() => !localStorage.getItem('abidinganchor-scenery-tip-seen'))
   const [worshipVisible, setWorshipVisible] = useState(false)
   const [worshipAutoPlayToken, setWorshipAutoPlayToken] = useState(0)
   const [worshipStatus, setWorshipStatus] = useState({ isPlaying: false, currentTrack: 'Peaceful Worship', isVisible: false })
 
-  const handleToggleTheme = () => {
-    setThemeState((prev) => setTheme(prev === 'night' ? 'day' : 'night'))
+  const handleToggleScenery = () => {
+    setScenery((prev) => toggleScenery(prev))
+    if (showSceneryTip) {
+      localStorage.setItem('abidinganchor-scenery-tip-seen', 'true')
+      setShowSceneryTip(false)
+    }
   }
 
   const openWorship = (startPlaying = false) => {
@@ -47,7 +52,16 @@ export default function App() {
   return (
     <BrowserRouter>
       <div style={{ minHeight: '100vh', position: 'relative', background: '#0d1f4e', display: 'flex', flexDirection: 'column' }}>
-        <AppBackground />
+        <AppBackground scenery={scenery} />
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 2,
+            pointerEvents: 'none',
+            background: 'linear-gradient(to bottom, rgba(13,31,78,0.3) 0%, rgba(13,31,78,0.6) 100%)',
+          }}
+        />
 
         <div style={{ position: 'relative', zIndex: 10, isolation: 'isolate', flex: 1, display: 'flex', flexDirection: 'column', paddingBottom: '80px' }}>
           <Routes>
@@ -80,7 +94,7 @@ export default function App() {
         autoPlayToken={worshipAutoPlayToken}
         onStatusChange={setWorshipStatus}
       />
-      <Navbar theme={theme} onToggleTheme={handleToggleTheme} />
+      <Navbar scenery={scenery} onToggleScenery={handleToggleScenery} showSceneryTip={showSceneryTip} />
     </BrowserRouter>
   )
 }

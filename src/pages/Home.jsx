@@ -4,7 +4,6 @@ import { getDailyVerse } from '../utils/dailyVerse'
 import { getJournalEntries, saveToJournal } from '../utils/journal'
 import { getStreak } from '../utils/streak'
 import SaveToast from '../components/SaveToast'
-import ShareVerse from '../components/ShareVerse'
 
 function getTodaysVerse() {
   return getDailyVerse()
@@ -14,7 +13,6 @@ function Home({ onOpenWorship, worshipStatus }) {
   const [todaysVerse, setTodaysVerse] = useState(() => getTodaysVerse())
   const [streak, setStreak] = useState(() => getStreak())
   const [toastTrigger, setToastTrigger] = useState(0)
-  const [shareModalOpen, setShareModalOpen] = useState(false)
 
   useEffect(() => {
     let timeoutId
@@ -47,6 +45,82 @@ function Home({ onOpenWorship, worshipStatus }) {
     })
     setToastTrigger((t) => t + 1)
   }, [])
+
+  const handleShareDailyVerse = useCallback(async () => {
+    const verse = todaysVerse?.text ?? ''
+    const reference = todaysVerse?.reference ?? ''
+    if (!verse || !reference) return
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Daily Verse — AbidingAnchor',
+          text: `${verse} — ${reference}`,
+          url: 'https://abidinganchor.netlify.app',
+        })
+        return
+      } catch {
+        // Fall through to PNG download.
+      }
+    }
+
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    canvas.width = 1080
+    canvas.height = 1080
+
+    const gradient = ctx.createLinearGradient(0, 0, 1080, 1080)
+    gradient.addColorStop(0, '#0d1f4e')
+    gradient.addColorStop(1, '#D4A843')
+    ctx.fillStyle = gradient
+    ctx.fillRect(0, 0, 1080, 1080)
+
+    ctx.fillStyle = 'rgba(255,255,255,0.06)'
+    ctx.fillRect(80, 90, 920, 900)
+    ctx.strokeStyle = 'rgba(255,230,170,0.55)'
+    ctx.lineWidth = 3
+    ctx.strokeRect(80, 90, 920, 900)
+
+    ctx.fillStyle = '#F7E7B5'
+    ctx.font = '700 46px Georgia'
+    ctx.textAlign = 'center'
+    ctx.fillText('AbidingAnchor', 540, 170)
+
+    const wrapText = (text, maxWidth) => {
+      const words = text.split(' ')
+      const lines = []
+      let line = ''
+      for (const word of words) {
+        const candidate = line ? `${line} ${word}` : word
+        if (ctx.measureText(candidate).width <= maxWidth) line = candidate
+        else {
+          if (line) lines.push(line)
+          line = word
+        }
+      }
+      if (line) lines.push(line)
+      return lines
+    }
+
+    ctx.fillStyle = '#FFFFFF'
+    ctx.font = 'italic 56px Georgia'
+    const lines = wrapText(`"${verse}"`, 780)
+    const startY = 420 - (lines.length * 70) / 2
+    lines.forEach((line, index) => ctx.fillText(line, 540, startY + index * 70))
+
+    ctx.fillStyle = '#F7E7B5'
+    ctx.font = '700 38px Arial'
+    ctx.fillText(reference, 540, startY + lines.length * 70 + 70)
+    ctx.fillStyle = 'rgba(255,255,255,0.78)'
+    ctx.font = '28px Arial'
+    ctx.fillText('abidinganchor.netlify.app', 540, 930)
+
+    const link = document.createElement('a')
+    link.href = canvas.toDataURL('image/png')
+    link.download = 'abidinganchor-daily-verse.png'
+    link.click()
+  }, [todaysVerse])
 
   const today = new Date()
   const formattedDate = today.toLocaleDateString('en-US', {
@@ -89,14 +163,20 @@ function Home({ onOpenWorship, worshipStatus }) {
           width: '100%',
         }}
       >
-        <div style={{ position: 'absolute', top: '24px', left: '24px', zIndex: 50 }}>
+        <div style={{ position: 'absolute', top: '24px', left: '24px', zIndex: 50, paddingTop: 'calc(var(--sat) + 20px)' }}>
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-yellow-100">ABIDING ANCHOR</p>
           <p className="text-yellow-100/90" style={{ marginTop: '4px', fontSize: '11px', fontStyle: 'italic' }}>
             Anchored in His Word
           </p>
           <h1
             className="text-white"
-            style={{ marginTop: '8px', fontSize: '22px', fontWeight: 700, textShadow: '0 2px 8px rgba(0,0,0,0.8)', maxWidth: '280px' }}
+            style={{
+              marginTop: '8px',
+              fontSize: '22px',
+              fontWeight: 700,
+              textShadow: '0 2px 8px rgba(0,0,0,0.8)',
+              maxWidth: '280px',
+            }}
           >
             Welcome to your quiet study space
           </h1>
@@ -140,7 +220,7 @@ function Home({ onOpenWorship, worshipStatus }) {
               </button>
               <button
                 type="button"
-                onClick={() => setShareModalOpen(true)}
+                onClick={handleShareDailyVerse}
                 style={{ minWidth: '140px', flex: 1 }}
                 className="rounded-xl border border-yellow-100/80 px-3 py-2 text-sm font-semibold text-yellow-100 transition hover:bg-white/10"
               >
@@ -344,7 +424,6 @@ function Home({ onOpenWorship, worshipStatus }) {
           </section>
         </section>
         <SaveToast trigger={toastTrigger} />
-        {shareModalOpen ? <ShareVerse text={todaysVerse.text} reference={todaysVerse.reference} onClose={() => setShareModalOpen(false)} /> : null}
       </div>
     </div>
   )

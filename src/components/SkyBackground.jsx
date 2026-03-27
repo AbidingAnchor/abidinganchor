@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 
-export default function SkyBackground() {
+export default function SkyBackground({ scenery }) {
   const canvasRef = useRef(null)
 
   useEffect(() => {
@@ -8,6 +8,8 @@ export default function SkyBackground() {
     const ctx = canvas.getContext('2d')
 
     function getTimeOfDay() {
+      if (scenery === 'day') return 'afternoon'
+      if (scenery === 'night') return 'night'
       const hour = new Date().getHours()
       if (hour >= 6 && hour < 11) return 'morning'
       if (hour >= 11 && hour < 18) return 'afternoon'
@@ -150,7 +152,7 @@ export default function SkyBackground() {
 
     function drawSunOrMoon(sx, sy, blendedTheme) {
       ctx.save()
-      ctx.globalAlpha = 0.9
+      ctx.globalAlpha = 0.85
       if (blendedTheme.nightFactor > 0.55) {
         const moonGlow = ctx.createRadialGradient(sx, sy, 0, sx, sy, 170)
         moonGlow.addColorStop(0, 'rgba(255,220,120,0.55)')
@@ -206,11 +208,11 @@ export default function SkyBackground() {
       const h = H()
       const y = Math.min(cloud.y * h, 160)
       ctx.save()
-      ctx.globalAlpha = 0.7
+      ctx.globalAlpha = 0.5
       ctx.translate(cloud.x, y)
       const s = cloud.scale
       ctx.save()
-      ctx.globalAlpha = 0.7
+      ctx.globalAlpha = 0.5
       ctx.translate(6 * s, 14 * s)
       for (const p of cloud.puffs) {
         ctx.beginPath()
@@ -244,7 +246,7 @@ export default function SkyBackground() {
       const hW = 90
       const hH = 28
       const hY = -16
-      ctx.globalAlpha = 1
+      ctx.globalAlpha = 0.6
       const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, 120)
       glow.addColorStop(0, `rgba(255,220,90,${0.45 + nightFactor * 0.3})`)
       glow.addColorStop(0.55, `rgba(255,200,50,${0.15 + nightFactor * 0.25})`)
@@ -319,6 +321,7 @@ export default function SkyBackground() {
     animId = requestAnimationFrame(animate)
 
     const timeWatcher = setInterval(() => {
+      if (scenery === 'day' || scenery === 'night') return
       const next = getTimeOfDay()
       if (next !== currentPeriod) {
         currentPeriod = next
@@ -333,7 +336,7 @@ export default function SkyBackground() {
       clearInterval(timeWatcher)
       window.removeEventListener('resize', resize)
     }
-  }, [])
+  }, [scenery])
 
   return (
     <div

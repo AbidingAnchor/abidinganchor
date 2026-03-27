@@ -1,8 +1,33 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 const BMAC_LINK = 'https://buymeacoffee.com/abidinganchor'
 
 export default function Support() {
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false)
+
+  useEffect(() => {
+    setNotificationsEnabled(localStorage.getItem('abidinganchor-notifications') === 'enabled')
+  }, [])
+
+  const handleNotifications = async () => {
+    if (!('Notification' in window)) {
+      alert('Your browser does not support notifications')
+      return
+    }
+    const permission = await Notification.requestPermission()
+    if (permission === 'granted') {
+      new Notification('AbidingAnchor', {
+        body: 'You will now receive daily verse notifications! 🙏',
+        icon: '/icon-192x192.png',
+      })
+      localStorage.setItem('abidinganchor-notifications', 'enabled')
+      setNotificationsEnabled(true)
+    } else {
+      alert('Notifications blocked. Please enable them in your browser settings.')
+    }
+  }
+
   return (
     <div style={{ position:'relative', minHeight:'100vh', 
       overflow:'hidden', fontFamily:'sans-serif' }}>
@@ -86,6 +111,24 @@ export default function Support() {
               </article>
             </Link>
           </div>
+        </section>
+
+        <section style={{ marginBottom: '14px' }}>
+          <h2 style={{ color: '#D4A843', fontSize: '13px', fontWeight: 700, margin: '0 0 8px', letterSpacing: '0.06em' }}>
+            Daily Notifications
+          </h2>
+          <article style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(14px)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.4)', padding: '14px 16px' }}>
+            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '12px', margin: '0 0 10px' }}>
+              Receive a gentle daily reminder to spend time in the Word.
+            </p>
+            <button
+              type="button"
+              onClick={handleNotifications}
+              style={{ border: '1px solid rgba(212,168,67,0.6)', borderRadius: '10px', padding: '10px 12px', background: notificationsEnabled ? 'rgba(40,120,70,0.4)' : '#D4A843', color: notificationsEnabled ? '#fff' : '#1a1a1a', fontWeight: 700, fontSize: '13px' }}
+            >
+              {notificationsEnabled ? 'Notifications On ✅' : 'Enable Daily Notifications 🔔'}
+            </button>
+          </article>
         </section>
 
         {[

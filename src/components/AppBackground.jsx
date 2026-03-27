@@ -1,6 +1,6 @@
 import SkyBackground from './SkyBackground'
 
-export default function AppBackground() {
+export default function AppBackground({ scenery }) {
   return (
     <div
       style={{
@@ -13,7 +13,7 @@ export default function AppBackground() {
       }}
       aria-hidden="true"
     >
-      <SkyBackground />
+      <SkyBackground scenery={scenery} />
     </div>
   )
 }

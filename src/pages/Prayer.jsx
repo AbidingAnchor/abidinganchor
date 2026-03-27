@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { deletePrayer, getPrayerEntries, savePrayer, toggleAnswered } from '../utils/prayer'
+import PrayerTimer from '../components/PrayerTimer'
 
 export default function Prayer() {
   const [text, setText] = useState('')
   const [entries, setEntries] = useState(() => getPrayerEntries())
   const [showAnswered, setShowAnswered] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [timerOpen, setTimerOpen] = useState(false)
 
   const active = useMemo(() => entries.filter((p) => !p.answered), [entries])
   const answered = useMemo(() => entries.filter((p) => p.answered), [entries])
@@ -34,6 +36,9 @@ export default function Prayer() {
             <p>
               💡 This is your personal prayer journal. Write your prayers, and when God answers them, mark them as answered to keep a record of His faithfulness.
             </p>
+            <button type="button" className="gold-btn mt-3" onClick={() => setTimerOpen(true)}>
+              Start Prayer Timer ⏱️
+            </button>
           </article>
 
           <article className="rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-md space-y-3">
@@ -89,6 +94,7 @@ export default function Prayer() {
           </section>
         </section>
       </div>
+      <PrayerTimer open={timerOpen} onClose={() => setTimerOpen(false)} />
     </div>
   )
 }

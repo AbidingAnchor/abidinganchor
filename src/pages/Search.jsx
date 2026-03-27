@@ -4,6 +4,8 @@ import { saveToJournal } from '../utils/journal'
 import SaveToast from '../components/SaveToast'
 import ShareVerse from '../components/ShareVerse'
 import { TOPIC_LIST, TOPIC_VERSES } from '../utils/topicVerses'
+import BookOverviewCard from '../components/BookOverviewCard'
+import { bibleBooks } from '../data/bibleBooks'
 
 const quickSuggestionsRow1 = ['faith', 'love', 'peace', 'strength', 'hope']
 const quickSuggestionsRow2 = ['fear', 'greed', 'healing', 'forgiveness', 'anger']
@@ -283,6 +285,7 @@ function Search({ onOpenWorship }) {
   const [fullBiblePage, setFullBiblePage] = useState(1)
   const [toastTrigger, setToastTrigger] = useState(0)
   const [shareVerse, setShareVerse] = useState(null)
+  const [overviewBook, setOverviewBook] = useState(null)
 
   const visibleBooks = testament === 'new' ? books.new : books.old
   const trimmedSearch = searchTerm.trim()
@@ -375,6 +378,24 @@ function Search({ onOpenWorship }) {
   const totalFullBiblePages = Math.max(1, Math.ceil(fullBibleResults.length / FULL_BIBLE_PAGE_SIZE))
   const startIndex = (fullBiblePage - 1) * FULL_BIBLE_PAGE_SIZE
   const pagedFullBibleResults = fullBibleResults.slice(startIndex, startIndex + FULL_BIBLE_PAGE_SIZE)
+
+  const handleBookTap = (book) => {
+    const seen = JSON.parse(localStorage.getItem('abidinganchor-book-overviews-seen') || '[]')
+    const info = bibleBooks.find((b) => b.name === book.name)
+    if (seen.includes(book.name) || !info) {
+      setSelectedBook(book)
+      setSelectedChapter(1)
+      return
+    }
+    setOverviewBook({ ...book, info })
+  }
+
+  const markOverviewSeen = (bookName) => {
+    const seen = JSON.parse(localStorage.getItem('abidinganchor-book-overviews-seen') || '[]')
+    if (!seen.includes(bookName)) {
+      localStorage.setItem('abidinganchor-book-overviews-seen', JSON.stringify([...seen, bookName]))
+    }
+  }
 
   return (
     <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
@@ -621,10 +642,25 @@ function Search({ onOpenWorship }) {
                   }}
                 >
                   {visibleBooks.map((book) => (
-                    <button key={book.name} type="button" onClick={() => { setSelectedBook(book); setSelectedChapter(1) }} className="rounded-lg p-3 text-left transition hover:brightness-95" style={glassCard}>
-                      <p className="text-sm font-semibold text-white">{book.name}</p>
-                      <p className="text-xs" style={bodyStyle}>{book.chapters} chapters</p>
-                    </button>
+                    <article key={book.name} className="rounded-lg p-3 text-left transition hover:brightness-95" style={glassCard}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <button type="button" onClick={() => handleBookTap(book)} style={{ background: 'none', border: 'none', textAlign: 'left', padding: 0 }}>
+                          <p className="text-sm font-semibold text-white">{book.name}</p>
+                          <p className="text-xs" style={bodyStyle}>{book.chapters} chapters</p>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const info = bibleBooks.find((b) => b.name === book.name)
+                            if (info) setOverviewBook({ ...book, info })
+                          }}
+                          style={{ background: 'none', border: 'none', color: '#D4A843', fontSize: '16px' }}
+                          aria-label={`About ${book.name}`}
+                        >
+                          ℹ️
+                        </button>
+                      </div>
+                    </article>
                   ))}
                 </div>
               </section>
@@ -633,6 +669,17 @@ function Search({ onOpenWorship }) {
         )}
         <SaveToast trigger={toastTrigger} />
         {shareVerse ? <ShareVerse text={shareVerse.text} reference={shareVerse.reference} onClose={() => setShareVerse(null)} /> : null}
+        <BookOverviewCard
+          book={overviewBook?.info}
+          onClose={() => setOverviewBook(null)}
+          onStart={() => {
+            if (!overviewBook) return
+            markOverviewSeen(overviewBook.name)
+            setSelectedBook({ name: overviewBook.name, apiName: overviewBook.apiName, chapters: overviewBook.chapters })
+            setSelectedChapter(1)
+            setOverviewBook(null)
+          }}
+        />
       </div>
     </div>
   )
