@@ -18,6 +18,7 @@ export default function Auth() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [signUpConsent, setSignUpConsent] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState('')
@@ -33,6 +34,7 @@ export default function Auth() {
     if (mode === 'signup') {
       if (password !== confirmPassword) return setError("Passwords don't match.")
       if (password.length < 6) return setError('Password must be at least 6 characters.')
+      if (!signUpConsent) return setError('Please provide consent to continue.')
     }
     setLoading(true)
     if (mode === 'signin') {
@@ -78,13 +80,24 @@ export default function Auth() {
           {mode === 'signup' ? (
             <input value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm Password" type="password" className="rounded-lg bg-white/90 px-3 py-2 text-[#1a1a1a] focus:outline-none" />
           ) : null}
-          <button type="submit" className="gold-btn" disabled={loading}>
+          {mode === 'signup' ? (
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', color: 'rgba(255,255,255,0.84)', fontSize: '13px', lineHeight: 1.4 }}>
+              <input
+                type="checkbox"
+                checked={signUpConsent}
+                onChange={(e) => setSignUpConsent(e.target.checked)}
+                style={{ marginTop: '2px' }}
+              />
+              <span>I consent to AbidingAnchor storing my spiritual journal and prayer data securely in the cloud to enable sync across my devices.</span>
+            </label>
+          ) : null}
+          <button type="submit" className="gold-btn" disabled={loading || (mode === 'signup' && !signUpConsent)} style={{ opacity: loading || (mode === 'signup' && !signUpConsent) ? 0.55 : 1 }}>
             {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Account'}
           </button>
         </form>
 
         <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <button type="button" onClick={() => { setMode((m) => (m === 'signin' ? 'signup' : 'signin')); setError(''); setSuccess('') }} className="back-btn">
+          <button type="button" onClick={() => { setMode((m) => (m === 'signin' ? 'signup' : 'signin')); setError(''); setSuccess(''); setSignUpConsent(false) }} className="back-btn">
             {mode === 'signin' ? 'Need an account?' : 'Already have an account?'}
           </button>
           <button type="button" onClick={handleForgotPassword} style={{ background: 'none', border: 'none', color: '#D4A843', fontSize: '12px' }}>

@@ -41,7 +41,12 @@ export default function PrivacyPolicy() {
 
             <section className="space-y-2">
               <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>V. Your Rights &amp; Account Deletion</h2>
-              <p>You have the following rights regarding your personal data: Access - you can view all your data within the app at any time. Correction - you can update your name and email in account settings. Deletion - you have the right to delete your account and ALL associated data permanently. You can do this directly through App Settings inside AbidingAnchor by tapping &quot;Delete My Account&quot;, or by contacting us at AbidingAnchor@outlook.com. All personal data will be permanently deleted within 30 days of your request. Pennsylvania Resident Rights (PCDPA): Pennsylvania residents have the right to confirm, correct, and delete their data as described above. GDPR/CCPA Rights: Users in the EU and California have the same rights listed above. Contact AbidingAnchor@outlook.com to exercise these rights.</p>
+              <p>You have the following rights regarding your personal data. We will respond to any verified request to exercise these rights within 45 days. If we require an extension (up to an additional 45 days) for complex requests, we will notify you within the initial period.</p>
+              <p>Access &amp; Portability: You can view your data within the app or request a portable copy of all personal information we have collected about you since January 1, 2022.</p>
+              <p>Correction: You can update your name and email directly in your account settings at any time.</p>
+              <p>Deletion: You have the right to permanently delete your account and all associated data. You can do this via App Settings by tapping &quot;Delete My Account&quot; or by emailing us. Deletion is irreversible.</p>
+              <p>Opt-Out of Profiling: We do not sell your data or use it for targeted advertising. However, we honor Universal Opt-Out Mechanisms (such as Global Privacy Control) as valid requests to limit data processing.</p>
+              <p>Right to Appeal (PCDPA &amp; CCPA/CPRA): If we decline to take action on your data request, we will provide our reasoning within 45 days. You have the right to appeal our decision by contacting us at AbidingAnchor@outlook.com with the subject &apos;Privacy Appeal&apos;. We will respond to your appeal in writing within 60 days. If the appeal is denied, Pennsylvania residents may contact the Pennsylvania Office of Attorney General.</p>
             </section>
 
             <section className="space-y-2">
