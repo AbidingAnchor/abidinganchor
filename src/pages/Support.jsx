@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
-import NotificationSettings from '../components/NotificationSettings'
 import { requestNotificationPermission, scheduleLocalNotification, getNotificationStatus } from '../utils/notifications'
 
 const BMAC_LINK = 'https://buymeacoffee.com/abidinganchor'
@@ -141,10 +140,6 @@ export default function Support() {
               </p>
             )}
           </div>
-        </section>
-
-        <section style={{ marginBottom: '16px' }}>
-          <NotificationSettings />
         </section>
 
         {[
