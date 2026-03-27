@@ -38,6 +38,7 @@ body {
   position: relative;
   z-index: 1;
   animation: page-fade-in 0.3s ease;
+  padding-bottom: max(100px, env(safe-area-inset-bottom, 0px)) !important;
 }
 
 @keyframes page-fade-in {
