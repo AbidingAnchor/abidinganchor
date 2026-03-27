@@ -15,6 +15,7 @@ export default function Auth() {
   const { user, signIn, signUp } = useAuth()
   const [mode, setMode] = useState('signin')
   const [fullName, setFullName] = useState('')
+  const [dateOfBirth, setDateOfBirth] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -34,6 +35,15 @@ export default function Auth() {
     if (mode === 'signup') {
       if (password !== confirmPassword) return setError("Passwords don't match.")
       if (password.length < 6) return setError('Password must be at least 6 characters.')
+      const dob = new Date(dateOfBirth)
+      if (Number.isNaN(dob.getTime())) return setError('Date of Birth is required.')
+      const now = new Date()
+      let age = now.getFullYear() - dob.getFullYear()
+      const monthDelta = now.getMonth() - dob.getMonth()
+      if (monthDelta < 0 || (monthDelta === 0 && now.getDate() < dob.getDate())) age -= 1
+      if (age < 13) {
+        return setError('You must be at least 13 years old to create an account. AbidingAnchor is not directed at children under 13.')
+      }
       if (!signUpConsent) return setError('Please provide consent to continue.')
     }
     setLoading(true)
@@ -73,7 +83,11 @@ export default function Auth() {
 
         <form onSubmit={handleSubmit} style={{ marginTop: '14px', display: 'grid', gap: '10px' }}>
           {mode === 'signup' ? (
-            <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full Name" className="rounded-lg bg-white/90 px-3 py-2 text-[#1a1a1a] focus:outline-none" />
+            <>
+              <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full Name" className="rounded-lg bg-white/90 px-3 py-2 text-[#1a1a1a] focus:outline-none" />
+              <label style={{ color: 'rgba(255,255,255,0.84)', fontSize: '13px' }}>Date of Birth</label>
+              <input value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} type="date" className="rounded-lg bg-white/90 px-3 py-2 text-[#1a1a1a] focus:outline-none" />
+            </>
           ) : null}
           <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" type="email" className="rounded-lg bg-white/90 px-3 py-2 text-[#1a1a1a] focus:outline-none" />
           <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" className="rounded-lg bg-white/90 px-3 py-2 text-[#1a1a1a] focus:outline-none" />
@@ -97,7 +111,7 @@ export default function Auth() {
         </form>
 
         <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <button type="button" onClick={() => { setMode((m) => (m === 'signin' ? 'signup' : 'signin')); setError(''); setSuccess(''); setSignUpConsent(false) }} className="back-btn">
+          <button type="button" onClick={() => { setMode((m) => (m === 'signin' ? 'signup' : 'signin')); setError(''); setSuccess(''); setSignUpConsent(false); setDateOfBirth('') }} className="back-btn">
             {mode === 'signin' ? 'Need an account?' : 'Already have an account?'}
           </button>
           <button type="button" onClick={handleForgotPassword} style={{ background: 'none', border: 'none', color: '#D4A843', fontSize: '12px' }}>
