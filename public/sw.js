@@ -85,16 +85,25 @@ self.addEventListener('message', (event) => {
   }
 });
 
-self.addEventListener('notificationclick', (event) => {
+self.addEventListener('push', event => {
+  const data = event.data ? event.data.json() : {};
+  const title = data.title || 'AbidingAnchor';
+  const options = {
+    body: data.body || 'Your daily verse is ready 🙏',
+    icon: '/icon-192x192.png',
+    badge: '/icon-192x192.png',
+    vibrate: [100, 50, 100],
+    data: { url: data.url || '/' }
+  };
+  event.waitUntil(
+    self.registration.showNotification(title, options)
+  );
+});
+
+self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-      if (windowClients.length > 0) {
-        windowClients[0].focus();
-        return;
-      }
-      return clients.openWindow('/');
-    })
+    clients.openWindow(event.notification.data.url)
   );
 });
 

@@ -1,20 +1,23 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { scheduleLocalNotification } from '../utils/notifications'
 
 const LEGAL_STORAGE_KEY = 'abidinganchor-welcomed'
 const LEGACY_KEY = 'abidinganchor-legal-agreed'
 
 export default function LegalModal() {
-  const [open, setOpen] = useState(false)
-
-  useEffect(() => {
+  const [open, setOpen] = useState(() => {
     const alreadyAgreed = localStorage.getItem(LEGAL_STORAGE_KEY) || localStorage.getItem(LEGACY_KEY)
-    if (!alreadyAgreed) setOpen(true)
-  }, [])
+    return !alreadyAgreed
+  })
 
   const handleAgree = () => {
     localStorage.setItem(LEGAL_STORAGE_KEY, 'true')
     setOpen(false)
+    // Trigger notification setup if permission is already granted
+    if (Notification.permission === 'granted') {
+      scheduleLocalNotification()
+    }
   }
 
   if (!open) return null
