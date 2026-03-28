@@ -1,9 +1,12 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
 import { getDailyVerse } from '../utils/dailyVerse'
 import { getJournalEntries, saveToJournal } from '../utils/journal'
 import SaveToast from '../components/SaveToast'
 import { useAuth } from '../context/AuthContext'
+
+const PROFILE_STREAK_FETCH_MS = 5000
 
 function getTodaysVerse() {
   return getDailyVerse()
@@ -15,6 +18,46 @@ function Home({ onOpenWorship, worshipStatus }) {
   const [streak, setStreak] = useState({ currentStreak: 0 })
   const [toastTrigger, setToastTrigger] = useState(0)
   const [journalCount, setJournalCount] = useState(0)
+  const [suppressPersonalWelcome, setSuppressPersonalWelcome] = useState(false)
+  const [, setProfileFetchLoading] = useState(false)
+  const profileRef = useRef(profile)
+  profileRef.current = profile
+
+  useEffect(() => {
+    if (!user?.id) {
+      setProfileFetchLoading(false)
+      return
+    }
+    setProfileFetchLoading(true)
+    let cancelled = false
+    ;(async () => {
+      try {
+        const { data, error } = await Promise.race([
+          supabase.from('profiles').select('reading_streak').eq('id', user.id).single(),
+          new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('profile-streak-timeout')), PROFILE_STREAK_FETCH_MS)
+          }),
+        ])
+        if (cancelled) return
+        if (error) throw error
+        setStreak({ currentStreak: Number(data?.reading_streak) || 0 })
+      } catch {
+        if (!cancelled && !profileRef.current) {
+          setStreak({ currentStreak: 0 })
+          setSuppressPersonalWelcome(true)
+        }
+      } finally {
+        if (!cancelled) setProfileFetchLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [user?.id])
+
+  useEffect(() => {
+    if (profile) setSuppressPersonalWelcome(false)
+  }, [profile])
 
   useEffect(() => {
     let timeoutId
@@ -160,7 +203,9 @@ function Home({ onOpenWorship, worshipStatus }) {
     100: "100 days! A mighty warrior in God's Word! ⚔️",
   }
   const currentStreak = Math.max(0, Number(streak?.currentStreak || 0))
-  const firstName = profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || ''
+  const firstName = suppressPersonalWelcome
+    ? ''
+    : (profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || '')
   const welcomeCopy = firstName ? `Welcome back, ${firstName} 🙏` : 'Welcome back 🙏'
   const streakMessage = streakMessages[currentStreak] || `Day ${currentStreak} — Keep seeking Him with all your heart. 🙏`
 

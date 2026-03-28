@@ -3,6 +3,22 @@ import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext({})
 
+const PROFILE_FETCH_TIMEOUT_MS = 5000
+
+async function fetchProfileWithTimeout(user) {
+  if (!user?.id) return null
+  try {
+    return await Promise.race([
+      ensureProfile(user),
+      new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('profile-fetch-timeout')), PROFILE_FETCH_TIMEOUT_MS)
+      }),
+    ])
+  } catch {
+    return null
+  }
+}
+
 async function ensureProfile(user) {
   if (!user?.id) return null
   const fullName = user.user_metadata?.full_name || ''
@@ -28,31 +44,53 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let active = true
     const boot = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      const nextUser = session?.user ?? null
-      if (!active) return
-      setUser(nextUser)
-      if (nextUser) {
-        const nextProfile = await ensureProfile(nextUser)
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        const nextUser = session?.user ?? null
         if (!active) return
-        setProfile(nextProfile)
-      } else {
-        setProfile(null)
+        setUser(nextUser)
+        if (nextUser) {
+          try {
+            const nextProfile = await fetchProfileWithTimeout(nextUser)
+            if (!active) return
+            setProfile(nextProfile)
+          } catch {
+            if (!active) return
+            setProfile(null)
+          }
+        } else {
+          setProfile(null)
+        }
+      } catch {
+        if (active) {
+          setUser(null)
+          setProfile(null)
+        }
+      } finally {
+        if (active) setLoading(false)
       }
-      setLoading(false)
     }
     boot()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_, session) => {
       const nextUser = session?.user ?? null
       setUser(nextUser)
-      if (nextUser) {
-        const nextProfile = await ensureProfile(nextUser)
-        setProfile(nextProfile)
-      } else {
+      try {
+        if (nextUser) {
+          try {
+            const nextProfile = await fetchProfileWithTimeout(nextUser)
+            setProfile(nextProfile)
+          } catch {
+            setProfile(null)
+          }
+        } else {
+          setProfile(null)
+        }
+      } catch {
         setProfile(null)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     })
 
     return () => {
