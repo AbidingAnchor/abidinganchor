@@ -8,6 +8,7 @@ const tabs = [
   { label: 'Search', path: '/search', icon: '🔍' },
   { label: 'Journey', path: '/faith-journey', icon: '🧭' },
   { label: 'Prayer', path: '/prayer', icon: '🙏' },
+  { label: 'Community', path: '/community-prayer', icon: '🤝' },
   { label: 'Journal', path: '/journal', icon: '📓' },
 ]
 
