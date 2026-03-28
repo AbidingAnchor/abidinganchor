@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -15,8 +16,19 @@ const tabs = [
 export default function Navbar({ scenery = 'day', onToggleScenery, showSceneryTip = false }) {
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
+  const signOutLastFiredRef = useRef(0)
   const isNight = scenery === 'night'
   const displayName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email || ''
+
+  const handleSignOut = async (e) => {
+    if (e?.type === 'touchend') e.preventDefault()
+    const now = Date.now()
+    if (now - signOutLastFiredRef.current < 400) return
+    signOutLastFiredRef.current = now
+    await signOut()
+    navigate('/auth', { replace: true })
+  }
+
   return (
     <>
       <div
@@ -37,12 +49,8 @@ export default function Navbar({ scenery = 'day', onToggleScenery, showSceneryTi
         ) : null}
         <button
           type="button"
-          onClick={async () => {
-            const ok = window.confirm('Are you sure you want to sign out?')
-            if (!ok) return
-            await signOut()
-            navigate('/auth', { replace: true })
-          }}
+          onClick={() => handleSignOut()}
+          onTouchEnd={(e) => handleSignOut(e)}
           style={{ border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(10,22,50,0.8)', color: '#fff', borderRadius: '999px', padding: '6px 10px', fontSize: '11px' }}
         >
           Sign Out

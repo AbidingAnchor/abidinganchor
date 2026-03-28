@@ -1,4 +1,6 @@
-const CACHE_NAME = 'abidinganchor-v1';
+/** Bump on each deploy to drop old asset caches */
+const CACHE_VERSION = 'v2';
+const CACHE_NAME = `abidinganchor-${CACHE_VERSION}`;
 const NOTIF_CACHE_NAME = 'abidinganchor-notif-cache';
 const STATIC_ASSETS = [
   '/',
@@ -63,9 +65,10 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
       const keys = await caches.keys();
+      const keep = new Set([CACHE_NAME, NOTIF_CACHE_NAME]);
       await Promise.all(
         keys
-          .filter((key) => key !== CACHE_NAME && key !== NOTIF_CACHE_NAME)
+          .filter((key) => !keep.has(key))
           .map((key) => caches.delete(key))
       );
       await maybeSendDailyVerseNotification();
@@ -107,6 +110,12 @@ self.addEventListener('notificationclick', event => {
   );
 });
 
+function isHtmlNavigationRequest(request) {
+  if (request.mode === 'navigate' || request.destination === 'document') return true;
+  const accept = request.headers.get('accept') || '';
+  return accept.includes('text/html');
+}
+
 self.addEventListener('fetch', (event) => {
   // Network first for Bible API calls
   if (event.request.url.includes('bible-api.com')) {
@@ -114,6 +123,21 @@ self.addEventListener('fetch', (event) => {
       fetch(event.request).catch(() =>
         caches.match(event.request)
       )
+    );
+    return;
+  }
+  // Network-first for HTML (SPA shell / index) so deploys are not stuck on stale index.html
+  if (isHtmlNavigationRequest(event.request)) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const clone = response.clone();
+          if (response.ok) {
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request))
     );
     return;
   }
