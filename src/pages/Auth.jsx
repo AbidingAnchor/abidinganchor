@@ -7,8 +7,19 @@ function mapError(message = '') {
   const m = message.toLowerCase()
   if (m.includes('invalid login credentials')) return 'Incorrect email or password.'
   if (m.includes('already registered')) return 'This email is already taken.'
-  if (m.includes('email')) return 'Please enter a valid email address.'
+  if (
+    m.includes('invalid email')
+    || m.includes('email address is invalid')
+    || m.includes('unable to validate email address')
+    || m.includes('email format')
+  ) {
+    return 'Please enter a valid email address.'
+  }
   return message || 'Something went wrong. Please try again.'
+}
+
+function isValidEmail(value = '') {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value)
 }
 
 export default function Auth() {
@@ -30,7 +41,9 @@ export default function Auth() {
     event.preventDefault()
     setError('')
     setSuccess('')
-    if (!email.trim()) return setError('Email is required.')
+    const normalizedEmail = email.trim()
+    if (!normalizedEmail) return setError('Email is required.')
+    if (!isValidEmail(normalizedEmail)) return setError('Please enter a valid email address.')
     if (!password.trim()) return setError('Password is required.')
     if (mode === 'signup') {
       if (password !== confirmPassword) return setError("Passwords don't match.")
@@ -48,12 +61,12 @@ export default function Auth() {
     }
     setLoading(true)
     if (mode === 'signin') {
-      const { error: signInError } = await signIn(email.trim(), password)
+      const { error: signInError } = await signIn(normalizedEmail, password)
       if (signInError) setError(mapError(signInError.message))
       setLoading(false)
       return
     }
-    const { error: signUpError } = await signUp(email.trim(), password, fullName.trim())
+    const { error: signUpError } = await signUp(normalizedEmail, password, fullName.trim())
     if (signUpError) setError(mapError(signUpError.message))
     else setSuccess('Check your email to confirm your account 🙏')
     setLoading(false)
@@ -62,11 +75,16 @@ export default function Auth() {
   const handleForgotPassword = async () => {
     setError('')
     setSuccess('')
-    if (!email.trim()) {
+    const normalizedEmail = email.trim()
+    if (!normalizedEmail) {
       setError('Enter your email first, then tap "Forgot password?".')
       return
     }
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim())
+    if (!isValidEmail(normalizedEmail)) {
+      setError('Please enter a valid email address.')
+      return
+    }
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(normalizedEmail)
     if (resetError) setError(mapError(resetError.message))
     else setSuccess('Password reset email sent.')
   }
