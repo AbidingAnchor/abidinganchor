@@ -235,10 +235,10 @@ function Home({ onOpenWorship, worshipStatus }) {
             <article
               className="text-white"
               style={{
-                background: 'rgba(5, 15, 40, 0.35)',
-                backdropFilter: 'blur(8px)',
-                WebkitBackdropFilter: 'blur(8px)',
-                border: '1px solid rgba(212,168,67,0.15)',
+                background: 'rgba(8, 20, 50, 0.72)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255,255,255,0.12)',
                 borderRadius: '24px',
                 padding: '28px',
                 position: 'relative',
@@ -357,10 +357,10 @@ function Home({ onOpenWorship, worshipStatus }) {
             <div style={{ marginBottom: '28px' }}>
               <div
               style={{
-                background: 'rgba(5, 15, 40, 0.35)',
-                backdropFilter: 'blur(8px)',
-                WebkitBackdropFilter: 'blur(8px)',
-                border: '1px solid rgba(212,168,67,0.15)',
+                background: 'rgba(8, 20, 50, 0.72)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255,255,255,0.12)',
                 borderRadius: '20px',
                 padding: '20px',
                 boxShadow: currentStreak >= 7 ? '0 0 0 1px rgba(212,168,67,0.8), 0 0 20px rgba(212,168,67,0.35)' : undefined,
@@ -387,7 +387,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                     ? { background: '#D4A843', boxShadow: '0 0 8px rgba(212,168,67,0.6)', borderColor: '#D4A843' }
                     : isCompleted
                       ? { background: '#D4A843', borderColor: '#D4A843' }
-                      : { background: 'rgba(255,255,255,0.15)', borderColor: 'rgba(255,255,255,0.2)' }
+                      : { background: 'rgba(8, 20, 50, 0.72)', borderColor: 'rgba(255,255,255,0.12)' }
                   return (
                     <div 
                       key={day} 
@@ -409,11 +409,11 @@ function Home({ onOpenWorship, worshipStatus }) {
                   minWidth: '140px',
                   minHeight: '100px',
                   textDecoration: 'none',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(212,168,67,0.15)',
+                  background: 'rgba(8, 20, 50, 0.65)',
+                  border: '1px solid rgba(255,255,255,0.12)',
                   borderRadius: '20px',
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
+                  backdropFilter: 'blur(15px)',
+                  WebkitBackdropFilter: 'blur(15px)',
                   padding: '20px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -427,12 +427,12 @@ function Home({ onOpenWorship, worshipStatus }) {
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.06)'
+                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.65)'
                 }}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>🎨</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.9)', marginBottom: '4px' }}>Scripture Art</p>
-                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>Create shareable verse images</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.95)', marginBottom: '4px' }}>Scripture Art</p>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Create shareable verse images</p>
               </Link>
               <Link
                 to="/reading-plans"
@@ -440,11 +440,11 @@ function Home({ onOpenWorship, worshipStatus }) {
                   minWidth: '140px',
                   minHeight: '100px',
                   textDecoration: 'none',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(212,168,67,0.15)',
+                  background: 'rgba(8, 20, 50, 0.65)',
+                  border: '1px solid rgba(255,255,255,0.12)',
                   borderRadius: '20px',
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
+                  backdropFilter: 'blur(15px)',
+                  WebkitBackdropFilter: 'blur(15px)',
                   padding: '20px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -458,12 +458,12 @@ function Home({ onOpenWorship, worshipStatus }) {
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.06)'
+                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.65)'
                 }}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>📅</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.9)', marginBottom: '4px' }}>Reading Plans</p>
-                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>Follow structured daily journeys</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.95)', marginBottom: '4px' }}>Reading Plans</p>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Follow structured daily journeys</p>
               </Link>
               <Link
                 to="/fasting"
@@ -471,11 +471,11 @@ function Home({ onOpenWorship, worshipStatus }) {
                   minWidth: '140px',
                   minHeight: '100px',
                   textDecoration: 'none',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(212,168,67,0.15)',
+                  background: 'rgba(8, 20, 50, 0.65)',
+                  border: '1px solid rgba(255,255,255,0.12)',
                   borderRadius: '20px',
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
+                  backdropFilter: 'blur(15px)',
+                  WebkitBackdropFilter: 'blur(15px)',
                   padding: '20px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -489,12 +489,12 @@ function Home({ onOpenWorship, worshipStatus }) {
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.06)'
+                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.65)'
                 }}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>🕐</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.9)', marginBottom: '4px' }}>Fasting Tracker</p>
-                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>Track fasts and prayer notes</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.95)', marginBottom: '4px' }}>Fasting Tracker</p>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Track fasts and prayer notes</p>
               </Link>
               <Link
                 to="/support"
@@ -502,11 +502,11 @@ function Home({ onOpenWorship, worshipStatus }) {
                   minWidth: '140px',
                   minHeight: '100px',
                   textDecoration: 'none',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(212,168,67,0.15)',
+                  background: 'rgba(8, 20, 50, 0.65)',
+                  border: '1px solid rgba(255,255,255,0.12)',
                   borderRadius: '20px',
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
+                  backdropFilter: 'blur(15px)',
+                  WebkitBackdropFilter: 'blur(15px)',
                   padding: '20px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -520,22 +520,22 @@ function Home({ onOpenWorship, worshipStatus }) {
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.06)'
+                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.65)'
                 }}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>🤝</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.9)', marginBottom: '4px' }}>Support</p>
-                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>Help sustain the ministry</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.95)', marginBottom: '4px' }}>Support</p>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Help sustain the ministry</p>
               </Link>
               <div
                 style={{
                   minWidth: '140px',
                   minHeight: '100px',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(212,168,67,0.15)',
+                  background: 'rgba(8, 20, 50, 0.65)',
+                  border: '1px solid rgba(255,255,255,0.12)',
                   borderRadius: '20px',
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
+                  backdropFilter: 'blur(15px)',
+                  WebkitBackdropFilter: 'blur(15px)',
                   padding: '20px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -550,13 +550,13 @@ function Home({ onOpenWorship, worshipStatus }) {
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.06)'
+                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.65)'
                 }}
                 onClick={() => window.open('https://discord.gg/nZcZRkUMJh', '_blank')}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>💬</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.9)', marginBottom: '4px' }}>Community</p>
-                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>Join our Discord</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.95)', marginBottom: '4px' }}>Community</p>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Join our Discord</p>
               </div>
               <Link
                 to="/worship"
@@ -564,11 +564,11 @@ function Home({ onOpenWorship, worshipStatus }) {
                   minWidth: '140px',
                   minHeight: '100px',
                   textDecoration: 'none',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(212,168,67,0.15)',
+                  background: 'rgba(8, 20, 50, 0.65)',
+                  border: '1px solid rgba(255,255,255,0.12)',
                   borderRadius: '20px',
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
+                  backdropFilter: 'blur(15px)',
+                  WebkitBackdropFilter: 'blur(15px)',
                   padding: '20px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -581,13 +581,13 @@ function Home({ onOpenWorship, worshipStatus }) {
                   e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(212,168,67,0.15)'
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
+                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.65)'
                 }}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>🎵</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.9)', marginBottom: '4px' }}>Worship Mode</p>
-                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>Music & meditation</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.95)', marginBottom: '4px' }}>Worship Mode</p>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Music & meditation</p>
               </Link>
             </div>
           </div>
@@ -595,10 +595,10 @@ function Home({ onOpenWorship, worshipStatus }) {
           <div
             className="rounded-2xl p-6"
             style={{
-              background: 'rgba(5, 15, 40, 0.35)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-              border: '1px solid rgba(212,168,67,0.15)',
+              background: 'rgba(8, 20, 50, 0.72)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255,255,255,0.12)',
               animation: 'fadeInUp 0.6s ease forwards',
               animationDelay: '0.4s'
             }}

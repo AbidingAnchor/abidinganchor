@@ -131,7 +131,7 @@ export default function AICompanion() {
                   style={
                     message.role === 'user'
                       ? { background: '#D4A843', color: '#1a1a1a' }
-                      : { background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }
+                      : { background: 'rgba(8, 20, 50, 0.72)', color: '#fff', border: '1px solid rgba(255,255,255,0.12)' }
                   }
                 >
                   {message.role === 'assistant' ? <p className="mb-1 text-xs font-semibold" style={{ color: '#D4A843' }}>✝</p> : null}

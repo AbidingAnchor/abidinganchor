@@ -154,7 +154,7 @@ export default function Devotional() {
       />
       <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '220px', paddingBottom: '110px', maxWidth: '680px', margin: '0 auto', width: '100%', zIndex: 2 }}>
         <section className="space-y-4">
-          <div className="rounded-3xl border border-white/30 p-5 text-white backdrop-blur-md" style={{ background: 'rgba(255,255,255,0.17)', boxShadow: '0 0 28px rgba(212,168,67,0.22)' }}>
+          <div className="rounded-3xl border border-white/30 p-5 text-white backdrop-blur-md" style={{ background: 'rgba(8, 20, 50, 0.72)', boxShadow: '0 0 28px rgba(212,168,67,0.22)' }}>
             <p className="text-xs uppercase tracking-[0.2em] text-white/80">Today&apos;s Devotional</p>
             <h1 className="mt-2 text-3xl font-bold" style={{ color: '#D4A843' }}>{today.title}</h1>
             <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/75">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
@@ -197,7 +197,7 @@ export default function Devotional() {
                 style={{
                   borderColor: activeTopic === topic ? '#D4A843' : 'rgba(255,255,255,0.3)',
                   color: activeTopic === topic ? '#D4A843' : 'rgba(255,255,255,0.85)',
-                  background: activeTopic === topic ? 'rgba(212,168,67,0.13)' : 'rgba(255,255,255,0.08)',
+                  background: activeTopic === topic ? 'rgba(212,168,67,0.13)' : 'rgba(8, 20, 50, 0.72)',
                 }}
               >
                 {topic}

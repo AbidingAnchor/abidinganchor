@@ -86,17 +86,17 @@ body::after {
   to { opacity: 1; }
 }
 .app-card {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(212,168,67,0.2);
+  background: rgba(8, 20, 50, 0.80);
+  border: 1px solid rgba(255,255,255,0.12);
   border-radius: 20px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
-  backdrop-filter: blur(16px);
+  backdrop-filter: blur(20px);
   padding: 20px;
   transition: border-color 0.3s ease;
 }
 
 .app-card:hover {
-  border-color: rgba(212,168,67,0.5);
+  border-color: rgba(255,255,255,0.25);
   box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
@@ -140,14 +140,18 @@ body::after {
 }
 
 .app-input {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(212,168,67,0.3);
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.4);
   border-radius: 12px;
   color: white;
   padding: 14px 16px;
   outline: none;
   width: 100%;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.app-input::placeholder {
+  color: rgba(255,255,255,0.6);
 }
 
 .app-input:focus {
