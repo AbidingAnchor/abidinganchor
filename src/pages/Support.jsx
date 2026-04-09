@@ -131,6 +131,35 @@ export default function Support() {
           </article>
         </section>
 
+        <section style={{ marginBottom: '14px' }}>
+          <h2 style={{ color: '#D4A843', fontSize: '13px', fontWeight: 700, margin: '0 0 8px', letterSpacing: '0.06em' }}>
+            Join the Community
+          </h2>
+          <article style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(14px)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.4)', padding: '14px 16px' }}>
+            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '12px', margin: '0 0 12px', lineHeight: '1.6' }}>
+              Connect with other believers, share prayer requests, and grow together in faith.
+            </p>
+            <button
+              type="button"
+              onClick={() => window.open('https://discord.gg/nZcZRkUMJh', '_blank')}
+              style={{ 
+                background: 'linear-gradient(135deg, #D4A843 0%, #F4D03F 100%)',
+                color: '#0d1f4e',
+                border: 'none',
+                borderRadius: '50px',
+                padding: '12px 24px',
+                fontWeight: 600,
+                fontSize: '13px',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 15px rgba(212,168,67,0.3)'
+              }}
+            >
+              Join our Discord
+            </button>
+          </article>
+        </section>
+
         {[
           { amount:'$3', label:'A Small Blessing', 
             desc:'Covers one day of server costs' },

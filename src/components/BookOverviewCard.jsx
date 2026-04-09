@@ -6,26 +6,29 @@ export default function BookOverviewCard({ book, onClose, onStart }) {
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 9200,
+        zIndex: 12000,
         background: 'rgba(0,0,0,0.55)',
-        display: 'flex',
-        alignItems: 'flex-end',
-        justifyContent: 'center',
         padding: '12px',
       }}
+      onClick={onClose}
     >
       <article
         style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
           width: '100%',
-          maxWidth: '680px',
+          maxWidth: '480px',
           background: 'rgba(13,31,78,0.92)',
           backdropFilter: 'blur(16px)',
           border: '1px solid rgba(255,255,255,0.28)',
-          borderRadius: '18px 18px 8px 8px',
+          borderRadius: '16px',
           padding: '16px',
           color: '#fff',
           animation: 'page-fade-in 0.2s ease',
         }}
+        onClick={(event) => event.stopPropagation()}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 style={{ margin: 0, color: '#D4A843', fontSize: '24px', fontWeight: 700 }}>{book.name}</h2>

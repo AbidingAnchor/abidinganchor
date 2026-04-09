@@ -46,13 +46,12 @@ function Journal() {
     }
   })
   const [loading, setLoading] = useState(true)
-  const glassCard = {
-    background: 'rgba(255, 255, 255, 0.25)',
-    backdropFilter: 'blur(14px)',
-    border: '1px solid rgba(255, 255, 255, 0.5)',
+
+  // Define style objects that were missing
+  const bodyStyle = {
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: '14px',
   }
-  const headingStyle = { color: '#ffffff', textShadow: '0 1px 8px rgba(0,60,120,0.4)' }
-  const bodyStyle = { color: 'rgba(255,255,255,0.85)' }
 
   useEffect(() => {
     let active = true
@@ -144,27 +143,27 @@ function Journal() {
       >
     <section className="space-y-5">
       <section className="flex gap-2">
-        <button type="button" onClick={() => setActiveTab('journal')} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${activeTab === 'journal' ? 'bg-accent-gold text-primary-dark' : 'text-white'}`} style={activeTab === 'journal' ? undefined : glassCard}>Journal</button>
-        <button type="button" onClick={() => setActiveTab('gratitude')} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${activeTab === 'gratitude' ? 'bg-accent-gold text-primary-dark' : 'text-white'}`} style={activeTab === 'gratitude' ? undefined : glassCard}>Gratitude</button>
-        <button type="button" onClick={() => setActiveTab('highlights')} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${activeTab === 'highlights' ? 'bg-accent-gold text-primary-dark' : 'text-white'}`} style={activeTab === 'highlights' ? undefined : glassCard}>Highlights</button>
+        <button type="button" onClick={() => setActiveTab('journal')} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${activeTab === 'journal' ? 'bg-gold text-primary-purple' : 'app-card text-gold'}`}>Journal</button>
+        <button type="button" onClick={() => setActiveTab('gratitude')} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${activeTab === 'gratitude' ? 'bg-gold text-primary-purple' : 'app-card text-gold'}`}>Gratitude</button>
+        <button type="button" onClick={() => setActiveTab('highlights')} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${activeTab === 'highlights' ? 'bg-gold text-primary-purple' : 'app-card text-gold'}`}>Highlights</button>
       </section>
 
       {activeTab === 'gratitude' ? (
         <section className="space-y-3">
-          <article className="rounded-2xl p-4" style={glassCard}>
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-accent-gold">Gratitude Verse</p>
-            <p className="mt-2 text-lg text-white [font-family:'Lora',serif]">{gratitudeVerses[new Date().getDate() % gratitudeVerses.length]}</p>
-            <p className="mt-1 text-sm text-white/80">Streak: {gratitudeStreak} day{gratitudeStreak === 1 ? '' : 's'}</p>
+          <article className="app-card rounded-2xl p-4 border-l-[3px] border-gold">
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-gold">Gratitude Verse</p>
+            <p className="mt-2 text-scripture">{gratitudeVerses[new Date().getDate() % gratitudeVerses.length]}</p>
+            <p className="mt-1 text-body">Streak: {gratitudeStreak} day{gratitudeStreak === 1 ? '' : 's'}</p>
           </article>
-          <article className="rounded-2xl p-4" style={{ ...glassCard, border: '1px solid rgba(212,168,67,0.65)' }}>
-            <p className="text-sm font-semibold text-white">Today I'm grateful for...</p>
-            <textarea rows={3} value={gratitudeText} onChange={(event) => setGratitudeText(event.target.value)} className="mt-2 w-full rounded-lg bg-white/85 px-3 py-2 text-[#1a1a1a] placeholder:text-[#1a1a1a]/60 focus:outline-none" />
-            <button type="button" className="gold-btn mt-3" onClick={saveGratitude}>Save Gratitude</button>
+          <article className="app-card rounded-2xl p-4 border-l-[3px] border-gold">
+            <p className="text-section-header">Today I'm grateful for...</p>
+            <textarea rows={3} value={gratitudeText} onChange={(event) => setGratitudeText(event.target.value)} className="app-card mt-2 w-full rounded-lg px-3 py-2 text-white placeholder:text-white/60 focus:outline-none focus:border-gold" />
+            <button type="button" className="btn-primary mt-3" onClick={saveGratitude}>Save Gratitude</button>
           </article>
           {gratitudeEntries.slice(0, 7).map((entry) => (
-            <article key={entry.id} className="rounded-2xl p-4" style={glassCard}>
-              <p className="text-xs text-white/70">{new Date(entry.date).toLocaleDateString()}</p>
-              <p className="mt-1 text-white">{entry.text}</p>
+            <article key={entry.id} className="app-card rounded-2xl p-4 border-l-[3px] border-gold">
+              <p className="text-text-secondary-light">{new Date(entry.date).toLocaleDateString()}</p>
+              <p className="mt-1 text-body">{entry.text}</p>
             </article>
           ))}
         </section>
@@ -173,14 +172,14 @@ function Journal() {
       {activeTab === 'highlights' ? (
         <section className="space-y-3">
           {highlightEntries.length === 0 ? (
-            <section className="flex min-h-56 flex-col items-center justify-center rounded-2xl p-6 text-center" style={glassCard}>
-              <p className="text-4xl text-accent-gold">💛</p>
+            <section className="app-card flex min-h-56 flex-col items-center justify-center rounded-2xl p-6 text-center border-l-[3px] border-gold">
+              <p className="text-4xl text-gold">💛</p>
               <p className="mt-3 text-lg font-semibold text-white">Nothing highlighted yet.</p>
             </section>
           ) : highlightEntries.map((entry) => (
-            <article key={entry.reference} className="rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4" style={{ ...glassCard, background: `${entry.color || '#D4A843'}33` }}>
-              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-accent-gold">{entry.reference}</p>
-              <p className="mt-2 text-white">{entry.text}</p>
+            <article key={entry.reference} className="app-card rounded-r-2xl rounded-l-md border-l-[3px] border-gold p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-gold">{entry.reference}</p>
+              <p className="mt-2 text-body">{entry.text}</p>
             </article>
           ))}
         </section>
@@ -189,28 +188,24 @@ function Journal() {
       {activeTab === 'journal' ? (
       <>
       <header className="space-y-1">
-        <h1 className="font-bold" style={{ ...headingStyle, fontSize: '24px' }}>Prayer Journal</h1>
-        <p style={bodyStyle}>Your personal reflections &amp; notes</p>
-        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-accent-gold">{entries.length} entries</p>
+        <h1 className="text-page-title">Prayer Journal</h1>
+        <p className="text-body">Your personal reflections &amp; notes</p>
+        <p className="text-gold text-xs font-semibold uppercase tracking-wider">{entries.length} entries</p>
       </header>
 
       <div className="space-y-3">
-        <button
-          type="button"
-          onClick={() => setShowForm((prev) => !prev)}
-          className="w-full rounded-xl bg-accent-gold px-4 py-3 text-sm font-semibold text-[#1a1a1a] transition hover:brightness-95"
-        >
-          + New Journal Entry
-        </button>
+          <button type="button" onClick={() => setIsAddingNewEntry(true)} className="btn-primary">
+            + New Journal Entry
+          </button>
 
         {showForm && (
-          <article className="space-y-3 rounded-2xl p-4" style={glassCard}>
+          <article className="app-card space-y-3 rounded-2xl p-4 border-l-[3px] border-[#D4A843]">
             <input
               type="text"
               value={reference}
               onChange={(event) => setReference(event.target.value)}
               placeholder="Verse reference e.g. John 3:16"
-              className="w-full rounded-lg bg-white/85 px-3 py-2 text-[#1a1a1a] placeholder:text-[#1a1a1a]/60 focus:outline-none"
+              className="app-card w-full rounded-lg px-3 py-2 text-white placeholder:text-white/60 focus:outline-none focus:border-[#D4A843]"
               style={{ width: '100%', maxWidth: '100%' }}
             />
             <textarea
@@ -218,7 +213,7 @@ function Journal() {
               value={note}
               onChange={(event) => setNote(event.target.value)}
               placeholder="Write your reflection, prayer, or thoughts..."
-              className="w-full rounded-lg bg-white/85 px-3 py-2 text-[#1a1a1a] placeholder:text-[#1a1a1a]/60 focus:outline-none"
+              className="app-card w-full rounded-lg px-3 py-2 text-white placeholder:text-white/60 focus:outline-none focus:border-[#D4A843]"
               style={{ width: '100%', maxWidth: '100%' }}
             />
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-accent-gold">{todayDisplay}</p>
@@ -251,9 +246,8 @@ function Journal() {
             type="button"
             onClick={() => setActiveFilter(filter)}
             className={`rounded-full px-3 py-1.5 text-xs font-medium ${
-              activeFilter === filter ? 'bg-accent-gold text-primary-dark' : 'bg-parchment text-primary-dark'
+              activeFilter === filter ? 'bg-accent-gold text-[#1a1a1a]' : 'app-card text-gold-accent'
             }`}
-            style={activeFilter === filter ? undefined : glassCard}
           >
             {filter}
           </button>
@@ -261,7 +255,7 @@ function Journal() {
       </section>
 
       {loading ? (
-        <section className="space-y-2 rounded-2xl p-4" style={glassCard}>
+        <section className="app-card space-y-2 rounded-2xl p-4 border-l-[3px] border-[#D4A843]">
           <div className="gold-skeleton" />
           <div className="gold-skeleton" style={{ width: '80%' }} />
           <div className="gold-skeleton" style={{ width: '60%' }} />
@@ -269,7 +263,7 @@ function Journal() {
       ) : filteredEntries.length > 0 ? (
         <section className="space-y-3">
           {filteredEntries.map((entry) => (
-            <article key={entry.id} className="rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4" style={{ ...glassCard, isolation: 'isolate' }}>
+            <article key={entry.id} className="app-card rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4">
               <div className="flex items-start justify-between gap-3">
                 <p className="text-xs" style={bodyStyle}>{entry.date}</p>
                 <p className="text-xs font-semibold uppercase tracking-[0.15em] text-accent-gold">{entry.reference}</p>
@@ -291,7 +285,7 @@ function Journal() {
           ))}
         </section>
       ) : (
-        <section className="flex min-h-56 flex-col items-center justify-center rounded-2xl p-6 text-center" style={glassCard}>
+        <section className="app-card flex min-h-56 flex-col items-center justify-center rounded-2xl p-6 text-center border-l-[3px] border-[#D4A843]">
           <p className="text-4xl text-accent-gold">📜</p>
           <p className="mt-3 text-lg font-semibold text-white" style={{ textShadow: '0 1px 8px rgba(0,60,120,0.4)' }}>Your journal is empty. Start writing today.</p>
           <p className="mt-1 text-sm" style={bodyStyle}>Capture a verse, reflection, or prayer.</p>

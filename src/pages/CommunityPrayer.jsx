@@ -6,13 +6,7 @@ import { useAuth } from '../context/AuthContext'
 const FILTER_CATEGORIES = ['All', 'Health', 'Family', 'Guidance', 'Praise', 'Grief', 'Protection']
 const FORM_CATEGORIES = ['Health', 'Family', 'Guidance', 'Praise', 'Grief', 'Protection', 'General']
 
-const cardStyle = {
-  background: 'rgba(255, 255, 255, 0.1)',
-  backdropFilter: 'blur(14px)',
-  WebkitBackdropFilter: 'blur(14px)',
-  border: '1px solid rgba(255, 255, 255, 0.2)',
-  borderRadius: '16px',
-}
+
 
 function timeAgo(iso) {
   if (!iso) return ''
@@ -36,6 +30,14 @@ export default function CommunityPrayer() {
   const [formCategory, setFormCategory] = useState('General')
   const [formAnonymous, setFormAnonymous] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+
+  // Define style objects that were missing
+  const cardStyle = {
+    background: 'rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(14px)',
+    WebkitBackdropFilter: 'blur(14px)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+  }
 
   const firstName = useMemo(
     () => profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || '',
@@ -212,35 +214,23 @@ export default function CommunityPrayer() {
       >
         <header className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1
-              className="text-2xl font-bold sm:text-3xl"
-              style={{ color: '#D4A843', textShadow: '0 1px 8px rgba(0,60,120,0.4)' }}
-            >
+            <h1 className="text-page-title">
               🤝 Community Prayer
             </h1>
-            <p className="mt-1 text-sm text-white/85">Lift each other up in prayer.</p>
+            <p className="text-body">Lift each other up in prayer.</p>
           </div>
-          <Link
-            to="/friends"
-            className="rounded-xl border px-3 py-2 text-sm font-semibold text-[#D4A843] transition hover:bg-white/10"
-            style={{ borderColor: 'rgba(212, 168, 67, 0.6)' }}
-          >
+          <Link to="/friends" className="btn-secondary">
             Friends 👥
           </Link>
         </header>
 
-        <div className="mb-4 flex gap-2 rounded-2xl p-1" style={{ ...cardStyle, padding: '4px' }}>
+        <div className="mb-4 flex gap-2 app-card">
           {['wall', 'mine'].map((key) => (
             <button
               key={key}
               type="button"
               onClick={() => setTab(key)}
-              className="flex-1 rounded-xl py-2.5 text-sm font-semibold transition"
-              style={{
-                background: tab === key ? 'rgba(212, 168, 67, 0.35)' : 'transparent',
-                color: tab === key ? '#fff' : 'rgba(255,255,255,0.7)',
-                border: tab === key ? '1px solid rgba(212,168,67,0.6)' : '1px solid transparent',
-              }}
+              className={`flex-1 rounded-xl py-2.5 text-sm font-semibold transition ${tab === key ? 'bg-gold text-primary-purple' : 'text-gold'}`}
             >
               {key === 'wall' ? 'Prayer Wall' : 'My Submissions'}
             </button>
@@ -255,25 +245,20 @@ export default function CommunityPrayer() {
                   key={c}
                   type="button"
                   onClick={() => setFilterCat(c)}
-                  className="rounded-full px-3 py-1.5 text-xs font-semibold transition"
-                  style={{
-                    background: filterCat === c ? '#D4A843' : 'rgba(255,255,255,0.12)',
-                    color: filterCat === c ? '#1a1a1a' : '#fff',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                  }}
+                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${filterCat === c ? 'btn-primary' : 'btn-secondary'}`}
                 >
                   {c}
                 </button>
               ))}
             </div>
-            <button type="button" className="gold-btn mb-4 w-full sm:w-auto" onClick={() => setModalOpen(true)}>
+            <button type="button" className="btn-primary mb-4 w-full sm:w-auto" onClick={() => setModalOpen(true)}>
               + Add Prayer
             </button>
           </>
         )}
 
         {tab === 'mine' && (
-          <button type="button" className="gold-btn mb-4 w-full sm:w-auto" onClick={() => setModalOpen(true)}>
+          <button type="button" className="btn-primary mb-4 w-full sm:w-auto" onClick={() => setModalOpen(true)}>
             + Add Prayer
           </button>
         )}
@@ -285,17 +270,17 @@ export default function CommunityPrayer() {
         ) : null}
 
         {!loading && tab === 'wall' && prayers.length === 0 ? (
-          <article className="p-6 text-center text-white/85" style={cardStyle}>
-            <p className="text-3xl text-[#D4A843]">🙏</p>
-            <p className="mt-2 font-semibold text-white">No prayers in this category yet.</p>
-            <p className="mt-1 text-sm">Be the first to share a request.</p>
+          <article className="app-card p-6 text-center text-primary border-l-[3px] border-gold">
+            <p className="text-3xl text-gold-accent">🙏</p>
+            <p className="mt-2 font-semibold text-primary">No prayers in this category yet.</p>
+            <p className="mt-1 text-body">Be the first to share a request.</p>
           </article>
         ) : null}
 
         {!loading && tab === 'mine' && prayers.length === 0 ? (
-          <article className="p-6 text-center text-white/85" style={cardStyle}>
-            <p className="text-3xl text-[#D4A843]">✨</p>
-            <p className="mt-2 font-semibold text-white">You haven&apos;t posted to the wall yet.</p>
+          <article className="app-card p-6 text-center text-primary border-l-[3px] border-gold">
+            <p className="text-3xl text-gold-accent">✨</p>
+            <p className="mt-2 font-semibold text-primary">You haven&apos;t posted to the wall yet.</p>
           </article>
         ) : null}
 
@@ -305,27 +290,19 @@ export default function CommunityPrayer() {
               const prayed = myPrayedIds.has(p.id)
               const cnt = Math.max(0, Number(p.pray_count) || 0)
               return (
-                <li key={p.id} className="p-4 text-white" style={cardStyle}>
+                <li key={p.id} className="app-card p-4 text-primary border-l-[3px] border-gold">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
-                    <span
-                      className="rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide"
-                      style={{ background: 'rgba(212,168,67,0.25)', color: '#F7E7B5', border: '1px solid rgba(212,168,67,0.5)' }}
-                    >
+                    <span className="gold-badge">
                       {p.category || 'General'}
                     </span>
-                    <span className="text-xs text-white/60">{timeAgo(p.created_at)}</span>
+                    <span className="text-xs text-secondary">{timeAgo(p.created_at)}</span>
                   </div>
-                  <p className="text-sm leading-relaxed text-white/95">{p.content}</p>
-                  <p className="mt-2 text-xs font-medium text-[#D4A843]">{displayAuthor(p)}</p>
+                  <p className="text-body leading-relaxed text-primary">{p.content}</p>
+                  <p className="mt-2 text-xs font-medium text-gold-accent">{displayAuthor(p)}</p>
                   <button
                     type="button"
                     onClick={() => togglePray(p)}
-                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition sm:w-auto sm:px-6"
-                    style={{
-                      background: prayed ? 'rgba(212, 168, 67, 0.45)' : 'rgba(255,255,255,0.08)',
-                      border: prayed ? '2px solid #D4A843' : '1px solid rgba(255,255,255,0.25)',
-                      color: '#fff',
-                    }}
+                    className={`mt-3 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition sm:w-auto sm:px-6 ${prayed ? 'btn-primary' : 'btn-secondary text-gold-accent'}`}
                   >
                     <span>🙏</span>
                     <span>{prayed ? 'Praying' : 'Pray for this'}</span>
@@ -338,20 +315,17 @@ export default function CommunityPrayer() {
         )}
 
         {!loading && tab === 'mine' && (
-          <ul className="space-y-3">
-            {prayers.map((p) => (
-              <li key={p.id} className="p-4 text-white" style={cardStyle}>
-                <div className="mb-2 flex flex-wrap items-center gap-2">
-                  <span
-                    className="rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide"
-                    style={{ background: 'rgba(212,168,67,0.25)', color: '#F7E7B5', border: '1px solid rgba(212,168,67,0.5)' }}
-                  >
-                    {p.category || 'General'}
-                  </span>
-                  <span className="text-xs text-white/60">{timeAgo(p.created_at)}</span>
-                </div>
-                <p className="text-sm leading-relaxed text-white/95">{p.content}</p>
-                <p className="mt-2 text-xs text-[#D4A843]">{displayAuthor(p)}</p>
+            <ul className="space-y-3">
+              {prayers.map((p) => (
+                <li key={p.id} className="app-card p-4 text-primary border-l-[3px] border-gold">
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <span className="gold-badge">
+                      {p.category || 'General'}
+                    </span>
+                    <span className="text-xs text-secondary">{timeAgo(p.created_at)}</span>
+                  </div>
+                  <p className="text-body leading-relaxed text-primary">{p.content}</p>
+                  <p className="mt-2 text-xs text-gold-accent">{displayAuthor(p)}</p>
                 <button
                   type="button"
                   onClick={() => deleteMine(p.id)}
@@ -373,32 +347,32 @@ export default function CommunityPrayer() {
           onClick={() => !submitting && setModalOpen(false)}
         >
           <div
-            className="w-full max-w-md rounded-2xl p-5 text-white shadow-xl"
-            style={{ ...cardStyle, maxHeight: '90vh', overflow: 'auto' }}
+            className="w-full max-w-md rounded-2xl p-5 text-white shadow-xl app-card"
+            style={{ maxHeight: '90vh', overflow: 'auto' }}
             role="dialog"
             aria-modal="true"
             aria-labelledby="community-prayer-modal-title"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 id="community-prayer-modal-title" className="text-lg font-bold text-[#D4A843]">
+            <h2 id="community-prayer-modal-title" className="text-lg font-bold text-gold-accent">
               Share a prayer request
             </h2>
-            <label className="mt-4 block text-xs font-semibold uppercase tracking-wide text-white/70">Your prayer</label>
+            <label className="mt-4 block text-xs font-semibold uppercase tracking-wide text-secondary">Your prayer</label>
             <textarea
               value={formContent}
               onChange={(e) => setFormContent(e.target.value)}
               rows={5}
               placeholder="Share your heart…"
-              className="mt-1 w-full rounded-xl border border-white/20 bg-black/20 p-3 text-white placeholder:text-white/50 focus:outline-none focus:ring-1 focus:ring-[#D4A843]"
+              className="bg-dark mt-1 w-full rounded-xl p-3 text-primary placeholder:text-text-muted focus:outline-none focus:border-gold"
             />
-            <label className="mt-3 block text-xs font-semibold uppercase tracking-wide text-white/70">Category</label>
+            <label className="mt-3 block text-xs font-semibold uppercase tracking-wide text-secondary">Category</label>
             <select
               value={formCategory}
               onChange={(e) => setFormCategory(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-white/20 bg-black/20 p-3 text-white focus:outline-none focus:ring-1 focus:ring-[#D4A843]"
+              className="bg-dark mt-1 w-full rounded-xl p-3 text-primary focus:outline-none focus:border-gold"
             >
               {FORM_CATEGORIES.map((c) => (
-                <option key={c} value={c} className="bg-[#0d1f4e]">
+                <option key={c} value={c} className="bg-card">
                   {c}
                 </option>
               ))}
@@ -408,19 +382,15 @@ export default function CommunityPrayer() {
                 type="checkbox"
                 checked={formAnonymous}
                 onChange={(e) => setFormAnonymous(e.target.checked)}
-                className="h-4 w-4 accent-[#D4A843]"
+                className="h-4 w-4 accent-gold"
               />
-              <span className="text-sm text-white/90">Post anonymously {!formAnonymous && firstName ? `(show as ${firstName})` : ''}</span>
+              <span className="text-sm text-primary">Post anonymously {!formAnonymous && firstName ? `(show as ${firstName})` : ''}</span>
             </label>
-            <div className="mt-5 flex gap-2">
-              <button
-                type="button"
-                className="flex-1 rounded-xl border border-white/30 py-2.5 text-sm font-semibold text-white/90"
-                onClick={() => !submitting && setModalOpen(false)}
-              >
+            <div className="mt-5 flex justify-end gap-3">
+              <button type="button" className="btn-secondary flex-1 py-3" onClick={() => !submitting && setModalOpen(false)}>
                 Cancel
               </button>
-              <button type="button" className="gold-btn flex-1 py-2.5" disabled={submitting || !formContent.trim()} onClick={submitPrayer}>
+              <button type="submit" className="btn-primary flex-1 py-3" disabled={submitting} onClick={submitPrayer}>
                 {submitting ? 'Posting…' : 'Post'}
               </button>
             </div>

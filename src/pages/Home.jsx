@@ -32,12 +32,21 @@ function Home({ onOpenWorship, worshipStatus }) {
     let cancelled = false
     ;(async () => {
       try {
-        const { data, error } = await Promise.race([
-          supabase.from('profiles').select('reading_streak').eq('id', user.id).single(),
-          new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('profile-streak-timeout')), PROFILE_STREAK_FETCH_MS)
-          }),
-        ])
+        let data, error
+        try {
+          const result = await Promise.race([
+            supabase.from('profiles').select('reading_streak').eq('id', user.id).single(),
+            new Promise((_, reject) => {
+              setTimeout(() => reject(new Error('profile-streak-timeout')), PROFILE_STREAK_FETCH_MS)
+            }),
+          ])
+          data = result.data
+          error = result.error
+        } catch (err) {
+          console.log('Profile fetch skipped:', err)
+          data = null
+          error = null
+        }
         if (cancelled) return
         if (error) throw error
         setStreak({ currentStreak: Number(data?.reading_streak) || 0 })
@@ -210,281 +219,467 @@ function Home({ onOpenWorship, worshipStatus }) {
   const streakMessage = streakMessages[currentStreak] || `Day ${currentStreak} — Keep seeking Him with all your heart. 🙏`
 
   return (
-    <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
-      <div
-        className="content-scroll"
-        style={{
-          padding: '0 16px',
-          paddingTop: 'clamp(280px, 38vw, 320px)',
-          paddingBottom: '100px',
-          maxWidth: '680px',
-          margin: '0 auto',
-          width: '100%',
-        }}
-      >
-        <div style={{ position: 'absolute', top: '24px', left: '24px', zIndex: 50, paddingTop: 'calc(var(--sat) + 20px)' }}>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-yellow-100">ABIDING ANCHOR</p>
-          <p className="text-yellow-100/90" style={{ marginTop: '4px', fontSize: '11px', fontStyle: 'italic' }}>
-            Anchored in His Word
-          </p>
-          <h1
-            className="text-white"
-            style={{
-              marginTop: '8px',
-              fontSize: '22px',
-              fontWeight: 700,
-              textShadow: '0 2px 8px rgba(0,0,0,0.8)',
-              maxWidth: '280px',
-            }}
-          >
-            {welcomeCopy}
-          </h1>
-          <p className="text-blue-50" style={{ marginTop: '8px', fontSize: '12px', textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
-            {formattedDate}
-          </p>
-        </div>
-        <section className="space-y-6">
-          <article
-            className="rounded-3xl p-6 text-white shadow-md"
-            style={{
-              background: 'rgba(255, 255, 255, 0.25)',
-              backdropFilter: 'blur(14px)',
-              border: '1px solid rgba(255, 255, 255, 0.5)',
-              isolation: 'isolate',
-            }}
-          >
-            <div className="relative">
-              <span className="absolute -top-3 left-0 text-6xl leading-none text-yellow-200">"</span>
-              <p className="pl-8 pr-1 pt-4 text-xl leading-relaxed text-white [font-family:'Lora',serif] italic sm:text-2xl">
-                {todaysVerse.text}
-              </p>
-            </div>
+    <>
+      <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: 'transparent', paddingBottom: '80px', paddingTop: '60px' }}>
+        <div
+          className="content-scroll"
+          style={{
+            padding: '0 16px',
+            maxWidth: '680px',
+            margin: '0 auto',
+            width: '100%',
+            background: 'transparent !important'
+          }}
+        >
+          <section style={{ marginBottom: '28px' }}>
+            <article
+              className="text-white"
+              style={{
+                background: 'rgba(5, 15, 40, 0.35)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                border: '1px solid rgba(212,168,67,0.15)',
+                borderRadius: '24px',
+                padding: '28px',
+                position: 'relative',
+                animation: 'fadeInUp 0.6s ease forwards',
+                animationDelay: '0.1s'
+              }}
+            >
+              <div style={{ 
+                position: 'absolute', 
+                top: 0, 
+                left: 0, 
+                right: 0, 
+                height: '3px', 
+                background: '#D4A843',
+                borderRadius: '24px 24px 0 0'
+              }} />
+              
+              <div className="relative" style={{ marginBottom: '24px' }}>
+                <span style={{ 
+                  position: 'absolute', 
+                  top: '-8px', 
+                  left: 0, 
+                  fontSize: '60px', 
+                  lineHeight: 1, 
+                  opacity: 0.3,
+                  color: '#D4A843',
+                  fontFamily: 'Georgia, serif'
+                }}>"</span>
+                <p style={{ 
+                  paddingLeft: '32px', 
+                  paddingRight: '8px', 
+                  paddingTop: '8px', 
+                  fontSize: '18px', 
+                  lineHeight: 1.8, 
+                  color: 'rgba(255,255,255,0.95)', 
+                  fontStyle: 'italic',
+                  fontFamily: 'Georgia, serif'
+                }}>
+                  {todaysVerse.text}
+                </p>
+              </div>
 
-            <p className="mt-4 text-sm font-semibold uppercase tracking-[0.2em] text-yellow-100">{todaysVerse.reference}</p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: '#D4A843' }}>✦ TODAY&apos;S VERSE ✦</p>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                marginBottom: '24px',
+                paddingBottom: '24px',
+                borderBottom: '1px solid rgba(255,255,255,0.1)'
+              }}>
+                <p style={{ 
+                  color: '#D4A843', 
+                  fontSize: '14px', 
+                  fontWeight: 500, 
+                  letterSpacing: '0.1em'
+                }}>
+                  {todaysVerse.reference}
+                </p>
+                <p style={{ 
+                  fontSize: '12px', 
+                  fontWeight: 500, 
+                  letterSpacing: '0.15em',
+                  color: 'rgba(255,255,255,0.6)'
+                }}>
+                  Today&apos;s Verse
+                </p>
+              </div>
 
-            <div className="my-5 flex items-center gap-3 text-yellow-100">
-              <div className="h-px flex-1 bg-yellow-100/50" />
-              <div className="h-px flex-1 bg-yellow-100/50" />
-            </div>
-
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-              <button
-                type="button"
-                onClick={handleSaveDailyVerse}
-                style={{ minWidth: '140px', flex: 1 }}
-                className="rounded-xl border border-[#F0B429] bg-[#F0B429] px-3 py-2 text-sm font-semibold text-[#1a1a1a] transition hover:brightness-95"
-              >
-                🙏 Save to Journal
-              </button>
-              <button
-                type="button"
-                onClick={handleShareDailyVerse}
-                style={{ minWidth: '140px', flex: 1 }}
-                className="rounded-xl border border-yellow-100/80 px-3 py-2 text-sm font-semibold text-yellow-100 transition hover:bg-white/10"
-              >
-                📤 Share as Image
-              </button>
-            </div>
-          </article>
-
-          <section
-            className="rounded-2xl p-4 shadow-sm"
-            style={{
-              background: 'rgba(255, 255, 255, 0.25)',
-              backdropFilter: 'blur(14px)',
-              border: '1px solid rgba(255, 255, 255, 0.5)',
-              boxShadow: currentStreak >= 7 ? '0 0 0 1px rgba(212,168,67,0.8), 0 0 20px rgba(212,168,67,0.35)' : 'none',
-            }}
-          >
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white" style={{ textShadow: '0 1px 8px rgba(0,60,120,0.4)' }}>Reading Streak</h2>
-              <p className="text-sm font-medium text-white/85">🔥 {currentStreak} Day Streak</p>
-            </div>
-            <p className="mb-3 text-sm" style={{ color: '#D4A843' }}>{streakMessage}</p>
-            <div className="flex items-center justify-between gap-2" style={{ overflowX: 'auto' }}>
-              {days.map((day, index) => {
-                const isToday = index === todayIndex
-                const isCompleted = index < todayIndex && index >= todayIndex - streakLength
-                const dotClass = isToday
-                  ? 'bg-accent-gold border-accent-gold'
-                  : isCompleted
-                    ? 'bg-olive border-olive'
-                    : 'border-white/60 bg-transparent'
-
-                return (
-                  <div key={day} className="flex flex-col items-center gap-2">
-                    <span className={`h-3 w-3 rounded-full border ${dotClass}`} />
-                    <span className="text-xs text-white/85">{day}</span>
-                  </div>
-                )
-              })}
-            </div>
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-white" style={{ textShadow: '0 1px 8px rgba(0,60,120,0.4)' }}>Quick Access</h2>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-              <article
-                className="rounded-2xl p-4 shadow-sm"
-                style={{
-                  minWidth: '140px',
-                  flex: 1,
-                  background: 'rgba(255, 255, 255, 0.25)',
-                  backdropFilter: 'blur(14px)',
-                  border: '1px solid rgba(255, 255, 255, 0.5)',
-                }}
-              >
-                <p className="text-sm uppercase tracking-wide text-white/85">Continue Reading</p>
-                <p className="mt-2 text-2xl font-semibold text-white">John 3</p>
-              </article>
-              <Link
-                to="/devotional"
-                className="rounded-2xl p-4 shadow-sm"
-                style={{
-                  minWidth: '140px',
-                  flex: 1,
-                  background: 'rgba(255, 255, 255, 0.25)',
-                  backdropFilter: 'blur(14px)',
-                  border: '1px solid rgba(212, 168, 67, 0.6)',
-                  textDecoration: 'none',
-                }}
-              >
-                <p className="text-sm uppercase tracking-wide text-white/85">📜 Daily Devotional</p>
-                <p className="mt-1 text-xs text-white/70">Quiet reflection with Scripture</p>
-                <p className="mt-2 text-sm font-semibold text-[#D4A843]">Open Today&apos;s Reading</p>
-              </Link>
-              <article
-                className="rounded-2xl p-4 shadow-sm"
-                style={{
-                  minWidth: '140px',
-                  flex: 1,
-                  background: 'rgba(255, 255, 255, 0.25)',
-                  backdropFilter: 'blur(14px)',
-                  border: '1px solid rgba(212, 168, 67, 0.6)',
-                }}
-              >
-                <p className="text-sm uppercase tracking-wide text-white/85">🎵 Worship Mode</p>
-                <p className="mt-1 text-xs text-white/70">Listen while you read</p>
-                {worshipStatus?.isPlaying ? (
-                  <p className="mt-2 flex items-center gap-1 text-xs text-[#D4A843]">
-                    <span className="h-2 w-2 animate-pulse rounded-full bg-[#D4A843]" />
-                    Now Playing: {worshipStatus.currentTrack}
-                  </p>
-                ) : null}
-                <button type="button" onClick={() => onOpenWorship(true)} className="mt-2 rounded-lg border border-[#D4A843] px-3 py-1 text-sm text-[#D4A843]">
-                  Open Player
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+                <button
+                  type="button"
+                  onClick={handleSaveDailyVerse}
+                  style={{ 
+                    minWidth: '120px', 
+                    flex: 1,
+                    background: 'linear-gradient(135deg, #D4A843 0%, #F4D03F 100%)',
+                    color: '#0d1f4e',
+                    border: 'none',
+                    borderRadius: '50px',
+                    padding: '10px 16px',
+                    fontWeight: 600,
+                    fontSize: '13px',
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 4px 15px rgba(212,168,67,0.3)'
+                  }}
+                >
+                  Save to Journal
                 </button>
-              </article>
-              <article
-                className="rounded-2xl p-4 shadow-sm"
-                style={{
-                  minWidth: '140px',
-                  flex: 1,
-                  background: 'rgba(255, 255, 255, 0.25)',
-                  backdropFilter: 'blur(14px)',
-                  border: '1px solid rgba(255, 255, 255, 0.5)',
-                }}
-              >
-                <p className="text-sm uppercase tracking-wide text-white/85">Open Journal</p>
-                <p className="mt-2 text-2xl font-semibold text-white">{journalCount} {journalCount === 1 ? 'note' : 'notes'} saved</p>
-              </article>
-            </div>
-          </section>
+                <button
+                  type="button"
+                  onClick={handleShareDailyVerse}
+                  style={{ 
+                    minWidth: '140px', 
+                    flex: 1,
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: '#D4A843',
+                    borderRadius: '50px',
+                    padding: '12px 24px',
+                    fontWeight: 600,
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+                  }}
+                >
+                  Share as Image
+                </button>
+              </div>
+            </article>
 
-          <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-white" style={{ textShadow: '0 1px 8px rgba(0,60,120,0.4)' }}>Tools</h2>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+            <div style={{ marginBottom: '28px' }}>
+              <div
+              style={{
+                background: 'rgba(5, 15, 40, 0.35)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                border: '1px solid rgba(212,168,67,0.15)',
+                borderRadius: '20px',
+                padding: '20px',
+                boxShadow: currentStreak >= 7 ? '0 0 0 1px rgba(212,168,67,0.8), 0 0 20px rgba(212,168,67,0.35)' : undefined,
+                animation: 'fadeInUp 0.6s ease forwards',
+                animationDelay: '0.2s'
+              }}
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <h2 style={{ 
+                  color: '#D4A843', 
+                  fontSize: '13px', 
+                  letterSpacing: '0.12em', 
+                  fontWeight: 500,
+                  textTransform: 'uppercase'
+                }}>Reading Streak</h2>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>{currentStreak} Days</p>
+              </div>
+              <p style={{ marginBottom: '16px', fontSize: '13px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>{streakMessage}</p>
+              <div className="flex items-center justify-between gap-2" style={{ overflowX: 'auto' }}>
+                {days.map((day, index) => {
+                  const isToday = index === todayIndex
+                  const isCompleted = index < todayIndex && index >= todayIndex - streakLength
+                  const dotStyle = isToday
+                    ? { background: '#D4A843', boxShadow: '0 0 8px rgba(212,168,67,0.6)', borderColor: '#D4A843' }
+                    : isCompleted
+                      ? { background: '#D4A843', borderColor: '#D4A843' }
+                      : { background: 'rgba(255,255,255,0.15)', borderColor: 'rgba(255,255,255,0.2)' }
+                  return (
+                    <div 
+                      key={day} 
+                      className="w-8 h-8 rounded-full border-2" 
+                      style={dotStyle}
+                    />
+                  )
+                })}
+              </div>
+            </div>
+            </div>
+
+            <div style={{ marginBottom: '28px', animation: 'fadeInUp 0.6s ease forwards', animationDelay: '0.3s' }}>
+              <h2 style={{ color: '#D4A843', fontSize: '13px', letterSpacing: '0.12em', fontWeight: 500, textTransform: 'uppercase' }}>Tools</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
               <Link
                 to="/scripture-art"
-                className="rounded-2xl p-4 shadow-sm"
                 style={{
                   minWidth: '140px',
-                  flex: 1,
-                  background: 'rgba(255, 255, 255, 0.25)',
-                  backdropFilter: 'blur(14px)',
-                  border: '1px solid rgba(212, 168, 67, 0.6)',
+                  minHeight: '100px',
                   textDecoration: 'none',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(212,168,67,0.15)',
+                  borderRadius: '20px',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  padding: '20px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(212,168,67,0.4)'
+                  e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.06)'
                 }}
               >
-                <p className="text-sm uppercase tracking-wide text-white/85">🎨 Scripture Art</p>
-                <p className="mt-1 text-xs text-white/70">Create shareable verse images</p>
+                <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>🎨</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.9)', marginBottom: '4px' }}>Scripture Art</p>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>Create shareable verse images</p>
               </Link>
               <Link
                 to="/reading-plans"
-                className="rounded-2xl p-4 shadow-sm"
                 style={{
                   minWidth: '140px',
-                  flex: 1,
-                  background: 'rgba(255, 255, 255, 0.25)',
-                  backdropFilter: 'blur(14px)',
-                  border: '1px solid rgba(212, 168, 67, 0.6)',
+                  minHeight: '100px',
                   textDecoration: 'none',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(212,168,67,0.15)',
+                  borderRadius: '20px',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  padding: '20px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(212,168,67,0.4)'
+                  e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.06)'
                 }}
               >
-                <p className="text-sm uppercase tracking-wide text-white/85">📅 Reading Plans</p>
-                <p className="mt-1 text-xs text-white/70">Follow structured daily journeys</p>
+                <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>📅</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.9)', marginBottom: '4px' }}>Reading Plans</p>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>Follow structured daily journeys</p>
               </Link>
               <Link
                 to="/fasting"
-                className="rounded-2xl p-4 shadow-sm"
                 style={{
                   minWidth: '140px',
-                  flex: 1,
-                  background: 'rgba(255, 255, 255, 0.25)',
-                  backdropFilter: 'blur(14px)',
-                  border: '1px solid rgba(212, 168, 67, 0.6)',
+                  minHeight: '100px',
                   textDecoration: 'none',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(212,168,67,0.15)',
+                  borderRadius: '20px',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  padding: '20px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(212,168,67,0.4)'
+                  e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.06)'
                 }}
               >
-                <p className="text-sm uppercase tracking-wide text-white/85">🕐 Fasting Tracker</p>
-                <p className="mt-1 text-xs text-white/70">Track fasts and prayer notes</p>
+                <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>🕐</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.9)', marginBottom: '4px' }}>Fasting Tracker</p>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>Track fasts and prayer notes</p>
               </Link>
               <Link
                 to="/support"
-                className="rounded-2xl p-4 shadow-sm"
                 style={{
                   minWidth: '140px',
-                  flex: 1,
-                  background: 'rgba(255, 255, 255, 0.25)',
-                  backdropFilter: 'blur(14px)',
-                  border: '1px solid rgba(212, 168, 67, 0.6)',
+                  minHeight: '100px',
                   textDecoration: 'none',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(212,168,67,0.15)',
+                  borderRadius: '20px',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  padding: '20px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(212,168,67,0.4)'
+                  e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.06)'
                 }}
               >
-                <p className="text-sm uppercase tracking-wide text-white/85">🤝 Support</p>
-                <p className="mt-1 text-xs text-white/70">Help sustain the ministry</p>
+                <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>🤝</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.9)', marginBottom: '4px' }}>Support</p>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>Help sustain the ministry</p>
+              </Link>
+              <div
+                style={{
+                  minWidth: '140px',
+                  minHeight: '100px',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(212,168,67,0.15)',
+                  borderRadius: '20px',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  padding: '20px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(212,168,67,0.4)'
+                  e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.06)'
+                }}
+                onClick={() => window.open('https://discord.gg/nZcZRkUMJh', '_blank')}
+              >
+                <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>💬</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.9)', marginBottom: '4px' }}>Community</p>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>Join our Discord</p>
+              </div>
+              <Link
+                to="/worship"
+                style={{
+                  minWidth: '140px',
+                  minHeight: '100px',
+                  textDecoration: 'none',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(212,168,67,0.15)',
+                  borderRadius: '20px',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  padding: '20px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(212,168,67,0.4)'
+                  e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(212,168,67,0.15)'
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                }}
+              >
+                <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>🎵</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.9)', marginBottom: '4px' }}>Worship Mode</p>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>Music & meditation</p>
               </Link>
             </div>
-          </section>
+          </div>
 
-          <section
-            className="rounded-2xl p-5 shadow-sm"
+          <div
+            className="rounded-2xl p-6"
             style={{
-              background: 'rgba(255, 255, 255, 0.25)',
-              backdropFilter: 'blur(14px)',
-              border: '1px solid rgba(255, 255, 255, 0.5)',
+              background: 'rgba(5, 15, 40, 0.35)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              border: '1px solid rgba(212,168,67,0.15)',
+              animation: 'fadeInUp 0.6s ease forwards',
+              animationDelay: '0.4s'
             }}
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/85">Verse of the Week</p>
-            <p className="mt-2 text-lg text-white [font-family:'Lora',serif] italic">
-              "The Lord is my shepherd; I shall not want."
-            </p>
-            <p className="mt-2 text-sm font-medium uppercase tracking-[0.15em] text-white/85">Psalm 23:1</p>
-            <div className="mt-3 flex justify-end">
+            <div className="relative">
+              <span style={{ 
+                position: 'absolute', 
+                top: '-20px', 
+                left: 0, 
+                fontSize: '60px', 
+                lineHeight: 1, 
+                color: 'rgba(212,168,67,0.3)',
+                fontFamily: 'Georgia, serif'
+              }}>"</span>
+              <p style={{ 
+                fontSize: '12px', 
+                fontWeight: 500, 
+                letterSpacing: '0.12em',
+                color: '#D4A843',
+                textTransform: 'uppercase',
+                marginBottom: '16px'
+              }}>Verse of the Week</p>
+              <p style={{ 
+                marginTop: '16px', 
+                fontSize: '16px', 
+                lineHeight: 1.9,
+                color: 'rgba(255,255,255,0.95)',
+                fontStyle: 'italic',
+                fontFamily: 'Georgia, serif',
+                paddingLeft: '24px'
+              }}>
+                "The Lord is my shepherd; I shall not want."
+              </p>
+            </div>
+            <p style={{ 
+              marginTop: '16px', 
+              fontSize: '13px', 
+              fontWeight: 500, 
+              letterSpacing: '0.1em',
+              color: '#D4A843'
+            }}>Psalm 23:1</p>
+            <div className="mt-4 flex justify-end">
               <button
                 type="button"
                 onClick={handleSaveVerseOfWeek}
-                className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white"
+                style={{
+                  background: 'linear-gradient(135deg, #D4A843 0%, #F4D03F 100%)',
+                  color: '#0d1f4e',
+                  border: 'none',
+                  borderRadius: '50px',
+                  padding: '8px 14px',
+                  fontWeight: 600,
+                  fontSize: '13px',
+                  whiteSpace: 'nowrap',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 15px rgba(212,168,67,0.3)'
+                }}
               >
                 Save to Journal
               </button>
             </div>
-          </section>
+          </div>
         </section>
         <SaveToast trigger={toastTrigger} />
       </div>
     </div>
+      
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+    </>
   )
 }
 

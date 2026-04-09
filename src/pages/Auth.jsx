@@ -1,25 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 
-function mapError(message = '') {
-  const m = message.toLowerCase()
-  if (m.includes('invalid login credentials')) return 'Incorrect email or password.'
-  if (m.includes('already registered')) return 'This email is already taken.'
-  if (
-    m.includes('invalid email')
-    || m.includes('email address is invalid')
-    || m.includes('unable to validate email address')
-    || m.includes('email format')
-  ) {
-    return 'Please enter a valid email address.'
-  }
-  return message || 'Something went wrong. Please try again.'
-}
-
-function isValidEmail(value = '') {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value)
+function isValidEmail(email) {
+  console.log('Email being validated:', email)
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
 }
 
 export default function Auth() {
@@ -34,6 +20,32 @@ export default function Auth() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState('')
+
+  const verses = [
+    { text: "He is like a tree planted by streams of water", reference: "Psalm 1:3" },
+    { text: "The Lord is my shepherd, I shall not want", reference: "Psalm 23:1" },
+    { text: "I can do all things through Christ who strengthens me", reference: "Phil 4:13" },
+    { text: "Be still and know that I am God", reference: "Psalm 46:10" },
+    { text: "The Lord is my light and my salvation", reference: "Psalm 27:1" },
+    { text: "Trust in the Lord with all your heart", reference: "Proverbs 3:5" },
+    { text: "For God so loved the world", reference: "John 3:16" },
+    { text: "I am the way, the truth, and the life", reference: "John 14:6" },
+    { text: "Come to me all who are weary", reference: "Matthew 11:28" },
+    { text: "Your word is a lamp to my feet", reference: "Psalm 119:105" }
+  ]
+  const [currentVerseIndex, setCurrentVerseIndex] = useState(0)
+  const [opacity, setOpacity] = useState(1)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setOpacity(0)
+      setTimeout(() => {
+        setCurrentVerseIndex((prev) => (prev + 1) % verses.length)
+        setOpacity(1)
+      }, 500)
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [verses.length])
 
   if (user) return <Navigate to="/" replace />
 
@@ -62,12 +74,19 @@ export default function Auth() {
     setLoading(true)
     if (mode === 'signin') {
       const { error: signInError } = await signIn(normalizedEmail, password)
-      if (signInError) setError(mapError(signInError.message))
+      if (signInError) {
+        console.log('Supabase error:', signInError)
+        setError(signInError.message)
+      }
       setLoading(false)
       return
     }
-    const { error: signUpError } = await signUp(normalizedEmail, password, fullName.trim())
-    if (signUpError) setError(mapError(signUpError.message))
+    const { error: signUpError, usedEmailFallback } = await signUp(normalizedEmail, password, fullName.trim())
+    if (signUpError) {
+      console.log('Supabase error:', signUpError)
+      setError(signUpError.message)
+    }
+    else if (usedEmailFallback) setSuccess('Account created and signed in. You can continue now. 🙏')
     else setSuccess('Check your email to confirm your account 🙏')
     setLoading(false)
   }
@@ -85,61 +104,228 @@ export default function Auth() {
       return
     }
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(normalizedEmail)
-    if (resetError) setError(mapError(resetError.message))
+    if (resetError) setError(resetError.message)
     else setSuccess('Password reset email sent.')
   }
 
   return (
-    <div style={{ minHeight: '100vh', padding: '0 16px', paddingTop: '220px', paddingBottom: '120px', maxWidth: '680px', margin: '0 auto' }}>
-      <article className="app-card" style={{ padding: '20px' }}>
-        <h1 style={{ margin: 0, color: '#D4A843', fontSize: '28px', textAlign: 'center' }}>
-          {mode === 'signin' ? 'Sign In' : 'Create Account'}
-        </h1>
-        <p style={{ color: 'rgba(255,255,255,0.84)', textAlign: 'center', marginTop: '8px' }}>
-          Your private place with God&apos;s Word
-        </p>
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      padding: '0 20px',
+    }}>
+      {/* Spacer to push content below clouds */}
+      <div style={{ height: '320px' }} />
 
-        <form onSubmit={handleSubmit} style={{ marginTop: '14px', display: 'grid', gap: '10px' }}>
+      {/* Title */}
+      <div style={{ textAlign: 'center', marginBottom: '16px', animation: 'fadeInDown 0.8s ease forwards' }}>
+        <h1 style={{ fontSize: '22px', letterSpacing: '0.15em', 
+          color: '#D4A843', margin: '0 0 4px 0', fontWeight: 300,
+          textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+          ABIDING ANCHOR
+        </h1>
+        <p style={{ fontSize: '13px', fontStyle: 'italic', 
+          color: 'rgba(255,255,255,0.8)', margin: 0,
+          textShadow: '0 1px 4px rgba(0,0,0,0.3)' }}>
+          Anchored in His Word
+        </p>
+      </div>
+
+      {/* Sign in card */}
+      <article 
+        className="app-card" 
+        style={{ 
+          width: '100%',
+          maxWidth: '360px',
+          position: 'relative',
+          animation: 'fadeInUp 0.8s ease forwards',
+          animationDelay: '0.2s',
+          padding: '24px'
+        }}
+      >
+        {/* Gold shimmer border effect */}
+        <div style={{
+          position: 'absolute',
+          inset: -2,
+          borderRadius: '20px',
+          padding: '2px',
+          background: 'linear-gradient(45deg, rgba(212,168,67,0), rgba(212,168,67,0.4), rgba(212,168,67,0))',
+          backgroundSize: '200% 200%',
+          animation: 'shimmer 3s ease infinite',
+          WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+          WebkitMaskComposite: 'xor',
+          maskComposite: 'exclude',
+          pointerEvents: 'none'
+        }} />
+        
+        <h2 className="font-cinzel text-[28px] text-gold text-center mb-4" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+          {mode === 'signin' ? 'Sign In' : 'Create Account'}
+        </h2>
+
+        <form onSubmit={handleSubmit} className="mt-4 grid gap-3">
           {mode === 'signup' ? (
             <>
-              <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full Name" className="rounded-lg bg-white/90 px-3 py-2 text-[#1a1a1a] focus:outline-none" />
-              <label style={{ color: 'rgba(255,255,255,0.84)', fontSize: '13px' }}>Date of Birth</label>
-              <input value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} type="date" className="rounded-lg bg-white/90 px-3 py-2 text-[#1a1a1a] focus:outline-none" />
+              <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full Name" className="app-input" style={{ borderRadius: '12px', padding: '12px' }} />
+              <label className="text-white/[0.65] text-sm">Date of Birth</label>
+              <input value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} type="date" className="app-input" style={{ borderRadius: '12px', padding: '12px' }} />
             </>
           ) : null}
-          <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" type="email" className="rounded-lg bg-white/90 px-3 py-2 text-[#1a1a1a] focus:outline-none" />
-          <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" className="rounded-lg bg-white/90 px-3 py-2 text-[#1a1a1a] focus:outline-none" />
+          <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" type="email" className="app-input" style={{ borderRadius: '12px', padding: '12px' }} />
+          <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" className="app-input" style={{ borderRadius: '12px', padding: '12px' }} />
           {mode === 'signup' ? (
-            <input value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm Password" type="password" className="rounded-lg bg-white/90 px-3 py-2 text-[#1a1a1a] focus:outline-none" />
+            <input value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm Password" type="password" className="app-input" style={{ borderRadius: '12px', padding: '12px' }} />
           ) : null}
           {mode === 'signup' ? (
-            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', color: 'rgba(255,255,255,0.84)', fontSize: '13px', lineHeight: 1.4 }}>
+            <label className="flex items-start gap-2 text-white/[0.65] text-sm leading-snug">
               <input
                 type="checkbox"
                 checked={signUpConsent}
                 onChange={(e) => setSignUpConsent(e.target.checked)}
-                style={{ marginTop: '2px' }}
+                className="mt-0.5"
               />
               <span>I consent to AbidingAnchor storing my spiritual journal and prayer data securely in the cloud to enable sync across my devices.</span>
             </label>
           ) : null}
-          <button type="submit" className="gold-btn" disabled={loading || (mode === 'signup' && !signUpConsent)} style={{ opacity: loading || (mode === 'signup' && !signUpConsent) ? 0.55 : 1 }}>
+          <button type="submit" className="btn-primary w-full" disabled={loading || (mode === 'signup' && !signUpConsent)} style={{ opacity: loading || (mode === 'signup' && !signUpConsent) ? 0.55 : 1 }}>
             {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Account'}
           </button>
         </form>
 
-        <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <button type="button" onClick={() => { setMode((m) => (m === 'signin' ? 'signup' : 'signin')); setError(''); setSuccess(''); setSignUpConsent(false); setDateOfBirth('') }} className="back-btn">
+        <div className="mt-4 flex justify-between items-center">
+          <button type="button" onClick={() => { setMode((m) => (m === 'signin' ? 'signup' : 'signin')); setError(''); setSuccess(''); setSignUpConsent(false); setDateOfBirth('') }} className="btn-secondary">
             {mode === 'signin' ? 'Need an account?' : 'Already have an account?'}
           </button>
-          <button type="button" onClick={handleForgotPassword} style={{ background: 'none', border: 'none', color: '#D4A843', fontSize: '12px' }}>
+          <button type="button" onClick={handleForgotPassword} className="text-gold text-xs bg-transparent border-none">
             Forgot password?
           </button>
         </div>
 
-        {error ? <p style={{ marginTop: '10px', color: '#ffb3b3', fontSize: '13px' }}>{error}</p> : null}
-        {success ? <p style={{ marginTop: '10px', color: '#D4A843', fontSize: '13px' }}>{success}</p> : null}
+        {error ? <p className="mt-2 text-[#ffb3b3] text-sm">{error}</p> : null}
+        {success ? <p className="mt-2 text-gold text-sm">{success}</p> : null}
       </article>
+
+      {/* Bottom - pushed to bottom with marginTop auto */}
+      <div style={{ marginTop: '40px', textAlign: 'center', 
+        paddingBottom: '30px', paddingTop: '20px', animation: 'fadeInUp 0.8s ease forwards', animationDelay: '0.4s' }}>
+        {/* Bible verse */}
+        <p style={{ 
+          fontSize: '13px', 
+          fontStyle: 'italic',
+          color: 'rgba(255,255,255,0.7)',
+          lineHeight: '1.6',
+          maxWidth: '350px',
+          margin: '0 auto',
+          textShadow: '0 1px 4px rgba(0,0,0,0.3)',
+          opacity: opacity,
+          transition: 'opacity 0.5s ease'
+        }}>
+          "{verses[currentVerseIndex].text}"
+        </p>
+        <p style={{ 
+          fontSize: '11px', 
+          color: 'rgba(212,168,67,0.8)',
+          marginTop: '3px',
+          letterSpacing: '0.05em',
+          opacity: opacity,
+          transition: 'opacity 0.5s ease'
+        }}>
+          {verses[currentVerseIndex].reference}
+        </p>
+
+        {/* Feature pills */}
+        <div style={{ marginTop: '16px' }}>
+          <p style={{ 
+            fontSize: '12px', 
+            color: 'rgba(255,255,255,0.6)',
+            marginBottom: '8px'
+          }}>
+            Everything you need for your faith journey
+          </p>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            gap: '6px',
+            flexWrap: 'nowrap'
+          }}>
+            <div style={{
+              background: 'rgba(212,168,67,0.15)',
+              border: '1px solid rgba(212,168,67,0.3)',
+              color: 'rgba(255,255,255,0.7)',
+              borderRadius: '20px',
+              padding: '4px 8px',
+              fontSize: '10px'
+            }}>
+              Bible Reader
+            </div>
+            <div style={{
+              background: 'rgba(212,168,67,0.15)',
+              border: '1px solid rgba(212,168,67,0.3)',
+              color: 'rgba(255,255,255,0.7)',
+              borderRadius: '20px',
+              padding: '4px 8px',
+              fontSize: '10px'
+            }}>
+              Prayer Journal
+            </div>
+            <div style={{
+              background: 'rgba(212,168,67,0.15)',
+              border: '1px solid rgba(212,168,67,0.3)',
+              color: 'rgba(255,255,255,0.7)',
+              borderRadius: '20px',
+              padding: '4px 8px',
+              fontSize: '10px'
+            }}>
+              AI Companion
+            </div>
+          </div>
+          <p style={{ 
+            fontSize: '11px', 
+            color: 'rgba(255,255,255,0.45)',
+            marginTop: '10px',
+            textAlign: 'center'
+          }}>
+            Free forever. Built as a ministry. ✝️
+          </p>
+        </div>
+      </div>
+
+      {/* CSS Animations */}
+      <style>{`
+        @keyframes fadeInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes shimmer {
+          0% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 0% 50%;
+          }
+        }
+      `}</style>
     </div>
   )
 }

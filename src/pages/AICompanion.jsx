@@ -72,7 +72,7 @@ export default function AICompanion() {
     setLoading(true)
 
     try {
-      const response = await fetch('/.netlify/functions/ai-companion', {
+      const response = await fetch('/api/ai-companion', {
         method: 'POST',
         headers: {
           'content-type': 'application/json'

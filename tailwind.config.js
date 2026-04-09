@@ -4,11 +4,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        'primary-dark': '#5C3F22',
-        'accent-gold': '#C9922A',
-        'background-cream': '#FBF7EE',
-        parchment: '#F5EFE0',
-        olive: '#6B7C4E',
+        'primary-purple': '#1a0533',
+        'secondary-purple': '#2d0f4e',
+        gold: '#D4A843',
+        'gold-secondary': '#F0C060',
+        'border-gold-light': 'rgba(212,168,67,0.25)',
+        'glow-gold-light': 'rgba(212,168,67,0.15)',
+        'text-secondary-light': 'rgba(255,255,255,0.65)',
       },
     },
   },

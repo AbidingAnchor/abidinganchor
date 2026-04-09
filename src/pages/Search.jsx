@@ -292,10 +292,24 @@ function Search({ onOpenWorship }) {
   const isVerseReference = isVerseReferenceQuery(trimmedSearch)
   const keyword = trimmedSearch.toLowerCase()
   const curatedResults = keywordVerses[keyword] ?? []
-  const searchBorderClass = isFocused ? 'border-[#C9922A]' : 'border-white/40'
-  const glassCard = { background: 'rgba(255, 255, 255, 0.25)', backdropFilter: 'blur(14px)', border: '1px solid rgba(255, 255, 255, 0.5)' }
-  const headingStyle = { color: '#ffffff', textShadow: '0 1px 8px rgba(0,60,120,0.4)' }
-  const bodyStyle = { color: 'rgba(255,255,255,0.85)' }
+  const searchBorderClass = isFocused ? 'border-gold' : 'border-border-gold-light'
+
+  // Define style objects that were missing
+  const glassCard = {
+    background: 'rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(14px)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+  }
+
+  const bodyStyle = {
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: '14px',
+  }
+
+  const headingStyle = {
+    color: '#D4A843',
+    textShadow: '0 1px 8px rgba(0, 60, 120, 0.4)',
+  }
 
   useEffect(() => {
     if (searchMode === 'topic') return
@@ -422,17 +436,17 @@ function Search({ onOpenWorship }) {
         ) : (
           <section className="space-y-6">
             <header className="space-y-1">
-              <h1 className="text-3xl font-bold" style={headingStyle}>Search Scripture</h1>
-              <p style={bodyStyle}>Find any verse or passage</p>
+              <h1 className="text-page-title">Search Scripture</h1>
+              <p className="text-body">Find any verse or passage</p>
             </header>
 
             <section className="space-y-3">
-              <div className="inline-flex rounded-xl p-1">
-                <button type="button" onClick={() => setSearchMode('keyword')} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${searchMode === 'keyword' ? 'bg-accent-gold text-white' : 'text-white'}`} style={searchMode === 'keyword' ? undefined : glassCard}>Search by Keyword</button>
-                <button type="button" onClick={() => setSearchMode('topic')} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${searchMode === 'topic' ? 'bg-accent-gold text-white' : 'text-white'}`} style={searchMode === 'topic' ? undefined : glassCard}>Search by Topic</button>
+              <div className="inline-flex app-card rounded-xl p-1">
+                <button type="button" onClick={() => setSearchMode('keyword')} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${searchMode === 'keyword' ? 'bg-gold text-primary-purple' : 'text-white'}`}>Search by Keyword</button>
+                <button type="button" onClick={() => setSearchMode('topic')} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${searchMode === 'topic' ? 'bg-gold text-primary-purple' : 'text-white'}`}>Search by Topic</button>
               </div>
-              <label htmlFor="scripture-search" className={`flex items-center gap-3 rounded-2xl border px-4 py-3 transition-colors ${searchBorderClass}`} style={glassCard}>
-                <svg className="h-5 w-5 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <label htmlFor="scripture-search" className={`flex items-center gap-3 rounded-2xl border px-4 py-3 transition-colors app-card ${searchBorderClass}`}>
+                  <svg className="h-5 w-5 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="11" cy="11" r="7" />
                   <path d="m20 20-3.5-3.5" />
                 </svg>
@@ -450,29 +464,21 @@ function Search({ onOpenWorship }) {
               </label>
 
               <div
-                style={{
-                  background: 'rgba(10, 20, 50, 0.35)',
-                  backdropFilter: 'blur(8px)',
-                  borderRadius: '14px',
-                  padding: '12px 14px',
-                  marginBottom: '16px',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  isolation: 'isolate',
-                }}
+                className="app-card rounded-xl p-4 mb-4 border border-border-gold-light"
               >
                 <div className="space-y-2">
                   {searchMode === 'keyword' ? (
                     <>
                       <div className="flex gap-2 overflow-x-auto pb-1">
                         {quickSuggestionsRow1.map((suggestion) => (
-                          <button key={suggestion} type="button" onClick={() => setSearchTerm(suggestion)} className="shrink-0 rounded-full px-3 py-1.5 text-sm text-white transition hover:brightness-95" style={glassCard}>
+                          <button key={suggestion} type="button" onClick={() => setSearchTerm(suggestion)} className="app-card shrink-0 rounded-full px-3 py-1.5 text-sm text-gold-accent transition hover:brightness-95">
                             {suggestion}
                           </button>
                         ))}
                       </div>
                       <div className="flex gap-2 overflow-x-auto pb-1">
                         {quickSuggestionsRow2.map((suggestion) => (
-                          <button key={suggestion} type="button" onClick={() => setSearchTerm(suggestion)} className="shrink-0 rounded-full px-3 py-1.5 text-sm text-white transition hover:brightness-95" style={glassCard}>
+                          <button key={suggestion} type="button" onClick={() => setSearchTerm(suggestion)} className="app-card shrink-0 rounded-full px-3 py-1.5 text-sm text-gold-accent transition hover:brightness-95">
                             {suggestion}
                           </button>
                         ))}
@@ -481,7 +487,7 @@ function Search({ onOpenWorship }) {
                   ) : (
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                       {TOPIC_LIST.map((topic) => (
-                        <button key={topic} type="button" onClick={() => setSelectedTopic(topic)} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${selectedTopic === topic ? 'bg-accent-gold text-[#1a1a1a]' : 'text-[#D4A843]'}`} style={selectedTopic === topic ? undefined : glassCard}>
+                        <button key={topic} type="button" onClick={() => setSelectedTopic(topic)} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${selectedTopic === topic ? 'bg-gold text-primary-purple' : 'app-card text-gold-accent'}`}>
                           {topic}
                         </button>
                       ))}
@@ -493,14 +499,14 @@ function Search({ onOpenWorship }) {
 
             {searchMode === 'topic' ? (
               <section className="space-y-3">
-                <h2 className="text-lg font-semibold" style={headingStyle}>Search Results</h2>
+                <h2 className="text-section-header">Search Results for "{trimmedSearch}"</h2>
                 {selectedTopic ? (
                   <div className="space-y-3">
                     <p className="text-sm font-semibold uppercase tracking-[0.15em] text-accent-gold">Verses on {selectedTopic}</p>
                     {(TOPIC_VERSES[selectedTopic.toLowerCase()] || []).map((result) => (
-                      <article key={result.ref} className="rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4" style={glassCard}>
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-gold">{result.ref}</p>
-                        <p className="mt-2 text-lg text-white [font-family:'Lora',serif] italic">{result.text}</p>
+                      <article key={result.ref} className="app-card rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4">
+                        <p className="text-gold text-xs font-semibold uppercase tracking-[0.18em]">{result.ref}</p>
+                        <p className="text-scripture mt-2 text-white [font-family:'Lora',serif] italic">{result.text}</p>
                         <div className="mt-3 flex justify-end gap-2">
                           <button type="button" onClick={() => handleSaveToJournal({ reference: result.ref, text: result.text })} className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
                             Save to Journal
@@ -518,7 +524,7 @@ function Search({ onOpenWorship }) {
               </section>
             ) : trimmedSearch ? (
               <section className="space-y-3">
-                <h2 className="text-lg font-semibold" style={headingStyle}>Search Results</h2>
+                <h2 className="text-section-header">Search Results for "{trimmedSearch}"</h2>
                 {isLoading ? (
                   <div className="rounded-xl p-4" style={{ ...glassCard, ...bodyStyle }}>Searching...</div>
                 ) : keywordHint ? (
@@ -528,11 +534,11 @@ function Search({ onOpenWorship }) {
                 {isVerseReference && results.length > 0 && (
                   <div className="space-y-3">
                     {results.map((result) => (
-                      <article key={result.id} className="rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4" style={glassCard}>
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-gold">{result.reference}</p>
-                        <p className="mt-2 text-lg text-white [font-family:'Lora',serif] italic">{result.text}</p>
+                      <article key={result.id} className="app-card rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4">
+                        <p className="text-gold text-xs font-semibold uppercase tracking-[0.18em]">{result.reference}</p>
+                        <p className="text-scripture mt-2 text-white [font-family:'Lora',serif] italic">{result.text}</p>
                         <div className="mt-3 flex justify-end">
-                          <button type="button" onClick={() => handleSaveToJournal(result)} className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
+                          <button type="button" onClick={() => handleSaveToJournal(result)} className="rounded-lg border border-gold px-3 py-1.5 text-xs font-medium text-gold">
                             Save to Journal
                           </button>
                           <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.reference })} className="ml-2 rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
@@ -550,11 +556,11 @@ function Search({ onOpenWorship }) {
                       <>
                         <p className="text-sm font-semibold uppercase tracking-[0.15em] text-accent-gold">Curated Verses for "{keyword}"</p>
                         {curatedResults.map((result) => (
-                          <article key={result.ref} className="rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4" style={glassCard}>
-                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-gold">{result.ref}</p>
-                            <p className="mt-2 text-lg text-white [font-family:'Lora',serif] italic">{result.text}</p>
+                          <article key={result.ref} className="app-card rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4">
+                            <p className="text-gold text-xs font-semibold uppercase tracking-[0.18em]">{result.ref}</p>
+                            <p className="text-scripture mt-2 text-white [font-family:'Lora',serif] italic">{result.text}</p>
                             <div className="mt-3 flex justify-end">
-                              <button type="button" onClick={() => handleSaveToJournal({ reference: result.ref, text: result.text })} className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
+                              <button type="button" onClick={() => handleSaveToJournal({ reference: result.ref, text: result.text })} className="rounded-lg border border-gold px-3 py-1.5 text-xs font-medium text-gold">
                                 Save to Journal
                               </button>
                               <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.ref })} className="ml-2 rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
@@ -566,9 +572,9 @@ function Search({ onOpenWorship }) {
                       </>
                     ) : null}
 
-                    <button type="button" onClick={handleSearchFullBible} className="w-full rounded-xl border border-accent-gold bg-accent-gold px-4 py-2 text-sm font-semibold text-[#1a1a1a]">
-                      Search Full Bible
-                    </button>
+                    <button type="button" onClick={handleSearchFullBible} className="w-full rounded-xl border border-gold bg-gold px-4 py-2 text-sm font-semibold text-primary-purple">
+                       Search Full Bible
+                     </button>
                   </div>
                 )}
 
@@ -579,11 +585,11 @@ function Search({ onOpenWorship }) {
                       <article className="rounded-xl p-4" style={{ ...glassCard, ...bodyStyle }}>Searching full Bible...</article>
                     ) : fullBibleResults.length > 0 ? (
                       pagedFullBibleResults.map((result, index) => (
-                        <article key={`${result.reference}-${index}`} className="rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4" style={glassCard}>
-                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-gold">{result.reference}</p>
-                          <p className="mt-2 text-lg text-white [font-family:'Lora',serif] italic">{result.text}</p>
+                        <article key={`${result.reference}-${index}`} className="app-card rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4">
+                          <p className="text-gold text-xs font-semibold uppercase tracking-[0.18em]">{result.reference}</p>
+                          <p className="text-scripture mt-2 text-white [font-family:'Lora',serif] italic">{result.text}</p>
                           <div className="mt-3 flex justify-end">
-                            <button type="button" onClick={() => handleSaveToJournal(result)} className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
+                            <button type="button" onClick={() => handleSaveToJournal(result)} className="rounded-lg border border-gold px-3 py-1.5 text-xs font-medium text-gold">
                               Save to Journal
                             </button>
                             <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.reference })} className="ml-2 rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
@@ -642,7 +648,7 @@ function Search({ onOpenWorship }) {
                   }}
                 >
                   {visibleBooks.map((book) => (
-                    <article key={book.name} className="rounded-lg p-3 text-left transition hover:brightness-95" style={glassCard}>
+                    <article key={book.name} className="app-card rounded-lg p-3 text-left transition hover:brightness-95 border-l-[3px] border-[#D4A843]">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <button type="button" onClick={() => handleBookTap(book)} style={{ background: 'none', border: 'none', textAlign: 'left', padding: 0 }}>
                           <p className="text-sm font-semibold text-white">{book.name}</p>

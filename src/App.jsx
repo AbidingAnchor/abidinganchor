@@ -67,9 +67,9 @@ function AppShell() {
 
   return (
     <>
-      <div style={{ minHeight: '100vh', position: 'relative', background: '#0d1f4e', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ minHeight: '100vh', position: 'relative', background: 'transparent', display: 'flex', flexDirection: 'column' }}>
         <AppBackground scenery={scenery} />
-        <div style={{ position: 'fixed', inset: 0, zIndex: 2, pointerEvents: 'none', background: 'linear-gradient(to bottom, rgba(13,31,78,0.3) 0%, rgba(13,31,78,0.6) 100%)' }} />
+        <div style={{ position: 'fixed', inset: 0, zIndex: 2, pointerEvents: 'none', background: 'transparent' }} />
 
         <div style={{ position: 'relative', zIndex: 10, isolation: 'isolate', flex: 1, display: 'flex', flexDirection: 'column', paddingBottom: '80px' }}>
           <Routes>

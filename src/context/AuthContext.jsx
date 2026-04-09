@@ -4,6 +4,16 @@ import { supabase } from '../lib/supabase'
 const AuthContext = createContext({})
 
 const PROFILE_FETCH_TIMEOUT_MS = 5000
+const EMAIL_CONFIRMATION_SEND_ERROR_MARKERS = [
+  'error sending confirmation email',
+  'error sending email',
+  'confirmation email',
+]
+
+function isConfirmationEmailSendError(message = '') {
+  const normalized = String(message).toLowerCase()
+  return EMAIL_CONFIRMATION_SEND_ERROR_MARKERS.some((marker) => normalized.includes(marker))
+}
 
 async function fetchProfileWithTimeout(user) {
   if (!user?.id) return null
@@ -31,7 +41,12 @@ async function ensureProfile(user) {
     reading_streak: 0,
     last_read_date: null,
   }
-  await supabase.from('profiles').upsert(payload, { onConflict: 'id' })
+  try {
+    await supabase.from('profiles').upsert(payload, { onConflict: 'id' })
+  } catch (error) {
+    // Fail silently - profile might already exist or permissions issue
+    console.warn('Profile upsert failed (non-critical):', error.message)
+  }
   const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
   return data ?? null
 }
@@ -100,12 +115,23 @@ export function AuthProvider({ children }) {
   }, [])
 
   const signUp = async (email, password, fullName) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName } },
-    })
-    return { data, error }
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim().toLowerCase(),
+        password,
+        options: { data: { full_name: fullName } },
+      })
+      if (!error) return { data, error: null, usedEmailFallback: false }
+      if (!isConfirmationEmailSendError(error.message)) return { data, error, usedEmailFallback: false }
+
+      // Fallback path: account may exist but confirmation delivery failed.
+      // Try password sign-in so users can continue immediately when allowed by project settings.
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password })
+      if (!signInError) return { data: signInData, error: null, usedEmailFallback: true }
+      return { data, error, usedEmailFallback: false }
+    } catch (error) {
+      return { data: null, error, usedEmailFallback: false }
+    }
   }
 
   const signIn = async (email, password) => {

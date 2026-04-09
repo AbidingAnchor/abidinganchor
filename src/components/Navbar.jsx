@@ -13,11 +13,10 @@ const tabs = [
   { label: 'Journal', path: '/journal', icon: '📓' },
 ]
 
-export default function Navbar({ scenery = 'day', onToggleScenery, showSceneryTip = false }) {
+export default function Navbar() {
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
   const signOutLastFiredRef = useRef(0)
-  const isNight = scenery === 'night'
   const displayName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email || ''
 
   const handleSignOut = async (e) => {
@@ -31,69 +30,93 @@ export default function Navbar({ scenery = 'day', onToggleScenery, showSceneryTi
 
   return (
     <>
+      {/* Premium header bar */}
       <div
         style={{
           position: 'fixed',
-          top: 'calc(env(safe-area-inset-top, 0px) + 12px)',
-          left: '12px',
+          top: 'calc(env(safe-area-inset-top, 0px))',
+          left: 0,
+          right: 0,
+          height: '56px',
           zIndex: 9998,
           display: 'flex',
           alignItems: 'center',
-          gap: '6px',
+          justifyContent: 'space-between',
+          padding: '0 16px',
+          background: 'rgba(10,22,50,0.85)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(212,168,67,0.25)',
         }}
       >
+        {/* Profile avatar */}
         {displayName ? (
-          <span style={{ background: 'rgba(10,22,50,0.75)', border: '1px solid rgba(255,255,255,0.25)', color: '#fff', borderRadius: '999px', padding: '6px 10px', fontSize: '11px', maxWidth: '140px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {displayName}
-          </span>
-        ) : null}
+          <div
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              background: '#D4A843',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff',
+              fontSize: '14px',
+              fontWeight: 600,
+              boxShadow: '0 2px 8px rgba(212,168,67,0.3)'
+            }}
+          >
+            {displayName.charAt(0).toUpperCase()}
+          </div>
+        ) : (
+          <div style={{ width: '36px' }} />
+        )}
+
+        {/* Title */}
+        <h1
+          style={{
+            fontSize: '16px',
+            letterSpacing: '0.15em',
+            color: '#D4A843',
+            fontWeight: 500,
+            margin: 0,
+            textShadow: '0 2px 8px rgba(0,0,0,0.3)'
+          }}
+        >
+          ABIDING ANCHOR
+        </h1>
+
+        {/* Settings icon */}
         <button
           type="button"
           onClick={() => handleSignOut()}
           onTouchEnd={(e) => handleSignOut(e)}
-          style={{ border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(10,22,50,0.8)', color: '#fff', borderRadius: '999px', padding: '6px 10px', fontSize: '11px' }}
-        >
-          Sign Out
-        </button>
-      </div>
-      <button
-        type="button"
-        onClick={onToggleScenery}
-        aria-label="Toggle scenery"
-        title={`Switch to ${isNight ? 'day' : 'night'} scenery`}
-        style={{
-          position: 'fixed',
-          top: 'calc(env(safe-area-inset-top, 0px) + 12px)',
-          right: '16px',
-          zIndex: 9998,
-          border: '1px solid rgba(255,255,255,0.3)',
-          background: isNight ? 'rgba(13, 7, 0, 0.9)' : 'rgba(10, 31, 78, 0.8)',
-          color: '#fff',
-          borderRadius: '999px',
-          width: '40px',
-          height: '40px',
-        }}
-      >
-        {scenery === 'night' ? '☀️' : '🌙'}
-      </button>
-      {showSceneryTip ? (
-        <div
           style={{
-            position: 'fixed',
-            top: 'calc(env(safe-area-inset-top, 0px) + 56px)',
-            right: '12px',
-            zIndex: 9998,
-            fontSize: '11px',
+            width: '36px',
+            height: '36px',
+            borderRadius: '50%',
+            background: 'rgba(255,255,255,0.08)',
+            border: '1px solid rgba(255,255,255,0.15)',
             color: '#fff',
-            background: 'rgba(10,22,50,0.8)',
-            border: '1px solid rgba(255,255,255,0.25)',
-            borderRadius: '10px',
-            padding: '6px 10px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '16px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(255,255,255,0.15)'
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(255,255,255,0.08)'
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'
           }}
         >
-          Switch to {isNight ? 'day' : 'night'} scenery
-        </div>
-      ) : null}
+          ⚙️
+        </button>
+      </div>
       <nav
         style={{
           position: 'fixed',
@@ -101,14 +124,15 @@ export default function Navbar({ scenery = 'day', onToggleScenery, showSceneryTi
           left: 0,
           right: 0,
           zIndex: 9999,
-          background: isNight ? 'rgba(26, 14, 0, 0.92)' : 'rgba(10, 22, 50, 0.85)',
+          background: 'rgba(13,0,32,0.97)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          borderTop: '1px solid rgba(255,255,255,0.15)',
+          borderTop: '1px solid rgba(212,168,67,0.15)',
+          height: '65px',
           display: 'flex',
           justifyContent: 'space-around',
           alignItems: 'center',
-          padding: '10px 0 16px',
+          padding: '0 0 16px',
           paddingBottom: 'env(safe-area-inset-bottom, 12px)',
           paddingLeft: 'env(safe-area-inset-left, 0px)',
           paddingRight: 'env(safe-area-inset-right, 0px)',
@@ -119,14 +143,27 @@ export default function Navbar({ scenery = 'day', onToggleScenery, showSceneryTi
             key={tab.path}
             to={tab.path}
             className={({ isActive }) =>
-              `text-center font-semibold transition-all ${
-                isActive ? 'nav-active' : 'text-[#8B7355] hover:text-[#8B7355]'
-              }`
+              `text-center text-sm font-semibold transition-all ${isActive ? 'text-accent-gold active-nav-link' : 'text-white/[0.35]'}`
             }
-            style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', fontSize: '9px' }}
+            style={({ isActive }) => ({
+              flex: 1,
+              minWidth: '50px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '2px',
+              paddingTop: '8px',
+              borderTop: isActive ? '2px solid #D4A843' : 'none',
+            })}
           >
-            <span style={{ fontSize: '14px' }}>{tab.icon}</span>
-            <span>{tab.label}</span>
+            {({ isActive }) => (
+              <>
+                <span className="text-2xl" style={{ filter: isActive ? 'drop-shadow(0 0 6px rgba(212,168,67,0.6))' : 'none' }}>
+                  {tab.icon}
+                </span>
+                <span style={{ fontSize: '10px' }}>{tab.label}</span>
+              </>
+            )}
           </NavLink>
         ))}
       </nav>

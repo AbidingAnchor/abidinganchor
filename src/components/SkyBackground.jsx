@@ -84,12 +84,56 @@ export default function SkyBackground({ scenery }) {
     const sun = { x: currentTheme.sun.x, y: currentTheme.sun.y, r: currentTheme.sun.r, rayAngle: 0 }
 
     const clouds = [
-      { x: -200, y: 0.13, speed: 0.18, scale: 1.4, alpha: 1.0, puffs: [{ x: 0, y: 0, rx: 90, ry: 48 }, { x: 75, y: 12, rx: 70, ry: 42 }, { x: -65, y: 15, rx: 60, ry: 36 }, { x: 30, y: -18, rx: 55, ry: 38 }, { x: -20, y: -10, rx: 50, ry: 32 }, { x: 110, y: 22, rx: 45, ry: 30 }] },
-      { x: -100, y: 0.15, speed: 0.11, scale: 1.0, alpha: 0.92, puffs: [{ x: 0, y: 0, rx: 70, ry: 36 }, { x: 58, y: 10, rx: 55, ry: 30 }, { x: -50, y: 12, rx: 48, ry: 26 }, { x: 20, y: -14, rx: 44, ry: 28 }, { x: 90, y: 18, rx: 36, ry: 22 }] },
-      { x: 320, y: 0.09, speed: 0.14, scale: 1.2, alpha: 0.96, puffs: [{ x: 0, y: 0, rx: 80, ry: 44 }, { x: 68, y: 14, rx: 62, ry: 36 }, { x: -58, y: 16, rx: 54, ry: 32 }, { x: 28, y: -16, rx: 50, ry: 34 }, { x: 105, y: 20, rx: 40, ry: 26 }, { x: -20, y: -8, rx: 46, ry: 28 }] },
-      { x: 620, y: 0.16, speed: 0.09, scale: 0.85, alpha: 0.88, puffs: [{ x: 0, y: 0, rx: 60, ry: 30 }, { x: 48, y: 8, rx: 46, ry: 24 }, { x: -40, y: 10, rx: 40, ry: 22 }, { x: 16, y: -12, rx: 38, ry: 22 }, { x: 75, y: 14, rx: 30, ry: 18 }] },
-      { x: -320, y: 0.18, speed: 0.07, scale: 0.7, alpha: 0.75, puffs: [{ x: 0, y: 0, rx: 50, ry: 24 }, { x: 40, y: 6, rx: 38, ry: 20 }, { x: -32, y: 8, rx: 34, ry: 18 }, { x: 12, y: -10, rx: 30, ry: 18 }, { x: 62, y: 12, rx: 26, ry: 14 }] },
-      { x: 460, y: 0.2, speed: 0.13, scale: 0.9, alpha: 0.8, puffs: [{ x: 0, y: 0, rx: 65, ry: 32 }, { x: 52, y: 10, rx: 50, ry: 26 }, { x: -44, y: 12, rx: 44, ry: 22 }, { x: 22, y: -12, rx: 40, ry: 24 }, { x: 82, y: 16, rx: 32, ry: 18 }] },
+      { x: 0.1, y: 0.08, speed: 0.08, scale: 1.0, alpha: 1.0, size: 'large', puffs: [
+        { x: 0, y: 0, rx: 100, ry: 50 },
+        { x: 70, y: 10, rx: 80, ry: 40 },
+        { x: -60, y: 15, rx: 70, ry: 35 },
+        { x: 40, y: -20, rx: 60, ry: 30 },
+        { x: -30, y: -10, rx: 55, ry: 28 },
+        { x: 90, y: 25, rx: 50, ry: 25 },
+        { x: 20, y: 5, rx: 45, ry: 23 },
+      ]},
+      { x: 0.35, y: 0.15, speed: 0.06, scale: 0.85, alpha: 0.9, size: 'medium', puffs: [
+        { x: 0, y: 0, rx: 65, ry: 32 },
+        { x: 50, y: 12, rx: 50, ry: 25 },
+        { x: -45, y: 15, rx: 45, ry: 22 },
+        { x: 30, y: -15, rx: 40, ry: 20 },
+        { x: -25, y: -8, rx: 35, ry: 18 },
+        { x: 70, y: 20, rx: 30, ry: 15 },
+      ]},
+      { x: 0.6, y: 0.1, speed: 0.07, scale: 1.2, alpha: 0.95, size: 'large', puffs: [
+        { x: 0, y: 0, rx: 110, ry: 55 },
+        { x: 80, y: 15, rx: 85, ry: 42 },
+        { x: -70, y: 18, rx: 75, ry: 38 },
+        { x: 50, y: -22, rx: 65, ry: 32 },
+        { x: -35, y: -12, rx: 55, ry: 28 },
+        { x: 100, y: 28, rx: 50, ry: 25 },
+        { x: 25, y: 8, rx: 45, ry: 22 },
+      ]},
+      { x: 0.85, y: 0.18, speed: 0.05, scale: 0.7, alpha: 0.85, size: 'small', puffs: [
+        { x: 0, y: 0, rx: 45, ry: 22 },
+        { x: 35, y: 10, rx: 35, ry: 18 },
+        { x: -30, y: 12, rx: 30, ry: 15 },
+        { x: 20, y: -10, rx: 28, ry: 14 },
+        { x: -18, y: -6, rx: 25, ry: 12 },
+      ]},
+      { x: 0.2, y: 0.2, speed: 0.09, scale: 0.9, alpha: 0.88, size: 'medium', puffs: [
+        { x: 0, y: 0, rx: 70, ry: 35 },
+        { x: 55, y: 14, rx: 55, ry: 28 },
+        { x: -48, y: 16, rx: 48, ry: 24 },
+        { x: 32, y: -18, rx: 42, ry: 21 },
+        { x: -28, y: -10, rx: 38, ry: 19 },
+        { x: 75, y: 22, rx: 32, ry: 16 },
+      ]},
+      { x: 0.7, y: 0.12, speed: 0.06, scale: 1.1, alpha: 0.92, size: 'large', puffs: [
+        { x: 0, y: 0, rx: 105, ry: 52 },
+        { x: 75, y: 12, rx: 82, ry: 41 },
+        { x: -65, y: 14, rx: 72, ry: 36 },
+        { x: 42, y: -20, rx: 62, ry: 31 },
+        { x: -32, y: -9, rx: 54, ry: 27 },
+        { x: 95, y: 26, rx: 48, ry: 24 },
+        { x: 22, y: 6, rx: 44, ry: 22 },
+      ]},
     ]
 
     const stars = Array.from({ length: 60 }).map(() => ({
@@ -205,72 +249,74 @@ export default function SkyBackground({ scenery }) {
     }
 
     function drawCloud(cloud, blendedTheme) {
+      const w = W()
       const h = H()
-      const y = Math.min(cloud.y * h, 160)
+      const y = Math.min(cloud.y * h, 180)
+      const x = cloud.x * w
       ctx.save()
-      ctx.globalAlpha = 0.5
-      ctx.translate(cloud.x, y)
+      ctx.globalAlpha = cloud.alpha
+      ctx.translate(x, y)
       const s = cloud.scale
-      ctx.save()
-      ctx.globalAlpha = 0.5
-      ctx.translate(6 * s, 14 * s)
-      for (const p of cloud.puffs) {
-        ctx.beginPath()
-        ctx.ellipse(p.x * s, p.y * s, p.rx * s, p.ry * s, 0, 0, Math.PI * 2)
-        ctx.fillStyle = blendedTheme.cloudShade
-        ctx.fill()
-      }
-      ctx.restore()
-      for (const p of cloud.puffs) {
-        const pg = ctx.createRadialGradient(p.x * s, (p.y - p.ry * 0.2) * s, 0, p.x * s, p.y * s, p.rx * s)
-        pg.addColorStop(0, 'rgba(255,255,255,1)')
-        pg.addColorStop(0.55, 'rgba(245,250,255,0.98)')
-        pg.addColorStop(0.82, 'rgba(225,240,255,0.94)')
-        pg.addColorStop(1, 'rgba(200,228,250,0.86)')
-        ctx.beginPath()
-        ctx.ellipse(p.x * s, p.y * s, p.rx * s, p.ry * s, 0, 0, Math.PI * 2)
-        ctx.fillStyle = pg
-        ctx.fill()
-      }
-      ctx.restore()
-    }
+      const isNight = blendedTheme.nightFactor > 0.5
 
-    function drawCross(w, h, blendedTheme) {
-      const t = Date.now() / 1000
-      const floatY = Math.sin(t * 0.5) * 5
-      const nightFactor = blendedTheme.nightFactor || 0
+      // Shadow layer at bottom for depth
       ctx.save()
-      ctx.translate(w * 0.5, h * 0.12 + floatY)
-      const vW = 28
-      const vH = 130
-      const hW = 90
-      const hH = 28
-      const hY = -16
-      ctx.globalAlpha = 0.6
-      const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, 120)
-      glow.addColorStop(0, `rgba(255,220,90,${0.45 + nightFactor * 0.3})`)
-      glow.addColorStop(0.55, `rgba(255,200,50,${0.15 + nightFactor * 0.25})`)
-      glow.addColorStop(1, 'rgba(255,180,0,0)')
-      ctx.beginPath()
-      ctx.arc(0, 0, 120, 0, Math.PI * 2)
-      ctx.fillStyle = glow
-      ctx.fill()
-      const cg = ctx.createLinearGradient(-hW / 2, -vH / 2, hW / 2, vH / 2)
-      cg.addColorStop(0, blendedTheme.cross.top)
-      cg.addColorStop(0.25, blendedTheme.cross.mid)
-      cg.addColorStop(0.6, blendedTheme.cross.low)
-      cg.addColorStop(1, blendedTheme.cross.edge)
-      ctx.shadowColor = `rgba(255,200,40,${0.6 + nightFactor * 0.25})`
-      ctx.shadowBlur = 20 + nightFactor * 16
-      ctx.beginPath()
-      ctx.rect(-vW / 2, -vH / 2, vW, vH)
-      ctx.fillStyle = cg
-      ctx.fill()
-      ctx.beginPath()
-      ctx.rect(-hW / 2, hY - hH / 2, hW, hH)
-      ctx.fillStyle = cg
-      ctx.fill()
-      ctx.shadowBlur = 0
+      ctx.globalAlpha = 0.3
+      ctx.translate(6 * s, 18 * s)
+      for (const p of cloud.puffs) {
+        ctx.beginPath()
+        ctx.ellipse(p.x * s, p.y * s, p.rx * s, p.ry * s, 0, 0, Math.PI * 2)
+        ctx.fillStyle = 'rgba(20,40,80,0.3)'
+        ctx.fill()
+      }
+      ctx.restore()
+
+      // Main cloud body with realistic colors
+      for (const p of cloud.puffs) {
+        ctx.beginPath()
+        ctx.ellipse(p.x * s, p.y * s, p.rx * s, p.ry * s, 0, 0, Math.PI * 2)
+        
+        if (isNight) {
+          // Night cloud colors: base, lit top, shadow bottom
+          const pg = ctx.createRadialGradient(
+            p.x * s, (p.y - p.ry * 0.3) * s, 0,
+            p.x * s, (p.y + p.ry * 0.3) * s, p.ry * s
+          )
+          pg.addColorStop(0, 'rgba(220, 230, 245, 0.65)') // Lit top
+          pg.addColorStop(0.5, 'rgba(180, 200, 230, 0.55)') // Base
+          pg.addColorStop(1, 'rgba(100, 120, 160, 0.4)') // Shadow bottom
+          ctx.fillStyle = pg
+        } else {
+          // Day cloud colors
+          const pg = ctx.createRadialGradient(p.x * s, (p.y - p.ry * 0.2) * s, 0, p.x * s, p.y * s, p.rx * s)
+          pg.addColorStop(0, 'rgba(255,255,255,1)')
+          pg.addColorStop(0.55, 'rgba(245,250,255,0.98)')
+          pg.addColorStop(0.82, 'rgba(225,240,255,0.94)')
+          pg.addColorStop(1, 'rgba(200,228,250,0.86)')
+          ctx.fillStyle = pg
+        }
+        ctx.fill()
+      }
+
+      // Moonlit top edge for night
+      if (isNight) {
+        ctx.save()
+        ctx.globalAlpha = 0.15
+        for (const p of cloud.puffs) {
+          const pg = ctx.createRadialGradient(
+            p.x * s, (p.y - p.ry * 0.4) * s, 0,
+            p.x * s, p.y * s, p.rx * s
+          )
+          pg.addColorStop(0, 'rgba(255,255,255,0.25)')
+          pg.addColorStop(1, 'rgba(255,255,255,0)')
+          ctx.beginPath()
+          ctx.ellipse(p.x * s, p.y * s, p.rx * s, p.ry * s, 0, 0, Math.PI * 2)
+          ctx.fillStyle = pg
+          ctx.fill()
+        }
+        ctx.restore()
+      }
+
       ctx.restore()
     }
 
@@ -310,11 +356,10 @@ export default function SkyBackground({ scenery }) {
       drawSunRays(sx, sy, blendedTheme)
       drawSunOrMoon(sx, sy, blendedTheme)
       for (const c of clouds) {
-        c.x += c.speed * (w / 800) * 60 * dt
-        if (c.x > w + 420) c.x = -420
+        c.x += c.speed * dt * 0.02
+        if (c.x > 1.5) c.x = -0.5
         drawCloud(c, blendedTheme)
       }
-      drawCross(w, h, blendedTheme)
       drawHaze(w, h)
       animId = requestAnimationFrame(animate)
     }
