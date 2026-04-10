@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   }
 
   const { path } = req.query;
-  const url = `https://api.scripture.api.bible/v1/${path}`;
+  const url = `https://rest.api.bible/v1/${path}`;
   
   try {
     const response = await fetch(url, {
