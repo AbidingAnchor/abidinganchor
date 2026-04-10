@@ -210,7 +210,7 @@ export default function BibleReader({ open, onClose }) {
       {/* Content */}
       <div style={{ 
         paddingTop: '110px', 
-        paddingBottom: '120px', 
+        paddingBottom: '80px', 
         padding: '24px 20px', 
         maxWidth: '680px', 
         margin: '0 auto'
@@ -236,7 +236,7 @@ export default function BibleReader({ open, onClose }) {
             {/* Verse Text - Continuous Flow */}
             <div style={{
               padding: '20px',
-              paddingBottom: '80px',
+              paddingBottom: '20px',
               color: '#F5E6C8',
               fontSize: `${fontSize}px`,
               lineHeight: '1.8',
@@ -257,7 +257,7 @@ export default function BibleReader({ open, onClose }) {
             {/* Font Size Controls */}
             <div style={{
               position: 'fixed',
-              bottom: '100px',
+              bottom: '70px',
               right: '20px',
               background: 'rgba(8,20,50,0.85)',
               borderRadius: '50px',
@@ -317,13 +317,8 @@ export default function BibleReader({ open, onClose }) {
 
             {/* Chapter Navigation */}
             <div style={{
-              position: 'fixed',
-              bottom: '60px',
-              left: 0,
-              right: 0,
-              zIndex: 100,
-              background: '#0a1a3e',
-              padding: '10px 20px',
+              margin: '20px 0',
+              padding: '0 20px',
               display: 'flex',
               justifyContent: 'space-between'
             }}>
