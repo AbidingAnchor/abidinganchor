@@ -48,6 +48,25 @@ async function ensureProfile(user) {
     console.warn('Profile upsert failed (non-critical):', error.message)
   }
   const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+  if (error?.code === 'PGRST116' || !data) {
+    // Profile doesn't exist, create it
+    try {
+      const { data: newProfile } = await supabase
+        .from('profiles')
+        .insert({
+          id: user.id,
+          email: user.email,
+          full_name: user.user_metadata?.full_name || '',
+          onboarding_complete: false
+        })
+        .select()
+        .single()
+      return newProfile ?? null
+    } catch (insertError) {
+      console.error('Profile creation error:', insertError)
+      return null
+    }
+  }
   if (error) {
     console.error('Profile query error:', error)
     return null
