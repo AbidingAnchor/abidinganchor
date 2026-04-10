@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Routes, Route, useLocation } from 'react-router-dom'
+import { BrowserRouter, Navigate, Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import Home from './pages/Home'
 import ReadingPlan from './pages/ReadingPlan'
@@ -24,6 +24,7 @@ import AppBackground from './components/AppBackground'
 import LegalModal from './components/LegalModal'
 import WorshipPlayer from './components/WorshipPlayer'
 import Footer from './components/Footer'
+import Onboarding from './components/Onboarding'
 import { getScenery, toggleScenery } from './utils/scenery'
 import Auth from './pages/Auth'
 import { useAuth } from './context/AuthContext'
@@ -39,6 +40,7 @@ function ProtectedRoute({ children }) {
 function AppShell() {
   const { user } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
   const [scenery, setScenery] = useState(() => getScenery())
   const [showSceneryTip, setShowSceneryTip] = useState(() => !localStorage.getItem('abidinganchor-scenery-tip-seen'))
   const [worshipVisible, setWorshipVisible] = useState(false)
@@ -92,6 +94,7 @@ function AppShell() {
             <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
             <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/onboarding" element={<ProtectedRoute><Onboarding onComplete={() => navigate('/')} /></ProtectedRoute>} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
@@ -102,7 +105,7 @@ function AppShell() {
           {showFooter ? <Footer /> : null}
         </div>
       </div>
-      {showFooter ? <LegalModal /> : null}
+      {showFooter ? <LegalModal onAgreed={() => navigate('/onboarding')} /> : null}
       <WorshipPlayer
         visible={worshipVisible}
         onClose={() => setWorshipVisible(false)}

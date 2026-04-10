@@ -19,7 +19,7 @@ export default function Settings() {
 
   const handleReplayTutorial = async () => {
     try {
-      // Clear from localStorage
+      // Clear from localStorage (do NOT clear tos_agreed)
       localStorage.removeItem('onboarding_complete')
       
       // Clear from Supabase profile
@@ -30,8 +30,8 @@ export default function Settings() {
           .eq('id', user.id)
       }
       
-      // Navigate to home to trigger onboarding modal
-      navigate('/', { replace: true })
+      // Navigate directly to onboarding route (skips ToS)
+      navigate('/onboarding')
     } catch (error) {
       console.error('Error replaying tutorial:', error)
     }

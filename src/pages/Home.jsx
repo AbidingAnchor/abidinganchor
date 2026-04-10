@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { getDailyVerse } from '../utils/dailyVerse'
 import { getJournalEntries, saveToJournal } from '../utils/journal'
 import SaveToast from '../components/SaveToast'
 import { useAuth } from '../context/AuthContext'
-import Onboarding from '../components/Onboarding'
 
 const PROFILE_STREAK_FETCH_MS = 5000
 
@@ -14,14 +13,14 @@ function getTodaysVerse() {
 }
 
 function Home({ onOpenWorship, worshipStatus }) {
-  const { user, profile, refreshProfile } = useAuth()
+  const navigate = useNavigate()
+  const { user, profile } = useAuth()
   const [todaysVerse, setTodaysVerse] = useState(() => getTodaysVerse())
   const [streak, setStreak] = useState({ currentStreak: 1 })
   const [toastTrigger, setToastTrigger] = useState(0)
   const [journalCount, setJournalCount] = useState(0)
   const [suppressPersonalWelcome, setSuppressPersonalWelcome] = useState(false)
   const [profileFetchLoading, setProfileFetchLoading] = useState(false)
-  const [showOnboarding, setShowOnboarding] = useState(false)
   const profileRef = useRef(profile)
   profileRef.current = profile
 
@@ -112,16 +111,12 @@ function Home({ onOpenWorship, worshipStatus }) {
 
   useEffect(() => {
     if (user?.id && profile && !profileFetchLoading) {
-      // Check Supabase first, then localStorage fallback
-      const supabaseComplete = profile.onboarding_complete === true
-      const localComplete = localStorage.getItem('onboarding_complete') === 'true'
-      const isComplete = supabaseComplete !== false ? supabaseComplete : localComplete
-      
+      const isComplete = profile.onboarding_complete === true || localStorage.getItem('onboarding_complete') === 'true'
       if (!isComplete) {
-        setShowOnboarding(true)
+        navigate('/onboarding')
       }
     }
-  }, [user?.id, profile, profileFetchLoading])
+  }, [user?.id, profile, profileFetchLoading, navigate])
 
   useEffect(() => {
     let timeoutId
@@ -294,13 +289,6 @@ function Home({ onOpenWorship, worshipStatus }) {
     : (profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Friend')
   
   const streakMessage = streakMessages[currentStreak] || `Day ${currentStreak} — Keep seeking Him with all your heart. 🙏`
-
-  const handleOnboardingComplete = async () => {
-    setShowOnboarding(false)
-    setProfileFetchLoading(true)
-    await refreshProfile()
-    setProfileFetchLoading(false)
-  }
 
   return (
     <>
@@ -794,21 +782,6 @@ function Home({ onOpenWorship, worshipStatus }) {
         <SaveToast trigger={toastTrigger} />
       </div>
     </div>
-
-    {showOnboarding && <Onboarding onComplete={handleOnboardingComplete} />}
-      
-      <style jsx>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </>
   )
 }
