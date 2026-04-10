@@ -35,7 +35,7 @@ export function getHighlights() {
 
 export function getHighlightsForChapter(book, chapter) {
   const all = read()
-  return Object.values(all).filter((h) => h.book === book && Number(h.chapter) === Number(chapter))
+  return Object.values(all || {}).filter((h) => h.book === book && Number(h.chapter) === Number(chapter))
 }
 
 export function deleteHighlight(reference) {

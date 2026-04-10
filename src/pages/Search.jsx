@@ -234,7 +234,7 @@ export const books = {
 
 function mapBibleApiToResults(data) {
   if (Array.isArray(data?.verses) && data.verses.length > 0) {
-    return data.verses.map((verse) => ({
+    return (data.verses || []).map((verse) => ({
       id: `${verse.book_name}-${verse.chapter}-${verse.verse}`,
       reference: `${verse.book_name} ${verse.chapter}:${verse.verse}`,
       text: verse.text?.trim() ?? '',

@@ -13,42 +13,63 @@ export default function Prayer() {
 
   const loadPrayers = async () => {
     if (!user?.id) return
-    const { data } = await supabase
-      .from('prayers')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-    setEntries((data || []).map((row) => ({
-      id: row.id,
-      title: row.title || '',
-      text: row.content,
-      date: row.created_at,
-      answered: Boolean(row.answered),
-    })))
+    try {
+      const { data, error } = await supabase
+        .from('prayers')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      setEntries((data || []).map((row) => ({
+        id: row.id,
+        title: row.title || '',
+        text: row.content,
+        date: row.created_at,
+        answered: Boolean(row.answered),
+      })))
+    } catch (err) {
+      console.error('Error loading prayers:', err)
+      setEntries([])
+    }
   }
 
   const addPrayer = async () => {
     if (!content.trim()) return
-    await supabase.from('prayers').insert({
-      user_id: user.id,
-      title: title.trim() || null,
-      content: content.trim(),
-      answered: false,
-    })
-    await loadPrayers()
-    setTitle('')
-    setContent('')
-    setShowModal(false)
+    try {
+      const { error } = await supabase.from('prayers').insert({
+        user_id: user.id,
+        title: title.trim() || null,
+        content: content.trim(),
+        answered: false,
+      })
+      if (error) throw error
+      await loadPrayers()
+      setTitle('')
+      setContent('')
+      setShowModal(false)
+    } catch (err) {
+      console.error('Error adding prayer:', err)
+    }
   }
 
   const markAsAnswered = async (entry) => {
-    await supabase.from('prayers').update({ answered: !entry.answered }).eq('id', entry.id)
-    await loadPrayers()
+    try {
+      const { error } = await supabase.from('prayers').update({ answered: !entry.answered }).eq('id', entry.id)
+      if (error) throw error
+      await loadPrayers()
+    } catch (err) {
+      console.error('Error marking prayer as answered:', err)
+    }
   }
 
   const deletePrayer = async (entry) => {
-    await supabase.from('prayers').delete().eq('id', entry.id)
-    await loadPrayers()
+    try {
+      const { error } = await supabase.from('prayers').delete().eq('id', entry.id)
+      if (error) throw error
+      await loadPrayers()
+    } catch (err) {
+      console.error('Error deleting prayer:', err)
+    }
   }
 
   useEffect(() => {
@@ -62,8 +83,8 @@ export default function Prayer() {
     return () => { active = false }
   }, [user?.id])
 
-  const activePrayers = entries.filter((p) => !p.answered)
-  const answeredPrayers = entries.filter((p) => p.answered)
+  const activePrayers = (entries || []).filter((p) => !p.answered)
+  const answeredPrayers = (entries || []).filter((p) => p.answered)
 
   return (
     <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>

@@ -111,7 +111,7 @@ export default function BibleReader({
       recordChapterRead({ book: bookName, chapter: chapterNum, testament: oldBooks.has(bookName) ? 'old' : 'new' })
       
       const chapterHighlights = getHighlightsForChapter(bookName, chapterNum)
-      const byVerse = chapterHighlights.reduce((acc, entry) => {
+      const byVerse = (chapterHighlights || []).reduce((acc, entry) => {
         acc[entry.verse] = entry.color
         return acc
       }, {})
@@ -388,7 +388,7 @@ export default function BibleReader({
     })
   }
 
-  const filteredBooks = books.filter(book => 
+  const filteredBooks = (books || []).filter(book => 
     book.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
@@ -398,7 +398,7 @@ export default function BibleReader({
     return oldTestamentBooks.has(bookName) ? 'old' : 'new'
   }
 
-  const testamentFilteredBooks = filteredBooks.filter(book => {
+  const testamentFilteredBooks = (filteredBooks || []).filter(book => {
     if (testamentFilter === 'all') return true
     return getTestament(book.name) === testamentFilter
   })

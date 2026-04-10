@@ -34,9 +34,9 @@ export default function Onboarding({ onComplete }) {
 
   const toggleGoal = (goalId) => {
     setSelectedGoals(prev => 
-      prev.includes(goalId) 
-        ? prev.filter(id => id !== goalId)
-        : [...prev, goalId]
+      (prev || []).includes(goalId) 
+        ? (prev || []).filter(id => id !== goalId)
+        : [...(prev || []), goalId]
     )
   }
 

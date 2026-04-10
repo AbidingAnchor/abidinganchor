@@ -103,9 +103,14 @@ export default function Auth() {
       setError('Please enter a valid email address.')
       return
     }
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(cleanEmail)
-    if (resetError) setError(resetError.message)
-    else setSuccess('Password reset email sent.')
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(cleanEmail)
+      if (resetError) throw resetError
+      setSuccess('Password reset email sent.')
+    } catch (err) {
+      console.error('Password reset error:', err)
+      setError(err.message || 'Failed to send password reset email.')
+    }
   }
 
   return (

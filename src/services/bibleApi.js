@@ -1,5 +1,10 @@
 const API_BASE = 'https://api.scripture.api.bible/v1';
 const API_KEY = import.meta.env.VITE_BIBLE_API_KEY;
+
+if (!API_KEY) {
+  console.error('Bible API key missing. Please set VITE_BIBLE_API_KEY in your .env file.')
+}
+
 const headers = { 'api-key': API_KEY };
 
 export const DEFAULT_BIBLE_ID = 'de4e12af7f28f599-02'; // KJV
@@ -16,24 +21,36 @@ export const POPULAR_BIBLES = [
 ];
 
 export async function getBooks(bibleId) {
+  if (!API_KEY) {
+    console.error('Bible API key missing')
+    return []
+  }
   const res = await fetch(`${API_BASE}/bibles/${bibleId}/books`, { headers });
   const data = await res.json();
-  return data.data;
+  return data.data || [];
 }
 
 export async function getChapters(bibleId, bookId) {
+  if (!API_KEY) {
+    console.error('Bible API key missing')
+    return []
+  }
   const res = await fetch(`${API_BASE}/bibles/${bibleId}/books/${bookId}/chapters`, { headers });
   const data = await res.json();
-  return data.data;
+  return data.data || [];
 }
 
 export async function getChapter(bibleId, chapterId) {
+  if (!API_KEY) {
+    console.error('Bible API key missing')
+    return null
+  }
   const res = await fetch(
     `${API_BASE}/bibles/${bibleId}/chapters/${chapterId}?content-type=json&include-notes=false&include-titles=true&include-chapter-numbers=false&include-verse-numbers=true&include-verse-spans=false`,
     { headers }
   );
   const data = await res.json();
-  return data.data;
+  return data.data || null;
 }
 
 export function getSavedBibleId() {

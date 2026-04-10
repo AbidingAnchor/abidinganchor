@@ -175,7 +175,7 @@ export default function Friends() {
       })
       if (error) throw error
       await loadExcluded()
-      setSearchResults((prev) => prev.filter((p) => p.id !== targetId))
+      setSearchResults((prev) => (prev || []).filter((p) => p.id !== targetId))
     } catch {
       /* silent */
     }

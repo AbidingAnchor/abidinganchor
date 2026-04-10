@@ -23,7 +23,7 @@ export default function AICompanion() {
 
   const conversationHistory = useMemo(
     () =>
-      messages
+      (messages || [])
         .filter((m) => m.id !== 'welcome')
         .map((m) => ({
           role: m.role === 'assistant' ? 'assistant' : 'user',
@@ -37,11 +37,11 @@ export default function AICompanion() {
   }, [messages, loading])
 
   useEffect(() => {
-    const nonWelcome = messages.filter((m) => m.id !== 'welcome')
+    const nonWelcome = (messages || []).filter((m) => m.id !== 'welcome')
     if (nonWelcome.length === 0) return
     const existing = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]')
     const session = { id: sessionId, updatedAt: new Date().toISOString(), messages }
-    const next = [session, ...existing.filter((s) => s.id !== sessionId)].slice(0, 5)
+    const next = [session, ...(existing || []).filter((s) => s.id !== sessionId)].slice(0, 5)
     localStorage.setItem(HISTORY_KEY, JSON.stringify(next))
   }, [messages, sessionId])
 

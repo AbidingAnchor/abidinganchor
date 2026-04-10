@@ -56,9 +56,10 @@ export default function Settings() {
         .getPublicUrl(`${user.id}/profile.jpg`)
 
       try {
-        await supabase.from('profiles')
+        const { error: updateError } = await supabase.from('profiles')
           .update({ avatar_url: publicUrl })
           .eq('id', user.id)
+        if (updateError) throw updateError
       } catch (error) {
         console.error('Profile update error:', error)
         // Continue anyway - avatar is saved, profile update may fail gracefully

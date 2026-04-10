@@ -49,17 +49,17 @@ export default function Devotional() {
   const [loading, setLoading] = useState(true)
 
   const today = getTodayDevotional()
-  const nextDay = devotionals[(today.day % devotionals.length)]
+  const nextDay = (devotionals || [])[today.day % (devotionals?.length || 1)]
   const isTodayStarted = !!progress.items?.[today.id]?.startedAt
   const isTodayCompleted = !!progress.items?.[today.id]?.completedAt
   const totalCompleted = progress.completedDates?.length || 0
 
   const filtered = useMemo(() => {
-    if (activeTopic === 'All') return devotionals
-    return devotionals.filter((d) => d.topic === activeTopic)
+    if (activeTopic === 'All') return devotionals || []
+    return (devotionals || []).filter((d) => d.topic === activeTopic)
   }, [activeTopic])
 
-  const selectedDevotional = selectedId ? devotionals.find((d) => d.id === selectedId) : null
+  const selectedDevotional = selectedId ? (devotionals || []).find((d) => d.id === selectedId) : null
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 220)
     return () => clearTimeout(t)
@@ -240,7 +240,7 @@ export default function Devotional() {
               </div>
             ) : favorites.length ? (
               <div className="mt-2 grid gap-2">
-                {devotionals
+                {(devotionals || [])
                   .filter((d) => favorites.includes(d.id))
                   .slice(0, 8)
                   .map((d) => (

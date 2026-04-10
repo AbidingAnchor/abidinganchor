@@ -3,23 +3,39 @@ import { supabase } from '../lib/supabase'
 export async function getJournalEntries(userIdArg) {
   let userId = userIdArg
   if (!userId) {
-    const { data: { user } } = await supabase.auth.getUser()
-    userId = user?.id
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      userId = user?.id
+    } catch (err) {
+      console.error('Error getting user:', err)
+      return []
+    }
   }
   if (!userId) return []
-  const { data } = await supabase
-    .from('journal_entries')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-  return data || []
+  try {
+    const { data, error } = await supabase
+      .from('journal_entries')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+    if (error) throw error
+    return data || []
+  } catch (err) {
+    console.error('Error getting journal entries:', err)
+    return []
+  }
 }
 
 export async function saveToJournal({ verse, reference, note = '', tags = [], userId: userIdArg }) {
   let userId = userIdArg
   if (!userId) {
-    const { data: { user } } = await supabase.auth.getUser()
-    userId = user?.id
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      userId = user?.id
+    } catch (err) {
+      console.error('Error getting user:', err)
+      return null
+    }
   }
   if (!userId) return null
   const content = (note || verse || '').trim()
@@ -31,11 +47,22 @@ export async function saveToJournal({ verse, reference, note = '', tags = [], us
     verse_reference: reference || null,
     entry_type: tags?.[0] || 'Reflection',
   }
-  const { data } = await supabase.from('journal_entries').insert(payload).select().single()
-  return data || null
+  try {
+    const { data, error } = await supabase.from('journal_entries').insert(payload).select().single()
+    if (error) throw error
+    return data || null
+  } catch (err) {
+    console.error('Error saving to journal:', err)
+    return null
+  }
 }
 
 export async function deleteJournalEntry(id) {
   if (!id) return
-  await supabase.from('journal_entries').delete().eq('id', id)
+  try {
+    const { error } = await supabase.from('journal_entries').delete().eq('id', id)
+    if (error) throw error
+  } catch (err) {
+    console.error('Error deleting journal entry:', err)
+  }
 }

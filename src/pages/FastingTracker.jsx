@@ -61,11 +61,11 @@ export default function FastingTracker() {
   const versePick = encouragements[Math.floor(now / 3600000) % encouragements.length]
 
   const totalHours = useMemo(
-    () => store.history.reduce((sum, h) => sum + (h.durationMs || 0), 0) / 3600000,
+    () => (store.history || []).reduce((sum, h) => sum + (h.durationMs || 0), 0) / 3600000,
     [store.history],
   )
   const personalRecord = useMemo(
-    () => Math.max(0, ...store.history.map((h) => (h.durationMs || 0) / 3600000)),
+    () => Math.max(0, ...(store.history || []).map((h) => (h.durationMs || 0) / 3600000)),
     [store.history],
   )
 
