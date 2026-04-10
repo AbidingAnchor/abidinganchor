@@ -91,25 +91,33 @@ export default function Onboarding({ onComplete }) {
   }
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      zIndex: 2000,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px'
-    }}>
+    <>
+      <style>{`
+        @keyframes glow {
+          0% { filter: drop-shadow(0 0 20px rgba(212,168,67,0.6)) }
+          50% { filter: drop-shadow(0 0 40px rgba(212,168,67,1.0)) }
+          100% { filter: drop-shadow(0 0 20px rgba(212,168,67,0.6)) }
+        }
+      `}</style>
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 2000,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px'
+      }}>
       <div style={{
         position: 'absolute',
         inset: 0,
         zIndex: 0
       }}>
-        <AppBackground />
+        <AppBackground scenery="default" />
       </div>
       <div style={{
         position: 'absolute',
@@ -127,7 +135,8 @@ export default function Onboarding({ onComplete }) {
         zIndex: 10,
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center'
+        alignItems: 'center',
+        marginTop: '20px'
       }}>
         {/* Progress Dots */}
         <div style={{
@@ -157,21 +166,22 @@ export default function Onboarding({ onComplete }) {
               src="/images/GoldCross.png"
               alt="Cross"
               style={{
-                width: '150px',
-                height: '150px',
+                width: '180px',
+                height: '180px',
                 objectFit: 'contain',
                 margin: '0 auto 24px',
                 display: 'block',
                 position: 'relative',
                 zIndex: 10,
                 mixBlendMode: 'screen',
-                filter: 'drop-shadow(0 0 30px rgba(212,168,67,0.9))'
+                filter: 'drop-shadow(0 0 30px rgba(212,168,67,0.9))',
+                animation: 'glow 3s ease-in-out infinite'
               }}
             />
             <h1 style={{
               color: '#FFFFFF',
-              fontSize: '26px',
-              fontWeight: 700,
+              fontSize: '28px',
+              fontWeight: 800,
               fontFamily: 'Georgia, serif',
               marginBottom: '12px'
             }}>
@@ -523,5 +533,6 @@ export default function Onboarding({ onComplete }) {
         )}
       </div>
     </div>
+    </>
   )
 }
