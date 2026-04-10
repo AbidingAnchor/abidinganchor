@@ -81,14 +81,16 @@ export default function BibleReader({ open, onClose }) {
       if (!response.ok) throw new Error('Failed to fetch verses')
       const data = await response.json()
       
-      // Parse HTML content to extract verse text
-      const parser = new DOMParser()
+      // Parse API response - extract verse number from id and text from text field
       const parsedVerses = data.data.map((verse) => {
-        const doc = parser.parseFromString(verse.content, 'text/html')
-        const text = doc.body.textContent || doc.body.innerText || ''
+        // Extract verse number from id (e.g., "GEN.1.1" → "1")
+        const idParts = verse.id.split('.')
+        const verseNumber = idParts[idParts.length - 1]
+        // Strip ¶ symbols from text
+        const text = (verse.text || '').replace(/¶/g, '').trim()
         return {
-          number: verse.number,
-          text: text.trim()
+          number: verseNumber,
+          text: text
         }
       })
       
