@@ -11,6 +11,14 @@ if (!API_KEY) {
 const headers = { 'api-key': API_KEY };
 console.log('Bible API headers:', headers);
 
+// Debug: Fetch available Bible IDs at startup
+fetch('https://api.scripture.api.bible/v1/bibles', {
+  headers: { 'api-key': API_KEY }
+})
+  .then(r => r.json())
+  .then(data => console.log('Available bibles:', data.data?.map(b => b.id + ' - ' + b.name)))
+  .catch(err => console.error('Error fetching available bibles:', err));
+
 export const DEFAULT_BIBLE_ID = 'de4e12af7f28f599-02'; // KJV
 
 export const POPULAR_BIBLES = [
