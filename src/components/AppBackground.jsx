@@ -26,9 +26,11 @@ export default function AppBackground({ scenery }) {
           top: '8%',
           left: '50%',
           transform: 'translateX(-50%)',
-          width: '100px',
-          height: 'auto',
-          filter: 'drop-shadow(0 0 15px rgba(212,168,67,0.9)) drop-shadow(0 0 35px rgba(212,168,67,0.6)) drop-shadow(0 0 70px rgba(212,168,67,0.3))',
+          width: '150px',
+          height: '150px',
+          objectFit: 'contain',
+          mixBlendMode: 'screen',
+          filter: 'drop-shadow(0 0 30px rgba(212,168,67,0.9))',
           animation: 'crossPulse 3s ease-in-out infinite',
           pointerEvents: 'none'
         }}

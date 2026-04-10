@@ -960,10 +960,13 @@ export default function BibleReader({
                 src="/images/GoldCross.png" 
                 alt="Cross" 
                 style={{
-                  width: '80px',
-                  height: '80px',
+                  width: '150px',
+                  height: '150px',
+                  objectFit: 'contain',
                   marginBottom: '12px',
-                  opacity: 0.9
+                  opacity: 0.9,
+                  mixBlendMode: 'screen',
+                  filter: 'drop-shadow(0 0 30px rgba(212,168,67,0.9))'
                 }}
               />
               <h1 style={{

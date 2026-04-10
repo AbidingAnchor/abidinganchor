@@ -157,14 +157,15 @@ export default function Onboarding({ onComplete }) {
               src="/images/GoldCross.png"
               alt="Cross"
               style={{
-                width: '80px',
-                height: 'auto',
+                width: '150px',
+                height: '150px',
+                objectFit: 'contain',
                 margin: '0 auto 24px',
                 display: 'block',
                 position: 'relative',
                 zIndex: 10,
                 mixBlendMode: 'screen',
-                filter: 'drop-shadow(0 0 15px rgba(212,168,67,0.9)) drop-shadow(0 0 35px rgba(212,168,67,0.6))'
+                filter: 'drop-shadow(0 0 30px rgba(212,168,67,0.9))'
               }}
             />
             <h1 style={{
