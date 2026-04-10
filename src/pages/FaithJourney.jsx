@@ -73,7 +73,7 @@ export default function FaithJourney() {
   )
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'auto', paddingBottom: '20px' }}>
       {view === 'hub' ? (
         <div style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '20px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
             <header style={{ marginBottom: '24px' }}>
