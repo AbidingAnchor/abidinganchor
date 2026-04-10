@@ -267,33 +267,51 @@ export default function BibleReader({
           messages: [
             {
               role: 'user',
-              content: `Based on ${bookName} ${chapterNum}, give 2 specific, practical action steps a person can take THIS WEEK to apply what they just read. Make them concrete and life-relevant, not vague. Format as JSON: { actionSteps: [ { step: '...', description: '...' }, { step: '...', description: '...' } ] }`
+              content: `Based on ${bookName} chapter ${chapterNum}, provide 2-3 specific, practical action steps a person can take THIS WEEK to apply what they just read. Make them concrete and life-relevant. Format each step as: "Step: [brief title] - [detailed description]". Separate each step with a new line.`
             }
           ]
         })
       })
       const data = await response.json()
-      let actionSteps = []
+      const reply = data?.reply || ''
       
-      try {
-        const clean = data?.reply?.replace(/```json|```/g, '').trim()
-        actionSteps = JSON.parse(clean)?.actionSteps || [
-          { step: 'Step 1', description: 'Could not load action steps.' },
-          { step: 'Step 2', description: 'Please try again.' }
-        ]
-      } catch {
-        actionSteps = [
-          { step: 'Step 1', description: 'Could not load action steps.' },
-          { step: 'Step 2', description: 'Please try again.' }
-        ]
-      }
+      // Parse the response to extract steps
+      const steps = reply.split('\n').filter(line => line.trim().length > 0).map((line, index) => {
+        const match = line.match(/Step:\s*(.+?)\s*-\s*(.+)/i)
+        if (match) {
+          return {
+            step: `Step ${index + 1}: ${match[1].trim()}`,
+            description: match[2].trim(),
+            completed: false
+          }
+        }
+        // Fallback if format doesn't match
+        return {
+          step: `Step ${index + 1}`,
+          description: line.trim(),
+          completed: false
+        }
+      })
+      
+      // If no steps were parsed, use fallback
+      const actionSteps = steps.length > 0 ? steps : [
+        { step: 'Step 1', description: 'Could not load action steps. Please try again.', completed: false },
+        { step: 'Step 2', description: 'Refresh this section to retry.', completed: false }
+      ]
       
       setGuidedStudyData(prev => ({
         ...prev,
-        actionSteps: actionSteps.map(s => ({ ...s, completed: false }))
+        actionSteps
       }))
     } catch (error) {
       console.error('Error loading apply content:', error)
+      setGuidedStudyData(prev => ({
+        ...prev,
+        actionSteps: [
+          { step: 'Step 1', description: 'Could not load action steps. Please try again.', completed: false },
+          { step: 'Step 2', description: 'Refresh this section to retry.', completed: false }
+        ]
+      }))
     } finally {
       setGuidedStudyLoading(false)
     }
@@ -1401,29 +1419,40 @@ export default function BibleReader({
                 }}>
                   {selectedBook?.name} {selectedChapter?.number}
                 </h3>
-                <div style={{
-                  fontFamily: 'Georgia, serif',
-                  lineHeight: '2.0',
-                  fontSize: '18px',
-                  color: '#FFFFFF',
-                  marginBottom: '32px'
-                }}>
-                  {chapterContent?.content?.map((verse) => (
-                    <span key={verse.number}>
-                      <sup style={{
-                        color: '#D4A843',
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        verticalAlign: 'super',
-                        marginRight: '4px',
-                        fontFamily: 'Arial, sans-serif'
-                      }}>
-                        {verse.number}
-                      </sup>
-                      {verse.text}{' '}
-                    </span>
-                  ))}
-                </div>
+                {loading ? (
+                  <div style={{ textAlign: 'center', padding: '40px' }}>
+                    <div style={{ fontSize: '24px', marginBottom: '16px' }}>✝</div>
+                    <p style={{ color: 'rgba(255,255,255,0.6)' }}>Loading scripture...</p>
+                  </div>
+                ) : (
+                  <div style={{
+                    fontFamily: 'Georgia, serif',
+                    lineHeight: '2.0',
+                    fontSize: '18px',
+                    color: '#FFFFFF',
+                    marginBottom: '32px'
+                  }}>
+                    {chapterContent?.content && chapterContent.content.length > 0 ? (
+                      chapterContent.content.map((verse) => (
+                        <span key={verse.number}>
+                          <sup style={{
+                            color: '#D4A843',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            verticalAlign: 'super',
+                            marginRight: '4px',
+                            fontFamily: 'Arial, sans-serif'
+                          }}>
+                            {verse.number}
+                          </sup>
+                          {verse.text}{' '}
+                        </span>
+                      ))
+                    ) : (
+                      <p style={{ color: 'rgba(255,255,255,0.6)' }}>No content available</p>
+                    )}
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={() => {
