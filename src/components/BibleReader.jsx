@@ -168,24 +168,6 @@ export default function BibleReader({ open, onClose }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', maxWidth: '680px', margin: '0 auto' }}>
           <button
             type="button"
-            onClick={onClose}
-            style={{
-              position: 'absolute',
-              left: '20px',
-              background: 'none',
-              border: 'none',
-              color: '#D4A843',
-              fontSize: '16px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              padding: '4px 8px'
-            }}
-          >
-            ←
-          </button>
-
-          <button
-            type="button"
             onClick={() => setShowBookPicker(true)}
             style={{
               background: 'none',

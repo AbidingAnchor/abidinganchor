@@ -1,6 +1,6 @@
 import BibleReader from '../components/BibleReader'
 
-function ReadingPlan() {
+function ReadingPlan({ onOpenWorship }) {
   return <BibleReader open={true} onClose={() => {}} />
 }
 
