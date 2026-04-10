@@ -73,33 +73,19 @@ export default function Onboarding({ onComplete }) {
   const handleComplete = async () => {
     setLoading(true)
     try {
-      const recommendations = getRecommendations()
-      
-      const { error } = await supabase.from('profiles').upsert({
+      await supabase.from('profiles').upsert({
         id: user.id,
+        onboarding_complete: true,
         growth_goals: selectedGoals,
         faith_duration: faithDuration,
-        daily_commitment: dailyCommitment,
-        onboarding_complete: true,
-        theological_background: 'Non-Denominational',
-        study_depth: recommendations.studyDepth,
-        learning_paths: {
-          recommended_path: recommendations.path,
-          recommended_reading_plan: recommendations.readingPlan,
-          recommended_study_depth: recommendations.studyDepth
-        }
+        daily_commitment: dailyCommitment
       }, { onConflict: 'id' })
-      
-      if (error) {
-        console.error('Onboarding save error:', error)
-        throw error
-      }
-      
-      onComplete()
     } catch (error) {
-      console.error('Error saving onboarding:', error)
+      console.error('Onboarding save error:', error)
     } finally {
+      localStorage.setItem('onboarding_complete', 'true')
       setLoading(false)
+      onComplete()
     }
   }
 

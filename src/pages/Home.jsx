@@ -136,7 +136,8 @@ function Home({ onOpenWorship, worshipStatus }) {
 
   useEffect(() => {
     if (user?.id && profile && !profileFetchLoading) {
-      if (!profile.onboarding_complete) {
+      const isComplete = profile.onboarding_complete || localStorage.getItem('onboarding_complete') === 'true'
+      if (!isComplete) {
         setShowOnboarding(true)
       }
     }
