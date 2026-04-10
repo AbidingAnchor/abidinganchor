@@ -9,15 +9,11 @@ export default async function handler(req, res) {
   const apiKey = process.env.BIBLE_API_KEY;
   
   if (!apiKey) {
-    return res.status(500).json({ error: 'API key not configured', key: 'missing' });
+    return res.status(500).json({ error: 'API key not configured' });
   }
 
   const { path } = req.query;
-  const url = `https://api.bible/v1/${path}`;
-  
-  console.log('Fetching:', url);
-  console.log('API Key present:', !!apiKey);
-  console.log('API Key length:', apiKey.length);
+  const url = `https://api.scripture.api.bible/v1/${path}`;
   
   try {
     const response = await fetch(url, {
@@ -28,8 +24,6 @@ export default async function handler(req, res) {
     });
     
     const text = await response.text();
-    console.log('Response status:', response.status);
-    console.log('Response text preview:', text.substring(0, 200));
     
     res.setHeader('Access-Control-Allow-Origin', '*');
     
@@ -44,7 +38,6 @@ export default async function handler(req, res) {
       });
     }
   } catch (error) {
-    console.error('Fetch error:', error);
     res.status(500).json({ error: error.message });
   }
 }
