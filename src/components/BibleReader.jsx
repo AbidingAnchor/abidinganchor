@@ -83,15 +83,16 @@ export default function BibleReader({ open, onClose }) {
       
       // Parse API response - extract verse number from id and text from text field
       const parsedVerses = data.data.map((verse) => {
-        // Extract verse number from id (e.g., "GEN.1.1" → "1")
-        const idParts = verse.id.split('.')
-        const verseNumber = idParts[idParts.length - 1]
-        // Strip ¶ symbols from text
-        const text = (verse.text || '').replace(/¶/g, '').trim()
-        return {
-          number: verseNumber,
-          text: text
-        }
+        // Extract verse number from ID like "GEN.1.1" -> "1"
+        const verseNum = verse.id.split('.')[2];
+        
+        // Strip HTML tags from text
+        const text = verse.text
+          .replace(/<[^>]*>/g, '')  // remove HTML tags
+          .replace(/¶/g, '')         // remove paragraph marks
+          .trim();
+        
+        return { number: verseNum, text };
       })
       
       setVerses(parsedVerses)
