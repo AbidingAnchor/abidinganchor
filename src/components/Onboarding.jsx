@@ -99,24 +99,35 @@ export default function Onboarding({ onComplete }) {
       bottom: 0,
       zIndex: 2000,
       display: 'flex',
+      flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
       padding: '20px'
     }}>
-      <AppBackground />
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 0
+      }}>
+        <AppBackground />
+      </div>
       <div style={{
         position: 'absolute',
         inset: 0,
         background: 'rgba(8,20,50,0.75)',
         backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)'
+        WebkitBackdropFilter: 'blur(10px)',
+        zIndex: 1
       }} />
       <div style={{
         maxWidth: '480px',
         width: '100%',
         textAlign: 'center',
         position: 'relative',
-        zIndex: 10
+        zIndex: 10,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center'
       }}>
         {/* Progress Dots */}
         <div style={{
@@ -152,6 +163,7 @@ export default function Onboarding({ onComplete }) {
                 display: 'block',
                 position: 'relative',
                 zIndex: 10,
+                mixBlendMode: 'screen',
                 filter: 'drop-shadow(0 0 15px rgba(212,168,67,0.9)) drop-shadow(0 0 35px rgba(212,168,67,0.6))'
               }}
             />
