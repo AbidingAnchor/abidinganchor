@@ -120,10 +120,24 @@ function ReadingPlan({ onOpenWorship }) {
   const visibleBooks = testament === 'old' ? books.old : books.new
 
   const handleContinueReading = async () => {
-    const { data } = await supabase.from('profiles').select('last_book,last_chapter').eq('id', user.id).single()
-    const targetBook = BIBLE_FLAT.find((book) => book.name === data?.last_book) || BIBLE_FLAT[0]
-    setReaderState({ name: targetBook.name, api: targetBook.apiName, chapter: Number(data?.last_chapter || 1), total: targetBook.chapters })
-    setReaderOpen(true)
+    try {
+      const { data, error } = await supabase.from('profiles').select('last_book,last_chapter').eq('id', user.id).single()
+      if (error) {
+        console.error('Profile query error:', error)
+        const targetBook = BIBLE_FLAT[0]
+        setReaderState({ name: targetBook.name, api: targetBook.apiName, chapter: 1, total: targetBook.chapters })
+        setReaderOpen(true)
+        return
+      }
+      const targetBook = BIBLE_FLAT.find((book) => book.name === data?.last_book) || BIBLE_FLAT[0]
+      setReaderState({ name: targetBook.name, api: targetBook.apiName, chapter: Number(data?.last_chapter || 1), total: targetBook.chapters })
+      setReaderOpen(true)
+    } catch (error) {
+      console.error('Continue reading error:', error)
+      const targetBook = BIBLE_FLAT[0]
+      setReaderState({ name: targetBook.name, api: targetBook.apiName, chapter: 1, total: targetBook.chapters })
+      setReaderOpen(true)
+    }
   }
 
   return (

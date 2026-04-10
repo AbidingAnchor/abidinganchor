@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import { POPULAR_BIBLES, saveBibleId } from '../services/bibleApi'
 
 export default function BibleTranslationSelector({ isOpen, onClose, currentBibleId, onSelect }) {
+  const [searchQuery, setSearchQuery] = useState('')
+
   if (!isOpen) return null
 
   const groupedBibles = POPULAR_BIBLES.reduce((acc, bible) => {
@@ -11,6 +14,11 @@ export default function BibleTranslationSelector({ isOpen, onClose, currentBible
     return acc
   }, {})
 
+  const filteredBibles = POPULAR_BIBLES.filter(bible =>
+    bible.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    bible.abbr.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
   const handleSelect = (bible) => {
     onSelect(bible.id)
     saveBibleId(bible.id)
@@ -18,119 +26,193 @@ export default function BibleTranslationSelector({ isOpen, onClose, currentBible
   }
 
   return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      background: 'rgba(0,0,0,0.7)',
-      zIndex: 50,
-      display: 'flex',
-      alignItems: 'flex-end'
-    }}>
-      <div
+    <>
+      <div 
+        onClick={onClose}
         style={{
           position: 'fixed',
           inset: 0,
-          background: 'rgba(0,0,0,0.7)',
+          zIndex: 200,
+          background: 'rgba(0,0,0,0.5)'
         }}
-        onClick={onClose}
       />
       <div style={{
-        position: 'relative',
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 201,
         background: 'rgba(8,20,50,0.97)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        borderRadius: '20px 20px 0 0',
-        padding: '24px',
-        width: '100%',
+        borderRadius: '24px 24px 0 0',
+        borderTop: '1px solid rgba(212,168,67,0.3)',
+        padding: '24px 20px 32px',
         maxHeight: '80vh',
         overflowY: 'auto',
-        zIndex: 51
+        animation: 'slideUp 0.3s ease-out'
       }}>
-        <button
-          type="button"
-          onClick={onClose}
-          style={{
-            position: 'absolute',
-            top: '20px',
-            right: '20px',
-            background: 'none',
-            border: 'none',
-            color: 'rgba(255,255,255,0.5)',
-            fontSize: '20px',
-            cursor: 'pointer',
-            padding: 0
-          }}
-        >
-          ✕
-        </button>
+        <div style={{ maxWidth: '680px', margin: '0 auto' }}>
+          <div style={{
+            width: '40px',
+            height: '4px',
+            background: 'rgba(255,255,255,0.2)',
+            borderRadius: '2px',
+            margin: '0 auto 24px'
+          }} />
 
-        <h2 style={{
-          color: '#D4A843',
-          fontSize: '18px',
-          fontWeight: 700,
-          textAlign: 'center',
-          marginBottom: '16px',
-          paddingTop: '8px'
-        }}>
-          Choose Translation
-        </h2>
+          <h2 style={{ 
+            color: '#D4A843', 
+            fontSize: '20px', 
+            fontWeight: 700, 
+            marginBottom: '20px',
+            textAlign: 'center'
+          }}>
+            Choose Translation
+          </h2>
 
-        {Object.entries(groupedBibles).map(([language, bibles]) => (
-          <div key={language}>
-            <h3 style={{
-              color: '#D4A843',
-              fontSize: '11px',
-              fontWeight: 700,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              paddingTop: '16px',
-              paddingBottom: '6px',
-              margin: 0
-            }}>
-              {language}
-            </h3>
-            {bibles.map((bible) => (
-              <button
-                key={bible.id}
-                type="button"
-                onClick={() => handleSelect(bible)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '14px 0',
-                  borderBottom: '1px solid rgba(255,255,255,0.08)',
-                  cursor: 'pointer',
-                  width: '100%'
-                }}
-              >
-                <div style={{ flex: 1, textAlign: 'left' }}>
-                  <span style={{
-                    color: currentBibleId === bible.id ? '#D4A843' : '#FFFFFF',
-                    fontSize: '15px',
-                    fontWeight: currentBibleId === bible.id ? 700 : 400
-                  }}>
-                    {bible.name}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <span style={{
-                    color: 'rgba(255,255,255,0.5)',
-                    fontSize: '13px'
-                  }}>
-                    {bible.abbr}
-                  </span>
-                  {currentBibleId === bible.id && (
-                    <span style={{ color: '#D4A843', fontSize: '18px' }}>✓</span>
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
-        ))}
+          {/* Search Bar */}
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search translations..."
+            style={{
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(212,168,67,0.3)',
+              borderRadius: '12px',
+              color: 'white',
+              padding: '12px 16px',
+              width: '100%',
+              marginBottom: '24px',
+              fontSize: '16px',
+              outline: 'none'
+            }}
+          />
+
+          {/* Bible List */}
+          {searchQuery ? (
+            // Show filtered results
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {filteredBibles.map((bible) => (
+                <button
+                  key={bible.id}
+                  type="button"
+                  onClick={() => handleSelect(bible)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                    color: '#FFFFFF',
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    padding: '16px 4px',
+                    textAlign: 'left',
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    transition: 'background 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(212,168,67,0.1)'
+                    e.currentTarget.style.color = '#D4A843'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'none'
+                    e.currentTarget.style.color = '#FFFFFF'
+                  }}
+                >
+                  <span>{bible.name}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', fontWeight: 400 }}>
+                      {bible.abbr}
+                    </span>
+                    {currentBibleId === bible.id && (
+                      <span style={{ color: '#D4A843', fontSize: '18px' }}>✓</span>
+                    )}
+                  </div>
+                </button>
+              ))}
+              {filteredBibles.length === 0 && (
+                <p style={{ color: 'rgba(255,255,255,0.5)', textAlign: 'center', padding: '24px' }}>
+                  No translations found
+                </p>
+              )}
+            </div>
+          ) : (
+            // Show grouped by language
+            Object.entries(groupedBibles).map(([language, bibles]) => (
+              <div key={language}>
+                <h3 style={{
+                  color: '#D4A843',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  paddingTop: '16px',
+                  paddingBottom: '8px',
+                  margin: 0
+                }}>
+                  {language}
+                </h3>
+                {bibles.map((bible) => (
+                  <button
+                    key={bible.id}
+                    type="button"
+                    onClick={() => handleSelect(bible)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      borderBottom: '1px solid rgba(255,255,255,0.06)',
+                      color: '#FFFFFF',
+                      fontSize: '16px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      padding: '16px 4px',
+                      textAlign: 'left',
+                      width: '100%',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      transition: 'background 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(212,168,67,0.1)'
+                      e.currentTarget.style.color = '#D4A843'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'none'
+                      e.currentTarget.style.color = '#FFFFFF'
+                    }}
+                  >
+                    <span>{bible.name}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', fontWeight: 400 }}>
+                        {bible.abbr}
+                      </span>
+                      {currentBibleId === bible.id && (
+                        <span style={{ color: '#D4A843', fontSize: '18px' }}>✓</span>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ))
+          )}
+        </div>
       </div>
-    </div>
+      <style>{`
+        @keyframes slideUp {
+          from {
+            transform: translateY(100%);
+          }
+          to {
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+    </>
   )
 }

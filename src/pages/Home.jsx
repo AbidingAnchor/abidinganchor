@@ -5,6 +5,7 @@ import { getDailyVerse } from '../utils/dailyVerse'
 import { getJournalEntries, saveToJournal } from '../utils/journal'
 import SaveToast from '../components/SaveToast'
 import { useAuth } from '../context/AuthContext'
+import Onboarding from '../components/Onboarding'
 
 const PROFILE_STREAK_FETCH_MS = 5000
 
@@ -13,13 +14,14 @@ function getTodaysVerse() {
 }
 
 function Home({ onOpenWorship, worshipStatus }) {
-  const { user, profile } = useAuth()
+  const { user, profile, refreshProfile } = useAuth()
   const [todaysVerse, setTodaysVerse] = useState(() => getTodaysVerse())
   const [streak, setStreak] = useState({ currentStreak: 0 })
   const [toastTrigger, setToastTrigger] = useState(0)
   const [journalCount, setJournalCount] = useState(0)
   const [suppressPersonalWelcome, setSuppressPersonalWelcome] = useState(false)
   const [, setProfileFetchLoading] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
   const profileRef = useRef(profile)
   profileRef.current = profile
 
@@ -42,6 +44,11 @@ function Home({ onOpenWorship, worshipStatus }) {
           ])
           data = result.data
           error = result.error
+          if (error) {
+            console.error('Profile query error:', error)
+            data = null
+            error = null
+          }
         } catch (err) {
           console.log('Profile fetch skipped:', err)
           data = null
@@ -57,18 +64,25 @@ function Home({ onOpenWorship, worshipStatus }) {
         let currentStreak = Number(data?.reading_streak) || 0
         let longestStreak = Number(data?.longest_streak) || 0
 
-        // Initialize streak start date if not set
+        // Initialize streak for new users
         if (!streakStartDate) {
           streakStartDate = todayStr
-          await supabase.from('profiles').update({ streak_start_date: streakStartDate }).eq('id', user.id)
-        }
-
-        // Calculate day count from streak start date
-        const startDate = new Date(streakStartDate)
-        const dayCount = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1
-
-        // Update streak data if last active date is different from today
-        if (lastActiveDate !== todayStr) {
+          currentStreak = 1
+          longestStreak = 1
+          try {
+            await supabase.from('profiles').upsert({
+              id: user.id,
+              streak_start_date: streakStartDate,
+              last_active_date: todayStr,
+              reading_streak: currentStreak,
+              longest_streak: longestStreak,
+              updated_at: new Date().toISOString()
+            }, { onConflict: 'id' })
+          } catch (error) {
+            console.error('Profile upsert error:', error)
+          }
+        } else if (lastActiveDate !== todayStr) {
+          // Update streak data if last active date is different from today
           // Check if streak should continue (consecutive days)
           if (lastActiveDate) {
             const lastActive = new Date(lastActiveDate)
@@ -88,11 +102,17 @@ function Home({ onOpenWorship, worshipStatus }) {
           }
 
           // Save to Supabase
-          await supabase.from('profiles').update({
-            last_active_date: todayStr,
-            reading_streak: currentStreak,
-            longest_streak: longestStreak
-          }).eq('id', user.id)
+          try {
+            await supabase.from('profiles').upsert({
+              id: user.id,
+              last_active_date: todayStr,
+              reading_streak: currentStreak,
+              longest_streak: longestStreak,
+              updated_at: new Date().toISOString()
+            }, { onConflict: 'id' })
+          } catch (error) {
+            console.error('Profile update error:', error)
+          }
         }
 
         setStreak({ currentStreak: currentStreak })
@@ -113,6 +133,14 @@ function Home({ onOpenWorship, worshipStatus }) {
   useEffect(() => {
     if (profile) setSuppressPersonalWelcome(false)
   }, [profile])
+
+  useEffect(() => {
+    if (user?.id && profile) {
+      if (!profile.onboarding_complete) {
+        setShowOnboarding(true)
+      }
+    }
+  }, [user?.id, profile])
 
   useEffect(() => {
     let timeoutId
@@ -233,6 +261,7 @@ function Home({ onOpenWorship, worshipStatus }) {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
   const dayToMonFirstIndex = [6, 0, 1, 2, 3, 4, 5]
   const todayIndex = dayToMonFirstIndex[today.getDay()]
+  
   useEffect(() => {
     let active = true
     const loadCount = async () => {
@@ -244,24 +273,14 @@ function Home({ onOpenWorship, worshipStatus }) {
     loadCount()
     return () => { active = false }
   }, [user?.id, toastTrigger])
+
   const streakMessages = {
     1: 'Welcome! Your journey begins today. 🙏',
     2: "You're building a habit! Keep going. 🔥",
     3: "You're building a habit! Keep going. 🔥",
     4: 'Halfway through the week! Stay strong. ✝️',
     5: 'Halfway through the week! Stay strong. ✝️',
-    6: 'Almost a full week! Don\'t stop now. 🌟',
-    7: 'A full week of seeking God! Amazing. �',
-    14: 'Two weeks! You are becoming rooted in His Word. 🌳',
-    21: '21 days! A habit is being formed for eternity. 🔥',
-    30: "30 days! 'I have hidden your word in my heart.' Ps 119:11 💛",
-    60: '60 days! You are an inspiration to the Kingdom. 👑',
-    100: "100 days! A mighty warrior in God's Word! ⚔️",
   }
-  const currentStreak = Math.max(0, Number(streak?.currentStreak || 0))
-  const firstName = suppressPersonalWelcome
-    ? 'Friend'
-    : (profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Friend')
   
   const hour = new Date().getHours()
   let timeGreeting = ''
@@ -288,7 +307,17 @@ function Home({ onOpenWorship, worshipStatus }) {
   ]
   const encouragement = encouragements[new Date().getDay()]
   
+  const currentStreak = Math.max(0, Number(streak?.currentStreak || 0))
+  const firstName = suppressPersonalWelcome
+    ? 'Friend'
+    : (profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Friend')
+  
   const streakMessage = streakMessages[currentStreak] || `Day ${currentStreak} — Keep seeking Him with all your heart. 🙏`
+
+  const handleOnboardingComplete = async () => {
+    setShowOnboarding(false)
+    await refreshProfile()
+  }
 
   return (
     <>
@@ -468,35 +497,33 @@ function Home({ onOpenWorship, worshipStatus }) {
                 <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>{currentStreak} Days</p>
               </div>
               <p style={{ marginBottom: '16px', fontSize: '13px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>{streakMessage}</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div className="flex items-center justify-between gap-2">
-                  {days.map((day) => (
+              <div className="flex items-center justify-between gap-2" style={{ overflowX: 'auto' }}>
+                {days.map((day, index) => {
+                  const isToday = index === todayIndex
+                  const isPast = index < todayIndex
+                  const dotStyle = isToday
+                    ? { background: '#D4A843', boxShadow: '0 0 8px rgba(212,168,67,0.6)', border: '2px solid rgba(255,255,255,0.8)', borderRadius: '50%', padding: '2px' }
+                    : isPast
+                      ? { background: '#D4A843', border: '2px solid #D4A843', borderRadius: '50%' }
+                      : { background: 'rgba(255,255,255,0.15)', border: '2px solid rgba(255,255,255,0.12)', borderRadius: '50%' }
+                  return (
                     <div 
                       key={day} 
                       style={{ 
-                        flex: 1, 
-                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <span style={{ 
                         color: 'rgba(255,255,255,0.5)', 
                         fontSize: '11px', 
                         fontWeight: 600 
-                      }}
-                    >
-                      {day}
-                    </div>
-                  ))}
-                </div>
-                <div className="flex items-center justify-between gap-2" style={{ overflowX: 'auto' }}>
-                  {days.map((day, index) => {
-                    const isToday = index === todayIndex
-                    const isPast = index < todayIndex
-                    const dotStyle = isToday
-                      ? { background: '#D4A843', boxShadow: '0 0 8px rgba(212,168,67,0.6)', border: '2px solid white' }
-                      : isPast
-                        ? { background: '#D4A843', border: '2px solid #D4A843' }
-                        : { background: 'rgba(255,255,255,0.15)', border: '2px solid rgba(255,255,255,0.12)' }
-                    return (
+                      }}>
+                        {day}
+                      </span>
                       <div 
-                        key={day} 
                         style={{
                           width: '32px',
                           height: '32px',
@@ -504,9 +531,9 @@ function Home({ onOpenWorship, worshipStatus }) {
                           ...dotStyle
                         }}
                       />
-                    )
-                  })}
-                </div>
+                    </div>
+                  )
+                })}
               </div>
             </div>
             </div>
@@ -777,6 +804,8 @@ function Home({ onOpenWorship, worshipStatus }) {
         <SaveToast trigger={toastTrigger} />
       </div>
     </div>
+
+    {showOnboarding && <Onboarding onComplete={handleOnboardingComplete} />}
       
       <style jsx>{`
         @keyframes fadeInUp {

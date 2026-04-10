@@ -1,20 +1,88 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { supabase } from '../lib/supabase'
 
 export default function Settings() {
   const navigate = useNavigate()
   const { user, profile, signOut } = useAuth()
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
   const [selectedTranslation, setSelectedTranslation] = useState('KJV')
+  const [uploadStatus, setUploadStatus] = useState('idle') // idle, uploading, success
+  const [uploadError, setUploadError] = useState('')
+  const fileInputRef = useRef(null)
 
   const handleSignOut = async () => {
     await signOut()
     navigate('/auth', { replace: true })
   }
 
+  const handleProfilePictureUpload = async (file) => {
+    if (!file || !user?.id) return
+
+    try {
+      setUploadStatus('uploading')
+      setUploadError('')
+
+      // File type validation
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
+      if (!allowedTypes.includes(file.type)) {
+        setUploadError('Please choose a JPG or PNG image')
+        setUploadStatus('idle')
+        return
+      }
+
+      // File size validation (max 5MB)
+      const maxSize = 5 * 1024 * 1024 // 5MB in bytes
+      if (file.size > maxSize) {
+        setUploadError('Image must be less than 5MB')
+        setUploadStatus('idle')
+        return
+      }
+
+      // Upload to Supabase
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(`${user.id}/profile.jpg`, file, {
+          upsert: true,
+          contentType: file.type
+        })
+
+      if (uploadError) throw uploadError
+
+      // Get public URL and save to profile
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(`${user.id}/profile.jpg`)
+
+      try {
+        await supabase.from('profiles')
+          .update({ avatar_url: publicUrl })
+          .eq('id', user.id)
+      } catch (error) {
+        console.error('Profile update error:', error)
+        // Continue anyway - avatar is saved, profile update may fail gracefully
+      }
+
+      setUploadStatus('success')
+      setTimeout(() => setUploadStatus('idle'), 2000)
+    } catch (error) {
+      console.error('Upload error:', error)
+      setUploadError('Failed to upload profile picture. Please try again.')
+      setUploadStatus('idle')
+    }
+  }
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      handleProfilePictureUpload(file)
+    }
+  }
+
   const displayName = profile?.full_name || user?.user_metadata?.full_name || 'User'
   const userEmail = user?.email || ''
+  const avatarUrl = profile?.avatar_url
 
   return (
     <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '110px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
@@ -34,20 +102,56 @@ export default function Settings() {
           padding: '20px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{
-              width: '56px',
-              height: '56px',
-              borderRadius: '50%',
-              background: '#D4A843',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#fff',
-              fontSize: '24px',
-              fontWeight: 600,
-              boxShadow: '0 2px 8px rgba(212,168,67,0.3)'
-            }}>
-              {displayName.charAt(0).toUpperCase()}
+            <div style={{ position: 'relative' }}>
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '50%',
+                  background: avatarUrl 
+                    ? `url(${avatarUrl}) center/cover` 
+                    : '#D4A843',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  fontSize: '32px',
+                  fontWeight: 600,
+                  boxShadow: '0 2px 8px rgba(212,168,67,0.3)',
+                  cursor: 'pointer',
+                  border: avatarUrl ? '2px solid rgba(212,168,67,0.4)' : 'none'
+                }}
+              >
+                {!avatarUrl && displayName.charAt(0).toUpperCase()}
+              </div>
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  position: 'absolute',
+                  bottom: '-4px',
+                  right: '-4px',
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  background: '#D4A843',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  border: '2px solid rgba(8,20,50,0.9)',
+                  fontSize: '14px'
+                }}
+              >
+                📷
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                style={{ display: 'none' }}
+              />
             </div>
             <div>
               <p style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: 700, marginBottom: '4px' }}>
@@ -56,8 +160,39 @@ export default function Settings() {
               <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>
                 {userEmail}
               </p>
+              {uploadStatus === 'uploading' && (
+                <p style={{ color: '#D4A843', fontSize: '12px', marginTop: '4px' }}>
+                  Uploading...
+                </p>
+              )}
+              {uploadStatus === 'success' && (
+                <p style={{ color: '#4ade80', fontSize: '12px', marginTop: '4px' }}>
+                  ✓ Profile picture updated!
+                </p>
+              )}
             </div>
           </div>
+          {uploadError && (
+            <div style={{
+              marginTop: '16px',
+              background: 'rgba(255,80,80,0.15)',
+              border: '1px solid rgba(255,80,80,0.4)',
+              borderRadius: '12px',
+              padding: '12px 16px',
+              color: 'white',
+              fontSize: '14px'
+            }}>
+              {uploadError}
+            </div>
+          )}
+          <p style={{
+            marginTop: '12px',
+            color: 'rgba(255,255,255,0.5)',
+            fontSize: '12px',
+            lineHeight: '1.4'
+          }}>
+            By uploading a photo you agree to our community guidelines. Inappropriate images will result in account removal.
+          </p>
         </div>
 
         {/* Edit Profile Option */}

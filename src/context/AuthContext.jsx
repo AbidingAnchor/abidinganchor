@@ -47,7 +47,11 @@ async function ensureProfile(user) {
     // Fail silently - profile might already exist or permissions issue
     console.warn('Profile upsert failed (non-critical):', error.message)
   }
-  const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+  const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+  if (error) {
+    console.error('Profile query error:', error)
+    return null
+  }
   return data ?? null
 }
 
@@ -145,8 +149,18 @@ export function AuthProvider({ children }) {
 
   const refreshProfile = async () => {
     if (!user?.id) return
-    const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-    setProfile(data ?? null)
+    try {
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      if (error) {
+        console.error('Profile refresh error:', error)
+        setProfile(null)
+        return
+      }
+      setProfile(data ?? null)
+    } catch (error) {
+      console.error('Profile refresh error:', error)
+      setProfile(null)
+    }
   }
 
   const value = useMemo(() => ({

@@ -1,4 +1,3 @@
-import { useRef } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -15,18 +14,9 @@ const tabs = [
 
 export default function Navbar() {
   const navigate = useNavigate()
-  const { user, signOut } = useAuth()
-  const signOutLastFiredRef = useRef(0)
+  const { user, profile } = useAuth()
   const displayName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email || ''
-
-  const handleSignOut = async (e) => {
-    if (e?.type === 'touchend') e.preventDefault()
-    const now = Date.now()
-    if (now - signOutLastFiredRef.current < 400) return
-    signOutLastFiredRef.current = now
-    await signOut()
-    navigate('/auth', { replace: true })
-  }
+  const avatarUrl = profile?.avatar_url
 
   return (
     <>
@@ -56,17 +46,20 @@ export default function Navbar() {
               width: '36px',
               height: '36px',
               borderRadius: '50%',
-              background: '#D4A843',
+              background: avatarUrl 
+                ? `url(${avatarUrl}) center/cover` 
+                : '#D4A843',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#fff',
               fontSize: '14px',
               fontWeight: 600,
-              boxShadow: '0 2px 8px rgba(212,168,67,0.3)'
+              boxShadow: '0 2px 8px rgba(212,168,67,0.3)',
+              border: avatarUrl ? '2px solid rgba(212,168,67,0.4)' : 'none'
             }}
           >
-            {displayName.charAt(0).toUpperCase()}
+            {!avatarUrl && displayName.charAt(0).toUpperCase()}
           </div>
         ) : (
           <div style={{ width: '36px' }} />

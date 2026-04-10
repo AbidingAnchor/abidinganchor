@@ -63,7 +63,11 @@ export default function Friends() {
         return
       }
       const { data: profs, error: e2 } = await supabase.from('profiles').select('id, full_name, email').in('id', ids)
-      if (e2) throw e2
+      if (e2) {
+        console.error('Profile query error:', e2)
+        setIncoming([])
+        return
+      }
       const byId = Object.fromEntries((profs || []).map((p) => [p.id, p]))
       setIncoming(
         (rows || []).map((r) => ({
@@ -94,7 +98,11 @@ export default function Friends() {
         .from('profiles')
         .select('id, full_name, email, reading_streak')
         .in('id', otherIds)
-      if (e2) throw e2
+      if (e2) {
+        console.error('Profile query error:', e2)
+        setFriendsList([])
+        return
+      }
       const byId = Object.fromEntries((profs || []).map((p) => [p.id, p]))
       const merged = (rows || []).map((r) => {
         const oid = otherUserId(r, uid)
@@ -143,7 +151,11 @@ export default function Friends() {
         .select('id, full_name, email')
         .or(`full_name.ilike."${wild}",email.ilike."${wild}"`)
         .limit(40)
-      if (error) throw error
+      if (error) {
+        console.error('Profile search error:', error)
+        setSearchResults([])
+        return
+      }
       const filtered = (profs || []).filter((p) => !ex.has(p.id))
       setSearchResults(filtered)
     } catch {
@@ -192,16 +204,36 @@ export default function Friends() {
     }
   }
 
-  const unfriend = async (friendshipId) => {
+  const unfriend = async (id) => {
+    if (!user?.id) return
     const ok = window.confirm('Remove this friend?')
     if (!ok) return
     try {
-      const { error } = await supabase.from('friendships').delete().eq('id', friendshipId)
+      const { error } = await supabase.from('friendships').delete().eq('id', id)
       if (error) throw error
       await loadFriends()
-      await loadExcluded()
     } catch {
       /* silent */
+    }
+  }
+
+  const handleReportProfile = async (profileId, profileName) => {
+    if (!user?.id) return
+    const reason = window.prompt(`Report ${profileName}'s profile picture. Please provide a reason:`)
+    if (!reason || !reason.trim()) return
+
+    try {
+      const { error } = await supabase.from('profile_reports').insert({
+        reporter_id: user.id,
+        reported_profile_id: profileId,
+        reason: reason.trim(),
+        created_at: new Date().toISOString()
+      })
+      if (error) throw error
+      alert('Report submitted. Thank you for helping keep our community safe.')
+    } catch (error) {
+      console.error('Report error:', error)
+      alert('Failed to submit report. Please try again.')
     }
   }
 
@@ -350,11 +382,54 @@ export default function Friends() {
                   className="flex flex-wrap items-center justify-between gap-3 p-4 text-white"
                   style={cardStyle}
                 >
-                  <div>
-                    <p className="font-semibold text-white">{displayName(p)}</p>
-                    <p className="text-sm text-[#D4A843]">
-                      🔥 {Math.max(0, Number(p.reading_streak) || 0)} day reading streak
-                    </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ position: 'relative' }}>
+                      <div
+                        style={{
+                          width: '48px',
+                          height: '48px',
+                          borderRadius: '50%',
+                          background: '#D4A843',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#fff',
+                          fontSize: '20px',
+                          fontWeight: 600,
+                          boxShadow: '0 2px 8px rgba(212,168,67,0.3)'
+                        }}
+                      >
+                        {displayName(p).charAt(0).toUpperCase()}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleReportProfile(p.id, displayName(p))}
+                        style={{
+                          position: 'absolute',
+                          bottom: '-4px',
+                          right: '-4px',
+                          width: '20px',
+                          height: '20px',
+                          borderRadius: '50%',
+                          background: 'rgba(255,80,80,0.9)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
+                          border: '2px solid rgba(8,20,50,0.9)',
+                          fontSize: '10px'
+                        }}
+                        title="Report profile picture"
+                      >
+                        🚩
+                      </button>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-white">{displayName(p)}</p>
+                      <p className="text-sm text-[#D4A843]">
+                        🔥 {Math.max(0, Number(p.reading_streak) || 0)} day reading streak
+                      </p>
+                    </div>
                   </div>
                   <button
                     type="button"

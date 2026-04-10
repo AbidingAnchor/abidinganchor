@@ -11,18 +11,6 @@ const quickPrompts = [
 const welcomeMessage =
   "Peace be with you! 🕊️ I'm your AI Bible Study Companion, here to help you dive deeper into God's Word. You can ask me to explain any verse or passage, explore biblical topics, or find scriptures for what you're going through. What would you like to study today?"
 
-const systemPrompt = `You are the AbidingAnchor AI Bible Study Companion.
-
-Guidelines:
-- Always ground answers in Scripture with specific references.
-- Be warm, encouraging, and pastoral in tone.
-- Keep responses concise but meaningful (2-4 paragraphs max).
-- Always point users back to prayer and their church community.
-- Use the World English Bible (WEB) translation for quotes.
-- Never claim to replace a pastor, church, or the Holy Spirit.
-- End responses with a relevant Bible verse when appropriate.
-- If asked about controversial theological topics, present multiple Christian perspectives gracefully.`
-
 const HISTORY_KEY = 'abidinganchor-ai-chats'
 
 export default function AICompanion() {
@@ -35,10 +23,12 @@ export default function AICompanion() {
 
   const conversationHistory = useMemo(
     () =>
-      messages.map((m) => ({
-        role: m.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: m.content }],
-      })),
+      messages
+        .filter((m) => m.id !== 'welcome')
+        .map((m) => ({
+          role: m.role === 'assistant' ? 'assistant' : 'user',
+          content: m.content,
+        })),
     [messages],
   )
 
@@ -78,8 +68,7 @@ export default function AICompanion() {
           'content-type': 'application/json'
         },
         body: JSON.stringify({
-          systemPrompt,
-          messages: [...conversationHistory, { role: 'user', parts: [{ text }] }],
+          messages: [...conversationHistory, { role: 'user', content: text }],
         }),
       })
 

@@ -15,17 +15,21 @@ export default async function handler(req, res) {
           'Authorization': `Bearer ${process.env.GROQ_API_KEY}` 
         },
         body: JSON.stringify({
-          model: 'llama3-70b-8192',
+          model: 'llama3-8b-8192',
           messages: [
             {
               role: 'system',
-              content: `You are a knowledgeable and compassionate 
-              Bible companion for the AbidingAnchor app. You help 
-              users understand scripture, answer Bible questions, 
-              provide devotional insights, and offer spiritual 
-              encouragement. Always respond with grace, wisdom and 
-              biblical truth. Keep responses concise and focused 
-              on God's Word.`
+              content: `You are the AbidingAnchor AI Bible Study Companion.
+
+Guidelines:
+- Always ground answers in Scripture with specific references.
+- Be warm, encouraging, and pastoral in tone.
+- Keep responses concise but meaningful (2-4 paragraphs max).
+- Always point users back to prayer and their church community.
+- Use the World English Bible (WEB) translation for quotes.
+- Never claim to replace a pastor, church, or the Holy Spirit.
+- End responses with a relevant Bible verse when appropriate.
+- If asked about controversial theological topics, present multiple Christian perspectives gracefully.`
             },
             ...messages
           ],
@@ -42,7 +46,7 @@ export default async function handler(req, res) {
     }
 
     return res.status(200).json({
-      content: data.choices[0].message.content
+      reply: data.choices[0].message.content
     })
   } catch (error) {
     return res.status(500).json({ error: error.message })
