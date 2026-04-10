@@ -1,12 +1,95 @@
 import { useCallback, useEffect, useState } from 'react'
-import { getBooks, getChapters, getSavedBibleId, POPULAR_BIBLES } from '../services/bibleApi'
-import BibleTranslationSelector from './BibleTranslationSelector'
+
+// Book list with CDN-compatible lowercase names
+const BOOKS = [
+  { name: 'Genesis', cdnName: 'genesis' },
+  { name: 'Exodus', cdnName: 'exodus' },
+  { name: 'Leviticus', cdnName: 'leviticus' },
+  { name: 'Numbers', cdnName: 'numbers' },
+  { name: 'Deuteronomy', cdnName: 'deuteronomy' },
+  { name: 'Joshua', cdnName: 'joshua' },
+  { name: 'Judges', cdnName: 'judges' },
+  { name: 'Ruth', cdnName: 'ruth' },
+  { name: '1 Samuel', cdnName: '1samuel' },
+  { name: '2 Samuel', cdnName: '2samuel' },
+  { name: '1 Kings', cdnName: '1kings' },
+  { name: '2 Kings', cdnName: '2kings' },
+  { name: '1 Chronicles', cdnName: '1chronicles' },
+  { name: '2 Chronicles', cdnName: '2chronicles' },
+  { name: 'Ezra', cdnName: 'ezra' },
+  { name: 'Nehemiah', cdnName: 'nehemiah' },
+  { name: 'Esther', cdnName: 'esther' },
+  { name: 'Job', cdnName: 'job' },
+  { name: 'Psalms', cdnName: 'psalms' },
+  { name: 'Proverbs', cdnName: 'proverbs' },
+  { name: 'Ecclesiastes', cdnName: 'ecclesiastes' },
+  { name: 'Song of Solomon', cdnName: 'songofsolomon' },
+  { name: 'Isaiah', cdnName: 'isaiah' },
+  { name: 'Jeremiah', cdnName: 'jeremiah' },
+  { name: 'Lamentations', cdnName: 'lamentations' },
+  { name: 'Ezekiel', cdnName: 'ezekiel' },
+  { name: 'Daniel', cdnName: 'daniel' },
+  { name: 'Hosea', cdnName: 'hosea' },
+  { name: 'Joel', cdnName: 'joel' },
+  { name: 'Amos', cdnName: 'amos' },
+  { name: 'Obadiah', cdnName: 'obadiah' },
+  { name: 'Jonah', cdnName: 'jonah' },
+  { name: 'Micah', cdnName: 'micah' },
+  { name: 'Nahum', cdnName: 'nahum' },
+  { name: 'Habakkuk', cdnName: 'habakkuk' },
+  { name: 'Zephaniah', cdnName: 'zephaniah' },
+  { name: 'Haggai', cdnName: 'haggai' },
+  { name: 'Zechariah', cdnName: 'zechariah' },
+  { name: 'Malachi', cdnName: 'malachi' },
+  { name: 'Matthew', cdnName: 'matthew' },
+  { name: 'Mark', cdnName: 'mark' },
+  { name: 'Luke', cdnName: 'luke' },
+  { name: 'John', cdnName: 'john' },
+  { name: 'Acts', cdnName: 'acts' },
+  { name: 'Romans', cdnName: 'romans' },
+  { name: '1 Corinthians', cdnName: '1corinthians' },
+  { name: '2 Corinthians', cdnName: '2corinthians' },
+  { name: 'Galatians', cdnName: 'galatians' },
+  { name: 'Ephesians', cdnName: 'ephesians' },
+  { name: 'Philippians', cdnName: 'philippians' },
+  { name: 'Colossians', cdnName: 'colossians' },
+  { name: '1 Thessalonians', cdnName: '1thessalonians' },
+  { name: '2 Thessalonians', cdnName: '2thessalonians' },
+  { name: '1 Timothy', cdnName: '1timothy' },
+  { name: '2 Timothy', cdnName: '2timothy' },
+  { name: 'Titus', cdnName: 'titus' },
+  { name: 'Philemon', cdnName: 'philemon' },
+  { name: 'Hebrews', cdnName: 'hebrews' },
+  { name: 'James', cdnName: 'james' },
+  { name: '1 Peter', cdnName: '1peter' },
+  { name: '2 Peter', cdnName: '2peter' },
+  { name: '1 John', cdnName: '1john' },
+  { name: '2 John', cdnName: '2john' },
+  { name: '3 John', cdnName: '3john' },
+  { name: 'Jude', cdnName: 'jude' },
+  { name: 'Revelation', cdnName: 'revelation' },
+]
+
+// Chapter counts for each book
+const CHAPTER_COUNTS = {
+  genesis: 50, exodus: 40, leviticus: 27, numbers: 36, deuteronomy: 34,
+  joshua: 24, judges: 21, ruth: 4, '1samuel': 31, '2samuel': 24,
+  '1kings': 22, '2kings': 25, '1chronicles': 29, '2chronicles': 36,
+  ezra: 10, nehemiah: 13, esther: 10, job: 42, psalms: 150, proverbs: 31,
+  ecclesiastes: 12, songofsolomon: 8, isaiah: 66, jeremiah: 52,
+  lamentations: 5, ezekiel: 48, daniel: 12, hosea: 14, joel: 3,
+  amos: 9, obadiah: 1, jonah: 4, micah: 7, nahum: 3, habakkuk: 3,
+  zephaniah: 3, haggai: 2, zechariah: 14, malachi: 4, matthew: 28,
+  mark: 16, luke: 24, john: 21, acts: 28, romans: 16, '1corinthians': 16,
+  '2corinthians': 13, galatians: 6, ephesians: 6, philippians: 4,
+  colossians: 4, '1thessalonians': 5, '2thessalonians': 3, '1timothy': 6,
+  '2timothy': 4, titus: 3, philemon: 1, hebrews: 13, james: 5,
+  '1peter': 5, '2peter': 3, '1john': 5, '2john': 1, '3john': 1,
+  jude: 1, revelation: 22
+}
 
 export default function BibleReader({ open, onClose }) {
-  const [bibleId, setBibleId] = useState(getSavedBibleId())
-  const [books, setBooks] = useState([])
   const [selectedBook, setSelectedBook] = useState(null)
-  const [chapters, setChapters] = useState([])
   const [selectedChapter, setSelectedChapter] = useState(null)
   const [verses, setVerses] = useState([])
   const [loading, setLoading] = useState(false)
@@ -19,97 +102,36 @@ export default function BibleReader({ open, onClose }) {
     }
     return 18
   })
-  const [showTranslation, setShowTranslation] = useState(false)
 
-  const currentBible = POPULAR_BIBLES.find(b => b.id === bibleId) || POPULAR_BIBLES[0]
-
-  const loadBooks = useCallback(async () => {
-    try {
-      setLoading(true)
-      const data = await getBooks(bibleId)
-      setBooks(data)
-      
-      // Load continue reading from localStorage
-      const lastBookName = localStorage.getItem('lastReadBook')
-      
-      if (lastBookName && !selectedBook) {
-        const book = data.find(b => b.name === lastBookName)
-        if (book) {
-          setSelectedBook(book)
-        } else if (data.length > 0) {
-          setSelectedBook(data[0])
-        }
-      } else if (!selectedBook && data.length > 0) {
-        setSelectedBook(data[0])
-      }
-    } catch {
-      setFetchError(true)
-    } finally {
-      setLoading(false)
-    }
-  }, [bibleId, selectedBook])
-
-  const loadChapters = useCallback(async () => {
-    if (!selectedBook) return
-    try {
-      const data = await getChapters(bibleId, selectedBook.id)
-      setChapters(data)
-      
-      const lastChapterNum = localStorage.getItem('lastReadChapter')
-      if (lastChapterNum && !selectedChapter) {
-        const chapter = data.find(c => c.number === parseInt(lastChapterNum))
-        if (chapter) {
-          setSelectedChapter(chapter)
-        } else if (data.length > 0) {
-          setSelectedChapter(data[0])
-        }
-      } else if (!selectedChapter && data.length > 0) {
-        setSelectedChapter(data[0])
-      }
-    } catch {
-      setFetchError(true)
-    }
-  }, [bibleId, selectedBook, selectedChapter])
+  const chapters = selectedBook 
+    ? Array.from({ length: CHAPTER_COUNTS[selectedBook.cdnName] || 1 }, (_, i) => i + 1)
+    : []
 
   const loadVerses = useCallback(async () => {
-    if (!selectedChapter) return
+    if (!selectedBook || !selectedChapter) return
     try {
       setLoading(true)
       setFetchError(false)
       
-      const response = await fetch(`/api/bible?path=bibles/${bibleId}/chapters/${selectedChapter.id}/verses`)
+      const url = `https://cdn.jsdelivr.net/gh/wldeh/bible-api/bibles/en-kjv/books/${selectedBook.cdnName}/chapters/${selectedChapter}.json`
+      const response = await fetch(url)
       if (!response.ok) throw new Error('Failed to fetch verses')
       const data = await response.json()
       
-      // Parse API response - extract verse number from id and text from text field
-      const parsedVerses = data.data.map((verse) => {
-        // Extract verse number from ID like "GEN.1.1" -> "1"
-        const verseNum = verse.id.split('.')[2];
-        
-        // Strip HTML tags from text
-        const text = verse.text
-          .replace(/<[^>]*>/g, '')  // remove HTML tags
-          .replace(/¶/g, '')         // remove paragraph marks
-          .trim();
-        
-        return { number: verseNum, text };
-      })
-      
-      setVerses(parsedVerses)
+      setVerses(data.data || [])
       
       // Save to localStorage
       localStorage.setItem('lastReadBook', selectedBook.name)
-      localStorage.setItem('lastReadChapter', selectedChapter.number)
+      localStorage.setItem('lastReadChapter', selectedChapter.toString())
     } catch {
       setFetchError(true)
     } finally {
       setLoading(false)
     }
-  }, [bibleId, selectedBook, selectedChapter])
+  }, [selectedBook, selectedChapter])
 
   const handleBookSelect = (book) => {
     setSelectedBook(book)
-    setChapters([])
     setSelectedChapter(null)
     setVerses([])
     setShowBookPicker(false)
@@ -121,43 +143,49 @@ export default function BibleReader({ open, onClose }) {
     setShowChapterPicker(false)
   }
 
-  const handleTranslationSelect = (newBibleId) => {
-    setBibleId(newBibleId)
-    setBooks([])
-    setSelectedBook(null)
-    setChapters([])
-    setSelectedChapter(null)
-    setVerses([])
-  }
-
   const goToPreviousChapter = () => {
-    const currentIndex = chapters.findIndex(c => c.id === selectedChapter?.id)
-    if (currentIndex > 0) {
-      setSelectedChapter(chapters[currentIndex - 1])
+    if (selectedChapter && selectedChapter > 1) {
+      setSelectedChapter(selectedChapter - 1)
     }
   }
 
   const goToNextChapter = () => {
-    const currentIndex = chapters.findIndex(c => c.id === selectedChapter?.id)
-    if (currentIndex < chapters.length - 1) {
-      setSelectedChapter(chapters[currentIndex + 1])
+    const maxChapter = CHAPTER_COUNTS[selectedBook?.cdnName] || 1
+    if (selectedChapter && selectedChapter < maxChapter) {
+      setSelectedChapter(selectedChapter + 1)
     }
   }
 
   useEffect(() => {
     if (!open) return
-    loadBooks()
-  }, [open, loadBooks])
+    
+    // Load continue reading from localStorage
+    const lastBookName = localStorage.getItem('lastReadBook')
+    const lastChapterNum = localStorage.getItem('lastReadChapter')
+    
+    if (lastBookName) {
+      const book = BOOKS.find(b => b.name === lastBookName)
+      if (book) {
+        setSelectedBook(book)
+        if (lastChapterNum) {
+          setSelectedChapter(parseInt(lastChapterNum))
+        } else {
+          setSelectedChapter(1)
+        }
+      } else {
+        setSelectedBook(BOOKS[0])
+        setSelectedChapter(1)
+      }
+    } else {
+      setSelectedBook(BOOKS[0])
+      setSelectedChapter(1)
+    }
+  }, [open])
 
   useEffect(() => {
-    if (!open || !selectedBook) return
-    loadChapters()
-  }, [open, selectedBook, loadChapters])
-
-  useEffect(() => {
-    if (!open || !selectedChapter) return
+    if (!open || !selectedBook || !selectedChapter) return
     loadVerses()
-  }, [open, selectedChapter, loadVerses])
+  }, [open, selectedBook, selectedChapter, loadVerses])
 
   useEffect(() => {
     if (!open || loading || fetchError) return
@@ -165,6 +193,8 @@ export default function BibleReader({ open, onClose }) {
   }, [open, loading, fetchError, selectedChapter])
 
   if (!open) return null
+
+  const maxChapter = CHAPTER_COUNTS[selectedBook?.cdnName] || 1
 
   return (
     <>
@@ -232,27 +262,19 @@ export default function BibleReader({ open, onClose }) {
                 padding: '4px 12px'
               }}
             >
-              {selectedChapter?.number || '1'}
+              {selectedChapter || '1'}
             </button>
 
-            <button
-              type="button"
-              onClick={() => setShowTranslation(true)}
-              style={{
-                position: 'absolute',
-                right: '20px',
-                background: 'none',
-                border: '1px solid rgba(212,168,67,0.4)',
-                borderRadius: '20px',
-                color: '#D4A843',
-                fontSize: '13px',
-                fontWeight: 600,
-                padding: '4px 12px',
-                cursor: 'pointer'
-              }}
-            >
-              {currentBible.abbr}
-            </button>
+            <div style={{
+              position: 'absolute',
+              right: '20px',
+              color: '#D4A843',
+              fontSize: '13px',
+              fontWeight: 600,
+              padding: '4px 12px'
+            }}>
+              KJV
+            </div>
           </div>
         </div>
 
@@ -303,7 +325,7 @@ export default function BibleReader({ open, onClose }) {
                 marginBottom: '32px',
                 textAlign: 'center'
               }}>
-                {selectedBook?.name} {selectedChapter?.number}
+                {selectedBook?.name} {selectedChapter}
               </h2>
               
               {/* Verse Text - Continuous Flow */}
@@ -315,7 +337,7 @@ export default function BibleReader({ open, onClose }) {
                 fontWeight: 400
               }}>
                 {verses.map((verse) => (
-                  <span key={verse.number}>
+                  <span key={verse.verse}>
                     <sup style={{
                       color: '#D4A843',
                       fontSize: '10px',
@@ -324,7 +346,7 @@ export default function BibleReader({ open, onClose }) {
                       marginRight: '2px',
                       fontFamily: 'Arial, sans-serif'
                     }}>
-                      {verse.number}
+                      {verse.verse}
                     </sup>
                     {verse.text}{' '}
                   </span>
@@ -409,7 +431,7 @@ export default function BibleReader({ open, onClose }) {
                 <button
                   type="button"
                   onClick={goToPreviousChapter}
-                  disabled={!selectedChapter || chapters.findIndex(c => c.id === selectedChapter?.id) === 0}
+                  disabled={!selectedChapter || selectedChapter === 1}
                   style={{
                     background: 'none',
                     border: '1px solid rgba(212,168,67,0.4)',
@@ -419,7 +441,7 @@ export default function BibleReader({ open, onClose }) {
                     fontWeight: 600,
                     cursor: 'pointer',
                     padding: '10px 20px',
-                    opacity: selectedChapter && chapters.findIndex(c => c.id === selectedChapter?.id) === 0 ? 0.3 : 1
+                    opacity: selectedChapter === 1 ? 0.3 : 1
                   }}
                 >
                   ← Previous
@@ -427,7 +449,7 @@ export default function BibleReader({ open, onClose }) {
                 <button
                   type="button"
                   onClick={goToNextChapter}
-                  disabled={!selectedChapter || chapters.findIndex(c => c.id === selectedChapter?.id) === chapters.length - 1}
+                  disabled={!selectedChapter || selectedChapter === maxChapter}
                   style={{
                     background: 'none',
                     border: '1px solid rgba(212,168,67,0.4)',
@@ -437,7 +459,7 @@ export default function BibleReader({ open, onClose }) {
                     fontWeight: 600,
                     cursor: 'pointer',
                     padding: '10px 20px',
-                    opacity: selectedChapter && chapters.findIndex(c => c.id === selectedChapter?.id) === chapters.length - 1 ? 0.3 : 1
+                    opacity: selectedChapter === maxChapter ? 0.3 : 1
                   }}
                 >
                   Next →
@@ -447,13 +469,6 @@ export default function BibleReader({ open, onClose }) {
           ) : null}
         </div>
       </div>
-
-      <BibleTranslationSelector
-        isOpen={showTranslation}
-        onClose={() => setShowTranslation(false)}
-        currentBibleId={bibleId}
-        onSelect={handleTranslationSelect}
-      />
 
       {/* Book Picker Modal */}
       {showBookPicker && (
@@ -482,7 +497,7 @@ export default function BibleReader({ open, onClose }) {
                 type="button"
                 onClick={() => {
                   const lastBook = localStorage.getItem('lastReadBook')
-                  const book = books.find(b => b.name === lastBook)
+                  const book = BOOKS.find(b => b.name === lastBook)
                   if (book) handleBookSelect(book)
                 }}
                 style={{
@@ -504,9 +519,9 @@ export default function BibleReader({ open, onClose }) {
 
             {/* Book List */}
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {books.map((book) => (
+              {BOOKS.map((book) => (
                 <button
-                  key={book.id}
+                  key={book.name}
                   type="button"
                   onClick={() => handleBookSelect(book)}
                   style={{
@@ -609,7 +624,7 @@ export default function BibleReader({ open, onClose }) {
               }}>
                 {chapters.map((chapter) => (
                   <button
-                    key={chapter.id}
+                    key={chapter}
                     type="button"
                     onClick={() => handleChapterSelect(chapter)}
                     style={{
@@ -636,7 +651,7 @@ export default function BibleReader({ open, onClose }) {
                       e.currentTarget.style.color = '#FFFFFF'
                     }}
                   >
-                    {chapter.number}
+                    {chapter}
                   </button>
                 ))}
               </div>
