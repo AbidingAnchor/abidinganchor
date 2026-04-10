@@ -2,12 +2,14 @@ const API_BASE = 'https://api.scripture.api.bible/v1';
 const API_KEY = import.meta.env.VITE_BIBLE_API_KEY;
 
 console.log('Bible API Key loaded:', !!import.meta.env.VITE_BIBLE_API_KEY);
+console.log('Bible API Key preview:', API_KEY ? `${API_KEY.substring(0, 8)}...` : 'MISSING');
 
 if (!API_KEY) {
   console.error('Bible API key missing. Please set VITE_BIBLE_API_KEY in your .env file.')
 }
 
 const headers = { 'api-key': API_KEY };
+console.log('Bible API headers:', headers);
 
 export const DEFAULT_BIBLE_ID = 'de4e12af7f28f599-02'; // KJV
 
