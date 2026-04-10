@@ -6,13 +6,21 @@ export default async function handler(req, res) {
   try {
     const { messages } = req.body
     
+    const apiKey = process.env.GROQ_API_KEY;
+    console.log('Groq API Key present:', !!apiKey);
+    console.log('Groq API Key length:', apiKey?.length || 0);
+    
+    if (!apiKey) {
+      return res.status(500).json({ error: 'GROQ_API_KEY not configured' });
+    }
+    
     const response = await fetch(
       'https://api.groq.com/openai/v1/chat/completions',
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.GROQ_API_KEY}` 
+          'Authorization': `Bearer ${apiKey}` 
         },
         body: JSON.stringify({
           model: 'llama3-8b-8192',
@@ -39,16 +47,30 @@ Guidelines:
       }
     )
 
-    const data = await response.json()
+    const text = await response.text();
+    console.log('Groq API response status:', response.status);
+    console.log('Groq API response preview:', text.substring(0, 200));
+    
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      return res.status(500).json({ 
+        error: 'Groq API returned non-JSON', 
+        status: response.status,
+        preview: text.substring(0, 500)
+      });
+    }
     
     if (!response.ok) {
-      throw new Error(data.error?.message || 'Groq API error')
+      throw new Error(data.error?.message || 'Groq API error');
     }
 
     return res.status(200).json({
       reply: data.choices[0].message.content
     })
   } catch (error) {
+    console.error('AI companion error:', error);
     return res.status(500).json({ error: error.message })
   }
 }

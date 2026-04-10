@@ -419,6 +419,12 @@ export default function BibleReader({
   }, [open, selectedChapter, loadChapterContent])
 
   useEffect(() => {
+    if (showGuidedStudy && guidedStudyStep === 1 && !chapterContent && selectedChapter) {
+      loadChapterContent()
+    }
+  }, [showGuidedStudy, guidedStudyStep, chapterContent, selectedChapter, loadChapterContent])
+
+  useEffect(() => {
     if (!open || loading || fetchError) return
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [open, loading, fetchError, selectedChapter])
