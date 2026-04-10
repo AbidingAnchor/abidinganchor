@@ -69,18 +69,6 @@ function Home({ onOpenWorship, worshipStatus }) {
           streakStartDate = todayStr
           currentStreak = 1
           longestStreak = 1
-          try {
-            await supabase.from('profiles').upsert({
-              id: user.id,
-              streak_start_date: streakStartDate,
-              last_active_date: todayStr,
-              reading_streak: currentStreak,
-              longest_streak: longestStreak,
-              updated_at: new Date().toISOString()
-            }, { onConflict: 'id' })
-          } catch (error) {
-            console.error('Profile upsert error:', error)
-          }
         } else if (lastActiveDate !== todayStr) {
           // Update streak data if last active date is different from today
           // Check if streak should continue (consecutive days)
@@ -101,18 +89,6 @@ function Home({ onOpenWorship, worshipStatus }) {
             longestStreak = currentStreak
           }
 
-          // Save to Supabase
-          try {
-            await supabase.from('profiles').upsert({
-              id: user.id,
-              last_active_date: todayStr,
-              reading_streak: currentStreak,
-              longest_streak: longestStreak,
-              updated_at: new Date().toISOString()
-            }, { onConflict: 'id' })
-          } catch (error) {
-            console.error('Profile update error:', error)
-          }
         }
 
         setStreak({ currentStreak: currentStreak })

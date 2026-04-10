@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import AppBackground from './AppBackground'
 
@@ -74,17 +73,10 @@ export default function Onboarding({ onComplete }) {
   const handleComplete = async () => {
     setLoading(true)
     try {
-      await supabase.from('profiles').upsert({
-        id: user.id,
-        onboarding_complete: true,
-        growth_goals: selectedGoals,
-        faith_duration: faithDuration,
-        daily_commitment: dailyCommitment
-      }, { onConflict: 'id' })
+      localStorage.setItem('onboarding_complete', 'true')
     } catch (error) {
       console.error('Onboarding save error:', error)
     } finally {
-      localStorage.setItem('onboarding_complete', 'true')
       setLoading(false)
       onComplete()
     }

@@ -5,7 +5,6 @@ import { getHighlightsForChapter, saveHighlight } from '../utils/highlights'
 import { recordChapterRead } from '../utils/readingHistory'
 import SaveToast from './SaveToast'
 import ShareVerse from './ShareVerse'
-import { supabase } from '../lib/supabase'
 import { getBooks, getChapters, getChapter, getSavedBibleId, POPULAR_BIBLES } from '../services/bibleApi'
 import BibleTranslationSelector from './BibleTranslationSelector'
 
@@ -91,21 +90,6 @@ export default function BibleReader({
       localStorage.setItem('lastReadBook', bookName)
       localStorage.setItem('lastReadChapter', chapterNum)
       localStorage.setItem('lastReadBibleId', bibleId)
-      
-      // Save to Supabase
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-          await supabase.from('profiles').upsert({
-            id: user.id,
-            last_book: bookName,
-            last_chapter: chapterNum,
-            updated_at: new Date().toISOString()
-          }, { onConflict: 'id' })
-        }
-      } catch (error) {
-        console.error('Profile update error:', error)
-      }
       
       const oldBooks = new Set(['Genesis','Exodus','Leviticus','Numbers','Deuteronomy','Joshua','Judges','Ruth','1 Samuel','2 Samuel','1 Kings','2 Kings','1 Chronicles','2 Chronicles','Ezra','Nehemiah','Esther','Job','Psalms','Proverbs','Ecclesiastes','Song of Solomon','Isaiah','Jeremiah','Lamentations','Ezekiel','Daniel','Hosea','Joel','Amos','Obadiah','Jonah','Micah','Nahum','Habakkuk','Zephaniah','Haggai','Zechariah','Malachi'])
       recordChapterRead({ book: bookName, chapter: chapterNum, testament: oldBooks.has(bookName) ? 'old' : 'new' })
@@ -372,24 +356,6 @@ export default function BibleReader({
           tags: ['Guided Study', 'Reflection'],
         })
         setToastTrigger((t) => t + 1)
-      }
-      
-      // Save to Supabase
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-          await supabase.from('guided_study_progress').upsert({
-            id: `${user.id}_${bookName}_${chapterNum}`,
-            user_id: user.id,
-            book_name: bookName,
-            chapter_number: chapterNum,
-            completed_at: new Date().toISOString(),
-            action_steps_completed: guidedStudyData.actionSteps?.filter(s => s.completed).length || 0,
-            reflection_saved: !!reflection
-          }, { onConflict: 'id' })
-        }
-      } catch (error) {
-        console.error('Error saving guided study progress:', error)
       }
       
       setGuidedStudyStep(5)

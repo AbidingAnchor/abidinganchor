@@ -141,16 +141,21 @@ self.addEventListener('fetch', (event) => {
     );
     return;
   }
-  // Cache first for static assets
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      return cached || fetch(event.request).then((response) => {
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, clone);
+  // Cache first for static assets (GET requests only)
+  if (event.request.method === 'GET') {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        return cached || fetch(event.request).then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, clone);
+          });
+          return response;
         });
-        return response;
-      });
-    })
-  );
+      })
+    );
+  } else {
+    // For non-GET requests, go to network only
+    event.respondWith(fetch(event.request));
+  }
 });

@@ -32,14 +32,10 @@ async function fetchProfileWithTimeout(user) {
 async function ensureProfile(user) {
   if (!user?.id) return null
   const fullName = user.user_metadata?.full_name || ''
-  const createdAt = (user.created_at || new Date().toISOString()).slice(0, 10)
   const payload = {
     id: user.id,
-    email: user.email ?? null,
     full_name: fullName || null,
-    streak_start_date: createdAt,
-    reading_streak: 0,
-    last_read_date: null,
+    updated_at: new Date().toISOString()
   }
   try {
     await supabase.from('profiles').upsert(payload, { onConflict: 'id' })
