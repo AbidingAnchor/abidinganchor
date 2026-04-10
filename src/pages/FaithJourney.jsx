@@ -44,6 +44,7 @@ export default function FaithJourney() {
       backdropFilter: 'blur(12px)',
       WebkitBackdropFilter: 'blur(12px)',
       border: '1px solid rgba(212,168,67,0.25)',
+      borderBottom: '2px solid #D4A843',
       borderRadius: '16px',
       padding: '16px'
     }}>
@@ -72,15 +73,15 @@ export default function FaithJourney() {
   )
 
   return (
-    <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '110px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       {view === 'hub' ? (
-        <section className="space-y-4">
-            <header className="space-y-2">
-              <p className="text-section-header">Faith Journey</p>
-              <h1 className="text-page-title">
-                Your Faith Journey
+        <div style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '20px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
+            <header style={{ marginBottom: '24px' }}>
+              <p style={{ color: '#D4A843', fontSize: '13px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '8px' }}>Faith Journey</p>
+              <h1 style={{ color: '#FFFFFF', fontSize: '24px', fontWeight: 700, marginBottom: '8px' }}>
+                Your faith journey
               </h1>
-              <p className="text-body">A gamified space to learn, memorize, and grow.</p>
+              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '15px' }}>A gamified space to learn, memorize, and grow.</p>
             </header>
 
             <div style={{
@@ -130,7 +131,7 @@ export default function FaithJourney() {
               <br />
               <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>— Hebrews 12:1</span>
             </footer>
-        </section>
+        </div>
       ) : view === 'trivia' ? (
         <BibleTrivia onExit={() => setView('hub')} />
       ) : view === 'flashcards' ? (
