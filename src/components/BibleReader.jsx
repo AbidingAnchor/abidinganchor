@@ -159,11 +159,8 @@ export default function BibleReader({ open, onClose }) {
         left: 0,
         right: 0,
         zIndex: 100,
-        background: 'rgba(10, 26, 62, 0.95)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        padding: '12px 20px',
-        borderBottom: '1px solid rgba(212, 168, 67, 0.2)'
+        background: '#0a1a3e',
+        padding: '10px 20px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', maxWidth: '680px', margin: '0 auto' }}>
           <button
@@ -212,8 +209,8 @@ export default function BibleReader({ open, onClose }) {
 
       {/* Content */}
       <div style={{ 
-        paddingTop: '140px', 
-        paddingBottom: '100px', 
+        paddingTop: '110px', 
+        paddingBottom: '120px', 
         padding: '24px 20px', 
         maxWidth: '680px', 
         margin: '0 auto'
@@ -321,17 +318,14 @@ export default function BibleReader({ open, onClose }) {
             {/* Chapter Navigation */}
             <div style={{
               position: 'fixed',
-              bottom: '70px',
+              bottom: '60px',
               left: 0,
               right: 0,
+              zIndex: 100,
               background: '#0a1a3e',
               padding: '10px 20px',
               display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              zIndex: 150,
-              maxWidth: '680px',
-              margin: '0 auto'
+              justifyContent: 'space-between'
             }}>
               <button
                 type="button"
