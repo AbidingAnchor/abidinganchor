@@ -26,7 +26,7 @@ export async function getJournalEntries(userIdArg) {
   }
 }
 
-export async function saveToJournal({ verse, reference, note = '', tags = [], userId: userIdArg }) {
+export async function saveToJournal({ verse, reference, note = '', tags = [], userId: userIdArg, id: existingId }) {
   let userId = userIdArg
   if (!userId) {
     try {
@@ -41,16 +41,22 @@ export async function saveToJournal({ verse, reference, note = '', tags = [], us
   const content = (note || verse || '').trim()
   if (!content) return null
   
-  // Check for duplicate entry from today
-  const today = new Date().toISOString().slice(0, 10)
-  const entries = await getJournalEntries(userId)
-  const isDuplicate = entries.some(e => 
-    e.content === content && 
-    e.created_at?.startsWith(today)
-  )
-  if (isDuplicate) return null
+  // Check for duplicate entry from today (only for new entries)
+  if (!existingId) {
+    const today = new Date().toISOString().slice(0, 10)
+    const entries = await getJournalEntries(userId)
+    const isDuplicate = entries.some(e => 
+      e.content === content && 
+      e.created_at?.startsWith(today)
+    )
+    if (isDuplicate) return null
+  }
+  
+  // Generate UUID for new entries, use existing ID for edits
+  const entryId = existingId || crypto.randomUUID()
   
   const payload = {
+    id: entryId,
     user_id: userId,
     content,
     verse: verse || null,
@@ -58,7 +64,7 @@ export async function saveToJournal({ verse, reference, note = '', tags = [], us
     entry_type: tags?.[0] || 'Reflection',
   }
   try {
-    const { data, error } = await supabase.from('journal_entries').insert(payload).select().single()
+    const { data, error } = await supabase.from('journal_entries').upsert(payload, { onConflict: 'id' }).select().single()
     if (error) throw error
     return data || null
   } catch (err) {

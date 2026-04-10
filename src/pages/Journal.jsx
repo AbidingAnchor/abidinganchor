@@ -28,6 +28,7 @@ function Journal() {
   const [reference, setReference] = useState('')
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -46,6 +47,8 @@ function Journal() {
   const handleSaveEntry = async () => {
     if (!content.trim()) return
     
+    setSaving(true)
+    
     const today = new Date().toLocaleDateString('en-US', {
       month: 'long',
       day: 'numeric',
@@ -58,6 +61,7 @@ function Journal() {
     
     if (isDuplicate) {
       alert('You already have an entry with this content today.')
+      setSaving(false)
       return
     }
     
@@ -68,6 +72,9 @@ function Journal() {
       tags: ['Reflection'],
       userId: user?.id,
     })
+    
+    setSaving(false)
+    
     if (!newEntry) return
     setEntries((prev) => [normalizeEntry(newEntry), ...prev])
     setTitle('')
@@ -337,20 +344,22 @@ function Journal() {
             <button
               type="button"
               onClick={handleSaveEntry}
+              disabled={saving}
               style={{
-                background: '#D4A843',
+                background: saving ? 'rgba(212,168,67,0.5)' : '#D4A843',
                 color: '#0a1a3e',
                 fontWeight: 700,
                 borderRadius: '50px',
                 padding: '14px',
                 width: '100%',
                 border: 'none',
-                cursor: 'pointer',
+                cursor: saving ? 'not-allowed' : 'pointer',
                 fontSize: '16px',
-                marginBottom: '12px'
+                marginBottom: '12px',
+                opacity: saving ? 0.7 : 1
               }}
             >
-              Save Entry
+              {saving ? 'Saving...' : 'Save Entry'}
             </button>
             
             <button
