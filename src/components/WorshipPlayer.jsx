@@ -109,7 +109,16 @@ export default function WorshipPlayer({ visible, onClose, autoPlayToken = 0, onS
             <span>Worship</span>
           </button>
         ) : (
-          <article className="w-[260px] rounded-2xl border border-[#D4A843] bg-white/10 p-3 text-white backdrop-blur-md">
+          <article style={{
+            width: '260px',
+            borderRadius: '16px',
+            padding: '12px',
+            background: 'rgba(8,20,50,0.92)',
+            border: '1px solid rgba(212,168,67,0.3)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            color: 'white'
+          }}>
             <div className="mb-2 flex items-center justify-between">
               <p className="text-sm font-semibold">🎵 Worship Mode</p>
               <button type="button" onClick={() => setIsMinimized(true)} className="text-white/70">—</button>

@@ -445,8 +445,16 @@ function Search({ onOpenWorship }) {
                 <button type="button" onClick={() => setSearchMode('keyword')} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${searchMode === 'keyword' ? 'bg-gold text-primary-purple' : 'text-white'}`}>Search by Keyword</button>
                 <button type="button" onClick={() => setSearchMode('topic')} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${searchMode === 'topic' ? 'bg-gold text-primary-purple' : 'text-white'}`}>Search by Topic</button>
               </div>
-              <label htmlFor="scripture-search" className={`flex items-center gap-3 rounded-2xl border px-4 py-3 transition-colors app-card ${searchBorderClass}`}>
-                  <svg className="h-5 w-5 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <label htmlFor="scripture-search" style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                borderRadius: '50px',
+                padding: '12px 16px',
+                background: 'rgba(8,20,50,0.72)',
+                border: '1px solid rgba(212,168,67,0.3)'
+              }}>
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'rgba(255,255,255,0.7)' }}>
                   <circle cx="11" cy="11" r="7" />
                   <path d="m20 20-3.5-3.5" />
                 </svg>
@@ -458,36 +466,77 @@ function Search({ onOpenWorship }) {
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
                   placeholder={searchMode === 'topic' ? 'Pick a topic below' : 'Search by reference or keyword (e.g. John 3:16, fear, love)'}
-                  className="w-full bg-transparent text-white placeholder:text-white/70 focus:outline-none"
+                  style={{
+                    width: '100%',
+                    background: 'transparent',
+                    color: 'white',
+                    outline: 'none'
+                  }}
+                  placeholderStyle={{ color: 'rgba(255,255,255,0.5)' }}
                   disabled={searchMode === 'topic'}
                 />
               </label>
 
               <div
-                className="app-card rounded-xl p-4 mb-4 border border-border-gold-light"
+                style={{
+                  background: 'rgba(8,20,50,0.72)',
+                  border: '1px solid rgba(212,168,67,0.25)',
+                  borderRadius: '16px',
+                  padding: '16px',
+                  marginBottom: '16px'
+                }}
               >
-                <div className="space-y-2">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {searchMode === 'keyword' ? (
                     <>
-                      <div className="flex gap-2 overflow-x-auto pb-1">
+                      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
                         {quickSuggestionsRow1.map((suggestion) => (
-                          <button key={suggestion} type="button" onClick={() => setSearchTerm(suggestion)} className="app-card shrink-0 rounded-full px-3 py-1.5 text-sm text-gold-accent transition hover:brightness-95">
+                          <button key={suggestion} type="button" onClick={() => setSearchTerm(suggestion)} style={{
+                            background: 'rgba(8,20,50,0.72)',
+                            border: '1px solid rgba(212,168,67,0.3)',
+                            borderRadius: '50px',
+                            color: '#D4A843',
+                            fontWeight: 600,
+                            padding: '6px 12px',
+                            fontSize: '14px',
+                            flexShrink: 0,
+                            cursor: 'pointer'
+                          }}>
                             {suggestion}
                           </button>
                         ))}
                       </div>
-                      <div className="flex gap-2 overflow-x-auto pb-1">
+                      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
                         {quickSuggestionsRow2.map((suggestion) => (
-                          <button key={suggestion} type="button" onClick={() => setSearchTerm(suggestion)} className="app-card shrink-0 rounded-full px-3 py-1.5 text-sm text-gold-accent transition hover:brightness-95">
+                          <button key={suggestion} type="button" onClick={() => setSearchTerm(suggestion)} style={{
+                            background: 'rgba(8,20,50,0.72)',
+                            border: '1px solid rgba(212,168,67,0.3)',
+                            borderRadius: '50px',
+                            color: '#D4A843',
+                            fontWeight: 600,
+                            padding: '6px 12px',
+                            fontSize: '14px',
+                            flexShrink: 0,
+                            cursor: 'pointer'
+                          }}>
                             {suggestion}
                           </button>
                         ))}
                       </div>
                     </>
                   ) : (
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                       {TOPIC_LIST.map((topic) => (
-                        <button key={topic} type="button" onClick={() => setSelectedTopic(topic)} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${selectedTopic === topic ? 'bg-gold text-primary-purple' : 'app-card text-gold-accent'}`}>
+                        <button key={topic} type="button" onClick={() => setSelectedTopic(topic)} style={{
+                          borderRadius: '50px',
+                          padding: '6px 12px',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          background: selectedTopic === topic ? '#D4A843' : 'rgba(8,20,50,0.72)',
+                          border: '1px solid rgba(212,168,67,0.3)',
+                          color: selectedTopic === topic ? '#0a1a3e' : '#D4A843',
+                          cursor: 'pointer'
+                        }}>
                           {topic}
                         </button>
                       ))}
@@ -636,9 +685,27 @@ function Search({ onOpenWorship }) {
             ) : (
               <section className="space-y-3">
                 <h2 className="text-lg font-semibold" style={headingStyle}>Browse by Book</h2>
-                <div className="inline-flex rounded-xl p-1">
-                  <button type="button" onClick={() => setTestament('old')} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${testament === 'old' ? 'bg-accent-gold text-white' : 'text-white'}`} style={testament === 'old' ? undefined : glassCard}>Old Testament</button>
-                  <button type="button" onClick={() => setTestament('new')} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${testament === 'new' ? 'bg-accent-gold text-white' : 'text-white'}`} style={testament === 'new' ? undefined : glassCard}>New Testament</button>
+                <div style={{ display: 'inline-flex', borderRadius: '12px', padding: '4px' }}>
+                  <button type="button" onClick={() => setTestament('old')} style={{
+                    borderRadius: '8px',
+                    padding: '6px 12px',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    background: testament === 'old' ? '#D4A843' : 'rgba(8,20,50,0.72)',
+                    border: testament === 'old' ? 'none' : '1px solid rgba(212,168,67,0.3)',
+                    color: testament === 'old' ? '#0a1a3e' : 'white',
+                    cursor: 'pointer'
+                  }}>Old Testament</button>
+                  <button type="button" onClick={() => setTestament('new')} style={{
+                    borderRadius: '8px',
+                    padding: '6px 12px',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    background: testament === 'new' ? '#D4A843' : 'rgba(8,20,50,0.72)',
+                    border: testament === 'new' ? 'none' : '1px solid rgba(212,168,67,0.3)',
+                    color: testament === 'new' ? '#0a1a3e' : 'white',
+                    cursor: 'pointer'
+                  }}>New Testament</button>
                 </div>
                 <div
                   style={{
@@ -648,24 +715,20 @@ function Search({ onOpenWorship }) {
                   }}
                 >
                   {visibleBooks.map((book) => (
-                    <article key={book.name} className="app-card rounded-lg p-3 text-left transition hover:brightness-95 border-l-[3px] border-[#D4A843]">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <button type="button" onClick={() => handleBookTap(book)} style={{ background: 'none', border: 'none', textAlign: 'left', padding: 0 }}>
-                          <p className="text-sm font-semibold text-white">{book.name}</p>
-                          <p className="text-xs" style={bodyStyle}>{book.chapters} chapters</p>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const info = bibleBooks.find((b) => b.name === book.name)
-                            if (info) setOverviewBook({ ...book, info })
-                          }}
-                          style={{ background: 'none', border: 'none', color: '#D4A843', fontSize: '16px' }}
-                          aria-label={`About ${book.name}`}
-                        >
-                          ℹ️
-                        </button>
-                      </div>
+                    <article key={book.name} style={{
+                      background: 'rgba(8,20,50,0.72)',
+                      border: '1px solid rgba(212,168,67,0.25)',
+                      borderRadius: '12px',
+                      padding: '12px',
+                      textAlign: 'left',
+                      transition: 'all 0.2s'
+                    }}>
+                      <button type="button" onClick={() => handleBookTap(book)} style={{ background: 'none', border: 'none', textAlign: 'left', padding: 0, width: '100%', cursor: 'pointer' }}>
+                        <p style={{ fontSize: '14px', fontWeight: 600, color: 'white', margin: 0 }}>{book.name}</p>
+                        <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)', margin: '4px 0 0 0' }}>
+                          {book.chapters} {book.chapters === 1 ? 'chapter' : 'chapters'}
+                        </p>
+                      </button>
                     </article>
                   ))}
                 </div>

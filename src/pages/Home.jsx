@@ -35,7 +35,7 @@ function Home({ onOpenWorship, worshipStatus }) {
         let data, error
         try {
           const result = await Promise.race([
-            supabase.from('profiles').select('reading_streak').eq('id', user.id).single(),
+            supabase.from('profiles').select('reading_streak, streak_start_date, last_active_date, longest_streak').eq('id', user.id).single(),
             new Promise((_, reject) => {
               setTimeout(() => reject(new Error('profile-streak-timeout')), PROFILE_STREAK_FETCH_MS)
             }),
@@ -49,7 +49,53 @@ function Home({ onOpenWorship, worshipStatus }) {
         }
         if (cancelled) return
         if (error) throw error
-        setStreak({ currentStreak: Number(data?.reading_streak) || 0 })
+
+        const today = new Date()
+        const todayStr = today.toISOString().slice(0, 10)
+        let streakStartDate = data?.streak_start_date
+        let lastActiveDate = data?.last_active_date
+        let currentStreak = Number(data?.reading_streak) || 0
+        let longestStreak = Number(data?.longest_streak) || 0
+
+        // Initialize streak start date if not set
+        if (!streakStartDate) {
+          streakStartDate = todayStr
+          await supabase.from('profiles').update({ streak_start_date: streakStartDate }).eq('id', user.id)
+        }
+
+        // Calculate day count from streak start date
+        const startDate = new Date(streakStartDate)
+        const dayCount = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1
+
+        // Update streak data if last active date is different from today
+        if (lastActiveDate !== todayStr) {
+          // Check if streak should continue (consecutive days)
+          if (lastActiveDate) {
+            const lastActive = new Date(lastActiveDate)
+            const daysDiff = Math.floor((today - lastActive) / (1000 * 60 * 60 * 24))
+            if (daysDiff === 1) {
+              currentStreak += 1
+            } else if (daysDiff > 1) {
+              currentStreak = 1
+            }
+          } else {
+            currentStreak = 1
+          }
+
+          // Update longest streak
+          if (currentStreak > longestStreak) {
+            longestStreak = currentStreak
+          }
+
+          // Save to Supabase
+          await supabase.from('profiles').update({
+            last_active_date: todayStr,
+            reading_streak: currentStreak,
+            longest_streak: longestStreak
+          }).eq('id', user.id)
+        }
+
+        setStreak({ currentStreak: currentStreak })
       } catch {
         if (!cancelled && !profileRef.current) {
           setStreak({ currentStreak: 0 })
@@ -187,7 +233,6 @@ function Home({ onOpenWorship, worshipStatus }) {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
   const dayToMonFirstIndex = [6, 0, 1, 2, 3, 4, 5]
   const todayIndex = dayToMonFirstIndex[today.getDay()]
-  const streakLength = 3
   useEffect(() => {
     let active = true
     const loadCount = async () => {
@@ -200,11 +245,13 @@ function Home({ onOpenWorship, worshipStatus }) {
     return () => { active = false }
   }, [user?.id, toastTrigger])
   const streakMessages = {
-    1: 'Welcome! Every journey begins with one step. 🌱',
-    2: 'Two days strong! His Word is a lamp to your feet. 🕯️',
-    3: 'Three days! You are building something beautiful. ✨',
-    5: "Five days! 'Blessed is the one who reads...' Rev 1:3 📖",
-    7: 'One week! His mercies are new every morning. 🌅',
+    1: 'Welcome! Your journey begins today. 🙏',
+    2: "You're building a habit! Keep going. 🔥",
+    3: "You're building a habit! Keep going. 🔥",
+    4: 'Halfway through the week! Stay strong. ✝️',
+    5: 'Halfway through the week! Stay strong. ✝️',
+    6: 'Almost a full week! Don\'t stop now. 🌟',
+    7: 'A full week of seeking God! Amazing. �',
     14: 'Two weeks! You are becoming rooted in His Word. 🌳',
     21: '21 days! A habit is being formed for eternity. 🔥',
     30: "30 days! 'I have hidden your word in my heart.' Ps 119:11 💛",
@@ -213,9 +260,34 @@ function Home({ onOpenWorship, worshipStatus }) {
   }
   const currentStreak = Math.max(0, Number(streak?.currentStreak || 0))
   const firstName = suppressPersonalWelcome
-    ? ''
-    : (profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || '')
-  const welcomeCopy = firstName ? `Welcome back, ${firstName} 🙏` : 'Welcome back 🙏'
+    ? 'Friend'
+    : (profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Friend')
+  
+  const hour = new Date().getHours()
+  let timeGreeting = ''
+  let timeEmoji = ''
+  if (hour >= 5 && hour < 12) {
+    timeGreeting = 'Good morning'
+    timeEmoji = '🌅'
+  } else if (hour >= 12 && hour < 18) {
+    timeGreeting = 'Good afternoon'
+    timeEmoji = '☀️'
+  } else {
+    timeGreeting = 'Good evening'
+    timeEmoji = '🌇'
+  }
+  
+  const encouragements = [
+    'His mercies are new every morning.',
+    'Walk in faith today.',
+    'You are loved beyond measure.',
+    'Be still and know that He is God.',
+    'Cast all your anxiety on Him.',
+    'The Lord is your strength and shield.',
+    'Nothing can separate you from His love.'
+  ]
+  const encouragement = encouragements[new Date().getDay()]
+  
   const streakMessage = streakMessages[currentStreak] || `Day ${currentStreak} — Keep seeking Him with all your heart. 🙏`
 
   return (
@@ -232,6 +304,23 @@ function Home({ onOpenWorship, worshipStatus }) {
           }}
         >
           <section style={{ marginBottom: '28px' }}>
+            <div style={{ marginBottom: '20px' }}>
+              <p style={{ 
+                color: 'white', 
+                fontSize: '22px', 
+                fontWeight: 700, 
+                marginBottom: '4px' 
+              }}>
+                {timeGreeting}, {firstName} {timeEmoji}
+              </p>
+              <p style={{ 
+                color: 'rgba(255,255,255,0.6)', 
+                fontSize: '13px',
+                marginBottom: '16px'
+              }}>
+                {encouragement}
+              </p>
+            </div>
             <article
               className="text-white"
               style={{
@@ -379,29 +468,51 @@ function Home({ onOpenWorship, worshipStatus }) {
                 <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>{currentStreak} Days</p>
               </div>
               <p style={{ marginBottom: '16px', fontSize: '13px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>{streakMessage}</p>
-              <div className="flex items-center justify-between gap-2" style={{ overflowX: 'auto' }}>
-                {days.map((day, index) => {
-                  const isToday = index === todayIndex
-                  const isCompleted = index < todayIndex && index >= todayIndex - streakLength
-                  const dotStyle = isToday
-                    ? { background: '#D4A843', boxShadow: '0 0 8px rgba(212,168,67,0.6)', borderColor: '#D4A843' }
-                    : isCompleted
-                      ? { background: '#D4A843', borderColor: '#D4A843' }
-                      : { background: 'rgba(8, 20, 50, 0.72)', borderColor: 'rgba(255,255,255,0.12)' }
-                  return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div className="flex items-center justify-between gap-2">
+                  {days.map((day) => (
                     <div 
                       key={day} 
-                      className="w-8 h-8 rounded-full border-2" 
-                      style={dotStyle}
-                    />
-                  )
-                })}
+                      style={{ 
+                        flex: 1, 
+                        textAlign: 'center',
+                        color: 'rgba(255,255,255,0.5)', 
+                        fontSize: '11px', 
+                        fontWeight: 600 
+                      }}
+                    >
+                      {day}
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center justify-between gap-2" style={{ overflowX: 'auto' }}>
+                  {days.map((day, index) => {
+                    const isToday = index === todayIndex
+                    const isPast = index < todayIndex
+                    const dotStyle = isToday
+                      ? { background: '#D4A843', boxShadow: '0 0 8px rgba(212,168,67,0.6)', border: '2px solid white' }
+                      : isPast
+                        ? { background: '#D4A843', border: '2px solid #D4A843' }
+                        : { background: 'rgba(255,255,255,0.15)', border: '2px solid rgba(255,255,255,0.12)' }
+                    return (
+                      <div 
+                        key={day} 
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '50%',
+                          ...dotStyle
+                        }}
+                      />
+                    )
+                  })}
+                </div>
               </div>
             </div>
             </div>
 
             <div style={{ marginBottom: '28px', animation: 'fadeInUp 0.6s ease forwards', animationDelay: '0.3s' }}>
-              <h2 style={{ color: '#D4A843', fontSize: '13px', letterSpacing: '0.12em', fontWeight: 500, textTransform: 'uppercase' }}>Tools</h2>
+              <h2 style={{ color: '#D4A843', fontSize: '13px', letterSpacing: '0.12em', fontWeight: 500, textTransform: 'uppercase' }}>TOOLS</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
               <Link
                 to="/scripture-art"
@@ -409,11 +520,11 @@ function Home({ onOpenWorship, worshipStatus }) {
                   minWidth: '140px',
                   minHeight: '100px',
                   textDecoration: 'none',
-                  background: 'rgba(8, 20, 50, 0.65)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  borderRadius: '20px',
-                  backdropFilter: 'blur(15px)',
-                  WebkitBackdropFilter: 'blur(15px)',
+                  background: 'rgba(8, 20, 50, 0.72)',
+                  border: '1px solid rgba(212, 168, 67, 0.25)',
+                  borderRadius: '16px',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
                   padding: '20px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -426,12 +537,12 @@ function Home({ onOpenWorship, worshipStatus }) {
                   e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
-                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.65)'
+                  e.currentTarget.style.borderColor = 'rgba(212, 168, 67, 0.25)'
+                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.72)'
                 }}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>🎨</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.95)', marginBottom: '4px' }}>Scripture Art</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: '#FFFFFF', marginBottom: '4px' }}>Scripture Art</p>
                 <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Create shareable verse images</p>
               </Link>
               <Link
@@ -440,11 +551,11 @@ function Home({ onOpenWorship, worshipStatus }) {
                   minWidth: '140px',
                   minHeight: '100px',
                   textDecoration: 'none',
-                  background: 'rgba(8, 20, 50, 0.65)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  borderRadius: '20px',
-                  backdropFilter: 'blur(15px)',
-                  WebkitBackdropFilter: 'blur(15px)',
+                  background: 'rgba(8, 20, 50, 0.72)',
+                  border: '1px solid rgba(212, 168, 67, 0.25)',
+                  borderRadius: '16px',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
                   padding: '20px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -457,12 +568,12 @@ function Home({ onOpenWorship, worshipStatus }) {
                   e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
-                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.65)'
+                  e.currentTarget.style.borderColor = 'rgba(212, 168, 67, 0.25)'
+                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.72)'
                 }}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>📅</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.95)', marginBottom: '4px' }}>Reading Plans</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: '#FFFFFF', marginBottom: '4px' }}>Reading Plans</p>
                 <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Follow structured daily journeys</p>
               </Link>
               <Link
@@ -471,11 +582,11 @@ function Home({ onOpenWorship, worshipStatus }) {
                   minWidth: '140px',
                   minHeight: '100px',
                   textDecoration: 'none',
-                  background: 'rgba(8, 20, 50, 0.65)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  borderRadius: '20px',
-                  backdropFilter: 'blur(15px)',
-                  WebkitBackdropFilter: 'blur(15px)',
+                  background: 'rgba(8, 20, 50, 0.72)',
+                  border: '1px solid rgba(212, 168, 67, 0.25)',
+                  borderRadius: '16px',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
                   padding: '20px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -488,12 +599,12 @@ function Home({ onOpenWorship, worshipStatus }) {
                   e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
-                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.65)'
+                  e.currentTarget.style.borderColor = 'rgba(212, 168, 67, 0.25)'
+                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.72)'
                 }}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>🕐</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.95)', marginBottom: '4px' }}>Fasting Tracker</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: '#FFFFFF', marginBottom: '4px' }}>Fasting Tracker</p>
                 <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Track fasts and prayer notes</p>
               </Link>
               <Link
@@ -502,11 +613,11 @@ function Home({ onOpenWorship, worshipStatus }) {
                   minWidth: '140px',
                   minHeight: '100px',
                   textDecoration: 'none',
-                  background: 'rgba(8, 20, 50, 0.65)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  borderRadius: '20px',
-                  backdropFilter: 'blur(15px)',
-                  WebkitBackdropFilter: 'blur(15px)',
+                  background: 'rgba(8, 20, 50, 0.72)',
+                  border: '1px solid rgba(212, 168, 67, 0.25)',
+                  borderRadius: '16px',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
                   padding: '20px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -519,23 +630,23 @@ function Home({ onOpenWorship, worshipStatus }) {
                   e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
-                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.65)'
+                  e.currentTarget.style.borderColor = 'rgba(212, 168, 67, 0.25)'
+                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.72)'
                 }}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>🤝</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.95)', marginBottom: '4px' }}>Support</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: '#FFFFFF', marginBottom: '4px' }}>Support</p>
                 <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Help sustain the ministry</p>
               </Link>
               <div
                 style={{
                   minWidth: '140px',
                   minHeight: '100px',
-                  background: 'rgba(8, 20, 50, 0.65)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  borderRadius: '20px',
-                  backdropFilter: 'blur(15px)',
-                  WebkitBackdropFilter: 'blur(15px)',
+                  background: 'rgba(8, 20, 50, 0.72)',
+                  border: '1px solid rgba(212, 168, 67, 0.25)',
+                  borderRadius: '16px',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
                   padding: '20px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -549,13 +660,13 @@ function Home({ onOpenWorship, worshipStatus }) {
                   e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
-                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.65)'
+                  e.currentTarget.style.borderColor = 'rgba(212, 168, 67, 0.25)'
+                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.72)'
                 }}
                 onClick={() => window.open('https://discord.gg/nZcZRkUMJh', '_blank')}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>💬</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.95)', marginBottom: '4px' }}>Community</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: '#FFFFFF', marginBottom: '4px' }}>Community</p>
                 <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Join our Discord</p>
               </div>
               <Link
@@ -564,11 +675,11 @@ function Home({ onOpenWorship, worshipStatus }) {
                   minWidth: '140px',
                   minHeight: '100px',
                   textDecoration: 'none',
-                  background: 'rgba(8, 20, 50, 0.65)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  borderRadius: '20px',
-                  backdropFilter: 'blur(15px)',
-                  WebkitBackdropFilter: 'blur(15px)',
+                  background: 'rgba(8, 20, 50, 0.72)',
+                  border: '1px solid rgba(212, 168, 67, 0.25)',
+                  borderRadius: '16px',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
                   padding: '20px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -581,12 +692,12 @@ function Home({ onOpenWorship, worshipStatus }) {
                   e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
-                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.65)'
+                  e.currentTarget.style.borderColor = 'rgba(212, 168, 67, 0.25)'
+                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.72)'
                 }}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>🎵</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.95)', marginBottom: '4px' }}>Worship Mode</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: '#FFFFFF', marginBottom: '4px' }}>Worship Mode</p>
                 <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Music & meditation</p>
               </Link>
             </div>
@@ -598,7 +709,7 @@ function Home({ onOpenWorship, worshipStatus }) {
               background: 'rgba(8, 20, 50, 0.72)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255,255,255,0.12)',
+              border: '1px solid rgba(212,168,67,0.25)',
               animation: 'fadeInUp 0.6s ease forwards',
               animationDelay: '0.4s'
             }}

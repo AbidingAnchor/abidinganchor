@@ -239,13 +239,23 @@ export default function CommunityPrayer() {
 
         {tab === 'wall' && (
           <>
-            <div className="mb-3 flex flex-wrap gap-2">
+            <div style={{ marginBottom: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {FILTER_CATEGORIES.map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setFilterCat(c)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${filterCat === c ? 'btn-primary' : 'btn-secondary'}`}
+                  style={{
+                    borderRadius: '50px',
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    fontWeight: filterCat === c ? 700 : 600,
+                    background: filterCat === c ? '#D4A843' : 'rgba(8,20,50,0.72)',
+                    border: filterCat === c ? 'none' : '1px solid rgba(212,168,67,0.3)',
+                    color: filterCat === c ? '#0a1a3e' : 'white',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
                 >
                   {c}
                 </button>

@@ -53,9 +53,9 @@ export default function Auth() {
     event.preventDefault()
     setError('')
     setSuccess('')
-    const normalizedEmail = email.trim()
-    if (!normalizedEmail) return setError('Email is required.')
-    if (!isValidEmail(normalizedEmail)) return setError('Please enter a valid email address.')
+    const cleanEmail = email.trim().toLowerCase()
+    if (!cleanEmail) return setError('Email is required.')
+    if (!isValidEmail(cleanEmail)) return setError('Please enter a valid email address.')
     if (!password.trim()) return setError('Password is required.')
     if (mode === 'signup') {
       if (password !== confirmPassword) return setError("Passwords don't match.")
@@ -73,7 +73,7 @@ export default function Auth() {
     }
     setLoading(true)
     if (mode === 'signin') {
-      const { error: signInError } = await signIn(normalizedEmail, password)
+      const { error: signInError } = await signIn(cleanEmail, password)
       if (signInError) {
         console.log('Supabase error:', signInError)
         setError(signInError.message)
@@ -81,7 +81,7 @@ export default function Auth() {
       setLoading(false)
       return
     }
-    const { error: signUpError, usedEmailFallback } = await signUp(normalizedEmail, password, fullName.trim())
+    const { error: signUpError, usedEmailFallback } = await signUp(cleanEmail, password, fullName.trim())
     if (signUpError) {
       console.log('Supabase error:', signUpError)
       setError(signUpError.message)
@@ -94,16 +94,16 @@ export default function Auth() {
   const handleForgotPassword = async () => {
     setError('')
     setSuccess('')
-    const normalizedEmail = email.trim()
-    if (!normalizedEmail) {
+    const cleanEmail = email.trim().toLowerCase()
+    if (!cleanEmail) {
       setError('Enter your email first, then tap "Forgot password?".')
       return
     }
-    if (!isValidEmail(normalizedEmail)) {
+    if (!isValidEmail(cleanEmail)) {
       setError('Please enter a valid email address.')
       return
     }
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(normalizedEmail)
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(cleanEmail)
     if (resetError) setError(resetError.message)
     else setSuccess('Password reset email sent.')
   }
@@ -173,7 +173,19 @@ export default function Auth() {
               <input value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} type="date" className="app-input" style={{ borderRadius: '12px', padding: '12px' }} />
             </>
           ) : null}
-          <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" type="email" className="app-input" style={{ borderRadius: '12px', padding: '12px' }} />
+          <input 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+            placeholder="Email" 
+            type="email" 
+            className="app-input" 
+            style={{ borderRadius: '12px', padding: '12px' }}
+            autoCapitalize="none"
+            autoCorrect="off"
+            autoComplete="email"
+            keyboardType="email-address"
+            spellCheck={false}
+          />
           <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" className="app-input" style={{ borderRadius: '12px', padding: '12px' }} />
           {mode === 'signup' ? (
             <input value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm Password" type="password" className="app-input" style={{ borderRadius: '12px', padding: '12px' }} />

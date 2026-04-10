@@ -89,8 +89,7 @@ export default function Navbar() {
         {/* Settings icon */}
         <button
           type="button"
-          onClick={() => handleSignOut()}
-          onTouchEnd={(e) => handleSignOut(e)}
+          onClick={() => navigate('/settings')}
           style={{
             width: '36px',
             height: '36px',

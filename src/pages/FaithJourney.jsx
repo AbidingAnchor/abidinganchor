@@ -39,15 +39,33 @@ export default function FaithJourney() {
   
 
   const FeatureCard = ({ icon, title, desc, onStart }) => (
-    <article className="app-card">
-      <div className="flex items-start justify-between gap-2">
+    <article style={{
+      background: 'rgba(8,20,50,0.72)',
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
+      border: '1px solid rgba(212,168,67,0.25)',
+      borderRadius: '16px',
+      padding: '16px'
+    }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
         <div>
-          <p className="text-2xl">{icon}</p>
-          <p className="text-body text-gold">{title}</p>
-          <p className="text-text-secondary text-sm">{desc}</p>
+          <p style={{ fontSize: '24px' }}>{icon}</p>
+          <p style={{ color: '#FFFFFF', fontSize: '16px', fontWeight: 700 }}>{title}</p>
+          <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '13px' }}>{desc}</p>
         </div>
       </div>
-      <button type="button" onClick={onStart} className="btn-primary mt-4 w-full">
+      <button type="button" onClick={onStart} style={{
+        background: '#D4A843',
+        color: '#0a1a3e',
+        fontWeight: 700,
+        borderRadius: '50px',
+        padding: '12px',
+        width: '100%',
+        border: 'none',
+        cursor: 'pointer',
+        fontSize: '16px',
+        marginTop: '16px'
+      }}>
         Start
       </button>
     </article>
@@ -65,21 +83,28 @@ export default function FaithJourney() {
               <p className="text-body">A gamified space to learn, memorize, and grow.</p>
             </header>
 
-            <div className="app-card p-3">
-              <div className="flex items-center justify-between gap-2">
-                <div className="text-center" style={{ flex: 1 }}>
-                  <p className="text-text-secondary">Verses Memorized</p>
-                  <p className="text-xl font-bold text-gold">{stats.memorized}</p>
+            <div style={{
+              background: 'rgba(8,20,50,0.72)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid rgba(212,168,67,0.25)',
+              borderRadius: '16px',
+              padding: '16px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+                <div style={{ textAlign: 'center', flex: 1 }}>
+                  <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '13px' }}>Verses Memorized</p>
+                  <p style={{ color: '#D4A843', fontSize: '22px', fontWeight: 700 }}>{stats.memorized}</p>
                 </div>
-                <div className="h-8 w-px bg-border" />
-                <div className="text-center" style={{ flex: 1 }}>
-                  <p className="text-text-secondary">Trivia Streak</p>
-                  <p className="text-xl font-bold text-gold">{stats.triviaStreak}</p>
+                <div style={{ height: '32px', width: '1px', background: 'rgba(255,255,255,0.12)' }} />
+                <div style={{ textAlign: 'center', flex: 1 }}>
+                  <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '13px' }}>Trivia Streak</p>
+                  <p style={{ color: '#D4A843', fontSize: '22px', fontWeight: 700 }}>{stats.triviaStreak}</p>
                 </div>
-                <div className="h-8 w-px bg-border" />
-                <div className="text-center" style={{ flex: 1 }}>
-                  <p className="text-text-secondary">Badges Earned</p>
-                  <p className="text-xl font-bold text-gold">{stats.badges}</p>
+                <div style={{ height: '32px', width: '1px', background: 'rgba(255,255,255,0.12)' }} />
+                <div style={{ textAlign: 'center', flex: 1 }}>
+                  <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '13px' }}>Badges Earned</p>
+                  <p style={{ color: '#D4A843', fontSize: '22px', fontWeight: 700 }}>{stats.badges}</p>
                 </div>
               </div>
             </div>
@@ -91,10 +116,19 @@ export default function FaithJourney() {
               <FeatureCard icon="🏆" title="Achievements" desc="Earn faith badges" onStart={() => setView('achievements')} />
             </div>
 
-            <footer className="app-card text-center text-sm text-text-secondary">
-              <span className="text-gold font-semibold">Keep going.</span> “Let us run with perseverance the race that is set before us.”
+            <footer style={{
+              background: 'rgba(8,20,50,0.72)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid rgba(212,168,67,0.25)',
+              borderRadius: '16px',
+              padding: '16px',
+              textAlign: 'center'
+            }}>
+              <span style={{ color: '#D4A843', fontWeight: 700, fontSize: '14px' }}>Keep going.</span>
+              <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: '14px' }}> “Let us run with perseverance the race that is set before us.”</span>
               <br />
-              <span className="text-text-muted text-xs">— Hebrews 12:1</span>
+              <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>— Hebrews 12:1</span>
             </footer>
         </section>
       ) : view === 'trivia' ? (
