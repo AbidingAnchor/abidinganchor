@@ -324,6 +324,13 @@ function Home({ onOpenWorship, worshipStatus }) {
 
   return (
     <>
+      <style>{`
+        @keyframes flamePulse {
+          0% { filter: drop-shadow(0 0 8px rgba(212,168,67,0.8)) }
+          50% { filter: drop-shadow(0 0 20px rgba(212,168,67,1.0)) transform: scale(1.1) }
+          100% { filter: drop-shadow(0 0 8px rgba(212,168,67,0.8)) }
+        }
+      `}</style>
       <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: 'transparent', paddingBottom: '80px', paddingTop: '60px' }}>
         <div
           className="content-scroll"
@@ -497,43 +504,40 @@ function Home({ onOpenWorship, worshipStatus }) {
                   fontWeight: 500,
                   textTransform: 'uppercase'
                 }}>Reading Streak</h2>
-                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>{currentStreak} Days</p>
+                <p style={{ fontSize: '14px', color: '#D4A843', fontWeight: 700 }}>🔥 {currentStreak} Day Streak</p>
               </div>
               <p style={{ marginBottom: '16px', fontSize: '13px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>{streakMessage}</p>
               <div className="flex items-center justify-between gap-2" style={{ overflowX: 'auto' }}>
                 {days.map((day, index) => {
                   const isToday = index === todayIndex
                   const isPast = index < todayIndex
-                  const dotStyle = isToday
-                    ? { background: '#D4A843', boxShadow: '0 0 8px rgba(212,168,67,0.6)', border: '2px solid rgba(255,255,255,0.8)', borderRadius: '50%', padding: '2px' }
+                  const flameStyle = isToday
+                    ? { fontSize: '40px', color: '#D4A843', filter: 'drop-shadow(0 0 8px rgba(212,168,67,0.8))', animation: 'flamePulse 2s ease-in-out infinite' }
                     : isPast
-                      ? { background: '#D4A843', border: '2px solid #D4A843', borderRadius: '50%' }
-                      : { background: 'rgba(255,255,255,0.15)', border: '2px solid rgba(255,255,255,0.12)', borderRadius: '50%' }
+                      ? { fontSize: '32px', color: '#D4A843', filter: 'drop-shadow(0 0 8px rgba(212,168,67,0.8))' }
+                      : { fontSize: '32px', color: 'rgba(255,255,255,0.2)', filter: 'none' }
                   return (
-                    <div 
-                      key={day} 
-                      style={{ 
+                    <div
+                      key={day}
+                      style={{
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
                         gap: '6px'
                       }}
                     >
-                      <span style={{ 
-                        color: 'rgba(255,255,255,0.5)', 
-                        fontSize: '11px', 
-                        fontWeight: 600 
+                      <span style={{
+                        color: 'rgba(255,255,255,0.5)',
+                        fontSize: '11px',
+                        fontWeight: 600
                       }}>
                         {day}
                       </span>
-                      <div 
-                        style={{
-                          width: '32px',
-                          height: '32px',
-                          borderRadius: '50%',
-                          ...dotStyle
-                        }}
-                      />
+                      <div
+                        style={flameStyle}
+                      >
+                        🔥
+                      </div>
                     </div>
                   )
                 })}
