@@ -13,7 +13,12 @@ export default function BibleReader({ open, onClose }) {
   const [fetchError, setFetchError] = useState(false)
   const [showBookPicker, setShowBookPicker] = useState(false)
   const [showChapterPicker, setShowChapterPicker] = useState(false)
-  const [fontSize, setFontSize] = useState(18)
+  const [fontSize, setFontSize] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return parseInt(localStorage.getItem('bibleFontSize')) || 18
+    }
+    return 18
+  })
   const [showTranslation, setShowTranslation] = useState(false)
 
   const currentBible = POPULAR_BIBLES.find(b => b.id === bibleId) || POPULAR_BIBLES[0]
@@ -290,11 +295,9 @@ export default function BibleReader({ open, onClose }) {
               {/* Chapter Title */}
               <h2 style={{
                 color: '#D4A843',
-                fontSize: '16px',
+                fontSize: '24px',
                 fontWeight: 700,
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                marginBottom: '24px',
+                marginBottom: '32px',
                 textAlign: 'center'
               }}>
                 {selectedBook?.name} {selectedChapter?.number}
@@ -343,7 +346,11 @@ export default function BibleReader({ open, onClose }) {
               }}>
                 <button
                   type="button"
-                  onClick={() => setFontSize((f) => Math.max(14, f - 2))}
+                  onClick={() => {
+                    const newSize = Math.max(14, fontSize - 2)
+                    setFontSize(newSize)
+                    localStorage.setItem('bibleFontSize', newSize.toString())
+                  }}
                   style={{
                     background: 'none',
                     border: 'none',
@@ -363,7 +370,11 @@ export default function BibleReader({ open, onClose }) {
                 }} />
                 <button
                   type="button"
-                  onClick={() => setFontSize((f) => Math.min(28, f + 2))}
+                  onClick={() => {
+                    const newSize = Math.min(28, fontSize + 2)
+                    setFontSize(newSize)
+                    localStorage.setItem('bibleFontSize', newSize.toString())
+                  }}
                   style={{
                     background: 'none',
                     border: 'none',
