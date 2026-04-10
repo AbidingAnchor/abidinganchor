@@ -93,10 +93,9 @@ export default function Onboarding({ onComplete }) {
   return (
     <>
       <style>{`
-        @keyframes glow {
-          0% { filter: drop-shadow(0 0 20px rgba(212,168,67,0.6)) }
-          50% { filter: drop-shadow(0 0 40px rgba(212,168,67,1.0)) }
-          100% { filter: drop-shadow(0 0 20px rgba(212,168,67,0.6)) }
+        @keyframes crossGlow {
+          0%, 100% { filter: drop-shadow(0 0 20px rgba(212,168,67,0.6)) brightness(1) }
+          50% { filter: drop-shadow(0 0 50px rgba(212,168,67,1.0)) brightness(1.2) }
         }
       `}</style>
       <div style={{
@@ -175,12 +174,12 @@ export default function Onboarding({ onComplete }) {
                 zIndex: 10,
                 mixBlendMode: 'screen',
                 filter: 'drop-shadow(0 0 30px rgba(212,168,67,0.9))',
-                animation: 'glow 3s ease-in-out infinite'
+                animation: 'crossGlow 3s ease-in-out infinite'
               }}
             />
             <h1 style={{
               color: '#FFFFFF',
-              fontSize: '28px',
+              fontSize: '30px',
               fontWeight: 800,
               fontFamily: 'Georgia, serif',
               marginBottom: '12px'
@@ -202,7 +201,7 @@ export default function Onboarding({ onComplete }) {
                 color: '#0a1a3e',
                 border: 'none',
                 borderRadius: '12px',
-                padding: '16px 48px',
+                padding: '16px 60px',
                 fontSize: '16px',
                 fontWeight: 700,
                 cursor: 'pointer'

@@ -16,7 +16,7 @@ function getTodaysVerse() {
 function Home({ onOpenWorship, worshipStatus }) {
   const { user, profile, refreshProfile } = useAuth()
   const [todaysVerse, setTodaysVerse] = useState(() => getTodaysVerse())
-  const [streak, setStreak] = useState({ currentStreak: 0 })
+  const [streak, setStreak] = useState({ currentStreak: 1 })
   const [toastTrigger, setToastTrigger] = useState(0)
   const [journalCount, setJournalCount] = useState(0)
   const [suppressPersonalWelcome, setSuppressPersonalWelcome] = useState(false)
@@ -61,8 +61,8 @@ function Home({ onOpenWorship, worshipStatus }) {
         const todayStr = today.toISOString().slice(0, 10)
         let streakStartDate = data?.streak_start_date
         let lastActiveDate = data?.last_active_date
-        let currentStreak = Number(data?.reading_streak) || 0
-        let longestStreak = Number(data?.longest_streak) || 0
+        let currentStreak = Number(data?.reading_streak) || 1
+        let longestStreak = Number(data?.longest_streak) || 1
 
         // Initialize streak for new users
         if (!streakStartDate) {
@@ -118,7 +118,7 @@ function Home({ onOpenWorship, worshipStatus }) {
         setStreak({ currentStreak: currentStreak })
       } catch {
         if (!cancelled && !profileRef.current) {
-          setStreak({ currentStreak: 0 })
+          setStreak({ currentStreak: 1 })
           setSuppressPersonalWelcome(true)
         }
       } finally {
@@ -147,7 +147,7 @@ function Home({ onOpenWorship, worshipStatus }) {
     let timeoutId
     const scheduleNextMidnight = () => {
       setTodaysVerse(getTodaysVerse())
-      setStreak({ currentStreak: profile?.reading_streak || 0 })
+      setStreak({ currentStreak: profile?.reading_streak || 1 })
       const now = new Date()
       const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0)
       const ms = Math.max(1000, nextMidnight - now)
@@ -308,7 +308,7 @@ function Home({ onOpenWorship, worshipStatus }) {
   ]
   const encouragement = encouragements[new Date().getDay()]
   
-  const currentStreak = Math.max(0, Number(streak?.currentStreak || 0))
+  const currentStreak = Math.max(1, Number(streak?.currentStreak || 1))
   const firstName = suppressPersonalWelcome
     ? 'Friend'
     : (profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Friend')
@@ -326,9 +326,14 @@ function Home({ onOpenWorship, worshipStatus }) {
     <>
       <style>{`
         @keyframes flamePulse {
-          0% { filter: drop-shadow(0 0 8px rgba(212,168,67,0.8)) }
-          50% { filter: drop-shadow(0 0 20px rgba(212,168,67,1.0)) transform: scale(1.1) }
-          100% { filter: drop-shadow(0 0 8px rgba(212,168,67,0.8)) }
+          0%, 100% {
+            filter: drop-shadow(0 0 8px rgba(212,168,67,0.8));
+            transform: scale(1);
+          }
+          50% {
+            filter: drop-shadow(0 0 20px rgba(212,168,67,1.0));
+            transform: scale(1.15);
+          }
         }
       `}</style>
       <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: 'transparent', paddingBottom: '80px', paddingTop: '60px' }}>
@@ -352,10 +357,10 @@ function Home({ onOpenWorship, worshipStatus }) {
               }}>
                 {timeGreeting}, {firstName} {timeEmoji}
               </p>
-              <p style={{ 
-                color: 'rgba(255,255,255,0.6)', 
+              <p style={{
+                color: 'rgba(255,255,255,0.6)',
                 fontSize: '13px',
-                marginBottom: '16px'
+                marginBottom: '32px'
               }}>
                 {encouragement}
               </p>
@@ -366,7 +371,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                 background: 'rgba(8, 20, 50, 0.72)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255,255,255,0.12)',
+                border: '1px solid rgba(212,168,67,0.25)',
                 borderRadius: '24px',
                 padding: '28px',
                 position: 'relative',
@@ -488,7 +493,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                 background: 'rgba(8, 20, 50, 0.72)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255,255,255,0.12)',
+                border: '1px solid rgba(212,168,67,0.25)',
                 borderRadius: '20px',
                 padding: '20px',
                 boxShadow: currentStreak >= 7 ? '0 0 0 1px rgba(212,168,67,0.8), 0 0 20px rgba(212,168,67,0.35)' : undefined,
@@ -512,10 +517,10 @@ function Home({ onOpenWorship, worshipStatus }) {
                   const isToday = index === todayIndex
                   const isPast = index < todayIndex
                   const flameStyle = isToday
-                    ? { fontSize: '40px', color: '#D4A843', filter: 'drop-shadow(0 0 8px rgba(212,168,67,0.8))', animation: 'flamePulse 2s ease-in-out infinite' }
+                    ? { fontSize: '36px', color: '#D4A843', filter: 'drop-shadow(0 0 8px rgba(212,168,67,0.8))', animation: 'flamePulse 2s ease-in-out infinite' }
                     : isPast
-                      ? { fontSize: '32px', color: '#D4A843', filter: 'drop-shadow(0 0 8px rgba(212,168,67,0.8))' }
-                      : { fontSize: '32px', color: 'rgba(255,255,255,0.2)', filter: 'none' }
+                      ? { fontSize: '28px', color: '#D4A843', filter: 'drop-shadow(0 0 8px rgba(212,168,67,0.8))' }
+                      : { fontSize: '28px', color: 'rgba(255,255,255,0.2)', filter: 'none' }
                   return (
                     <div
                       key={day}
@@ -685,13 +690,10 @@ function Home({ onOpenWorship, worshipStatus }) {
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  textAlign: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
                   transition: 'all 0.3s ease',
                   cursor: 'pointer'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(212,168,67,0.4)'
-                  e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.borderColor = 'rgba(212, 168, 67, 0.25)'
@@ -744,6 +746,7 @@ function Home({ onOpenWorship, worshipStatus }) {
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
               border: '1px solid rgba(212,168,67,0.25)',
+              borderRadius: '16px',
               animation: 'fadeInUp 0.6s ease forwards',
               animationDelay: '0.4s'
             }}

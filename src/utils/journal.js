@@ -40,6 +40,16 @@ export async function saveToJournal({ verse, reference, note = '', tags = [], us
   if (!userId) return null
   const content = (note || verse || '').trim()
   if (!content) return null
+  
+  // Check for duplicate entry from today
+  const today = new Date().toISOString().slice(0, 10)
+  const entries = await getJournalEntries(userId)
+  const isDuplicate = entries.some(e => 
+    e.content === content && 
+    e.created_at?.startsWith(today)
+  )
+  if (isDuplicate) return null
+  
   const payload = {
     user_id: userId,
     content,

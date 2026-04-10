@@ -1014,71 +1014,62 @@ export default function BibleReader({
               <button
                 type="button"
                 onClick={() => {
-                  const book = books.find(b => b.name === profile.last_book)
+                  const lastBook = profile?.last_book || 'GEN'
+                  const lastChapter = profile?.last_chapter || 'GEN.1'
+                  const book = books.find(b => b.name === lastBook)
                   if (book) {
                     setSelectedBook(book)
                     setChapters([])
-                    setSelectedChapter(null)
-                    setShowBookPicker(false)
-                    setShowChapterPicker(true)
+                    setSelectedChapter(lastChapter)
+                    loadChapters(book.apiName)
                   }
                 }}
                 style={{
-                  background: 'rgba(212,168,67,0.15)',
-                  border: '1px solid rgba(212,168,67,0.4)',
+                  background: 'rgba(8,20,50,0.72)',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255,255,255,0.12)',
                   borderRadius: '16px',
                   padding: '16px',
                   width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '16px',
-                  cursor: 'pointer',
-                  marginBottom: '24px',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(212,168,67,0.25)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(212,168,67,0.15)'
+                  textAlign: 'left',
+                  cursor: 'pointer'
                 }}
               >
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  background: 'rgba(212,168,67,0.2)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '20px'
-                }}>
-                  🔖
-                </div>
-                <div style={{ flex: 1, textAlign: 'left' }}>
-                  <p style={{
-                    color: '#FFFFFF',
-                    fontSize: '15px',
-                    fontWeight: 700,
-                    margin: 0,
-                    marginBottom: '4px'
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '10px',
+                    background: 'rgba(212,168,67,0.15)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '18px'
                   }}>
-                    Continue Reading
-                  </p>
-                  <p style={{
-                    color: 'rgba(255,255,255,0.6)',
-                    fontSize: '13px',
-                    margin: 0
-                  }}>
-                    {profile.last_book} {profile.last_chapter ? `• Chapter ${profile.last_chapter}` : ''} • {currentBible.abbr}
-                  </p>
-                </div>
-                <div style={{
-                  color: '#D4A843',
-                  fontSize: '24px',
-                  fontWeight: 700
-                }}>
-                  →
+                    �
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{
+                      color: '#FFFFFF',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      margin: 0,
+                      marginBottom: '4px'
+                    }}>
+                      Continue Reading
+                    </p>
+                    <p style={{
+                      color: 'rgba(255,255,255,0.6)',
+                      fontSize: '13px',
+                      margin: 0
+                    }}>
+                      {profile?.last_book || 'GEN'} {profile?.last_chapter ? `• Chapter ${profile.last_chapter}` : ''} • {currentBible.abbr}
+                    </p>
+                  </div>
+                  <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '18px' }}>
+                    →
+                  </div>
                 </div>
               </button>
             )}

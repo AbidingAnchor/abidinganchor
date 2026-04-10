@@ -129,8 +129,10 @@ function ReadingPlan({ onOpenWorship }) {
         setReaderOpen(true)
         return
       }
-      const targetBook = BIBLE_FLAT.find((book) => book.name === data?.last_book) || BIBLE_FLAT[0]
-      setReaderState({ name: targetBook.name, api: targetBook.apiName, chapter: Number(data?.last_chapter || 1), total: targetBook.chapters })
+      const lastBook = data?.last_book || 'GEN'
+      const lastChapter = data?.last_chapter || 'GEN.1'
+      const targetBook = BIBLE_FLAT.find((book) => book.name === lastBook) || BIBLE_FLAT[0]
+      setReaderState({ name: targetBook.name, api: targetBook.apiName, chapter: Number(lastChapter || 1), total: targetBook.chapters })
       setReaderOpen(true)
     } catch (error) {
       console.error('Continue reading error:', error)
