@@ -1,4 +1,4 @@
-const API_BASE = 'https://api.scripture.api.bible/v1';
+const API_BASE = 'https://api.bible/v1';
 const API_KEY = import.meta.env.VITE_BIBLE_API_KEY;
 
 console.log('Bible API Key loaded:', !!import.meta.env.VITE_BIBLE_API_KEY);
@@ -12,7 +12,7 @@ const headers = { 'api-key': API_KEY };
 console.log('Bible API headers:', headers);
 
 // Debug: Fetch available Bible IDs at startup
-fetch('https://api.scripture.api.bible/v1/bibles', {
+fetch('https://api.bible/v1/bibles', {
   headers: { 'api-key': API_KEY }
 })
   .then(r => r.json())
