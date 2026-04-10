@@ -73,7 +73,14 @@ export default function FaithJourney() {
   )
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'auto', paddingBottom: '20px' }}>
+    <div style={{ 
+      position: 'relative',
+      minHeight: '100%',
+      height: 'auto',
+      overflow: 'hidden',
+      paddingBottom: '24px',
+      background: 'linear-gradient(to bottom, #0d1f4e, #0a1a3e)'
+    }}>
       {view === 'hub' ? (
         <div style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '20px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
             <header style={{ marginBottom: '24px' }}>
