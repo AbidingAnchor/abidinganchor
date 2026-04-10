@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Footer from './Footer'
 
 const BOOKS = [
   {name:'Genesis',cdnName:'genesis',chapters:50},
@@ -151,7 +152,7 @@ export default function BibleReader({ open, onClose }) {
   if (!open) return null
 
   return (
-    <div style={{ position: 'relative', minHeight: '100vh', background: '#0a1a3e' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#0a1a3e' }}>
       {/* Top Bar */}
       <div style={{
         position: 'fixed',
@@ -207,10 +208,12 @@ export default function BibleReader({ open, onClose }) {
         </div>
       </div>
 
-      {/* Content */}
+      {/* Verse Content - Scrollable */}
       <div style={{ 
+        flex: 1,
+        overflowY: 'auto',
         paddingTop: '110px', 
-        paddingBottom: '80px', 
+        paddingBottom: '20px', 
         padding: '24px 20px', 
         maxWidth: '680px', 
         margin: '0 auto'
@@ -236,7 +239,6 @@ export default function BibleReader({ open, onClose }) {
             {/* Verse Text - Continuous Flow */}
             <div style={{
               padding: '20px',
-              paddingBottom: '20px',
               color: '#F5E6C8',
               fontSize: `${fontSize}px`,
               lineHeight: '1.8',
@@ -254,10 +256,10 @@ export default function BibleReader({ open, onClose }) {
               </p>
             </div>
 
-            {/* Font Size Controls */}
+            {/* Font Size Controls - Fixed above tab bar */}
             <div style={{
               position: 'fixed',
-              bottom: '70px',
+              bottom: '80px',
               right: '20px',
               background: 'rgba(8,20,50,0.85)',
               borderRadius: '50px',
@@ -315,12 +317,15 @@ export default function BibleReader({ open, onClose }) {
               </button>
             </div>
 
-            {/* Chapter Navigation */}
+            {/* Chapter Navigation - Normal Flow */}
             <div style={{
-              margin: '20px 0',
-              padding: '0 20px',
+              padding: '16px 20px',
               display: 'flex',
-              justifyContent: 'space-between'
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              background: '#0a1a3e',
+              borderTop: '1px solid rgba(255,255,255,0.1)',
+              margin: '0 -24px'
             }}>
               <button
                 type="button"
@@ -362,6 +367,9 @@ export default function BibleReader({ open, onClose }) {
           </div>
         )}
       </div>
+
+      {/* Footer */}
+      <Footer />
 
       {/* Book Picker Modal */}
       {showBookPicker && (
