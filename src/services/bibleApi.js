@@ -1,6 +1,8 @@
 const API_BASE = 'https://api.scripture.api.bible/v1';
 const API_KEY = import.meta.env.VITE_BIBLE_API_KEY;
 
+console.log('Bible API Key loaded:', !!import.meta.env.VITE_BIBLE_API_KEY);
+
 if (!API_KEY) {
   console.error('Bible API key missing. Please set VITE_BIBLE_API_KEY in your .env file.')
 }
