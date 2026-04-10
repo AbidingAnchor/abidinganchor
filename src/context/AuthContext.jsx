@@ -5,6 +5,7 @@ const AuthContext = createContext({})
 
 const PROFILE_FETCH_TIMEOUT_MS = 5000
 const profileSyncedUserIds = new Set()
+let authStateChangeCount = 0
 const EMAIL_CONFIRMATION_SEND_ERROR_MARKERS = [
   'error sending confirmation email',
   'error sending email',
@@ -36,10 +37,12 @@ async function fetchProfileWithTimeout(user) {
 }
 
 async function ensureProfile(user) {
+  console.trace('ensureProfile called for user:', user?.id)
   if (!user?.id) return null
   
   // Skip if we've already synced this user ID (prevents infinite loops)
   if (profileSyncedUserIds.has(user.id)) {
+    console.log('Profile already synced for user:', user.id, '- skipping upsert')
     const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single()
     if (error) {
       console.error('Profile query error:', error)
@@ -54,23 +57,31 @@ async function ensureProfile(user) {
     return null
   }
 
+  // Mark as synced BEFORE the await to prevent race conditions
+  profileSyncedUserIds.add(user.id)
+
   const fullName = user.user_metadata?.full_name || ''
   const payload = {
     id: user.id,
     full_name: fullName || null,
     updated_at: new Date().toISOString()
   }
+  console.log('Upserting profile with payload:', payload)
+  
   try {
     await supabase.from('profiles').upsert(payload, { onConflict: 'id' })
-    // Mark this user ID as synced to prevent duplicate upserts
-    profileSyncedUserIds.add(user.id)
+    console.log('Profile upsert successful for user:', user.id)
   } catch (error) {
-    // Fail silently - profile might already exist or permissions issue
-    console.warn('Profile upsert failed (non-critical):', error.message)
+    // Remove from Set on error to allow retry
+    profileSyncedUserIds.delete(user.id)
+    console.error('Profile upsert failed (will retry):', error.message)
+    throw error // Re-throw to handle in caller
   }
+  
   const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single()
   if (error?.code === 'PGRST116' || !data) {
     // Profile doesn't exist, create it
+    console.log('Profile not found, creating new profile for user:', user.id)
     try {
       const { data: newProfile } = await supabase
         .from('profiles')
@@ -82,17 +93,20 @@ async function ensureProfile(user) {
         })
         .select()
         .single()
-      // Mark this user ID as synced after successful creation
-      profileSyncedUserIds.add(user.id)
+      console.log('Profile created successfully for user:', user.id)
       return newProfile ?? null
     } catch (insertError) {
-      console.error('Profile creation error:', insertError)
-      return null
+      // Remove from Set on error to allow retry
+      profileSyncedUserIds.delete(user.id)
+      console.error('Profile creation error (will retry):', insertError)
+      throw insertError
     }
   }
   if (error) {
+    // Remove from Set on error to allow retry
+    profileSyncedUserIds.delete(user.id)
     console.error('Profile query error:', error)
-    return null
+    throw error
   }
   return data ?? null
 }
@@ -133,7 +147,9 @@ export function AuthProvider({ children }) {
     }
     boot()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      authStateChangeCount++
+      console.log(`onAuthStateChange fired (count: ${authStateChangeCount}), event:`, event, 'user:', session?.user?.id)
       const nextUser = session?.user ?? null
       setUser(nextUser)
       try {
@@ -186,6 +202,9 @@ export function AuthProvider({ children }) {
   }
 
   const signOut = async () => {
+    console.log('Signing out, clearing profileSyncedUserIds')
+    profileSyncedUserIds.clear()
+    authStateChangeCount = 0
     await supabase.auth.signOut()
   }
 
