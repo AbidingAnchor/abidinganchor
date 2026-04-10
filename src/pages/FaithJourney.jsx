@@ -4,6 +4,7 @@ import VerseFlashcards from '../components/VerseFlashcards'
 import JourneyMap from '../components/JourneyMap'
 import Achievements from '../components/Achievements'
 import { useAuth } from '../context/AuthContext'
+import SkyBackground from '../components/SkyBackground'
 
 const VERSE_PROGRESS_KEY = 'abidinganchor-verse-progress'
 const TRIVIA_STREAK_KEY = 'abidinganchor-trivia-streak'
@@ -149,27 +150,44 @@ export default function FaithJourney() {
         <div style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '20px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
           
           {/* Hero Section */}
-          <header style={{ marginBottom: '20px' }}>
-            <p style={{ 
-              color: '#D4A843', 
-              fontSize: '9px', 
-              fontWeight: 600, 
-              letterSpacing: '0.15em', 
-              textTransform: 'uppercase', 
-              marginBottom: '8px' 
-            }}>
-              YOUR FAITH JOURNEY
-            </p>
-            <h1 style={{ color: '#FFFFFF', fontSize: '26px', fontWeight: 700, marginBottom: '8px', lineHeight: 1.2 }}>
-              Walk in the <span style={{ color: '#D4A843' }}>Light</span> of His Word
-            </h1>
-            <p style={{ 
-              color: 'rgba(255,255,255,0.38)', 
-              fontSize: '11px', 
-              fontStyle: 'italic' 
-            }}>
-              Thy word is a lamp unto my feet — Psalm 119:105
-            </p>
+          <header style={{ marginBottom: '20px', position: 'relative', borderRadius: '16px', overflow: 'hidden', minHeight: '200px' }}>
+            {/* Sky Background Animation */}
+            <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+              <SkyBackground scenery="night" />
+            </div>
+            
+            {/* Dark Gradient Overlay for text readability */}
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 1,
+              background: 'linear-gradient(to bottom, transparent 40%, #060f26 100%)',
+              pointerEvents: 'none'
+            }} />
+            
+            {/* Hero Content */}
+            <div style={{ position: 'relative', zIndex: 2, padding: '24px' }}>
+              <p style={{ 
+                color: '#D4A843', 
+                fontSize: '9px', 
+                fontWeight: 600, 
+                letterSpacing: '0.15em', 
+                textTransform: 'uppercase', 
+                marginBottom: '8px' 
+              }}>
+                YOUR FAITH JOURNEY
+              </p>
+              <h1 style={{ color: '#FFFFFF', fontSize: '26px', fontWeight: 700, marginBottom: '8px', lineHeight: 1.2 }}>
+                Walk in the <span style={{ color: '#D4A843' }}>Light</span> of His Word
+              </h1>
+              <p style={{ 
+                color: 'rgba(255,255,255,0.38)', 
+                fontSize: '11px', 
+                fontStyle: 'italic' 
+              }}>
+                Thy word is a lamp unto my feet — Psalm 119:105
+              </p>
+            </div>
           </header>
 
           {/* Gold Divider */}
@@ -371,15 +389,6 @@ export default function FaithJourney() {
             </p>
           </div>
 
-          {/* Footer */}
-          <footer style={{
-            textAlign: 'center',
-            padding: '16px 0'
-          }}>
-            <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px' }}>
-              Abiding Anchor © 2026
-            </span>
-          </footer>
         </div>
       ) : view === 'trivia' ? (
         <BibleTrivia onExit={() => setView('hub')} />
