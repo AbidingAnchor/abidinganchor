@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 const AuthContext = createContext({})
 
 const PROFILE_FETCH_TIMEOUT_MS = 5000
+const profileSyncedUserIds = new Set()
 const EMAIL_CONFIRMATION_SEND_ERROR_MARKERS = [
   'error sending confirmation email',
   'error sending email',
@@ -13,6 +14,11 @@ const EMAIL_CONFIRMATION_SEND_ERROR_MARKERS = [
 function isConfirmationEmailSendError(message = '') {
   const normalized = String(message).toLowerCase()
   return EMAIL_CONFIRMATION_SEND_ERROR_MARKERS.some((marker) => normalized.includes(marker))
+}
+
+function isValidUUID(str) {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  return uuidRegex.test(str)
 }
 
 async function fetchProfileWithTimeout(user) {
@@ -31,6 +37,23 @@ async function fetchProfileWithTimeout(user) {
 
 async function ensureProfile(user) {
   if (!user?.id) return null
+  
+  // Skip if we've already synced this user ID (prevents infinite loops)
+  if (profileSyncedUserIds.has(user.id)) {
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+    if (error) {
+      console.error('Profile query error:', error)
+      return null
+    }
+    return data ?? null
+  }
+
+  // Validate UUID before upserting
+  if (!isValidUUID(user.id)) {
+    console.error('Invalid user ID format:', user.id)
+    return null
+  }
+
   const fullName = user.user_metadata?.full_name || ''
   const payload = {
     id: user.id,
@@ -39,6 +62,8 @@ async function ensureProfile(user) {
   }
   try {
     await supabase.from('profiles').upsert(payload, { onConflict: 'id' })
+    // Mark this user ID as synced to prevent duplicate upserts
+    profileSyncedUserIds.add(user.id)
   } catch (error) {
     // Fail silently - profile might already exist or permissions issue
     console.warn('Profile upsert failed (non-critical):', error.message)
@@ -57,6 +82,8 @@ async function ensureProfile(user) {
         })
         .select()
         .single()
+      // Mark this user ID as synced after successful creation
+      profileSyncedUserIds.add(user.id)
       return newProfile ?? null
     } catch (insertError) {
       console.error('Profile creation error:', insertError)
