@@ -4,7 +4,6 @@ import VerseFlashcards from '../components/VerseFlashcards'
 import JourneyMap from '../components/JourneyMap'
 import Achievements from '../components/Achievements'
 import { useAuth } from '../context/AuthContext'
-import SkyBackground from '../components/SkyBackground'
 
 const VERSE_PROGRESS_KEY = 'abidinganchor-verse-progress'
 const TRIVIA_STREAK_KEY = 'abidinganchor-trivia-streak'
@@ -31,6 +30,16 @@ function getDayIndexForWeek() {
   if (day === 0 || day === 6) return -1 // Weekend - no dot highlighted
   return day - 1 // Monday=0, Friday=4
 }
+
+// Generate stars once at module level
+const HERO_STARS = Array.from({ length: 40 }).map(() => ({
+  width: Math.random() * 2 + 1,
+  height: Math.random() * 2 + 1,
+  top: Math.random() * 60,
+  left: Math.random() * 100,
+  opacity: Math.random() * 0.5 + 0.3,
+  duration: Math.random() * 3 + 2
+}))
 
 const LearningPathCard = ({ icon, title, subtitle, accentColor, iconBg, progress, featured, badge, onStart }) => (
   <article
@@ -151,9 +160,43 @@ export default function FaithJourney() {
           
           {/* Hero Section */}
           <header style={{ marginBottom: '20px', position: 'relative', borderRadius: '16px', overflow: 'hidden', minHeight: '200px' }}>
-            {/* Sky Background Animation */}
-            <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-              <SkyBackground scenery="night" />
+            {/* Clear Night Sky Background */}
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 0,
+              background: 'linear-gradient(to bottom, #0a1a3e 0%, #060f26 100%)'
+            }}>
+              {/* Stars */}
+              {HERO_STARS.map((star, i) => (
+                <div
+                  key={i}
+                  style={{
+                    position: 'absolute',
+                    width: star.width,
+                    height: star.height,
+                    background: '#fff',
+                    borderRadius: '50%',
+                    top: `${star.top}%`,
+                    left: `${star.left}%`,
+                    opacity: star.opacity,
+                    animation: `twinkle ${star.duration}s ease-in-out infinite`
+                  }}
+                />
+              ))}
+              
+              {/* Moon */}
+              <div style={{
+                position: 'absolute',
+                top: '15%',
+                right: '10%',
+                width: '50px',
+                height: '50px',
+                background: 'radial-gradient(circle at 30% 30%, #fff9e6 0%, #ffe6b3 50%, #ffd280 100%)',
+                borderRadius: '50%',
+                boxShadow: '0 0 30px rgba(255, 230, 160, 0.6), 0 0 60px rgba(255, 230, 160, 0.3)',
+                opacity: 0.95
+              }} />
             </div>
             
             {/* Dark Gradient Overlay for text readability */}
@@ -188,6 +231,14 @@ export default function FaithJourney() {
                 Thy word is a lamp unto my feet — Psalm 119:105
               </p>
             </div>
+            
+            {/* Star twinkle animation */}
+            <style>{`
+              @keyframes twinkle {
+                0%, 100% { opacity: 0.3; }
+                50% { opacity: 0.8; }
+              }
+            `}</style>
           </header>
 
           {/* Gold Divider */}
