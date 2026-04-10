@@ -262,7 +262,7 @@ export default function Onboarding({ onComplete }) {
             <h2 style={{
               color: '#FFFFFF',
               fontSize: '24px',
-              fontWeight: 700',
+              fontWeight: 700,
               marginBottom: '24px'
             }}>
               How long have you been a believer?
