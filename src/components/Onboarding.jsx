@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import AppBackground from './AppBackground'
 
 const GROWTH_GOALS = [
   { id: 'prayer', icon: '🙏', label: 'Deeper Prayer Life' },
@@ -96,19 +97,26 @@ export default function Onboarding({ onComplete }) {
       left: 0,
       right: 0,
       bottom: 0,
-      background: 'rgba(5, 12, 35, 0.98)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
       zIndex: 2000,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       padding: '20px'
     }}>
+      <AppBackground />
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        background: 'rgba(8,20,50,0.75)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)'
+      }} />
       <div style={{
         maxWidth: '480px',
         width: '100%',
-        textAlign: 'center'
+        textAlign: 'center',
+        position: 'relative',
+        zIndex: 10
       }}>
         {/* Progress Dots */}
         <div style={{
@@ -134,17 +142,19 @@ export default function Onboarding({ onComplete }) {
         {/* Screen 1 - Welcome */}
         {screen === 1 && (
           <div>
-            <div style={{
-              width: '80px',
-              height: '80px',
-              margin: '0 auto 24px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '64px'
-            }}>
-              ✝
-            </div>
+            <img 
+              src="/images/GoldCross.png"
+              alt="Cross"
+              style={{
+                width: '80px',
+                height: 'auto',
+                margin: '0 auto 24px',
+                display: 'block',
+                position: 'relative',
+                zIndex: 10,
+                filter: 'drop-shadow(0 0 15px rgba(212,168,67,0.9)) drop-shadow(0 0 35px rgba(212,168,67,0.6))'
+              }}
+            />
             <h1 style={{
               color: '#FFFFFF',
               fontSize: '26px',
@@ -278,7 +288,7 @@ export default function Onboarding({ onComplete }) {
                       : 'rgba(8,20,50,0.72)',
                     border: faithDuration === duration.id 
                       ? '1px solid #D4A843' 
-                      : '1px solid rgba(255,255,255,0.2)',
+                      : '1px solid rgba(255,255,255,0.15)',
                     borderRadius: '12px',
                     padding: '16px 20px',
                     fontSize: '16px',
@@ -342,7 +352,7 @@ export default function Onboarding({ onComplete }) {
                       : 'rgba(8,20,50,0.72)',
                     border: dailyCommitment === commitment.id 
                       ? '1px solid #D4A843' 
-                      : '1px solid rgba(255,255,255,0.2)',
+                      : '1px solid rgba(255,255,255,0.15)',
                     borderRadius: '12px',
                     padding: '16px 20px',
                     fontSize: '16px',
@@ -408,7 +418,7 @@ export default function Onboarding({ onComplete }) {
 
             <div style={{
               background: 'rgba(8,20,50,0.72)',
-              border: '1px solid rgba(212,168,67,0.25)',
+              border: '1px solid rgba(212,168,67,0.3)',
               borderRadius: '16px',
               padding: '24px',
               textAlign: 'left',
