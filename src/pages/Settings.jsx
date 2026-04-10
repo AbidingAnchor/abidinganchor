@@ -41,9 +41,10 @@ export default function Settings() {
       }
 
       // Upload to Supabase
+      const filePath = `${user.id}/avatar-${Date.now()}.jpg`
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(`${user.id}/profile.jpg`, file, {
+        .upload(filePath, file, {
           upsert: true,
           contentType: file.type
         })
@@ -51,13 +52,14 @@ export default function Settings() {
       if (uploadError) throw uploadError
 
       // Get public URL and save to profile
-      const { data: { publicUrl } } = supabase.storage
+      const { data } = supabase.storage
         .from('avatars')
-        .getPublicUrl(`${user.id}/profile.jpg`)
+        .getPublicUrl(filePath)
+      const avatarUrl = data.publicUrl
 
       try {
         const { error: updateError } = await supabase.from('profiles')
-          .update({ avatar_url: publicUrl })
+          .update({ avatar_url: avatarUrl })
           .eq('id', user.id)
         if (updateError) throw updateError
       } catch (error) {
