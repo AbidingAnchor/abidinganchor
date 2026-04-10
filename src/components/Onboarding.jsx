@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
-import AppBackground from './AppBackground'
+import { supabase } from '../lib/supabase'
 
 const GROWTH_GOALS = [
   { id: 'prayer', icon: '🙏', label: 'Deeper Prayer Life' },
@@ -22,6 +22,24 @@ const DAILY_COMMITMENTS = [
   { id: 'quick', label: '5-10 minutes', description: 'Quick devotional' },
   { id: 'standard', label: '15-20 minutes', description: 'Standard study' },
   { id: 'deep', label: '30+ minutes', description: 'Deep study' },
+]
+
+// Generate stars once at module level
+const ONBOARDING_STARS = Array.from({ length: 50 }).map(() => ({
+  width: Math.random() * 2 + 1,
+  height: Math.random() * 2 + 1,
+  top: Math.random() * 70,
+  left: Math.random() * 100,
+  opacity: Math.random() * 0.5 + 0.3,
+  duration: Math.random() * 3 + 2
+}))
+
+const APP_TOUR_FEATURES = [
+  { icon: '📖', title: 'Bible Reader', description: 'Full KJV, all 66 books' },
+  { icon: '🙏', title: 'Prayer', description: 'Speak prayers by voice, track answered ones' },
+  { icon: '🧭', title: 'Journey', description: 'Trivia, flashcards and faith badges' },
+  { icon: '📓', title: 'Journal', description: 'Daily reflections with mood tags' },
+  { icon: '👥', title: 'Community', description: 'Pray with and for others' },
 ]
 
 export default function Onboarding({ onComplete }) {
@@ -73,7 +91,16 @@ export default function Onboarding({ onComplete }) {
   const handleComplete = async () => {
     setLoading(true)
     try {
+      // Save to localStorage
       localStorage.setItem('onboarding_complete', 'true')
+      
+      // Save to Supabase profile
+      if (user?.id) {
+        await supabase
+          .from('profiles')
+          .update({ onboarding_complete: true })
+          .eq('id', user.id)
+      }
     } catch (error) {
       console.error('Onboarding save error:', error)
     } finally {
@@ -85,9 +112,9 @@ export default function Onboarding({ onComplete }) {
   return (
     <>
       <style>{`
-        @keyframes crossGlow {
-          0%, 100% { filter: drop-shadow(0 0 20px rgba(212,168,67,0.6)) brightness(1) }
-          50% { filter: drop-shadow(0 0 50px rgba(212,168,67,1.0)) brightness(1.2) }
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 0.8; }
         }
       `}</style>
       <div style={{
@@ -101,429 +128,633 @@ export default function Onboarding({ onComplete }) {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '20px'
+        padding: '20px',
+        background: '#060f26'
       }}>
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        zIndex: 0
-      }}>
-        <AppBackground scenery="default" />
-      </div>
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: 'rgba(8,20,50,0.75)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
-        zIndex: 1
-      }} />
-      <div style={{
-        maxWidth: '480px',
-        width: '100%',
-        textAlign: 'center',
-        position: 'relative',
-        zIndex: 10,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        marginTop: '20px'
-      }}>
-        {/* Progress Dots */}
+        {/* Night Sky Background */}
         <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '8px',
-          marginBottom: '40px'
+          position: 'absolute',
+          inset: 0,
+          zIndex: 0,
+          background: 'linear-gradient(to bottom, #0a1a3e 0%, #060f26 100%)'
         }}>
-          {[1, 2, 3, 4, 5].map((s) => (
+          {/* Stars */}
+          {ONBOARDING_STARS.map((star, i) => (
             <div
-              key={s}
+              key={i}
               style={{
-                width: '8px',
-                height: '8px',
+                position: 'absolute',
+                width: star.width,
+                height: star.height,
+                background: '#fff',
                 borderRadius: '50%',
-                background: screen === s ? '#D4A843' : 'rgba(255,255,255,0.2)',
-                transition: 'background 0.3s ease'
+                top: `${star.top}%`,
+                left: `${star.left}%`,
+                opacity: star.opacity,
+                animation: `twinkle ${star.duration}s ease-in-out infinite`
               }}
             />
           ))}
+          
+          {/* Moon */}
+          <div style={{
+            position: 'absolute',
+            top: '15%',
+            right: '10%',
+            width: '50px',
+            height: '50px',
+            background: 'radial-gradient(circle at 30% 30%, #fffbe6 0%, #f0d060 100%)',
+            borderRadius: '50%',
+            boxShadow: '0 0 30px rgba(255, 230, 160, 0.6), 0 0 60px rgba(255, 230, 160, 0.3)'
+          }} />
         </div>
+        
+        {/* Overlay Gradient */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 1,
+          background: 'linear-gradient(to bottom, transparent 30%, #060f26 100%)',
+          pointerEvents: 'none'
+        }} />
+        
+        {/* Skip Button */}
+        {screen !== 6 && (
+          <button
+            type="button"
+            onClick={handleComplete}
+            style={{
+              position: 'absolute',
+              top: '20px',
+              right: '20px',
+              zIndex: 10,
+              background: 'transparent',
+              border: 'none',
+              color: 'rgba(255,255,255,0.35)',
+              fontSize: '12px',
+              cursor: 'pointer'
+            }}
+          >
+            Skip
+          </button>
+        )}
 
-        {/* Screen 1 - Welcome */}
-        {screen === 1 && (
-          <div>
-            <img 
-              src="/images/GoldCross.png"
-              alt="Cross"
-              style={{
-                width: '180px',
-                height: '180px',
-                objectFit: 'contain',
-                margin: '0 auto 24px',
-                display: 'block',
-                position: 'relative',
-                zIndex: 10,
-                mixBlendMode: 'screen',
-                filter: 'drop-shadow(0 0 30px rgba(212,168,67,0.9))',
-                animation: 'crossGlow 3s ease-in-out infinite'
-              }}
-            />
-            <h1 style={{
-              color: '#FFFFFF',
-              fontSize: '30px',
-              fontWeight: 800,
-              fontFamily: 'Georgia, serif',
-              marginBottom: '12px'
-            }}>
-              Welcome to AbidingAnchor
-            </h1>
-            <p style={{
-              color: 'rgba(255,255,255,0.6)',
-              fontSize: '15px',
-              marginBottom: '32px'
-            }}>
-              Your personal Bible study companion
-            </p>
-            <button
-              type="button"
-              onClick={() => setScreen(2)}
-              style={{
-                background: '#D4A843',
-                color: '#0a1a3e',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '16px 60px',
-                fontSize: '16px',
+        <div style={{
+          maxWidth: '480px',
+          width: '100%',
+          textAlign: 'center',
+          position: 'relative',
+          zIndex: 10,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          marginTop: '20px'
+        }}>
+          {/* Progress Dots */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '8px',
+            marginBottom: '40px'
+          }}>
+            {[1, 2, 3, 4, 5, 6].map((s) => (
+              <div
+                key={s}
+                style={{
+                  width: screen === s ? '24px' : '8px',
+                  height: '8px',
+                  borderRadius: screen === s ? '20px' : '50%',
+                  background: screen === s ? '#D4A843' : 'rgba(255,255,255,0.15)',
+                  transition: 'all 0.3s ease'
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Screen 1 - Welcome */}
+          {screen === 1 && (
+            <div>
+              <img 
+                src="/images/GoldCross.png"
+                alt="Cross"
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  objectFit: 'contain',
+                  margin: '0 auto 24px',
+                  display: 'block',
+                  borderRadius: '20px',
+                  boxShadow: '0 0 40px rgba(212,168,67,0.3)'
+                }}
+              />
+              <h1 style={{
+                color: '#FFFFFF',
+                fontSize: '24px',
                 fontWeight: 700,
-                cursor: 'pointer'
-              }}
-            >
-              Begin
-            </button>
-          </div>
-        )}
-
-        {/* Screen 2 - Growth Goals */}
-        {screen === 2 && (
-          <div>
-            <h2 style={{
-              color: '#FFFFFF',
-              fontSize: '24px',
-              fontWeight: 700,
-              marginBottom: '8px'
-            }}>
-              What do you want to grow in?
-            </h2>
-            <p style={{
-              color: 'rgba(255,255,255,0.6)',
-              fontSize: '14px',
-              marginBottom: '24px'
-            }}>
-              Choose all that apply
-            </p>
-            <div style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '12px',
-              justifyContent: 'center',
-              marginBottom: '32px'
-            }}>
-              {GROWTH_GOALS.map((goal) => (
-                <button
-                  key={goal.id}
-                  type="button"
-                  onClick={() => toggleGoal(goal.id)}
-                  style={{
-                    background: selectedGoals.includes(goal.id) 
-                      ? 'rgba(212,168,67,0.2)' 
-                      : 'rgba(8,20,50,0.72)',
-                    border: selectedGoals.includes(goal.id) 
-                      ? '1px solid #D4A843' 
-                      : '1px solid rgba(255,255,255,0.2)',
-                    color: selectedGoals.includes(goal.id) ? '#D4A843' : '#FFFFFF',
-                    borderRadius: '50px',
-                    padding: '12px 20px',
-                    fontSize: '15px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  {goal.icon} {goal.label}
-                </button>
-              ))}
-            </div>
-            {selectedGoals.length > 0 && (
+                marginBottom: '12px'
+              }}>
+                Welcome to AbidingAnchor
+              </h1>
+              <p style={{
+                color: 'rgba(255,255,255,0.5)',
+                fontSize: '13px',
+                marginBottom: '8px'
+              }}>
+                Your personal Bible study companion
+              </p>
+              <p style={{
+                color: 'rgba(212,168,67,0.6)',
+                fontSize: '11px',
+                fontStyle: 'italic',
+                marginBottom: '32px'
+              }}>
+                Abide in me, and I in you — John 15:4
+              </p>
               <button
                 type="button"
-                onClick={() => setScreen(3)}
+                onClick={() => setScreen(2)}
                 style={{
                   background: '#D4A843',
-                  color: '#0a1a3e',
+                  color: '#060f26',
                   border: 'none',
-                  borderRadius: '12px',
-                  padding: '16px 48px',
+                  borderRadius: '16px',
+                  padding: '16px',
                   fontSize: '16px',
                   fontWeight: 700,
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  width: '100%'
                 }}
               >
-                Continue
+                Begin My Journey
               </button>
-            )}
-          </div>
-        )}
-
-        {/* Screen 3 - Faith Duration */}
-        {screen === 3 && (
-          <div>
-            <h2 style={{
-              color: '#FFFFFF',
-              fontSize: '24px',
-              fontWeight: 700,
-              marginBottom: '24px'
-            }}>
-              How long have you been a believer?
-            </h2>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '12px',
-              marginBottom: '32px'
-            }}>
-              {FAITH_DURATIONS.map((duration) => (
-                <button
-                  key={duration.id}
-                  type="button"
-                  onClick={() => setFaithDuration(duration.id)}
-                  style={{
-                    background: faithDuration === duration.id 
-                      ? 'rgba(212,168,67,0.2)' 
-                      : 'rgba(8,20,50,0.72)',
-                    border: faithDuration === duration.id 
-                      ? '1px solid #D4A843' 
-                      : '1px solid rgba(255,255,255,0.15)',
-                    borderRadius: '12px',
-                    padding: '16px 20px',
-                    fontSize: '16px',
-                    fontWeight: 600,
-                    color: faithDuration === duration.id ? '#D4A843' : '#FFFFFF',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    textAlign: 'left'
-                  }}
-                >
-                  {duration.icon} {duration.label}
-                </button>
-              ))}
             </div>
-            {faithDuration && (
-              <button
-                type="button"
-                onClick={() => setScreen(4)}
-                style={{
-                  background: '#D4A843',
-                  color: '#0a1a3e',
-                  border: 'none',
-                  borderRadius: '12px',
-                  padding: '16px 48px',
-                  fontSize: '16px',
-                  fontWeight: 700,
-                  cursor: 'pointer'
-                }}
-              >
-                Continue
-              </button>
-            )}
-          </div>
-        )}
+          )}
 
-        {/* Screen 4 - Daily Commitment */}
-        {screen === 4 && (
-          <div>
-            <h2 style={{
-              color: '#FFFFFF',
-              fontSize: '24px',
-              fontWeight: 700,
-              marginBottom: '24px'
-            }}>
-              How much time can you commit daily?
-            </h2>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '12px',
-              marginBottom: '32px'
-            }}>
-              {DAILY_COMMITMENTS.map((commitment) => (
+          {/* Screen 2 - Growth Goals */}
+          {screen === 2 && (
+            <div style={{ width: '100%' }}>
+              <p style={{
+                color: '#D4A843',
+                fontSize: '9px',
+                fontWeight: 600,
+                letterSpacing: '0.15em',
+                textTransform: 'uppercase',
+                marginBottom: '8px'
+              }}>
+                STEP 1 OF 4
+              </p>
+              <h2 style={{
+                color: '#FFFFFF',
+                fontSize: '22px',
+                fontWeight: 700,
+                marginBottom: '24px'
+              }}>
+                What do you want to grow in?
+              </h2>
+              <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '12px',
+                marginBottom: '32px'
+              }}>
+                {GROWTH_GOALS.map((goal) => (
+                  <button
+                    key={goal.id}
+                    type="button"
+                    onClick={() => toggleGoal(goal.id)}
+                    style={{
+                      background: selectedGoals.includes(goal.id) 
+                        ? 'rgba(212,168,67,0.12)' 
+                        : 'rgba(255,255,255,0.04)',
+                      border: selectedGoals.includes(goal.id) 
+                        ? '1px solid rgba(212,168,67,0.4)' 
+                        : '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '14px',
+                      padding: '12px 16px',
+                      fontSize: '15px',
+                      color: selectedGoals.includes(goal.id) ? '#D4A843' : '#FFFFFF',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {goal.icon} {goal.label}
+                  </button>
+                ))}
+              </div>
+              {selectedGoals.length > 0 && (
                 <button
-                  key={commitment.id}
                   type="button"
-                  onClick={() => setDailyCommitment(commitment.id)}
+                  onClick={() => setScreen(3)}
                   style={{
-                    background: dailyCommitment === commitment.id 
-                      ? 'rgba(212,168,67,0.2)' 
-                      : 'rgba(8,20,50,0.72)',
-                    border: dailyCommitment === commitment.id 
-                      ? '1px solid #D4A843' 
-                      : '1px solid rgba(255,255,255,0.15)',
-                    borderRadius: '12px',
-                    padding: '16px 20px',
+                    background: '#D4A843',
+                    color: '#060f26',
+                    border: 'none',
+                    borderRadius: '16px',
+                    padding: '16px',
                     fontSize: '16px',
-                    fontWeight: 600,
-                    color: dailyCommitment === commitment.id ? '#D4A843' : '#FFFFFF',
+                    fontWeight: 700,
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    textAlign: 'left'
+                    width: '100%'
                   }}
                 >
-                  {commitment.label}
-                  <div style={{
-                    fontSize: '13px',
-                    fontWeight: 400,
-                    color: 'rgba(255,255,255,0.6)',
-                    marginTop: '4px'
-                  }}>
-                    {commitment.description}
+                  Continue
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Screen 3 - Faith Duration */}
+          {screen === 3 && (
+            <div style={{ width: '100%' }}>
+              <p style={{
+                color: '#D4A843',
+                fontSize: '9px',
+                fontWeight: 600,
+                letterSpacing: '0.15em',
+                textTransform: 'uppercase',
+                marginBottom: '8px'
+              }}>
+                STEP 2 OF 4
+              </p>
+              <h2 style={{
+                color: '#FFFFFF',
+                fontSize: '22px',
+                fontWeight: 700,
+                marginBottom: '24px'
+              }}>
+                How long have you been a believer?
+              </h2>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                marginBottom: '32px'
+              }}>
+                {FAITH_DURATIONS.map((duration) => (
+                  <button
+                    key={duration.id}
+                    type="button"
+                    onClick={() => setFaithDuration(duration.id)}
+                    style={{
+                      background: faithDuration === duration.id 
+                        ? 'rgba(212,168,67,0.12)' 
+                        : 'rgba(255,255,255,0.04)',
+                      border: faithDuration === duration.id 
+                        ? '1px solid rgba(212,168,67,0.4)' 
+                        : '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '14px',
+                      padding: '16px 20px',
+                      fontSize: '16px',
+                      fontWeight: 600,
+                      color: faithDuration === duration.id ? '#D4A843' : '#FFFFFF',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      textAlign: 'left',
+                      position: 'relative',
+                      paddingLeft: faithDuration === duration.id ? '16px' : '19px'
+                    }}
+                  >
+                    {faithDuration === duration.id && (
+                      <div style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: '3px',
+                        background: '#D4A843',
+                        borderRadius: '14px 0 0 14px'
+                      }} />
+                    )}
+                    {duration.icon} {duration.label}
+                  </button>
+                ))}
+              </div>
+              {faithDuration && (
+                <button
+                  type="button"
+                  onClick={() => setScreen(4)}
+                  style={{
+                    background: '#D4A843',
+                    color: '#060f26',
+                    border: 'none',
+                    borderRadius: '16px',
+                    padding: '16px',
+                    fontSize: '16px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    width: '100%'
+                  }}
+                >
+                  Continue
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Screen 4 - Daily Commitment */}
+          {screen === 4 && (
+            <div style={{ width: '100%' }}>
+              <p style={{
+                color: '#D4A843',
+                fontSize: '9px',
+                fontWeight: 600,
+                letterSpacing: '0.15em',
+                textTransform: 'uppercase',
+                marginBottom: '8px'
+              }}>
+                STEP 3 OF 4
+              </p>
+              <h2 style={{
+                color: '#FFFFFF',
+                fontSize: '22px',
+                fontWeight: 700,
+                marginBottom: '24px'
+              }}>
+                How much time can you commit daily?
+              </h2>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                marginBottom: '32px'
+              }}>
+                {DAILY_COMMITMENTS.map((commitment) => (
+                  <button
+                    key={commitment.id}
+                    type="button"
+                    onClick={() => setDailyCommitment(commitment.id)}
+                    style={{
+                      background: dailyCommitment === commitment.id 
+                        ? 'rgba(212,168,67,0.12)' 
+                        : 'rgba(255,255,255,0.04)',
+                      border: dailyCommitment === commitment.id 
+                        ? '1px solid rgba(212,168,67,0.4)' 
+                        : '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '14px',
+                      padding: '16px 20px',
+                      fontSize: '16px',
+                      fontWeight: 600,
+                      color: dailyCommitment === commitment.id ? '#D4A843' : '#FFFFFF',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      textAlign: 'left',
+                      position: 'relative',
+                      paddingLeft: dailyCommitment === commitment.id ? '16px' : '19px'
+                    }}
+                  >
+                    {dailyCommitment === commitment.id && (
+                      <div style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: '3px',
+                        background: '#D4A843',
+                        borderRadius: '14px 0 0 14px'
+                      }} />
+                    )}
+                    {commitment.label}
+                    <div style={{
+                      fontSize: '13px',
+                      fontWeight: 400,
+                      color: 'rgba(255,255,255,0.6)',
+                      marginTop: '4px'
+                    }}>
+                      {commitment.description}
+                    </div>
+                  </button>
+                ))}
+              </div>
+              {dailyCommitment && (
+                <button
+                  type="button"
+                  onClick={() => setScreen(5)}
+                  style={{
+                    background: '#D4A843',
+                    color: '#060f26',
+                    border: 'none',
+                    borderRadius: '16px',
+                    padding: '16px',
+                    fontSize: '16px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    width: '100%'
+                  }}
+                >
+                  Continue
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Screen 5 - App Tour (NEW) */}
+          {screen === 5 && (
+            <div style={{ width: '100%' }}>
+              <p style={{
+                color: '#D4A843',
+                fontSize: '9px',
+                fontWeight: 600,
+                letterSpacing: '0.15em',
+                textTransform: 'uppercase',
+                marginBottom: '8px'
+              }}>
+                STEP 4 OF 4
+              </p>
+              <h2 style={{
+                color: '#FFFFFF',
+                fontSize: '22px',
+                fontWeight: 700,
+                marginBottom: '24px'
+              }}>
+                Here's what's waiting for you
+              </h2>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                marginBottom: '32px'
+              }}>
+                {APP_TOUR_FEATURES.map((feature, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '14px',
+                      padding: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '16px'
+                    }}
+                  >
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '12px',
+                      background: 'rgba(212,168,67,0.1)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '20px'
+                    }}>
+                      {feature.icon}
+                    </div>
+                    <div style={{ textAlign: 'left' }}>
+                      <p style={{
+                        color: '#FFFFFF',
+                        fontSize: '15px',
+                        fontWeight: 600,
+                        marginBottom: '4px',
+                        margin: 0
+                      }}>
+                        {feature.title}
+                      </p>
+                      <p style={{
+                        color: 'rgba(255,255,255,0.5)',
+                        fontSize: '13px',
+                        margin: 0
+                      }}>
+                        {feature.description}
+                      </p>
+                    </div>
                   </div>
-                </button>
-              ))}
-            </div>
-            {dailyCommitment && (
+                ))}
+              </div>
               <button
                 type="button"
-                onClick={() => setScreen(5)}
+                onClick={() => setScreen(6)}
                 style={{
                   background: '#D4A843',
-                  color: '#0a1a3e',
+                  color: '#060f26',
                   border: 'none',
-                  borderRadius: '12px',
-                  padding: '16px 48px',
+                  borderRadius: '16px',
+                  padding: '16px',
                   fontSize: '16px',
                   fontWeight: 700,
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  width: '100%'
                 }}
               >
-                Continue
+                I'm Ready →
               </button>
-            )}
-          </div>
-        )}
-
-        {/* Screen 5 - Summary */}
-        {screen === 5 && (
-          <div>
-            <h2 style={{
-              color: '#D4A843',
-              fontSize: '24px',
-              fontWeight: 700,
-              marginBottom: '16px'
-            }}>
-              Your path is ready!
-            </h2>
-            <p style={{
-              color: 'rgba(255,255,255,0.7)',
-              fontSize: '15px',
-              marginBottom: '32px',
-              lineHeight: '1.6'
-            }}>
-              Based on your answers, we've created your personal growth path:
-            </p>
-
-            <div style={{
-              background: 'rgba(8,20,50,0.72)',
-              border: '1px solid rgba(212,168,67,0.3)',
-              borderRadius: '16px',
-              padding: '24px',
-              textAlign: 'left',
-              marginBottom: '32px'
-            }}>
-              <div style={{ marginBottom: '20px' }}>
-                <p style={{
-                  color: 'rgba(255,255,255,0.5)',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                  marginBottom: '8px'
-                }}>
-                  Recommended Path
-                </p>
-                <p style={{
-                  color: '#FFFFFF',
-                  fontSize: '18px',
-                  fontWeight: 700,
-                  margin: 0
-                }}>
-                  {getRecommendations().path}
-                </p>
-              </div>
-
-              <div style={{ marginBottom: '20px' }}>
-                <p style={{
-                  color: 'rgba(255,255,255,0.5)',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                  marginBottom: '8px'
-                }}>
-                  Daily Reading Plan
-                </p>
-                <p style={{
-                  color: '#FFFFFF',
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  margin: 0
-                }}>
-                  {getRecommendations().readingPlan}
-                </p>
-              </div>
-
-              <div>
-                <p style={{
-                  color: 'rgba(255,255,255,0.5)',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                  marginBottom: '8px'
-                }}>
-                  Study Depth
-                </p>
-                <p style={{
-                  color: '#FFFFFF',
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  margin: 0
-                }}>
-                  {getRecommendations().studyDepth}
-                </p>
-              </div>
             </div>
+          )}
 
-            <button
-              type="button"
-              onClick={handleComplete}
-              disabled={loading}
-              style={{
-                background: '#D4A843',
-                color: '#0a1a3e',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '16px 48px',
-                fontSize: '16px',
+          {/* Screen 6 - Summary */}
+          {screen === 6 && (
+            <div style={{ width: '100%' }}>
+              <h2 style={{
+                color: '#D4A843',
+                fontSize: '24px',
                 fontWeight: 700,
-                cursor: loading ? 'not-allowed' : 'pointer',
-                opacity: loading ? 0.7 : 1
-              }}
-            >
-              {loading ? 'Setting up your path...' : 'Start My Journey'}
-            </button>
-          </div>
-        )}
+                marginBottom: '16px'
+              }}>
+                Your path is <span style={{ fontStyle: 'italic' }}>ready</span>!
+              </h2>
+              <p style={{
+                color: 'rgba(255,255,255,0.7)',
+                fontSize: '15px',
+                marginBottom: '32px',
+                lineHeight: '1.6'
+              }}>
+                Based on your answers, we've created your personal growth path:
+              </p>
+
+              <div style={{
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '16px',
+                padding: '24px',
+                textAlign: 'left',
+                marginBottom: '32px'
+              }}>
+                <div style={{ marginBottom: '20px' }}>
+                  <p style={{
+                    color: 'rgba(255,255,255,0.5)',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    marginBottom: '8px'
+                  }}>
+                    Recommended Path
+                  </p>
+                  <p style={{
+                    color: '#FFFFFF',
+                    fontSize: '18px',
+                    fontWeight: 700,
+                    margin: 0
+                  }}>
+                    {getRecommendations().path}
+                  </p>
+                </div>
+
+                <div style={{ marginBottom: '20px' }}>
+                  <p style={{
+                    color: 'rgba(255,255,255,0.5)',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    marginBottom: '8px'
+                  }}>
+                    Daily Reading Plan
+                  </p>
+                  <p style={{
+                    color: '#FFFFFF',
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    margin: 0
+                  }}>
+                    {getRecommendations().readingPlan}
+                  </p>
+                </div>
+
+                <div>
+                  <p style={{
+                    color: 'rgba(255,255,255,0.5)',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    marginBottom: '8px'
+                  }}>
+                    Study Depth
+                  </p>
+                  <p style={{
+                    color: '#FFFFFF',
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    margin: 0
+                  }}>
+                    {getRecommendations().studyDepth}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleComplete}
+                disabled={loading}
+                style={{
+                  background: '#D4A843',
+                  color: '#060f26',
+                  border: 'none',
+                  borderRadius: '16px',
+                  padding: '16px',
+                  fontSize: '16px',
+                  fontWeight: 700,
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  opacity: loading ? 0.7 : 1,
+                  width: '100%'
+                }}
+              >
+                {loading ? 'Setting up your path...' : 'Start My Journey ✦'}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
     </>
   )
 }

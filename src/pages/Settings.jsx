@@ -17,6 +17,26 @@ export default function Settings() {
     navigate('/auth', { replace: true })
   }
 
+  const handleReplayTutorial = async () => {
+    try {
+      // Clear from localStorage
+      localStorage.removeItem('onboarding_complete')
+      
+      // Clear from Supabase profile
+      if (user?.id) {
+        await supabase
+          .from('profiles')
+          .update({ onboarding_complete: false })
+          .eq('id', user.id)
+      }
+      
+      // Navigate to home to trigger onboarding
+      navigate('/', { replace: true })
+    } catch (error) {
+      console.error('Error replaying tutorial:', error)
+    }
+  }
+
   const handleProfilePictureUpload = async (file) => {
     if (!file || !user?.id) return
 
@@ -303,6 +323,32 @@ export default function Settings() {
             }} />
           </button>
         </div>
+
+        {/* Replay Tutorial */}
+        <button
+          type="button"
+          onClick={handleReplayTutorial}
+          style={{
+            width: '100%',
+            background: 'rgba(8,20,50,0.72)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            border: '1px solid rgba(212,168,67,0.25)',
+            borderRadius: '16px',
+            padding: '16px 20px',
+            color: '#FFFFFF',
+            fontSize: '16px',
+            fontWeight: 500,
+            cursor: 'pointer',
+            textAlign: 'left',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}
+        >
+          <span>Replay Tutorial</span>
+          <span style={{ color: 'rgba(255,255,255,0.4)' }}>↺</span>
+        </button>
 
         {/* About AbidingAnchor */}
         <div style={{
