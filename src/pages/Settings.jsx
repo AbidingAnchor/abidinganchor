@@ -30,7 +30,7 @@ export default function Settings() {
           .eq('id', user.id)
       }
       
-      // Navigate to home to trigger onboarding
+      // Navigate to home to trigger onboarding modal
       navigate('/', { replace: true })
     } catch (error) {
       console.error('Error replaying tutorial:', error)

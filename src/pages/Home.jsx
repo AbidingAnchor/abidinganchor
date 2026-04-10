@@ -112,7 +112,11 @@ function Home({ onOpenWorship, worshipStatus }) {
 
   useEffect(() => {
     if (user?.id && profile && !profileFetchLoading) {
-      const isComplete = profile.onboarding_complete === true
+      // Check Supabase first, then localStorage fallback
+      const supabaseComplete = profile.onboarding_complete === true
+      const localComplete = localStorage.getItem('onboarding_complete') === 'true'
+      const isComplete = supabaseComplete !== false ? supabaseComplete : localComplete
+      
       if (!isComplete) {
         setShowOnboarding(true)
       }
