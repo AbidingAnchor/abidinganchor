@@ -20,7 +20,7 @@ function Home({ onOpenWorship, worshipStatus }) {
   const [toastTrigger, setToastTrigger] = useState(0)
   const [journalCount, setJournalCount] = useState(0)
   const [suppressPersonalWelcome, setSuppressPersonalWelcome] = useState(false)
-  const [, setProfileFetchLoading] = useState(false)
+  const [profileFetchLoading, setProfileFetchLoading] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const profileRef = useRef(profile)
   profileRef.current = profile
@@ -135,12 +135,12 @@ function Home({ onOpenWorship, worshipStatus }) {
   }, [profile])
 
   useEffect(() => {
-    if (user?.id && profile) {
+    if (user?.id && profile && !profileFetchLoading) {
       if (!profile.onboarding_complete) {
         setShowOnboarding(true)
       }
     }
-  }, [user?.id, profile])
+  }, [user?.id, profile, profileFetchLoading])
 
   useEffect(() => {
     let timeoutId
@@ -316,7 +316,9 @@ function Home({ onOpenWorship, worshipStatus }) {
 
   const handleOnboardingComplete = async () => {
     setShowOnboarding(false)
+    setProfileFetchLoading(true)
     await refreshProfile()
+    setProfileFetchLoading(false)
   }
 
   return (
