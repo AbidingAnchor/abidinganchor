@@ -155,7 +155,7 @@ export default function BibleReader({ open, onClose }) {
       {/* Top Bar */}
       <div style={{
         position: 'fixed',
-        top: 0,
+        top: '60px',
         left: 0,
         right: 0,
         zIndex: 100,
@@ -230,7 +230,7 @@ export default function BibleReader({ open, onClose }) {
 
       {/* Content */}
       <div style={{ 
-        paddingTop: '80px', 
+        paddingTop: '140px', 
         paddingBottom: '100px', 
         padding: '24px 20px', 
         maxWidth: '680px', 
@@ -257,6 +257,7 @@ export default function BibleReader({ open, onClose }) {
             {/* Verse Text - Continuous Flow */}
             <div style={{
               padding: '20px',
+              paddingBottom: '80px',
               color: '#F5E6C8',
               fontSize: `${fontSize}px`,
               lineHeight: '1.8',
@@ -268,7 +269,7 @@ export default function BibleReader({ open, onClose }) {
                     <sup style={{ color: '#D4A843', fontSize: '0.7em', marginRight: '2px' }}>
                       {v.verse}
                     </sup>
-                    {v.text}{' '}
+                    {v.text.replace(/¶/g, '').replace(/\d+\.\d+[^:]*: [A-Za-z]+\.?/g, '').trim()}{' '}
                   </span>
                 ))}
               </p>
@@ -338,13 +339,14 @@ export default function BibleReader({ open, onClose }) {
             {/* Chapter Navigation */}
             <div style={{
               position: 'fixed',
-              bottom: '20px',
+              bottom: '70px',
               left: 0,
               right: 0,
+              background: '#0a1a3e',
+              padding: '10px 20px',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              padding: '16px 20px',
               zIndex: 150,
               maxWidth: '680px',
               margin: '0 auto'
