@@ -231,7 +231,15 @@ function Journal() {
       if (!active) return
       setEntries((data || []).map(normalizeEntry))
       setWritingStreak(computeWritingStreak(data))
-      setTotalEntries((data || []).length)
+      const entryLen = (data || []).length
+      setTotalEntries(entryLen)
+      try {
+        const jk = 'abidinganchor-journal-entry-count'
+        const prev = parseInt(localStorage.getItem(jk) || '0', 10)
+        localStorage.setItem(jk, String(Math.max(prev, entryLen)))
+      } catch {
+        /* ignore */
+      }
       setPrayerCount((data || []).filter(e => e.entry_type === 'prayer' && e.answered === true).length)
 
       // Get entries older than 7 days

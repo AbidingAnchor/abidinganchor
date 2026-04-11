@@ -82,6 +82,11 @@ export async function saveToJournal({ verse, reference, note = '', tags = [], us
   try {
     const { data, error } = await supabase.from('journal_entries').upsert(payload, { onConflict: 'id' }).select().single()
     if (error) throw error
+    if (!existingId) {
+      const jk = 'abidinganchor-journal-entry-count'
+      const next = parseInt(localStorage.getItem(jk) || '0', 10) + 1
+      localStorage.setItem(jk, String(next))
+    }
     return data || null
   } catch (err) {
     console.error('Error saving to journal:', err)

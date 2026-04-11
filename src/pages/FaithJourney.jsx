@@ -170,17 +170,34 @@ export default function FaithJourney() {
   const dayIndex = getDayIndexForWeek()
   const days = ['M', 'T', 'W', 'T', 'F']
 
+  const subShellStyle = {
+    width: '100%',
+    maxWidth: '680px',
+    margin: '0 auto',
+    padding: '0 16px',
+    paddingTop: '110px',
+    paddingBottom: 'max(24px, env(safe-area-inset-bottom, 0px))',
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: 'calc(100dvh - 56px - 80px)',
+    boxSizing: 'border-box',
+  }
+
   return (
-    <div style={{ 
-      position: 'relative',
-      minHeight: '100%',
-      height: 'auto',
-      overflow: 'hidden',
-      paddingBottom: '120px',
-      background: 'transparent'
-    }}>
+    <div
+      style={{
+        position: 'relative',
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: 0,
+        width: '100%',
+        background: 'transparent',
+      }}
+    >
       {view === 'hub' ? (
-        <div style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '120px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
+        <div style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '100px', maxWidth: '680px', margin: '0 auto', width: '100%', flex: 1 }}>
           
           {/* Hero Section */}
           <header className="glass-panel" style={{ marginBottom: '20px', position: 'relative', borderRadius: '16px', overflow: 'hidden', minHeight: '160px' }}>
@@ -418,13 +435,21 @@ export default function FaithJourney() {
 
         </div>
       ) : view === 'trivia' ? (
-        <BibleTrivia onExit={() => setView('hub')} />
+        <div style={subShellStyle}>
+          <BibleTrivia onExit={() => setView('hub')} fillVertical />
+        </div>
       ) : view === 'flashcards' ? (
-        <VerseFlashcards onExit={() => setView('hub')} />
+        <div style={subShellStyle}>
+          <VerseFlashcards onExit={() => setView('hub')} fillVertical />
+        </div>
       ) : view === 'map' ? (
-        <JourneyMap onExit={() => setView('hub')} />
+        <div style={subShellStyle}>
+          <JourneyMap onExit={() => setView('hub')} fillVertical />
+        </div>
       ) : (
-        <Achievements onExit={() => setView('hub')} />
+        <div style={subShellStyle}>
+          <Achievements onExit={() => setView('hub')} fillVertical />
+        </div>
       )}
     </div>
   )

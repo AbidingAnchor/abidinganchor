@@ -17,16 +17,177 @@ function writeJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value))
 }
 
-const STOPS = [
-  { id: 'bethlehem', label: 'Bethlehem', x: 42, y: 210, fact: 'Bethlehem is known as the birthplace of Jesus. (Matthew 2:1)' },
-  { id: 'nazareth', label: 'Nazareth', x: 92, y: 168, fact: 'Nazareth is where Jesus grew up. (Luke 2:51-52)' },
-  { id: 'jordan', label: 'Jordan River', x: 152, y: 132, fact: 'Jesus was baptized in the Jordan River. (Matthew 3:13-17)' },
-  { id: 'jerusalem', label: 'Jerusalem', x: 210, y: 96, fact: 'Jerusalem is central to the Passion and Resurrection of Jesus. (Luke 24:46-47)' },
-  { id: 'damascus', label: 'Damascus', x: 168, y: 54, fact: 'Paul’s conversion is connected with the road to Damascus. (Acts 9:1-6)' },
-  { id: 'rome', label: 'Rome', x: 232, y: 18, fact: 'The gospel reached Rome as the early church spread. (Romans 1:15-16)' },
+/** Biblical path: Jesus’s life and Paul’s journeys — used by Achievements for “Lamp Lighter”. */
+export const JOURNEY_MAP_STOPS = [
+  {
+    id: 'bethlehem',
+    label: 'Bethlehem',
+    x: 42,
+    y: 382,
+    description: 'Here the Savior was born, the promise of God made flesh.',
+    scripture: 'Micah 5:2; Luke 2:7',
+  },
+  {
+    id: 'nazareth',
+    label: 'Nazareth',
+    x: 80,
+    y: 346,
+    description: 'Jesus grew in wisdom and stature in this quiet Galilean town.',
+    scripture: 'Luke 2:51-52',
+  },
+  {
+    id: 'jordan',
+    label: 'Jordan River',
+    x: 120,
+    y: 310,
+    description: 'Jesus was baptized and the Father spoke joy over His Son.',
+    scripture: 'Matthew 3:16-17',
+  },
+  {
+    id: 'wilderness',
+    label: 'Wilderness',
+    x: 92,
+    y: 270,
+    description: 'After baptism He was led into the wilderness and overcame the tempter.',
+    scripture: 'Matthew 4:1-11',
+  },
+  {
+    id: 'capernaum',
+    label: 'Capernaum',
+    x: 150,
+    y: 246,
+    description: 'A home base for His teaching and miracles beside the sea.',
+    scripture: 'Matthew 4:13',
+  },
+  {
+    id: 'galilee',
+    label: 'Galilee',
+    x: 184,
+    y: 226,
+    description: 'He preached the kingdom and called disciples to follow Him.',
+    scripture: 'Matthew 4:23',
+  },
+  {
+    id: 'beatitudes',
+    label: 'Mount of Beatitudes',
+    x: 206,
+    y: 204,
+    description: 'On these slopes He opened the kingdom to the humble and merciful.',
+    scripture: 'Matthew 5:1-12',
+  },
+  {
+    id: 'caesarea-philippi',
+    label: 'Caesarea Philippi',
+    x: 228,
+    y: 178,
+    description: 'Peter confessed Jesus as the Christ, the Son of the living God.',
+    scripture: 'Matthew 16:13-16',
+  },
+  {
+    id: 'jerusalem',
+    label: 'Jerusalem',
+    x: 200,
+    y: 140,
+    description: 'He wept over the city and entered as King, humble on a donkey.',
+    scripture: 'Luke 19:41-44',
+  },
+  {
+    id: 'gethsemane',
+    label: 'Garden of Gethsemane',
+    x: 192,
+    y: 118,
+    description: 'He prayed in deep sorrow, yielding fully to the Father’s cup.',
+    scripture: 'Matthew 26:36-39',
+  },
+  {
+    id: 'golgotha',
+    label: 'Golgotha',
+    x: 204,
+    y: 98,
+    description: 'The cross stood here, where love bore the sin of the world.',
+    scripture: 'John 19:17-18',
+  },
+  {
+    id: 'empty-tomb',
+    label: 'Empty Tomb',
+    x: 214,
+    y: 80,
+    description: 'The stone was rolled away—He is not here; He has risen indeed.',
+    scripture: 'Luke 24:2-6',
+  },
+  {
+    id: 'damascus',
+    label: 'Damascus',
+    x: 236,
+    y: 62,
+    description: 'On the road, Saul met the risen Lord and was forever changed.',
+    scripture: 'Acts 9:3-6',
+  },
+  {
+    id: 'antioch',
+    label: 'Antioch',
+    x: 258,
+    y: 86,
+    description: 'The church sent Paul and Barnabas to carry the gospel to the nations.',
+    scripture: 'Acts 13:2-3',
+  },
+  {
+    id: 'philippi',
+    label: 'Philippi',
+    x: 276,
+    y: 114,
+    description: 'A jailer’s family believed after prayer and praise broke prison doors.',
+    scripture: 'Acts 16:30-34',
+  },
+  {
+    id: 'thessalonica',
+    label: 'Thessalonica',
+    x: 282,
+    y: 144,
+    description: 'The Word sounded forth from here with faith, hope, and endurance.',
+    scripture: '1 Thessalonians 1:8',
+  },
+  {
+    id: 'corinth',
+    label: 'Corinth',
+    x: 268,
+    y: 184,
+    description: 'Paul planted a church and taught Christ crucified in power.',
+    scripture: 'Acts 18:1-8',
+  },
+  {
+    id: 'athens',
+    label: 'Athens',
+    x: 246,
+    y: 218,
+    description: 'He proclaimed the unknown God to seekers on Mars Hill.',
+    scripture: 'Acts 17:22-31',
+  },
+  {
+    id: 'ephesus',
+    label: 'Ephesus',
+    x: 228,
+    y: 254,
+    description: 'The word of the Lord grew mightily as truth overcame darkness.',
+    scripture: 'Acts 19:20',
+  },
+  {
+    id: 'rome',
+    label: 'Rome',
+    x: 218,
+    y: 38,
+    description: 'Paul preached the gospel openly, unashamed, to the heart of the empire.',
+    scripture: 'Acts 28:30-31',
+  },
 ]
 
-export default function JourneyMap({ onExit }) {
+function buildPathD(stops) {
+  if (!stops.length) return ''
+  const [first, ...rest] = stops
+  return `M ${first.x} ${first.y}` + rest.map((s) => ` L ${s.x} ${s.y}`).join('')
+}
+
+export default function JourneyMap({ onExit, fillVertical = false }) {
   const [state, setState] = useState(() => readJson(KEY, { seenFacts: {}, updatedAt: '' }))
   const [activeStop, setActiveStop] = useState(null)
 
@@ -35,8 +196,8 @@ export default function JourneyMap({ onExit }) {
   const memorizedCount = useMemo(() => Object.values(verseProgress).filter((p) => p?.memorized).length, [verseProgress])
 
   const unlockedCount = Math.min(
-    STOPS.length,
-    1 + Math.floor((triviaStats.gamesCompleted || 0) / 1) + Math.floor(memorizedCount / 5),
+    JOURNEY_MAP_STOPS.length,
+    1 + Math.floor(((triviaStats.gamesCompleted || 0) + memorizedCount) / 2),
   )
 
   const openStop = (stop, unlocked) => {
@@ -51,8 +212,13 @@ export default function JourneyMap({ onExit }) {
     writeJson(KEY, next)
   }
 
+  const pathD = useMemo(() => buildPathD(JOURNEY_MAP_STOPS), [])
+
   return (
-    <div className="glass-panel rounded-2xl p-4 text-white">
+    <div
+      className={`glass-panel rounded-2xl p-4 text-white ${fillVertical ? 'flex min-h-0 flex-1 flex-col' : ''}`}
+      style={fillVertical ? { minHeight: '100%' } : undefined}
+    >
       <style>
         {`
           @keyframes map-pulse {
@@ -62,7 +228,7 @@ export default function JourneyMap({ onExit }) {
         `}
       </style>
 
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3 flex shrink-0 items-center justify-between">
         <p className="text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: '#D4A843' }}>
           🗺️ Journey Map
         </p>
@@ -71,15 +237,21 @@ export default function JourneyMap({ onExit }) {
         </button>
       </div>
 
-      <div className="mb-3 glass-panel rounded-xl p-3 text-xs text-white/80">
-        Unlocks are earned by completing trivia and memorizing verses. <br />
+      <div className="mb-3 shrink-0 glass-panel rounded-xl p-3 text-xs text-white/80">
+        Unlocks scale with trivia games and memorized verses (each activity moves you forward). <br />
         <span style={{ color: '#D4A843', fontWeight: 700 }}>
-          Unlocked: {unlockedCount}/{STOPS.length}
+          Unlocked: {unlockedCount}/{JOURNEY_MAP_STOPS.length}
         </span>
       </div>
 
-      <div className="glass-panel rounded-2xl p-3">
-        <svg width="100%" viewBox="0 0 260 240" style={{ display: 'block' }}>
+      <div className={`glass-panel min-h-0 rounded-2xl p-3 ${fillVertical ? 'flex flex-1 flex-col' : ''}`}>
+        <svg
+          width="100%"
+          viewBox="0 0 320 400"
+          preserveAspectRatio="xMidYMid meet"
+          className={fillVertical ? 'min-h-[240px] flex-1' : ''}
+          style={{ display: 'block' }}
+        >
           <defs>
             <linearGradient id="goldPath" x1="0" x2="1">
               <stop offset="0%" stopColor="#D4A843" stopOpacity="0.15" />
@@ -89,18 +261,32 @@ export default function JourneyMap({ onExit }) {
           </defs>
 
           <path
-            d="M 42 210 C 70 195, 80 182, 92 168 C 118 148, 128 144, 152 132 C 178 118, 192 112, 210 96 C 198 76, 182 62, 168 54 C 196 40, 214 30, 232 18"
+            d={pathD}
             fill="none"
             stroke="url(#goldPath)"
             strokeWidth="6"
             strokeLinecap="round"
+            strokeLinejoin="round"
           />
 
-          {STOPS.map((stop, i) => {
+          {JOURNEY_MAP_STOPS.map((stop, i) => {
             const unlocked = i < unlockedCount
             const seen = !!state?.seenFacts?.[stop.id]
             return (
-              <g key={stop.id} onClick={() => openStop(stop, unlocked)} style={{ cursor: unlocked ? 'pointer' : 'not-allowed' }}>
+              <g
+                key={stop.id}
+                role="button"
+                tabIndex={unlocked ? 0 : -1}
+                onClick={() => openStop(stop, unlocked)}
+                onKeyDown={(e) => {
+                  if (!unlocked) return
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    openStop(stop, unlocked)
+                  }
+                }}
+                style={{ cursor: unlocked ? 'pointer' : 'not-allowed' }}
+              >
                 <circle
                   cx={stop.x}
                   cy={stop.y}
@@ -110,12 +296,15 @@ export default function JourneyMap({ onExit }) {
                   strokeWidth="2"
                   style={unlocked ? { animation: 'map-pulse 2s ease-in-out infinite' } : undefined}
                 />
-                <text x={stop.x + 14} y={stop.y + 4} fontSize="10" fill={unlocked ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.45)'}>
+                <text
+                  x={stop.x + 14}
+                  y={stop.y + 4}
+                  fontSize="9"
+                  fill={unlocked ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.45)'}
+                >
                   {unlocked ? stop.label : `🔒 ${stop.label}`}
                 </text>
-                {seen && unlocked ? (
-                  <circle cx={stop.x} cy={stop.y} r="3" fill="#fff" opacity="0.85" />
-                ) : null}
+                {seen && unlocked ? <circle cx={stop.x} cy={stop.y} r="3" fill="#fff" opacity="0.85" /> : null}
               </g>
             )
           })}
@@ -123,13 +312,16 @@ export default function JourneyMap({ onExit }) {
       </div>
 
       {activeStop ? (
-        <div className="mt-3 glass-panel rounded-2xl border border-[#D4A843]/50 p-4">
+        <div className="mt-3 shrink-0 glass-panel rounded-2xl border border-[#D4A843]/50 p-4">
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="text-sm font-semibold" style={{ color: '#D4A843' }}>
                 {activeStop.label}
               </p>
-              <p className="mt-2 text-sm text-white/85">{activeStop.fact}</p>
+              <p className="mt-2 text-sm text-white/85">{activeStop.description}</p>
+              <p className="mt-3 text-xs font-semibold text-white/70">
+                Scripture: <span style={{ color: '#D4A843' }}>{activeStop.scripture}</span>
+              </p>
             </div>
             <button type="button" onClick={() => setActiveStop(null)} className="text-xs text-white/70">
               ✕
@@ -140,4 +332,3 @@ export default function JourneyMap({ onExit }) {
     </div>
   )
 }
-

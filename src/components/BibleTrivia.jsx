@@ -171,7 +171,7 @@ function pickQuestions(count = 10) {
   return picked
 }
 
-export default function BibleTrivia({ onExit, onRoundComplete }) {
+export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = false }) {
   const [roundQuestions, setRoundQuestions] = useState(() => pickQuestions(10))
   const [index, setIndex] = useState(0)
   const [selected, setSelected] = useState(null)
@@ -250,7 +250,10 @@ export default function BibleTrivia({ onExit, onRoundComplete }) {
   }
 
   return (
-    <div className="glass-panel rounded-2xl p-4 text-white">
+    <div
+      className={`glass-panel rounded-2xl p-4 text-white ${fillVertical ? 'flex min-h-0 flex-1 flex-col' : ''}`}
+      style={fillVertical ? { minHeight: '100%' } : undefined}
+    >
       <style>
         {`
           @keyframes trivia-confetti {

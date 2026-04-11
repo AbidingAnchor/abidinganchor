@@ -163,6 +163,12 @@ export default function CommunityPrayer() {
         pray_count: 0,
       })
       if (error) throw error
+      try {
+        const pk = 'abidinganchor-community-prayer-submissions'
+        localStorage.setItem(pk, String(parseInt(localStorage.getItem(pk) || '0', 10) + 1))
+      } catch {
+        /* ignore */
+      }
       setFormContent('')
       setFormCategory('General')
       setFormAnonymous(true)

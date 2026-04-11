@@ -85,7 +85,13 @@ export default function ShareCard() {
         text: 'Check out this faith card from AbidingAnchor',
         files: [file],
       })
-      
+
+      try {
+        localStorage.setItem('abidinganchor-verse-card-shared', '1')
+      } catch {
+        /* ignore */
+      }
+
       setGenerating(false)
     } catch (error) {
       console.error('Error generating or sharing card:', error)
@@ -148,8 +154,6 @@ export default function ShareCard() {
       reader.readAsDataURL(blob)
     })
   }
-
-  console.log('ShareCard render - textColorChoice:', textColorChoice)
 
   return (
     <div className="content-scroll px-4 pt-6 pb-40" style={{ minHeight: 'auto' }}>

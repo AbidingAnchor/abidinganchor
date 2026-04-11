@@ -1,10 +1,13 @@
 import { useMemo, useState } from 'react'
+import { useAuth } from '../context/AuthContext'
+import { JOURNEY_MAP_STOPS } from './JourneyMap'
 
 const KEY = 'abidinganchor-achievements'
 const TRIVIA_STATS_KEY = 'abidinganchor-trivia-stats'
 const STREAK_KEY = 'abidinganchor-trivia-streak'
 const VERSE_PROGRESS_KEY = 'abidinganchor-verse-progress'
 const DEVOTIONAL_PROGRESS_KEY = 'abidinganchor-devotional-progress'
+const DEVOTIONAL_STREAK_KEY = 'abidinganchor-devotional-streak'
 
 function readJson(key, fallback) {
   try {
@@ -32,13 +35,23 @@ const BADGES = [
   { id: 'anchor-of-hope', icon: '⚓', name: 'Anchor of Hope', desc: 'Memorize a Hope verse', check: (s) => (s.memorizedHope || 0) >= 1 },
   { id: 'peacemaker', icon: '🕊️', name: 'Peacemaker', desc: 'Memorize a Peace verse', check: (s) => (s.memorizedPeace || 0) >= 1 },
   { id: 'love-walk', icon: '💛', name: 'Walk in Love', desc: 'Memorize a Love verse', check: (s) => (s.memorizedLove || 0) >= 1 },
+  { id: 'faithful-scribe', icon: '✍️', name: 'Faithful Scribe', desc: 'Write 10 journal entries', check: (s) => (s.journalEntries || 0) >= 10 },
+  { id: 'daily-bread', icon: '🍞', name: 'Daily Bread', desc: 'Read a devotional 7 days in a row', check: (s) => (s.devotionalReadingStreak || 0) >= 7 },
+  { id: 'intercessor', icon: '🤲', name: 'Intercessor', desc: 'Submit 5 community prayers', check: (s) => (s.communityPrayers || 0) >= 5 },
+  { id: 'lamp-lighter', icon: '🧭', name: 'Lamp Lighter', desc: 'Complete the Journey Map', check: (s) => s.mapFullyVisited === true },
+  { id: 'shield-faith', icon: '🛡️', name: 'Shield of Faith', desc: 'Memorize 25 verses', check: (s) => (s.memorizedTotal || 0) >= 25 },
+  { id: 'new-creation', icon: '🌱', name: 'New Creation', desc: 'Complete your profile', check: (s) => s.profileComplete === true },
+  { id: 'salt-light', icon: '✨', name: 'Salt & Light', desc: 'Share a verse card', check: (s) => s.verseCardShared === true },
+  { id: 'overcomer', icon: '👑', name: 'Overcomer', desc: 'Maintain a 30-day streak', check: (s) => (s.readingStreak || 0) >= 30 },
 ]
 
-function computeSnapshot() {
+function computeSnapshot(profile) {
   const triviaStats = readJson(TRIVIA_STATS_KEY, { gamesCompleted: 0, bestScore: 0, psalmsCorrect: 0 })
   const streak = readJson(STREAK_KEY, { count: 0 })
   const verseProgress = readJson(VERSE_PROGRESS_KEY, {})
   const devotionalProgress = readJson(DEVOTIONAL_PROGRESS_KEY, { completedDates: [] })
+  const devotionalStreakObj = readJson(DEVOTIONAL_STREAK_KEY, { count: 0 })
+  const mapState = readJson('abidinganchor-journey-map', { seenFacts: {} })
   const startDateRaw = localStorage.getItem('abidinganchor-start-date')
   const start = startDateRaw ? new Date(startDateRaw) : new Date()
   const appDays = Math.max(1, Math.floor((Date.now() - start.getTime()) / 86400000) + 1)
@@ -58,6 +71,13 @@ function computeSnapshot() {
   const memorizedLove = memorized.filter((p) => String(p.category || '').toLowerCase() === 'love').length
   const devotionalsCompleted = Array.isArray(devotionalProgress.completedDates) ? devotionalProgress.completedDates.length : 0
 
+  const journalEntries = parseInt(localStorage.getItem('abidinganchor-journal-entry-count') || '0', 10)
+  const communityPrayers = parseInt(localStorage.getItem('abidinganchor-community-prayer-submissions') || '0', 10)
+  const verseCardShared = localStorage.getItem('abidinganchor-verse-card-shared') === '1'
+  const mapFullyVisited = JOURNEY_MAP_STOPS.every((stop) => mapState.seenFacts?.[stop.id])
+  const profileComplete = profile?.onboarding_complete === true
+  const readingStreak = Number(profile?.reading_streak) || 0
+
   return {
     ...triviaStats,
     triviaStreak: streak.count || 0,
@@ -68,12 +88,20 @@ function computeSnapshot() {
     memorizedPeace,
     memorizedLove,
     devotionalsCompleted,
+    journalEntries,
+    communityPrayers,
+    verseCardShared,
+    mapFullyVisited,
+    profileComplete,
+    readingStreak,
+    devotionalReadingStreak: devotionalStreakObj.count || 0,
   }
 }
 
-export default function Achievements({ onExit }) {
+export default function Achievements({ onExit, fillVertical = false }) {
+  const { profile } = useAuth()
   const [store, setStore] = useState(() => readJson(KEY, {}))
-  const snapshot = useMemo(() => computeSnapshot(), [])
+  const snapshot = useMemo(() => computeSnapshot(profile), [profile])
 
   const computed = useMemo(() => {
     const now = new Date().toISOString()
@@ -97,7 +125,10 @@ export default function Achievements({ onExit }) {
   const earned = computed.filter((b) => b.unlockedAt).length
 
   return (
-    <div className="glass-panel rounded-2xl p-4 text-white">
+    <div
+      className={`glass-panel rounded-2xl p-4 text-white ${fillVertical ? 'flex min-h-0 flex-1 flex-col' : ''}`}
+      style={fillVertical ? { minHeight: '100%' } : undefined}
+    >
       <style>
         {`
           @keyframes badge-unlock {
@@ -108,7 +139,7 @@ export default function Achievements({ onExit }) {
         `}
       </style>
 
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3 flex shrink-0 items-center justify-between">
         <p className="text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: '#D4A843' }}>
           🏆 Achievements
         </p>
@@ -117,14 +148,14 @@ export default function Achievements({ onExit }) {
         </button>
       </div>
 
-      <div className="mb-3 glass-panel rounded-xl p-3 text-xs text-white/80">
+      <div className="mb-3 shrink-0 glass-panel rounded-xl p-3 text-xs text-white/80">
         Badges Earned:{' '}
         <span style={{ color: '#D4A843', fontWeight: 800 }}>
           {earned}/{computed.length}
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+      <div className={`grid grid-cols-2 gap-2 sm:grid-cols-3 ${fillVertical ? 'min-h-0 flex-1 content-start overflow-y-auto pb-1' : ''}`}>
         {computed.map((b) => {
           const unlocked = !!b.unlockedAt
           return (
@@ -167,4 +198,3 @@ export default function Achievements({ onExit }) {
     </div>
   )
 }
-
