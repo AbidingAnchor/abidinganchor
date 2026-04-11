@@ -42,18 +42,16 @@ function getDaysAgo(dateString) {
   return diffDays
 }
 
-/** Local calendar YYYY-MM-DD (matches how users expect “today” for streaks). */
-function toLocalYmd(isoOrDate) {
-  const x = new Date(isoOrDate)
-  if (Number.isNaN(x.getTime())) return ''
-  const y = x.getFullYear()
-  const m = String(x.getMonth() + 1).padStart(2, '0')
-  const d = String(x.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
+/** Local calendar YYYY-MM-DD — uses getFullYear/Month/Date only (never toISOString slice). */
+function toLocalYmd(iso) {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 function localTodayYmd() {
-  return toLocalYmd(new Date())
+  const now = new Date()
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 }
 
 function addDaysToYmd(ymd, deltaDays) {
@@ -81,8 +79,9 @@ function computeWritingStreak(rows) {
 
 const WEEKDAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
+/** Monday 00:00 local of this week; uses noon anchor to avoid DST edge cases. */
 function getMondayOfWeek(d) {
-  const x = new Date(d)
+  const x = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0, 0)
   const day = x.getDay()
   const diff = day === 0 ? -6 : 1 - day
   x.setDate(x.getDate() + diff)
@@ -93,17 +92,18 @@ function getMondayOfWeek(d) {
 function getWeekHeatmapDays(rows) {
   const dateSet = new Set((rows || []).map((e) => toLocalYmd(e.created_at)).filter(Boolean))
   const monday = getMondayOfWeek(new Date())
-  const todayYmd = localTodayYmd()
+  const now = new Date()
+  const todayYmd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
   return Array.from({ length: 7 }, (_, i) => {
-    const dt = new Date(monday)
-    dt.setDate(monday.getDate() + i)
+    const dt = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i, 12, 0, 0, 0)
     const ymd = toLocalYmd(dt)
     const isToday = ymd === todayYmd
+    const weekdayIndex = (dt.getDay() + 6) % 7
     return {
       ymd,
       filled: dateSet.has(ymd),
       isToday,
-      label: isToday ? 'Today' : WEEKDAY_SHORT[i],
+      label: isToday ? 'Today' : WEEKDAY_SHORT[weekdayIndex],
     }
   })
 }
@@ -113,8 +113,7 @@ function isInCurrentCalendarWeek(iso) {
   const ymd = toLocalYmd(iso)
   const monday = getMondayOfWeek(new Date())
   for (let i = 0; i < 7; i++) {
-    const dt = new Date(monday)
-    dt.setDate(monday.getDate() + i)
+    const dt = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i, 12, 0, 0, 0)
     if (toLocalYmd(dt) === ymd) return true
   }
   return false
