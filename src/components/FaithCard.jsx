@@ -18,7 +18,6 @@ export default function FaithCard({
   verseReference = '',
   verseText = '',
   userReflection = '',
-  scale = 0.25,
   cardStyle = 'celestial',
   contentFont = 'serif',
   textColorChoice = null,
@@ -131,7 +130,7 @@ export default function FaithCard({
   const verseShadow = lightCard ? '0 1px 4px rgba(0,0,0,0.15)' : '0 2px 10px rgba(0, 0, 0, 0.5)'
   const reflShadow = lightCard ? '0 1px 4px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0, 0, 0, 0.4)'
 
-  const showDarkVeil = DARK_CARD_STYLES.has(cardStyle)
+  const isDarkCard = DARK_CARD_STYLES.has(cardStyle)
 
   return (
     <div 
@@ -144,8 +143,6 @@ export default function FaithCard({
         padding: '60px',
         position: 'relative',
         overflow: 'hidden',
-        transform: `scale(${scale})`,
-        transformOrigin: 'top center',
         boxShadow: '0 25px 80px rgba(0, 0, 0, 0.5)',
         display: 'flex',
         flexDirection: 'column',
@@ -166,12 +163,12 @@ export default function FaithCard({
         }} />
       )}
 
-      {showDarkVeil && (
+      {isDarkCard && (
         <div
           style={{
             position: 'absolute',
             inset: 0,
-            background: 'rgba(0,0,0,0.25)',
+            background: 'rgba(0,0,0,0.15)',
             borderRadius: '24px',
             zIndex: 0,
             pointerEvents: 'none',
@@ -188,7 +185,7 @@ export default function FaithCard({
       }}>
         <p style={{
           fontFamily: CONTENT_FONTS.elegant,
-          fontSize: '24px',
+          fontSize: '28px',
           fontWeight: 700,
           color: currentStyle.accentColor,
           letterSpacing: '0.15em',
@@ -217,8 +214,9 @@ export default function FaithCard({
         {verseReference && (
           <p style={{
             fontFamily: bodyFont,
-            fontSize: '36px',
+            fontSize: '48px',
             fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
+            fontWeight: isDarkCard ? 700 : undefined,
             color: currentStyle.textColor,
             marginBottom: '40px',
             textShadow: refShadow,
@@ -231,8 +229,8 @@ export default function FaithCard({
         {verseText && (
           <p style={{
             fontFamily: bodyFont,
-            fontSize: '42px',
-            fontWeight: contentFont === 'modern' ? 600 : 500,
+            fontSize: '54px',
+            fontWeight: isDarkCard ? 700 : (contentFont === 'modern' ? 600 : 500),
             color: currentStyle.textColor,
             lineHeight: '1.5',
             marginBottom: '50px',
@@ -255,8 +253,9 @@ export default function FaithCard({
         {userReflection && (
           <p style={{
             fontFamily: bodyFont,
-            fontSize: '32px',
+            fontSize: '40px',
             fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
+            fontWeight: isDarkCard ? 700 : undefined,
             color: currentStyle.textColor,
             lineHeight: '1.6',
             maxWidth: '800px',
@@ -276,7 +275,7 @@ export default function FaithCard({
       }}>
         <p style={{
           fontFamily: 'Inter, sans-serif',
-          fontSize: '18px',
+          fontSize: '28px',
           fontWeight: 500,
           color: currentStyle.accentColor,
           letterSpacing: '0.05em',

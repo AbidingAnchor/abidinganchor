@@ -156,13 +156,12 @@ export default function ShareCard() {
       </div>
 
       {/* FaithCard Preview — fixed height clips scaled card excess */}
-      <div className="flex justify-center mb-4" style={{ height: '420px', overflow: 'hidden' }}>
-        <div ref={cardRef} style={{ transform: 'scale(0.4)', transformOrigin: 'top center', flexShrink: 0 }}>
+      <div className="flex justify-center mb-4" style={{ height: '450px', overflow: 'hidden' }}>
+        <div ref={cardRef} style={{ transform: 'scale(0.38)', transformOrigin: 'top center', flexShrink: 0 }}>
           <FaithCard
             verseReference={verseReference}
             verseText={verseText}
             userReflection={userReflection}
-            scale={1}
             cardStyle={cardStyle}
             contentFont={contentFont}
             textColorChoice={textColorChoice}
