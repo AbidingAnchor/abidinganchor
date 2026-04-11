@@ -12,9 +12,11 @@ const TEXT_COLOR_CHOICES = {
   dark: '#1a1a1a',
 }
 
-/** Dark backgrounds: bold body copy + strong text shadow for readability */
+/** Dark backgrounds: bold body copy + filter glow wrapper */
 const DARK_THEME = new Set(['celestial', 'midnight', 'scripture', 'forest', 'ocean'])
-const DARK_TEXT_POP = '0 2px 12px rgba(0,0,0,0.8)'
+
+/** Crisp readable edge on all card text */
+const TEXT_CRISP_SHADOW = '0 2px 4px rgba(0,0,0,0.9)'
 
 export default function FaithCard({
   verseReference = '',
@@ -32,7 +34,7 @@ export default function FaithCard({
     switch (cardStyle) {
       case 'celestial':
         return {
-          background: 'radial-gradient(ellipse at top, #1a2a4a 0%, #0d1829 100%)',
+          background: 'radial-gradient(ellipse at top, #1e3a6e 0%, #162955 50%, #0d1f3c 100%)',
           starOpacity: 0.6,
           borderColor: '#D4A843',
           borderWidth: '4px',
@@ -42,7 +44,7 @@ export default function FaithCard({
         }
       case 'dawn':
         return {
-          background: 'linear-gradient(135deg, #1a0533 0%, #3d1a6e 50%, #D4A843 100%)',
+          background: 'linear-gradient(135deg, #2d1b69 0%, #5a2d82 40%, #c2773a 80%, #e8a84e 100%)',
           starOpacity: 0,
           borderColor: '#D4A843',
           borderWidth: '4px',
@@ -52,7 +54,7 @@ export default function FaithCard({
         }
       case 'scripture':
         return {
-          background: 'linear-gradient(180deg, #1a3d1e 0%, #2d5a32 100%)',
+          background: 'linear-gradient(180deg, #2d6a4f 0%, #1e4d35 100%)',
           starOpacity: 0,
           borderColor: '#D4A843',
           borderWidth: '4px',
@@ -62,7 +64,7 @@ export default function FaithCard({
         }
       case 'midnight':
         return {
-          background: '#000000',
+          background: 'linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)',
           starOpacity: 0,
           borderColor: '#D4A843',
           borderWidth: '2px',
@@ -82,7 +84,7 @@ export default function FaithCard({
         }
       case 'ocean':
         return {
-          background: 'linear-gradient(180deg, #0c2461 0%, #1a5276 50%, #148f77 100%)',
+          background: 'linear-gradient(180deg, #1a3a6e 0%, #1e6091 50%, #1a8a7a 100%)',
           starOpacity: 0,
           borderColor: '#5eead4',
           borderWidth: '4px',
@@ -102,7 +104,7 @@ export default function FaithCard({
         }
       case 'forest':
         return {
-          background: 'linear-gradient(180deg, #1b3d2f 0%, #3d5a3e 100%)',
+          background: 'linear-gradient(180deg, #2d6a4f 0%, #3d8b6f 60%, #2a5c44 100%)',
           starOpacity: 0,
           borderColor: '#a3b18a',
           borderWidth: '4px',
@@ -112,7 +114,7 @@ export default function FaithCard({
         }
       default:
         return {
-          background: 'radial-gradient(ellipse at top, #1a2a4a 0%, #0d1829 100%)',
+          background: 'radial-gradient(ellipse at top, #1e3a6e 0%, #162955 50%, #0d1f3c 100%)',
           starOpacity: 0.6,
           borderColor: '#D4A843',
           borderWidth: '4px',
@@ -129,26 +131,9 @@ export default function FaithCard({
     : baseStyle.textColor
   const currentStyle = { ...baseStyle, textColor }
 
-  const lightCard = cardStyle === 'golden' || cardStyle === 'rose'
   const isDarkTheme = DARK_THEME.has(cardStyle)
-  const refShadow = isDarkTheme
-    ? DARK_TEXT_POP
-    : lightCard
-      ? '0 1px 4px rgba(0,0,0,0.15)'
-      : '0 2px 8px rgba(0, 0, 0, 0.35)'
-  const verseShadow = isDarkTheme
-    ? DARK_TEXT_POP
-    : lightCard
-      ? '0 1px 4px rgba(0,0,0,0.15)'
-      : '0 2px 10px rgba(0, 0, 0, 0.5)'
-  const reflShadow = isDarkTheme
-    ? DARK_TEXT_POP
-    : lightCard
-      ? '0 1px 4px rgba(0,0,0,0.15)'
-      : '0 2px 8px rgba(0, 0, 0, 0.4)'
 
-  const watermarkShadow = isDarkTheme ? DARK_TEXT_POP : '0 2px 10px rgba(212, 168, 67, 0.4)'
-  const bottomWatermarkShadow = isDarkTheme ? DARK_TEXT_POP : undefined
+  const darkTextGlow = { filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.8))' }
 
   return (
     <div 
@@ -200,115 +185,124 @@ export default function FaithCard({
         />
       )}
 
-      {/* Top watermark */}
-      <div style={{
-        position: 'relative',
-        zIndex: 1,
-        textAlign: 'center',
-        marginTop: '20px',
-      }}>
-        <p style={{
-          fontFamily: CONTENT_FONTS.elegant,
-          fontSize: '28px',
-          fontWeight: 700,
-          color: currentStyle.accentColor,
-          letterSpacing: '0.15em',
-          textTransform: 'uppercase',
-          margin: 0,
-          textShadow: watermarkShadow,
-        }}>
-          🕊️ AbidingAnchor
-        </p>
-      </div>
-
-      {/* Main content */}
-      <div style={{
-        position: 'relative',
-        zIndex: 1,
-        textAlign: 'center',
-        maxWidth: '900px',
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '40px 0',
-      }}>
-        {/* Verse reference */}
-        {verseReference && (
-          <p style={{
-            fontFamily: bodyFont,
-            fontSize: '48px',
-            fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
-            fontWeight: isDarkTheme ? 700 : undefined,
-            color: currentStyle.textColor,
-            marginBottom: '40px',
-            textShadow: refShadow,
-          }}>
-            {verseReference}
-          </p>
-        )}
-
-        {/* Verse text */}
-        {verseText && (
-          <p style={{
-            fontFamily: bodyFont,
-            fontSize: '54px',
-            fontWeight: isDarkTheme ? 700 : (contentFont === 'modern' ? 600 : 500),
-            color: currentStyle.textColor,
-            lineHeight: '1.5',
-            marginBottom: '50px',
-            textShadow: verseShadow,
-          }}>
-            {verseText}
-          </p>
-        )}
-
-        {/* Gold divider line */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          flex: 1,
+          width: '100%',
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          ...(isDarkTheme ? darkTextGlow : {}),
+        }}
+      >
+        {/* Top watermark */}
         <div style={{
-          width: '200px',
-          height: '2px',
-          background: `linear-gradient(90deg, transparent, ${currentStyle.accentColor}, transparent)`,
-          margin: '20px 0',
-          boxShadow: '0 0 10px rgba(212, 168, 67, 0.5)',
-        }} />
-
-        {/* User reflection/prayer */}
-        {userReflection && (
-          <p style={{
-            fontFamily: bodyFont,
-            fontSize: '40px',
-            fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
-            fontWeight: isDarkTheme ? 700 : undefined,
-            color: currentStyle.textColor,
-            lineHeight: '1.6',
-            maxWidth: '800px',
-            textShadow: reflShadow,
-          }}>
-            {userReflection}
-          </p>
-        )}
-      </div>
-
-      {/* Bottom watermark */}
-      <div style={{
-        position: 'relative',
-        zIndex: 1,
-        textAlign: 'center',
-        marginBottom: '20px',
-      }}>
-        <p style={{
-          fontFamily: 'Inter, sans-serif',
-          fontSize: '28px',
-          fontWeight: 500,
-          color: currentStyle.accentColor,
-          letterSpacing: '0.05em',
-          margin: 0,
-          opacity: 0.7,
-          textShadow: bottomWatermarkShadow,
+          textAlign: 'center',
+          marginTop: '20px',
         }}>
-          abidinganchor.vercel.app
-        </p>
+          <p style={{
+            fontFamily: CONTENT_FONTS.elegant,
+            fontSize: '28px',
+            fontWeight: 700,
+            color: currentStyle.accentColor,
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+            margin: 0,
+            textShadow: TEXT_CRISP_SHADOW,
+          }}>
+            🕊️ AbidingAnchor
+          </p>
+        </div>
+
+        {/* Main content */}
+        <div style={{
+          textAlign: 'center',
+          maxWidth: '900px',
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '40px 0',
+        }}>
+          {/* Verse reference */}
+          {verseReference && (
+            <p style={{
+              fontFamily: bodyFont,
+              fontSize: '48px',
+              fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
+              fontWeight: isDarkTheme ? 700 : undefined,
+              color: currentStyle.textColor,
+              marginBottom: '40px',
+              textShadow: TEXT_CRISP_SHADOW,
+            }}>
+              {verseReference}
+            </p>
+          )}
+
+          {/* Verse text */}
+          {verseText && (
+            <p style={{
+              fontFamily: bodyFont,
+              fontSize: '54px',
+              fontWeight: isDarkTheme ? 700 : (contentFont === 'modern' ? 600 : 500),
+              color: currentStyle.textColor,
+              lineHeight: '1.5',
+              marginBottom: '50px',
+              textShadow: TEXT_CRISP_SHADOW,
+            }}>
+              {verseText}
+            </p>
+          )}
+
+          {/* Gold divider line */}
+          <div style={{
+            width: '200px',
+            height: '2px',
+            background: `linear-gradient(90deg, transparent, ${currentStyle.accentColor}, transparent)`,
+            margin: '20px 0',
+            boxShadow: '0 0 10px rgba(212, 168, 67, 0.5)',
+          }} />
+
+          {/* User reflection/prayer */}
+          {userReflection && (
+            <p style={{
+              fontFamily: bodyFont,
+              fontSize: '40px',
+              fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
+              fontWeight: isDarkTheme ? 700 : undefined,
+              color: currentStyle.textColor,
+              lineHeight: '1.6',
+              maxWidth: '800px',
+              textShadow: TEXT_CRISP_SHADOW,
+            }}>
+              {userReflection}
+            </p>
+          )}
+        </div>
+
+        {/* Bottom watermark */}
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '20px',
+        }}>
+          <p style={{
+            fontFamily: 'Inter, sans-serif',
+            fontSize: '28px',
+            fontWeight: 500,
+            color: currentStyle.accentColor,
+            letterSpacing: '0.05em',
+            margin: 0,
+            opacity: 0.7,
+            textShadow: TEXT_CRISP_SHADOW,
+          }}>
+            abidinganchor.vercel.app
+          </p>
+        </div>
       </div>
 
       {/* Decorative corner accents - only show for non-midnight themes */}
