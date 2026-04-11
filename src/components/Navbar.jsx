@@ -33,10 +33,10 @@ export default function Navbar() {
   }, [user?.id])
 
   useEffect(() => {
-    if (profile?.avatar_url && !localAvatarUrl) {
+    if (profile?.avatar_url) {
       setLocalAvatarUrl(profile.avatar_url)
     }
-  }, [profile?.avatar_url, localAvatarUrl])
+  }, [profile?.avatar_url])
 
   const displayName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email || ''
   const rawAvatarUrl =
@@ -104,7 +104,11 @@ export default function Navbar() {
                 src={localAvatarUrl || profile?.avatar_url}
                 alt="Profile"
                 onError={(e) => {
-                  e.target.style.display = 'none'
+                  if (profile?.avatar_url && e.target.src !== profile.avatar_url) {
+                    e.target.src = profile.avatar_url
+                  } else {
+                    e.target.style.display = 'none'
+                  }
                 }}
                 style={{
                   position: 'absolute',
