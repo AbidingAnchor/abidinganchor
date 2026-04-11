@@ -43,18 +43,32 @@ async function ensureProfile(user) {
   profileSyncedUserIds.add(user.id);
 
   try {
+    // First check if profile exists
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('avatar_url')
+      .eq('id', user.id)
+      .single();
+    
+    // Build upsert payload - only include avatar_url if profile doesn't exist
+    const payload = {
+      id: user.id,
+      email: user.email ?? '',
+      full_name: user.user_metadata?.full_name 
+                 ?? user.user_metadata?.name 
+                 ?? '',
+      bible_version: 'KJV',
+      last_active_date: new Date().toISOString().split('T')[0],
+    };
+    
+    // Only set avatar_url from metadata if profile doesn't exist yet
+    if (!existingProfile) {
+      payload.avatar_url = user.user_metadata?.avatar_url ?? null;
+    }
+    
     const { error } = await supabase
       .from('profiles')
-      .upsert({
-        id: user.id,
-        email: user.email ?? '',
-        full_name: user.user_metadata?.full_name 
-                   ?? user.user_metadata?.name 
-                   ?? '',
-        avatar_url: user.user_metadata?.avatar_url ?? null,
-        bible_version: 'KJV',
-        last_active_date: new Date().toISOString().split('T')[0],
-      }, { 
+      .upsert(payload, { 
         onConflict: 'id',
         ignoreDuplicates: false 
       });

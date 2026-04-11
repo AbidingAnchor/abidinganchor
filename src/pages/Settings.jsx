@@ -10,7 +10,6 @@ export default function Settings() {
   const [selectedTranslation, setSelectedTranslation] = useState('KJV')
   const [uploadStatus, setUploadStatus] = useState('idle') // idle, uploading, success
   const [uploadError, setUploadError] = useState('')
-  const [avatarUpdateTime, setAvatarUpdateTime] = useState(Date.now())
   const fileInputRef = useRef(null)
 
   const handleSignOut = async () => {
@@ -86,9 +85,6 @@ export default function Settings() {
         
         // Refresh profile to get latest avatar_url from Supabase
         await refreshProfile()
-        
-        // Force avatar re-render with cache-busting timestamp
-        setAvatarUpdateTime(Date.now())
       } catch (error) {
         console.error('Profile update error:', error)
         // Continue anyway - avatar is saved, profile update may fail gracefully
@@ -112,7 +108,7 @@ export default function Settings() {
 
   const displayName = profile?.full_name || user?.user_metadata?.full_name || 'User'
   const userEmail = user?.email || ''
-  const avatarUrl = profile?.avatar_url ? profile.avatar_url + '?t=' + avatarUpdateTime : null
+  const avatarUrl = profile?.avatar_url
 
   return (
     <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '110px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
