@@ -11,3 +11,7 @@ ADD COLUMN IF NOT EXISTS onboarding_complete BOOLEAN DEFAULT false;
 -- Add mood column to journal_entries table
 ALTER TABLE journal_entries
 ADD COLUMN IF NOT EXISTS mood TEXT;
+
+-- Add pray_count column to community_prayers table
+ALTER TABLE community_prayers
+ADD COLUMN IF NOT EXISTS pray_count INTEGER DEFAULT 0;
