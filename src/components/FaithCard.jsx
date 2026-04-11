@@ -126,9 +126,10 @@ export default function FaithCard({
   }
 
   const baseStyle = getCardStyle()
-  const textColor = textColorChoice
-    ? TEXT_COLOR_CHOICES[textColorChoice] ?? baseStyle.textColor
+  const textColor = (textColorChoice && TEXT_COLOR_CHOICES[textColorChoice])
+    ? TEXT_COLOR_CHOICES[textColorChoice]
     : baseStyle.textColor
+  console.log('resolved textColor:', textColor)
   const currentStyle = { ...baseStyle, textColor }
 
   const isDarkTheme = DARK_THEME.has(cardStyle)
