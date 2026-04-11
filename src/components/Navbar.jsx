@@ -104,7 +104,7 @@ export default function Navbar() {
             </span>
             {rawAvatarUrl ? (
               <img
-                src={`${localAvatarUrl || profile?.avatar_url}?t=${Date.now()}`}
+                src={localAvatarUrl || profile?.avatar_url}
                 alt="Profile"
                 onError={(e) => {
                   e.target.style.display = 'none'
