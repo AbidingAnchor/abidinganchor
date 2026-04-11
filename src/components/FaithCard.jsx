@@ -12,7 +12,9 @@ const TEXT_COLOR_CHOICES = {
   dark: '#1a1a1a',
 }
 
-const DARK_CARD_STYLES = new Set(['celestial', 'midnight', 'scripture', 'forest'])
+/** Dark backgrounds: bold body copy + strong text shadow for readability */
+const DARK_THEME = new Set(['celestial', 'midnight', 'scripture', 'forest', 'ocean'])
+const DARK_TEXT_POP = '0 2px 12px rgba(0,0,0,0.8)'
 
 export default function FaithCard({
   verseReference = '',
@@ -28,7 +30,7 @@ export default function FaithCard({
     switch (cardStyle) {
       case 'celestial':
         return {
-          background: 'radial-gradient(ellipse at top, #0f1729 0%, #070d1a 100%)',
+          background: 'radial-gradient(ellipse at top, #1a2a4a 0%, #0d1829 100%)',
           starOpacity: 0.6,
           borderColor: '#D4A843',
           borderWidth: '4px',
@@ -48,7 +50,7 @@ export default function FaithCard({
         }
       case 'scripture':
         return {
-          background: 'linear-gradient(180deg, #0d1f0f 0%, #1a3d1e 100%)',
+          background: 'linear-gradient(180deg, #1a3d1e 0%, #2d5a32 100%)',
           starOpacity: 0,
           borderColor: '#D4A843',
           borderWidth: '4px',
@@ -78,7 +80,7 @@ export default function FaithCard({
         }
       case 'ocean':
         return {
-          background: 'linear-gradient(180deg, #051937 0%, #0c2461 35%, #145a5a 70%, #0d7377 100%)',
+          background: 'linear-gradient(180deg, #0c2461 0%, #1a5276 50%, #148f77 100%)',
           starOpacity: 0,
           borderColor: '#5eead4',
           borderWidth: '4px',
@@ -98,7 +100,7 @@ export default function FaithCard({
         }
       case 'forest':
         return {
-          background: 'linear-gradient(180deg, #0f1f14 0%, #1b3d2f 45%, #2d4a3a 78%, #3d2918 100%)',
+          background: 'linear-gradient(180deg, #1b3d2f 0%, #3d5a3e 100%)',
           starOpacity: 0,
           borderColor: '#a3b18a',
           borderWidth: '4px',
@@ -108,7 +110,7 @@ export default function FaithCard({
         }
       default:
         return {
-          background: 'radial-gradient(ellipse at top, #0f1729 0%, #070d1a 100%)',
+          background: 'radial-gradient(ellipse at top, #1a2a4a 0%, #0d1829 100%)',
           starOpacity: 0.6,
           borderColor: '#D4A843',
           borderWidth: '4px',
@@ -126,11 +128,25 @@ export default function FaithCard({
   const currentStyle = { ...baseStyle, textColor }
 
   const lightCard = cardStyle === 'golden' || cardStyle === 'rose'
-  const refShadow = lightCard ? '0 1px 4px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0, 0, 0, 0.35)'
-  const verseShadow = lightCard ? '0 1px 4px rgba(0,0,0,0.15)' : '0 2px 10px rgba(0, 0, 0, 0.5)'
-  const reflShadow = lightCard ? '0 1px 4px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0, 0, 0, 0.4)'
+  const isDarkTheme = DARK_THEME.has(cardStyle)
+  const refShadow = isDarkTheme
+    ? DARK_TEXT_POP
+    : lightCard
+      ? '0 1px 4px rgba(0,0,0,0.15)'
+      : '0 2px 8px rgba(0, 0, 0, 0.35)'
+  const verseShadow = isDarkTheme
+    ? DARK_TEXT_POP
+    : lightCard
+      ? '0 1px 4px rgba(0,0,0,0.15)'
+      : '0 2px 10px rgba(0, 0, 0, 0.5)'
+  const reflShadow = isDarkTheme
+    ? DARK_TEXT_POP
+    : lightCard
+      ? '0 1px 4px rgba(0,0,0,0.15)'
+      : '0 2px 8px rgba(0, 0, 0, 0.4)'
 
-  const isDarkCard = DARK_CARD_STYLES.has(cardStyle)
+  const watermarkShadow = isDarkTheme ? DARK_TEXT_POP : '0 2px 10px rgba(212, 168, 67, 0.4)'
+  const bottomWatermarkShadow = isDarkTheme ? DARK_TEXT_POP : undefined
 
   return (
     <div 
@@ -163,15 +179,21 @@ export default function FaithCard({
         }} />
       )}
 
-      {isDarkCard && (
+      {cardStyle === 'midnight' && (
         <div
           style={{
             position: 'absolute',
             inset: 0,
-            background: 'rgba(0,0,0,0.15)',
             borderRadius: '24px',
             zIndex: 0,
             pointerEvents: 'none',
+            backgroundImage: `
+              radial-gradient(ellipse 100% 85% at 22% 18%, rgba(255,255,255,0.05), transparent 58%),
+              radial-gradient(ellipse 90% 75% at 78% 82%, rgba(255,255,255,0.05), transparent 55%),
+              radial-gradient(ellipse 55% 45% at 50% 48%, rgba(255,255,255,0.04), transparent 72%),
+              radial-gradient(1px 1px at 35% 40%, rgba(255,255,255,0.06), transparent),
+              radial-gradient(1px 1px at 62% 58%, rgba(255,255,255,0.05), transparent)
+            `,
           }}
         />
       )}
@@ -191,7 +213,7 @@ export default function FaithCard({
           letterSpacing: '0.15em',
           textTransform: 'uppercase',
           margin: 0,
-          textShadow: '0 2px 10px rgba(212, 168, 67, 0.4)',
+          textShadow: watermarkShadow,
         }}>
           🕊️ AbidingAnchor
         </p>
@@ -216,7 +238,7 @@ export default function FaithCard({
             fontFamily: bodyFont,
             fontSize: '48px',
             fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
-            fontWeight: isDarkCard ? 700 : undefined,
+            fontWeight: isDarkTheme ? 700 : undefined,
             color: currentStyle.textColor,
             marginBottom: '40px',
             textShadow: refShadow,
@@ -230,7 +252,7 @@ export default function FaithCard({
           <p style={{
             fontFamily: bodyFont,
             fontSize: '54px',
-            fontWeight: isDarkCard ? 700 : (contentFont === 'modern' ? 600 : 500),
+            fontWeight: isDarkTheme ? 700 : (contentFont === 'modern' ? 600 : 500),
             color: currentStyle.textColor,
             lineHeight: '1.5',
             marginBottom: '50px',
@@ -255,7 +277,7 @@ export default function FaithCard({
             fontFamily: bodyFont,
             fontSize: '40px',
             fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
-            fontWeight: isDarkCard ? 700 : undefined,
+            fontWeight: isDarkTheme ? 700 : undefined,
             color: currentStyle.textColor,
             lineHeight: '1.6',
             maxWidth: '800px',
@@ -281,6 +303,7 @@ export default function FaithCard({
           letterSpacing: '0.05em',
           margin: 0,
           opacity: 0.7,
+          textShadow: bottomWatermarkShadow,
         }}>
           abidinganchor.vercel.app
         </p>
