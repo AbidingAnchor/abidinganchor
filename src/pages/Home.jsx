@@ -498,7 +498,8 @@ function Home({ onOpenWorship, worshipStatus }) {
                     ? { fontSize: '36px', color: '#D4A843', filter: 'drop-shadow(0 0 8px rgba(212,168,67,0.8))', animation: 'flamePulse 2s ease-in-out infinite' }
                     : isPast && hasStreak
                       ? { fontSize: '28px', color: '#D4A843', filter: 'drop-shadow(0 0 8px rgba(212,168,67,0.8))' }
-                      : { fontSize: '28px', opacity: 0.2, filter: 'grayscale(1)' }
+                      : { width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(150,150,150,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+                  const isLit = (isToday && hasStreak) || (isPast && hasStreak)
                   return (
                     <div
                       key={day}
@@ -519,7 +520,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                       <div
                         style={flameStyle}
                       >
-                        🔥
+                        {isLit ? '🔥' : null}
                       </div>
                     </div>
                   )
