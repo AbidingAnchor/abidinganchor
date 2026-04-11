@@ -761,20 +761,23 @@ function Journal() {
               <article
                 key={entry.id}
                 style={{
-                  background: 'rgba(255,255,255,0.6)',
-                  backdropFilter: 'blur(16px)',
-                  WebkitBackdropFilter: 'blur(16px)',
-                  border: entry.entry_type === 'prayer' && entry.answered ? `1px solid ${ACCENT_GOLD}` : '1px solid rgba(212,168,67,0.2)',
+                  background: 'linear-gradient(145deg, rgba(30, 27, 58, 0.92) 0%, rgba(15, 23, 42, 0.88) 100%)',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  border: entry.entry_type === 'prayer' && entry.answered
+                    ? `1px solid ${ACCENT_GOLD}`
+                    : '1px solid rgba(255,255,255,0.08)',
                   borderRadius: '14px',
                   padding: '16px',
                   marginBottom: '12px',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,0.06)',
                   ...(entry.entry_type === 'prayer' && entry.answered && {
-                    boxShadow: `0 0 16px ${ACCENT_GOLD}44`
+                    boxShadow: `0 0 20px ${ACCENT_GOLD}55, 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,0.06)`,
                   })
                 }}
               >
                 <p style={{
-                  color: ACCENT_GOLD,
+                  color: '#fbbf24',
                   fontSize: '11px',
                   fontWeight: 600,
                   letterSpacing: '0.08em',
@@ -783,15 +786,15 @@ function Journal() {
                   {entry.date}
                 </p>
                 <p style={{
-                  color: 'var(--text-primary)',
+                  color: '#ffffff',
                   fontSize: '17px',
-                  fontWeight: 600,
+                  fontWeight: 700,
                   marginTop: '4px'
                 }}>
                   {getEntryTitle(entry)}
                 </p>
                 <p style={{
-                  color: 'var(--text-secondary)',
+                  color: 'rgba(255,255,255,0.78)',
                   fontSize: '14px',
                   marginTop: '4px',
                   lineHeight: 1.45,
@@ -807,8 +810,9 @@ function Journal() {
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     {entry.mood && (
                       <span style={{
-                        background: 'rgba(212,168,67,0.15)',
-                        color: '#D4A843',
+                        background: 'rgba(0, 0, 0, 0.45)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        color: '#fcd34d',
                         borderRadius: '20px',
                         fontSize: '11px',
                         padding: '3px 10px',
@@ -819,11 +823,13 @@ function Journal() {
                     )}
                     {entry.reference && (
                       <span style={{
-                        background: 'rgba(212,168,67,0.15)',
-                        color: '#D4A843',
+                        background: 'rgba(10, 12, 28, 0.95)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        color: '#fbbf24',
                         borderRadius: '20px',
                         fontSize: '12px',
-                        padding: '3px 10px'
+                        padding: '4px 10px',
+                        fontWeight: 600,
                       }}>
                         {entry.reference}
                       </span>
@@ -869,7 +875,7 @@ function Journal() {
                         border: 'none',
                         cursor: 'pointer',
                         fontSize: '14px',
-                        color: '#D4A843',
+                        color: '#fbbf24',
                         padding: 0
                       }}
                       title="Share as faith card"
@@ -884,7 +890,7 @@ function Journal() {
                         border: 'none',
                         cursor: 'pointer',
                         fontSize: '16px',
-                        color: 'var(--text-muted)',
+                        color: 'rgba(255,255,255,0.45)',
                         padding: 0
                       }}
                     >
