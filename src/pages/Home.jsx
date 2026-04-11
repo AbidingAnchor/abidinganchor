@@ -56,6 +56,8 @@ function Home({ onOpenWorship, worshipStatus }) {
         if (cancelled) return
         if (error) throw error
 
+        console.log('Streak data:', data)
+
         const today = new Date()
         const todayStr = today.toISOString().slice(0, 10)
         let streakStartDate = data?.streak_start_date
@@ -106,8 +108,10 @@ function Home({ onOpenWorship, worshipStatus }) {
           }).eq('id', user.id)
         }
 
+        console.log('Final streak:', currentStreak)
         setStreak({ currentStreak: currentStreak })
       } catch {
+        console.log('Catch block hit')
         if (!cancelled && !profileRef.current) {
           setStreak({ currentStreak: 0 })
           setSuppressPersonalWelcome(true)
@@ -138,7 +142,7 @@ function Home({ onOpenWorship, worshipStatus }) {
     let timeoutId
     const scheduleNextMidnight = () => {
       setTodaysVerse(getTodaysVerse())
-      setStreak({ currentStreak: profile?.reading_streak || 1 })
+      setStreak({ currentStreak: Number(profile?.reading_streak ?? 0) })
       const now = new Date()
       const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0)
       const ms = Math.max(1000, nextMidnight - now)
