@@ -89,12 +89,15 @@ export default function Settings() {
       const avatarUrl = data.publicUrl
       setPendingAvatarUrl(avatarUrl)
 
-      const { error: updateError } = await supabase.from('profiles')
+      const { data: updatedRow, error: updateError } = await supabase
+        .from('profiles')
         .update({ avatar_url: avatarUrl })
         .eq('id', user.id)
+        .select()
+        .single()
       if (updateError) throw updateError
 
-      await refreshProfile()
+      await refreshProfile(updatedRow)
 
       setUploadStatus('success')
       setTimeout(() => setUploadStatus('idle'), 2000)

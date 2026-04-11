@@ -45,12 +45,13 @@ export default function Navbar() {
         {/* Profile avatar */}
         {displayName ? (
           <div
+            key={profile?.avatar_url || 'no-avatar'}
             style={{
               width: '36px',
               height: '36px',
               borderRadius: '50%',
-              background: avatarUrl 
-                ? `url(${avatarUrl}) center/cover` 
+              background: avatarUrl
+                ? `url(${avatarUrl}) center/cover`
                 : '#D4A843',
               display: 'flex',
               alignItems: 'center',

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext({})
@@ -88,6 +88,19 @@ async function ensureProfile(user) {
       .eq('id', user.id)
       .maybeSingle()
 
+    const metaAvatar =
+      user.user_metadata?.avatar_url ?? user.user_metadata?.picture ?? null
+
+    // Never replace a non-null DB avatar with metadata/null. If the row exists
+    // and already has a stored URL (e.g. from Storage upload), keep it on upsert.
+    let avatar_url = metaAvatar
+    if (existingProfile) {
+      const dbUrl = existingProfile.avatar_url
+      const hasStoredAvatar =
+        dbUrl != null && String(dbUrl).trim() !== ''
+      avatar_url = hasStoredAvatar ? dbUrl : metaAvatar
+    }
+
     const payload = {
       id: user.id,
       email: user.email ?? '',
@@ -95,13 +108,11 @@ async function ensureProfile(user) {
         user.user_metadata?.full_name ?? user.user_metadata?.name ?? '',
       bible_version: 'KJV',
       last_active_date: new Date().toISOString().split('T')[0],
-      // Always set avatar_url on upsert: PostgREST upsert maps omitted columns to
-      // NULL on conflict, which was wiping uploaded avatars on every login/sync.
-      avatar_url: existingProfile
-        ? existingProfile.avatar_url
-        : user.user_metadata?.avatar_url ?? null,
+      // Always include avatar_url in upsert payload so ON CONFLICT does not NULL it.
+      avatar_url,
     }
 
+    // onConflict: 'id' + ignoreDuplicates: false → insert or update row by id
     const { error } = await supabase.from('profiles').upsert(payload, {
       onConflict: 'id',
       ignoreDuplicates: false,
@@ -226,8 +237,12 @@ export function AuthProvider({ children }) {
     await supabase.auth.signOut()
   }
 
-  const refreshProfile = async () => {
-    if (!user?.id) return
+  const refreshProfile = useCallback(async (serverRow) => {
+    if (serverRow && typeof serverRow === 'object') {
+      setProfile(serverRow)
+      return serverRow
+    }
+    if (!user?.id) return null
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -236,17 +251,28 @@ export function AuthProvider({ children }) {
         .maybeSingle()
       if (error) {
         console.error('Profile refresh error:', error)
-        return
+        return null
       }
-      if (data) setProfile(data)
+      setProfile(data ?? null)
+      return data ?? null
     } catch (error) {
       console.error('Profile refresh error:', error)
+      return null
     }
-  }
+  }, [user?.id])
 
-  const value = useMemo(() => ({
-    user, profile, loading, signUp, signIn, signOut, refreshProfile,
-  }), [user, profile, loading])
+  const value = useMemo(
+    () => ({
+      user,
+      profile,
+      loading,
+      signUp,
+      signIn,
+      signOut,
+      refreshProfile,
+    }),
+    [user, profile, loading, refreshProfile],
+  )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
