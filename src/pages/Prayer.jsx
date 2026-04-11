@@ -46,14 +46,14 @@ export default function Prayer() {
         // Fetch prayer counts
         const { data: prayersData, error: _prayersError } = await supabase
           .from('prayers')
-          .select('id,answered')
+          .select('id,is_answered')
           .eq('user_id', user.id)
         
         if (cancelled) return
         
         const streak = Number(profileData?.reading_streak) || 0
         const totalPrayers = (prayersData || []).length
-        const answeredPrayers = (prayersData || []).filter((p) => p.answered).length
+        const answeredPrayers = (prayersData || []).filter((p) => p.is_answered).length
         
         setStats({ streak, totalPrayers, answeredPrayers })
       } catch (err) {
@@ -101,7 +101,7 @@ export default function Prayer() {
     try {
       const { data, error } = await supabase
         .from('prayers')
-        .select('id,user_id,content,answered,created_at')
+        .select('id,user_id,content,is_answered,created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
       if (error) throw error
@@ -115,7 +115,7 @@ export default function Prayer() {
           title: titleFromBody,
           text: textFromBody,
           date: row.created_at,
-          answered: Boolean(row.answered),
+          answered: Boolean(row.is_answered),
         }
       }))
     } catch (err) {
@@ -134,7 +134,7 @@ export default function Prayer() {
       const { error } = await supabase.from('prayers').insert({
         user_id: user.id,
         content: storedContent,
-        answered: false,
+        is_answered: false,
       })
       if (error) throw error
       await loadPrayers()
@@ -150,7 +150,7 @@ export default function Prayer() {
 
   const markAsAnswered = async (entry) => {
     try {
-      const { error } = await supabase.from('prayers').update({ answered: !entry.answered }).eq('id', entry.id)
+      const { error } = await supabase.from('prayers').update({ is_answered: !entry.answered }).eq('id', entry.id)
       if (error) throw error
       await loadPrayers()
     } catch (err) {

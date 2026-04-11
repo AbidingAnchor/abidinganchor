@@ -15,11 +15,11 @@ export async function getPrayerEntries(userIdArg) {
   try {
     const { data, error } = await supabase
       .from('prayers')
-      .select('id,user_id,content,answered,created_at')
+      .select('id,user_id,content,is_answered,created_at')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
     if (error) throw error
-    return (data || []).map((entry) => ({ id: entry.id, text: entry.content, date: entry.created_at, answered: Boolean(entry.answered) }))
+    return (data || []).map((entry) => ({ id: entry.id, text: entry.content, date: entry.created_at, answered: Boolean(entry.is_answered) }))
   } catch (err) {
     console.error('Error getting prayer entries:', err)
     return []
@@ -39,7 +39,7 @@ export async function savePrayer({ text, date, answered = false, userId: userIdA
   }
   if (!userId || !text?.trim()) return []
   try {
-    const payload = { user_id: userId, content: text.trim(), answered }
+    const payload = { user_id: userId, content: text.trim(), is_answered: answered }
     if (date) payload.created_at = date
     const { error } = await supabase.from('prayers').insert(payload)
     if (error) throw error
@@ -51,10 +51,10 @@ export async function savePrayer({ text, date, answered = false, userId: userIdA
 
 export async function toggleAnswered(id) {
   try {
-    const { data, error } = await supabase.from('prayers').select('id,answered,user_id').eq('id', id).single()
+    const { data, error } = await supabase.from('prayers').select('id,is_answered,user_id').eq('id', id).single()
     if (error) throw error
     if (!data) return []
-    const { error: updateError } = await supabase.from('prayers').update({ answered: !data.answered }).eq('id', id)
+    const { error: updateError } = await supabase.from('prayers').update({ is_answered: !data.answered }).eq('id', id)
     if (updateError) throw updateError
     return getPrayerEntries(data.user_id)
   } catch (err) {
