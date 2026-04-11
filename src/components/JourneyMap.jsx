@@ -435,7 +435,7 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
               <img
                 src="/jesus-and-person.png"
                 alt=""
-                className="h-[80px] w-auto shrink-0 object-contain"
+                className="h-[112px] w-auto shrink-0 object-contain"
               />
               <div className="relative min-w-0 flex-1">
                 <div

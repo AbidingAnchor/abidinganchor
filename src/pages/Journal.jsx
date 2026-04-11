@@ -424,7 +424,14 @@ function Journal() {
           gap: '8px',
           marginBottom: '20px'
         }}>
-          <div className="min-w-0 flex-1 rounded-[14px] border border-white/10 bg-[#1e1b3a] px-2 py-2.5 text-center">
+          <div
+            className="glass-panel min-w-0 flex-1 text-center"
+            style={{
+              border: '1px solid #D4A843',
+              borderRadius: '16px',
+              padding: '10px 8px',
+            }}
+          >
             <p className="mb-1 text-2xl font-bold text-amber-400">
               {totalEntries}
             </p>
@@ -432,7 +439,14 @@ function Journal() {
               {totalEntries === 1 ? 'Entry' : 'Entries'}
             </p>
           </div>
-          <div className="min-w-0 flex-1 rounded-[14px] border border-white/10 bg-[#1e1b3a] px-2 py-2.5 text-center">
+          <div
+            className="glass-panel min-w-0 flex-1 text-center"
+            style={{
+              border: '1px solid #D4A843',
+              borderRadius: '16px',
+              padding: '10px 8px',
+            }}
+          >
             <p className="mb-1 text-2xl font-bold text-amber-400">
               {writingStreak}
             </p>
@@ -440,7 +454,14 @@ function Journal() {
               Day streak
             </p>
           </div>
-          <div className="min-w-0 flex-1 rounded-[14px] border border-white/10 bg-[#1e1b3a] px-2 py-2.5 text-center">
+          <div
+            className="glass-panel min-w-0 flex-1 text-center"
+            style={{
+              border: '1px solid #D4A843',
+              borderRadius: '16px',
+              padding: '10px 8px',
+            }}
+          >
             <p className="mb-1 text-2xl font-bold text-amber-400">
               {prayerCount}
             </p>
@@ -450,7 +471,18 @@ function Journal() {
           </div>
         </div>
 
-        <div className="mb-5 rounded-[14px] border border-white/10 bg-[#1e1b3a] px-3 py-3.5">
+        <div style={{ marginBottom: '28px' }}>
+        <div
+          className="glass-panel"
+          style={{
+            borderRadius: '20px',
+            padding: '20px',
+            boxShadow:
+              writingStreak >= 7
+                ? '0 0 0 1px rgba(212,168,67,0.45), 0 0 20px rgba(212,168,67,0.2)'
+                : undefined,
+          }}
+        >
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
@@ -508,6 +540,7 @@ function Journal() {
             ))}
           </div>
         </div>
+        </div>
 
         <h1 style={{
           color: ACCENT_GOLD,
@@ -520,16 +553,13 @@ function Journal() {
           MY JOURNAL
         </h1>
 
-        <div style={{
-          background: 'rgba(255,255,255,0.6)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          borderLeft: `4px solid ${ACCENT_GOLD}`,
-          borderRadius: '14px',
-          padding: '16px',
-          marginBottom: '20px',
-        }}>
+        <div
+          className="glass-panel rounded-2xl p-6"
+          style={{
+            borderRadius: '16px',
+            marginBottom: '20px',
+          }}
+        >
           <p style={{
             color: 'var(--text-primary)',
             fontSize: '15px',
@@ -700,7 +730,12 @@ function Journal() {
             {visibleEntries.map((entry) => (
               <div
                 key={entry.id}
-                className="bg-[#1e1b3a] border border-white/10 border-l-4 border-l-amber-500 rounded-2xl p-4 mb-3 shadow-lg"
+                className="glass-panel mb-3"
+                style={{
+                  border: '1px solid #D4A843',
+                  borderRadius: '16px',
+                  padding: '20px',
+                }}
               >
                 <p className="text-amber-400 text-xs uppercase tracking-widest font-semibold">
                   {entry.date}
