@@ -12,6 +12,8 @@ export default function Settings() {
   const [uploadStatus, setUploadStatus] = useState('idle') // idle, uploading, success
   const [uploadError, setUploadError] = useState('')
   const [pendingAvatarUrl, setPendingAvatarUrl] = useState(null)
+  const [pendingAvatarFile, setPendingAvatarFile] = useState(null)
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState(null)
   const fileInputRef = useRef(null)
 
   useEffect(() => {
@@ -23,6 +25,12 @@ export default function Settings() {
       setPendingAvatarUrl(null)
     }
   }, [pendingAvatarUrl, profile?.avatar_url])
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreviewUrl) URL.revokeObjectURL(avatarPreviewUrl)
+    }
+  }, [avatarPreviewUrl])
 
   const handleSignOut = async () => {
     await signOut()
@@ -49,37 +57,45 @@ export default function Settings() {
     }
   }
 
-  const handleProfilePictureUpload = async (file) => {
+  const validateAvatarFile = (file) => {
+    const allowedTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/gif',
+    ]
+    const ext = getAvatarUploadExtension(file)
+    const extAllowed = ['jpg', 'png', 'webp', 'gif'].includes(ext)
+    const mimeOk = file.type ? allowedTypes.includes(file.type) : false
+    if (!mimeOk && !extAllowed) {
+      return 'Please choose a JPG, PNG, WebP, or GIF image'
+    }
+    const maxSize = 5 * 1024 * 1024
+    if (file.size > maxSize) {
+      return 'Image must be less than 5MB'
+    }
+    return null
+  }
+
+  const clearAvatarPreview = () => {
+    if (avatarPreviewUrl) {
+      URL.revokeObjectURL(avatarPreviewUrl)
+    }
+    setAvatarPreviewUrl(null)
+    setPendingAvatarFile(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const handleSaveAvatarPhoto = async () => {
+    const file = pendingAvatarFile
+    const blobUrlToRevoke = avatarPreviewUrl
     if (!file || !user?.id) return
 
     try {
       setUploadStatus('uploading')
       setUploadError('')
 
-      // File type validation (MIME and/or extension — some mobile picks omit type)
-      const allowedTypes = [
-        'image/jpeg',
-        'image/png',
-        'image/webp',
-        'image/gif',
-      ]
       const ext = getAvatarUploadExtension(file)
-      const extAllowed = ['jpg', 'png', 'webp', 'gif'].includes(ext)
-      const mimeOk = file.type ? allowedTypes.includes(file.type) : false
-      if (!mimeOk && !extAllowed) {
-        setUploadError('Please choose a JPG, PNG, WebP, or GIF image')
-        setUploadStatus('idle')
-        return
-      }
-
-      // File size validation (max 5MB)
-      const maxSize = 5 * 1024 * 1024 // 5MB in bytes
-      if (file.size > maxSize) {
-        setUploadError('Image must be less than 5MB')
-        setUploadStatus('idle')
-        return
-      }
-
       const filePath = `${user.id}/avatar-${Date.now()}.${ext}`
       const contentTypeByExt = {
         jpg: 'image/jpeg',
@@ -113,8 +129,12 @@ export default function Settings() {
 
       await refreshProfile(updatedRow)
 
+      if (blobUrlToRevoke) URL.revokeObjectURL(blobUrlToRevoke)
+      setAvatarPreviewUrl(null)
+      setPendingAvatarFile(null)
+      if (fileInputRef.current) fileInputRef.current.value = ''
       setUploadStatus('success')
-      setTimeout(() => setUploadStatus('idle'), 2000)
+      setTimeout(() => setUploadStatus('idle'), 2500)
     } catch (error) {
       console.error('Upload error:', error)
       setPendingAvatarUrl(null)
@@ -124,22 +144,42 @@ export default function Settings() {
   }
 
   const handleFileSelect = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      handleProfilePictureUpload(file)
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const err = validateAvatarFile(file)
+    if (err) {
+      setUploadError(err)
+      setUploadStatus('idle')
+      e.target.value = ''
+      return
     }
+
+    setUploadError('')
+    setUploadStatus('idle')
+    if (avatarPreviewUrl) {
+      URL.revokeObjectURL(avatarPreviewUrl)
+    }
+    setPendingAvatarFile(file)
+    setAvatarPreviewUrl(URL.createObjectURL(file))
   }
 
   const displayName = profile?.full_name || user?.user_metadata?.full_name || 'User'
   const userEmail = user?.email || ''
-  const rawAvatarUrl = pendingAvatarUrl ?? profile?.avatar_url
-  const avatarDisplayUrl = useMemo(
-    () => appendAvatarCacheBust(rawAvatarUrl),
-    [rawAvatarUrl],
-  )
+  const serverRawAvatarUrl = pendingAvatarUrl ?? profile?.avatar_url
+  const avatarDisplayUrl = useMemo(() => {
+    if (avatarPreviewUrl) return avatarPreviewUrl
+    return appendAvatarCacheBust(serverRawAvatarUrl)
+  }, [avatarPreviewUrl, serverRawAvatarUrl])
+  const hasAvatarImage = Boolean(avatarPreviewUrl || serverRawAvatarUrl)
 
   return (
     <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '110px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
+      <style>{`
+        @keyframes settings-avatar-spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
       <section className="space-y-4">
         <header className="space-y-2">
           <p className="text-section-header">Settings</p>
@@ -174,10 +214,10 @@ export default function Settings() {
                   fontWeight: 600,
                   boxShadow: '0 2px 8px rgba(212,168,67,0.3)',
                   cursor: 'pointer',
-                  border: rawAvatarUrl ? '2px solid rgba(212,168,67,0.4)' : 'none'
+                  border: hasAvatarImage ? '2px solid rgba(212,168,67,0.4)' : 'none'
                 }}
               >
-                {!rawAvatarUrl && displayName.charAt(0).toUpperCase()}
+                {!hasAvatarImage && displayName.charAt(0).toUpperCase()}
               </div>
               <div
                 onClick={() => fileInputRef.current?.click()}
@@ -214,18 +254,87 @@ export default function Settings() {
               <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>
                 {userEmail}
               </p>
-              {uploadStatus === 'uploading' && (
-                <p style={{ color: '#D4A843', fontSize: '12px', marginTop: '4px' }}>
-                  Uploading...
-                </p>
-              )}
               {uploadStatus === 'success' && (
                 <p style={{ color: '#4ade80', fontSize: '12px', marginTop: '4px' }}>
-                  ✓ Profile picture updated!
+                  Profile photo saved!
                 </p>
               )}
             </div>
           </div>
+          {pendingAvatarFile && (
+            <div
+              style={{
+                marginTop: '16px',
+                padding: '14px 16px',
+                background: 'rgba(8,20,50,0.5)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                border: '1px solid rgba(212,168,67,0.25)',
+                borderRadius: '12px',
+                display: 'flex',
+                gap: '12px',
+              }}
+            >
+              <button
+                type="button"
+                disabled={uploadStatus === 'uploading'}
+                onClick={() => {
+                  clearAvatarPreview()
+                  setUploadError('')
+                }}
+                style={{
+                  flex: 1,
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  border: '1px solid #D4A843',
+                  background: 'transparent',
+                  color: '#D4A843',
+                  fontSize: '15px',
+                  fontWeight: 600,
+                  cursor: uploadStatus === 'uploading' ? 'not-allowed' : 'pointer',
+                  opacity: uploadStatus === 'uploading' ? 0.5 : 1,
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={uploadStatus === 'uploading'}
+                onClick={handleSaveAvatarPhoto}
+                style={{
+                  flex: 1,
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: '#D4A843',
+                  color: '#0a1432',
+                  fontSize: '15px',
+                  fontWeight: 600,
+                  cursor: uploadStatus === 'uploading' ? 'not-allowed' : 'pointer',
+                  opacity: uploadStatus === 'uploading' ? 0.85 : 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              >
+                {uploadStatus === 'uploading' && (
+                  <span
+                    aria-hidden
+                    style={{
+                      width: '18px',
+                      height: '18px',
+                      border: '2px solid rgba(10,20,50,0.25)',
+                      borderTopColor: '#0a1432',
+                      borderRadius: '50%',
+                      animation: 'settings-avatar-spin 0.7s linear infinite',
+                    }}
+                  />
+                )}
+                Save Photo
+              </button>
+            </div>
+          )}
           {uploadError && (
             <div style={{
               marginTop: '16px',
