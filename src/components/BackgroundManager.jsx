@@ -88,6 +88,10 @@ export default function BackgroundManager() {
     <div className="fixed inset-0 -z-50 pointer-events-none overflow-hidden">
       {previousBg && <BackgroundLayer type={previousBg} isVisible={false} />}
       <BackgroundLayer type={currentBg} isVisible />
+      <div
+        className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"
+        aria-hidden
+      />
     </div>
   );
 }

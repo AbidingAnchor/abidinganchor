@@ -45,10 +45,11 @@ export default function SunsetBackground() {
     };
 
     const drawMote = (p) => {
+      const a = p.opacity * 0.55;
       const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 7);
-      gradient.addColorStop(0, `rgba(255, 230, 180, ${p.opacity})`);
-      gradient.addColorStop(0.4, `rgba(255, 210, 150, ${p.opacity * 0.45})`);
-      gradient.addColorStop(1, "rgba(255, 210, 150, 0)");
+      gradient.addColorStop(0, `rgba(190, 135, 95, ${a})`);
+      gradient.addColorStop(0.4, `rgba(130, 82, 58, ${a * 0.42})`);
+      gradient.addColorStop(1, "rgba(90, 55, 40, 0)");
 
       ctx.beginPath();
       ctx.fillStyle = gradient;
