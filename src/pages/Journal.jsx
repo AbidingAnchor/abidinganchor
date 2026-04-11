@@ -769,8 +769,7 @@ function Journal() {
               <article
                 key={entry.id}
                 className={[
-                  'mb-3 rounded-xl bg-[#1a1535] p-4 shadow-lg border-l-4 border-l-amber-500',
-                  'border-t border-r border-b border-white/[0.08]',
+                  'mb-3 rounded-2xl bg-[#1e1b3a] p-4 shadow-lg border border-white/10 border-l-4 border-l-amber-500',
                   entry.entry_type === 'prayer' && entry.answered
                     ? 'ring-1 ring-amber-400/45 shadow-[0_10px_40px_rgba(0,0,0,0.45),0_0_28px_rgba(212,168,67,0.22)]'
                     : '',
@@ -778,13 +777,13 @@ function Journal() {
                   .filter(Boolean)
                   .join(' ')}
               >
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-amber-400">
+                <p className="text-xs font-semibold uppercase tracking-widest text-amber-400">
                   {entry.date}
                 </p>
-                <p className="mt-1 text-[17px] font-bold text-white">
+                <p className="mt-1 text-lg font-bold text-white">
                   {getEntryTitle(entry)}
                 </p>
-                <p className="mt-1 text-sm leading-[1.45] text-white/70">
+                <p className="mt-1 text-sm text-white/60">
                   {getEntryBodyPreview(entry)}
                 </p>
                 <div style={{
@@ -808,7 +807,7 @@ function Journal() {
                       </span>
                     )}
                     {entry.reference && (
-                      <span className="rounded-full border border-amber-500/30 bg-amber-500/20 px-2.5 py-1 text-xs font-semibold text-amber-300">
+                      <span className="rounded-full border border-amber-500/30 bg-amber-500/20 px-3 py-1 text-xs text-amber-300">
                         {entry.reference}
                       </span>
                     )}

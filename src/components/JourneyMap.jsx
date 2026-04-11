@@ -187,8 +187,8 @@ function buildPathD(stops) {
   return `M ${first.x} ${first.y}` + rest.map((s) => ` L ${s.x} ${s.y}`).join('')
 }
 
-/** ~3× prior visual size (was 2.55). Local coords: feet on y=0, ~24 units tall (user), Jesus slightly taller. */
-const FIGURE_SCALE = 7.65
+/** Local coords: feet near y=0; applied scale targets ~24–30px on-screen height (icon-sized beside the node). */
+const FIGURE_SCALE = 1.42
 const NODE_DOT_R = 10
 /** Feet baseline just under the gold node (center y + radius + hairline gap). */
 const FEET_BELOW_NODE_CENTER = NODE_DOT_R + 1
@@ -221,22 +221,23 @@ function MapJesusFigure() {
   const haloStroke = '#E8B565'
   return (
     <g>
-      <ellipse cx="0" cy="-9" rx="12" ry="23" fill="url(#journeyJesusAuraGradient)" style={{ filter: 'url(#journeyJesusAura)' }} />
-      <ellipse cx="0" cy="-9" rx="16" ry="30" fill="url(#journeyJesusAuraOuter)" opacity="0.92" style={{ filter: 'url(#journeyJesusAuraOuterBlur)' }} />
-      {/* Crown of light — shallow arc above the head (open upward, not a closed ring) */}
+      {/* Tight glow — proportional to body, not map-sized */}
+      <ellipse cx="0" cy="-10" rx="4.2" ry="9" fill="url(#journeyJesusAuraGradient)" style={{ filter: 'url(#journeyJesusAura)' }} />
+      <ellipse cx="0" cy="-10" rx="5.6" ry="11.5" fill="url(#journeyJesusAuraOuter)" opacity="0.88" style={{ filter: 'url(#journeyJesusAuraOuterBlur)' }} />
+      {/* Crown of light — small arc above the head (open upward, not a closed ring) */}
       <path
-        d="M -8.5,-21 Q 0,-30 8.5,-21"
+        d="M -3.6,-16.2 Q 0,-19.4 3.6,-16.2"
         fill="none"
         stroke={haloStroke}
-        strokeWidth="0.6"
+        strokeWidth="0.38"
         strokeLinecap="round"
         opacity="0.95"
       />
       <path
-        d="M -8,-21.5 Q 0,-28.5 8,-21.5"
+        d="M -3.3,-16.5 Q 0,-18.8 3.3,-16.5"
         fill="none"
         stroke="#F5D78A"
-        strokeWidth="0.3"
+        strokeWidth="0.2"
         strokeLinecap="round"
         opacity="0.8"
       />
@@ -266,8 +267,8 @@ function MapJesusFigure() {
 function JourneyWalkingFigures({ stop }) {
   if (!stop) return null
   const { x, y } = stop
-  /* Half-width of silhouette ~4.5 local × FIGURE_SCALE — keep centers ≥2× that apart */
-  const spread = 36
+  /* Icon-sized figures; ±spread keeps pair beside the node without crowding labels */
+  const spread = 22
   const scale = FIGURE_SCALE
   return (
     <g pointerEvents="none" aria-hidden="true" transform={`translate(${x}, ${y + FEET_BELOW_NODE_CENTER})`}>
@@ -369,7 +370,7 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
               <stop offset="100%" stopColor="#FFD27A" stopOpacity="0" />
             </radialGradient>
             <filter id="journeyJesusAura" x="-90%" y="-90%" width="280%" height="280%">
-              <feGaussianBlur in="SourceGraphic" stdDeviation="4.5" result="blur" />
+              <feGaussianBlur in="SourceGraphic" stdDeviation="1.35" result="blur" />
               <feColorMatrix
                 in="blur"
                 type="matrix"
@@ -378,17 +379,17 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
               />
             </filter>
             <filter id="journeyJesusAuraOuterBlur" x="-100%" y="-100%" width="300%" height="300%">
-              <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="b" />
+              <feGaussianBlur in="SourceGraphic" stdDeviation="2.2" result="b" />
               <feMerge>
                 <feMergeNode in="b" />
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
             <filter id="journeyJesusFigure" x="-55%" y="-55%" width="210%" height="210%">
-              <feGaussianBlur in="SourceAlpha" stdDeviation="1.2" result="s" />
+              <feGaussianBlur in="SourceAlpha" stdDeviation="0.45" result="s" />
               <feFlood floodColor="#FFC14D" floodOpacity="0.72" result="f" />
               <feComposite in="f" in2="s" operator="in" result="g" />
-              <feGaussianBlur in="g" stdDeviation="1.8" result="g2" />
+              <feGaussianBlur in="g" stdDeviation="0.65" result="g2" />
               <feMerge>
                 <feMergeNode in="g2" />
                 <feMergeNode in="g" />
