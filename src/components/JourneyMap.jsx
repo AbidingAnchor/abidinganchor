@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 const KEY = 'abidinganchor-journey-map'
+const COMPLETION_MODAL_DISMISSED_KEY = 'abidinganchor-journey-map-completion-modal-dismissed'
 const TRIVIA_STATS_KEY = 'abidinganchor-trivia-stats'
 const VERSE_PROGRESS_KEY = 'abidinganchor-verse-progress'
 
@@ -180,16 +181,6 @@ export const JOURNEY_MAP_STOPS = [
       'I love when My word echoes from humble homes into streets and regions beyond. Your faithful endurance in ordinary days becomes a sound of hope others overhear. Keep sounding forth love and truth; I am glorified in your steady witness.',
   },
   {
-    id: 'corinth',
-    label: 'Corinth',
-    x: 98,
-    y: 91,
-    description: 'Paul planted a church and taught Christ crucified in power.',
-    scripture: 'Acts 18:1-8',
-    jesusVoice:
-      'In messy, gifted, struggling communities I build My body—because My power rests on the humble, not the polished. You do not need to pretend you have it all together; bring your fractures to Me. I am enough, and My grace is sufficient for you.',
-  },
-  {
     id: 'athens',
     label: 'Athens',
     x: 128,
@@ -198,6 +189,16 @@ export const JOURNEY_MAP_STOPS = [
     scripture: 'Acts 17:22-31',
     jesusVoice:
       'I am the God your searching pointed toward—the one your altars to “the unknown” were reaching for. I am not far from any who seek; I give life and breath and purpose. Keep seeking honestly, and you will find Me nearer than your next breath.',
+  },
+  {
+    id: 'corinth',
+    label: 'Corinth',
+    x: 98,
+    y: 91,
+    description: 'Paul planted a church and taught Christ crucified in power.',
+    scripture: 'Acts 18:1-8',
+    jesusVoice:
+      'In messy, gifted, struggling communities I build My body—because My power rests on the humble, not the polished. You do not need to pretend you have it all together; bring your fractures to Me. I am enough, and My grace is sufficient for you.',
   },
   {
     id: 'ephesus',
@@ -238,17 +239,25 @@ const PROGRESS_MARKER_HEIGHT = 80
 const PROGRESS_MARKER_GAP = 8
 /** Extra offset below the dot so figures clear the label and the path to the next stop. */
 const PROGRESS_MARKER_NUDGE_DOWN = 12
-/** Tight padding under the figure so the map doesn’t leave a large empty band at the card bottom. */
-const MAP_VIEWBOX_BOTTOM_PAD = 2
-/** Lowest point on the path (largest y); marker under that stop needs the most vertical room. */
+/** Padding below the progress figure (and map content) so the card doesn’t feel cramped. */
+const MAP_VIEWBOX_BOTTOM_PAD = 16
+/** Space below the lowest node for labels (path ends at Bethlehem). */
+const MAP_LABEL_BOTTOM_CLEARANCE = 12
+/** Lowest point on the path (largest y). */
 const MAP_LOWEST_Y = Math.max(...JOURNEY_MAP_STOPS.map((s) => s.y))
-const MAP_VIEWBOX_H =
-  MAP_LOWEST_Y +
-  NODE_DOT_R +
-  PROGRESS_MARKER_GAP +
-  PROGRESS_MARKER_NUDGE_DOWN +
-  PROGRESS_MARKER_HEIGHT +
-  MAP_VIEWBOX_BOTTOM_PAD
+/** Bottom edge of static map content (nodes, path, labels) — independent of progress marker position. */
+const MAP_CONTENT_BOTTOM = MAP_LOWEST_Y + NODE_DOT_R + MAP_LABEL_BOTTOM_CLEARANCE
+
+function mapViewBoxHeight(progressStop) {
+  const markerBottom = progressStop
+    ? progressStop.y +
+      NODE_DOT_R +
+      PROGRESS_MARKER_GAP +
+      PROGRESS_MARKER_NUDGE_DOWN +
+      PROGRESS_MARKER_HEIGHT
+    : 0
+  return Math.max(MAP_CONTENT_BOTTOM, markerBottom) + MAP_VIEWBOX_BOTTOM_PAD
+}
 
 /** Labels on the left of the dot when the node is on the right; avoids clipping long names. */
 function labelAnchor(stop) {
@@ -258,8 +267,8 @@ function labelAnchor(stop) {
   return { textAnchor: 'start', x: stop.x + 14 }
 }
 
-/** Centered under the active node, in the space below the dot (works well at Bethlehem with extra viewBox height). */
-function progressMarkerLayout(stop) {
+/** Centered under the active node, in the space below the dot. */
+function progressMarkerLayout(stop, viewBoxH) {
   const h = PROGRESS_MARKER_HEIGHT
   const w = (PROGRESS_IMG_W / PROGRESS_IMG_H) * h
   const { x, y } = stop
@@ -267,14 +276,14 @@ function progressMarkerLayout(stop) {
   let left = x - w / 2
   const margin = 4
   left = Math.max(margin, Math.min(left, MAP_VIEWBOX_W - w - margin))
-  const maxTop = MAP_VIEWBOX_H - MAP_VIEWBOX_BOTTOM_PAD - h
+  const maxTop = viewBoxH - MAP_VIEWBOX_BOTTOM_PAD - h
   const yClamped = Math.min(top, maxTop)
   return { x: left, y: yClamped, w, h }
 }
 
-function JourneyProgressMarker({ stop }) {
+function JourneyProgressMarker({ stop, viewBoxH }) {
   if (!stop) return null
-  const { x, y, w, h } = progressMarkerLayout(stop)
+  const { x, y, w, h } = progressMarkerLayout(stop, viewBoxH)
   return (
     <g pointerEvents="none" aria-hidden="true">
       <foreignObject x={x} y={y} width={w} height={h}>
@@ -299,6 +308,7 @@ function JourneyProgressMarker({ stop }) {
 export default function JourneyMap({ onExit, fillVertical = false }) {
   const [state, setState] = useState(() => readJson(KEY, { seenFacts: {}, updatedAt: '' }))
   const [activeStop, setActiveStop] = useState(null)
+  const [showJourneyCompletionModal, setShowJourneyCompletionModal] = useState(false)
 
   const triviaStats = useMemo(() => readJson(TRIVIA_STATS_KEY, { gamesCompleted: 0 }), [])
   const verseProgress = useMemo(() => readJson(VERSE_PROGRESS_KEY, {}), [])
@@ -308,6 +318,22 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
     JOURNEY_MAP_STOPS.length,
     1 + Math.floor(((triviaStats.gamesCompleted || 0) + memorizedCount) / 2),
   )
+
+  const journeyFullyUnlocked = unlockedCount >= JOURNEY_MAP_STOPS.length
+
+  useEffect(() => {
+    if (
+      journeyFullyUnlocked &&
+      !readJson(COMPLETION_MODAL_DISMISSED_KEY, false)
+    ) {
+      setShowJourneyCompletionModal(true)
+    }
+  }, [journeyFullyUnlocked])
+
+  const dismissJourneyCompletionModal = () => {
+    writeJson(COMPLETION_MODAL_DISMISSED_KEY, true)
+    setShowJourneyCompletionModal(false)
+  }
 
   const openStop = (stop, unlocked) => {
     if (!unlocked) return
@@ -329,6 +355,8 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
     return JOURNEY_MAP_STOPS[idx]
   }, [unlockedCount])
 
+  const mapViewBoxH = useMemo(() => mapViewBoxHeight(currentProgressStop), [currentProgressStop])
+
   return (
     <div
       className={`glass-panel rounded-2xl p-4 text-white ${fillVertical ? 'flex min-h-0 flex-1 flex-col' : ''}`}
@@ -339,6 +367,14 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
           @keyframes map-pulse {
             0%, 100% { filter: drop-shadow(0 0 6px rgba(212,168,67,0.35)); transform: scale(1); }
             50% { filter: drop-shadow(0 0 10px rgba(212,168,67,0.5)); transform: scale(1.08); }
+          }
+          @keyframes journey-completion-halo {
+            0%, 100% { opacity: 0.65; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+          }
+          @keyframes journey-completion-button-glow {
+            0%, 100% { box-shadow: 0 0 14px rgba(212, 168, 67, 0.45), 0 0 28px rgba(212, 168, 67, 0.2); }
+            50% { box-shadow: 0 0 22px rgba(212, 168, 67, 0.65), 0 0 40px rgba(212, 168, 67, 0.35); }
           }
         `}
       </style>
@@ -362,7 +398,7 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
       <div className={`glass-panel min-h-0 rounded-2xl p-3 ${fillVertical ? 'flex flex-1 flex-col' : ''}`}>
         <svg
           width="100%"
-          viewBox={`0 0 ${MAP_VIEWBOX_W} ${MAP_VIEWBOX_H}`}
+          viewBox={`0 0 ${MAP_VIEWBOX_W} ${mapViewBoxH}`}
           preserveAspectRatio="xMidYMid meet"
           className={fillVertical ? 'min-h-[240px] flex-1' : ''}
           style={{ display: 'block' }}
@@ -435,9 +471,75 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
             )
           })}
 
-          {currentProgressStop ? <JourneyProgressMarker stop={currentProgressStop} /> : null}
+          {currentProgressStop ? (
+            <JourneyProgressMarker stop={currentProgressStop} viewBoxH={mapViewBoxH} />
+          ) : null}
         </svg>
       </div>
+
+      {showJourneyCompletionModal ? (
+        <div
+          className="fixed inset-0 z-[110] flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="journey-completion-title"
+        >
+          <div
+            className="absolute inset-0 bg-black/65 backdrop-blur-[2px]"
+            aria-hidden
+          />
+          <div
+            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border-2 border-[#D4A843] px-6 pb-8 pt-10 text-center shadow-2xl"
+            style={{
+              background: 'linear-gradient(165deg, #0f1729 0%, #0a0f1c 45%, #0d1528 100%)',
+              boxShadow:
+                '0 0 0 1px rgba(212, 168, 67, 0.15), 0 25px 50px -12px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(212, 168, 67, 0.12)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative mx-auto mb-8 flex h-[150px] w-full items-center justify-center">
+              <div
+                className="pointer-events-none absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#D4A843]/25 blur-3xl"
+                style={{ animation: 'journey-completion-halo 4s ease-in-out infinite' }}
+                aria-hidden
+              />
+              <div
+                className="pointer-events-none absolute left-1/2 top-1/2 h-28 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#c9a227]/30 blur-2xl"
+                style={{ animation: 'journey-completion-halo 5s ease-in-out infinite reverse' }}
+                aria-hidden
+              />
+              <img
+                src="/jesus-victorious.png"
+                alt=""
+                className="relative z-10 h-[150px] w-auto max-w-full object-contain"
+                style={{
+                  filter:
+                    'drop-shadow(0 0 24px rgba(212, 168, 67, 0.5)) drop-shadow(0 0 48px rgba(212, 168, 67, 0.25))',
+                }}
+              />
+            </div>
+            <h2
+              id="journey-completion-title"
+              className="font-serif text-2xl font-light leading-snug tracking-wide text-[#e8c86a] sm:text-[1.65rem]"
+              style={{ textShadow: '0 0 40px rgba(212, 168, 67, 0.35)' }}
+            >
+              Well done, my good and faithful servant.
+            </h2>
+            <p className="mx-auto mt-5 max-w-sm text-sm leading-relaxed text-white/85">
+              You have walked the full journey. Your faith has carried you from Bethlehem to Rome.
+            </p>
+            <p className="mt-6 text-sm font-medium text-amber-400/95">Matthew 25:23</p>
+            <button
+              type="button"
+              onClick={dismissJourneyCompletionModal}
+              className="mt-10 inline-flex min-w-[140px] items-center justify-center rounded-xl border-2 border-[#D4A843] bg-[#D4A843]/10 px-8 py-3 text-base font-semibold text-[#f0d78c] transition hover:bg-[#D4A843]/20"
+              style={{ animation: 'journey-completion-button-glow 2.8s ease-in-out infinite' }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {activeStop ? (
         <div
