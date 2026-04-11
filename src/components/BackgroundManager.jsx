@@ -79,6 +79,10 @@ export default function BackgroundManager() {
     };
   }, []);
 
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', currentBg);
+  }, [currentBg]);
+
   return (
     <div className="fixed inset-0 -z-50 pointer-events-none overflow-hidden">
       {previousBg && <BackgroundLayer type={previousBg} isVisible={false} />}
