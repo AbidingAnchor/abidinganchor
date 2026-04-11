@@ -47,7 +47,7 @@ function AppShell() {
   const [worshipAutoPlayToken, setWorshipAutoPlayToken] = useState(0)
   const [worshipStatus, setWorshipStatus] = useState({ isPlaying: false, currentTrack: 'Peaceful Worship', isVisible: false })
   const showNav = location.pathname !== '/auth'
-  const showFooter = location.pathname !== '/auth'
+  const showFooter = location.pathname !== '/auth' && location.pathname !== '/onboarding'
 
   const handleToggleScenery = () => {
     setScenery((prev) => toggleScenery(prev))
@@ -71,7 +71,7 @@ function AppShell() {
   return (
     <>
       <div style={{ minHeight: '100vh', position: 'relative', background: 'transparent', display: 'flex', flexDirection: 'column' }}>
-        <AppBackground scenery={scenery} />
+        <AppBackground />
         <div style={{ position: 'fixed', inset: 0, zIndex: 2, pointerEvents: 'none', background: 'rgba(0, 0, 0, 0.15)' }} />
 
         <div style={{ position: 'relative', zIndex: 10, isolation: 'isolate', flex: 1, display: 'flex', flexDirection: 'column', paddingBottom: '80px' }}>

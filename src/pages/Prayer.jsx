@@ -87,7 +87,7 @@ export default function Prayer() {
   const answeredPrayers = (entries || []).filter((p) => p.answered)
 
   return (
-    <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
+    <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: 'transparent' }}>
       <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '200px', paddingBottom: '100px', maxWidth: '390px', margin: '0 auto', width: '100%' }}>
         <h1 style={{ 
           color: '#D4A843', 

@@ -153,7 +153,7 @@ export default function FaithJourney() {
       height: 'auto',
       overflow: 'hidden',
       paddingBottom: '24px',
-      background: '#060f26'
+      background: 'transparent'
     }}>
       {view === 'hub' ? (
         <div style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '20px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>

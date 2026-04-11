@@ -127,9 +127,9 @@ export default function Onboarding({ onComplete }) {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
         padding: '20px',
-        background: '#060f26'
+        background: '#060f26',
+        overflowY: 'auto'
       }}>
         {/* Night Sky Background */}
         <div style={{
@@ -208,7 +208,9 @@ export default function Onboarding({ onComplete }) {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          marginTop: '20px'
+          height: 'auto',
+          marginTop: '30vh',
+          marginBottom: '40px'
         }}>
           {/* Progress Dots */}
           <div style={{
@@ -324,10 +326,10 @@ export default function Onboarding({ onComplete }) {
                     onClick={() => toggleGoal(goal.id)}
                     style={{
                       background: selectedGoals.includes(goal.id) 
-                        ? 'rgba(212,168,67,0.12)' 
+                        ? 'rgba(212,168,67,0.15)' 
                         : 'rgba(255,255,255,0.04)',
                       border: selectedGoals.includes(goal.id) 
-                        ? '1px solid rgba(212,168,67,0.4)' 
+                        ? '1px solid #D4A843' 
                         : '1px solid rgba(255,255,255,0.08)',
                       borderRadius: '14px',
                       padding: '12px 16px',
@@ -397,11 +399,12 @@ export default function Onboarding({ onComplete }) {
                     onClick={() => setFaithDuration(duration.id)}
                     style={{
                       background: faithDuration === duration.id 
-                        ? 'rgba(212,168,67,0.12)' 
+                        ? 'rgba(212,168,67,0.08)' 
                         : 'rgba(255,255,255,0.04)',
                       border: faithDuration === duration.id 
-                        ? '1px solid rgba(212,168,67,0.4)' 
+                        ? '1px solid rgba(212,168,67,0.2)' 
                         : '1px solid rgba(255,255,255,0.08)',
+                      borderLeft: faithDuration === duration.id ? '3px solid #D4A843' : '1px solid rgba(255,255,255,0.08)',
                       borderRadius: '14px',
                       padding: '16px 20px',
                       fontSize: '16px',
@@ -409,22 +412,9 @@ export default function Onboarding({ onComplete }) {
                       color: faithDuration === duration.id ? '#D4A843' : '#FFFFFF',
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
-                      textAlign: 'left',
-                      position: 'relative',
-                      paddingLeft: faithDuration === duration.id ? '16px' : '19px'
+                      textAlign: 'left'
                     }}
                   >
-                    {faithDuration === duration.id && (
-                      <div style={{
-                        position: 'absolute',
-                        left: 0,
-                        top: 0,
-                        bottom: 0,
-                        width: '3px',
-                        background: '#D4A843',
-                        borderRadius: '14px 0 0 14px'
-                      }} />
-                    )}
                     {duration.icon} {duration.label}
                   </button>
                 ))}
@@ -485,11 +475,12 @@ export default function Onboarding({ onComplete }) {
                     onClick={() => setDailyCommitment(commitment.id)}
                     style={{
                       background: dailyCommitment === commitment.id 
-                        ? 'rgba(212,168,67,0.12)' 
+                        ? 'rgba(212,168,67,0.08)' 
                         : 'rgba(255,255,255,0.04)',
                       border: dailyCommitment === commitment.id 
-                        ? '1px solid rgba(212,168,67,0.4)' 
+                        ? '1px solid rgba(212,168,67,0.2)' 
                         : '1px solid rgba(255,255,255,0.08)',
+                      borderLeft: dailyCommitment === commitment.id ? '3px solid #D4A843' : '1px solid rgba(255,255,255,0.08)',
                       borderRadius: '14px',
                       padding: '16px 20px',
                       fontSize: '16px',
@@ -497,22 +488,9 @@ export default function Onboarding({ onComplete }) {
                       color: dailyCommitment === commitment.id ? '#D4A843' : '#FFFFFF',
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
-                      textAlign: 'left',
-                      position: 'relative',
-                      paddingLeft: dailyCommitment === commitment.id ? '16px' : '19px'
+                      textAlign: 'left'
                     }}
                   >
-                    {dailyCommitment === commitment.id && (
-                      <div style={{
-                        position: 'absolute',
-                        left: 0,
-                        top: 0,
-                        bottom: 0,
-                        width: '3px',
-                        background: '#D4A843',
-                        borderRadius: '14px 0 0 14px'
-                      }} />
-                    )}
                     {commitment.label}
                     <div style={{
                       fontSize: '13px',
