@@ -52,6 +52,31 @@
   border-top-color: rgba(255, 255, 255, 0.6) !important;
 }
 
+/* Daytime text contrast fixes */
+[data-theme="day"] .glass-card,
+[data-theme="day"] [class*="glass"] {
+  background: rgba(255, 255, 255, 0.55) !important;
+  border: 1px solid rgba(255, 255, 255, 0.7) !important;
+}
+
+[data-theme="day"] h1,
+[data-theme="day"] h2,
+[data-theme="day"] h3,
+[data-theme="day"] p,
+[data-theme="day"] span,
+[data-theme="day"] label {
+  color: #1a1a2e !important;
+}
+
+[data-theme="day"] .text-white {
+  color: #1a1a2e !important;
+}
+
+[data-theme="day"] .text-gray-300,
+[data-theme="day"] .text-gray-400 {
+  color: #3d3d5c !important;
+}
+
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;

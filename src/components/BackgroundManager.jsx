@@ -57,12 +57,16 @@ export default function BackgroundManager() {
           fadeTimeout = setTimeout(() => {
             setPreviousBg(null);
           }, FADE_DURATION_MS);
+          document.documentElement.setAttribute('data-theme', nextBg);
           return nextBg;
         }
         return prevBg;
       });
     };
 
+    // Set initial theme on load
+    document.documentElement.setAttribute('data-theme', getBackgroundType());
+    
     updateBackground();
     const interval = setInterval(updateBackground, 30 * 1000);
 
