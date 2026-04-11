@@ -187,97 +187,36 @@ function buildPathD(stops) {
   return `M ${first.x} ${first.y}` + rest.map((s) => ` L ${s.x} ${s.y}`).join('')
 }
 
-/** Local coords: feet near y=0; applied scale targets ~24–30px on-screen height (icon-sized beside the node). */
-const FIGURE_SCALE = 1.42
 const NODE_DOT_R = 10
-/** Feet baseline just under the gold node (center y + radius + hairline gap). */
-const FEET_BELOW_NODE_CENTER = NODE_DOT_R + 1
+/** Natural pixels of /jesus-and-person.png — used only for aspect ratio. */
+const PROGRESS_IMG_W = 1024
+const PROGRESS_IMG_H = 1536
+/** Height in SVG user units (~50px when viewBox maps ~1:1 to CSS pixels). */
+const PROGRESS_MARKER_HEIGHT = 50
 
-/**
- * Plain pilgrim: round head, shoulders, simple robe — white with soft gold stroke, no glow.
- */
-function MapUserFigure() {
-  const outline = 'rgba(212,168,67,0.88)'
-  return (
-    <g>
-      <circle cx="0" cy="-11" r="3.1" fill="#FFFFFF" stroke={outline} strokeWidth="0.42" />
-      <path
-        d="M -4.2,-7.8 C -4.5,-6.5 -4.8,0 -3.1,0 L 3.1,0 C 4.8,0 4.5,-6.5 4.2,-7.8 C 2.2,-6.8 -2.2,-6.8 -4.2,-7.8 Z"
-        fill="#FFFFFF"
-        stroke={outline}
-        strokeWidth="0.42"
-        strokeLinejoin="round"
-      />
-    </g>
-  )
-}
-
-/**
- * Same family of silhouette, taller robe; halo arc above head; warm aura; optional hand toward companion.
- */
-function MapJesusFigure() {
-  const fill = '#FFF8ED'
-  const stroke = '#C9A050'
-  const haloStroke = '#E8B565'
-  return (
-    <g>
-      {/* Tight glow — proportional to body, not map-sized */}
-      <ellipse cx="0" cy="-10" rx="4.2" ry="9" fill="url(#journeyJesusAuraGradient)" style={{ filter: 'url(#journeyJesusAura)' }} />
-      <ellipse cx="0" cy="-10" rx="5.6" ry="11.5" fill="url(#journeyJesusAuraOuter)" opacity="0.88" style={{ filter: 'url(#journeyJesusAuraOuterBlur)' }} />
-      {/* Crown of light — small arc above the head (open upward, not a closed ring) */}
-      <path
-        d="M -3.6,-16.2 Q 0,-19.4 3.6,-16.2"
-        fill="none"
-        stroke={haloStroke}
-        strokeWidth="0.38"
-        strokeLinecap="round"
-        opacity="0.95"
-      />
-      <path
-        d="M -3.3,-16.5 Q 0,-18.8 3.3,-16.5"
-        fill="none"
-        stroke="#F5D78A"
-        strokeWidth="0.2"
-        strokeLinecap="round"
-        opacity="0.8"
-      />
-      <g style={{ filter: 'url(#journeyJesusFigure)' }}>
-        {/* Slightly taller than user: higher head, longer robe */}
-        <circle cx="0" cy="-13" r="3.2" fill={fill} stroke={stroke} strokeWidth="0.45" />
-        <path
-          d="M -4.6,-9.6 C -5,-8 -5.35,0.25 -3.45,0.25 L 3.45,0.25 C 5.35,0.25 5,-8 4.6,-9.6 C 2.4,-8.3 -2.4,-8.3 -4.6,-9.6 Z"
-          fill={fill}
-          stroke={stroke}
-          strokeWidth="0.45"
-          strokeLinejoin="round"
-        />
-        {/* Hand extended toward the companion on the left */}
-        <path
-          d="M 2.6,-6.2 L -5,-2 Q -7.2,-0.8 -6.6,1 L -4.8,0.95 Q -4,0 2.2,-4.5 Z"
-          fill={fill}
-          stroke={stroke}
-          strokeWidth="0.32"
-          strokeLinejoin="round"
-        />
-      </g>
-    </g>
-  )
-}
-
-function JourneyWalkingFigures({ stop }) {
+function JourneyProgressMarker({ stop }) {
   if (!stop) return null
   const { x, y } = stop
-  /* Icon-sized figures; ±spread keeps pair beside the node without crowding labels */
-  const spread = 22
-  const scale = FIGURE_SCALE
+  const w = (PROGRESS_IMG_W / PROGRESS_IMG_H) * PROGRESS_MARKER_HEIGHT
+  const h = PROGRESS_MARKER_HEIGHT
+  const gap = 2
   return (
-    <g pointerEvents="none" aria-hidden="true" transform={`translate(${x}, ${y + FEET_BELOW_NODE_CENTER})`}>
-      <g transform={`translate(${-spread}, 0) scale(${scale})`}>
-        <MapUserFigure />
-      </g>
-      <g transform={`translate(${spread}, 0) scale(${scale})`}>
-        <MapJesusFigure />
-      </g>
+    <g pointerEvents="none" aria-hidden="true">
+      <foreignObject x={x - w / 2} y={y + NODE_DOT_R + gap} width={w} height={h}>
+        <div xmlns="http://www.w3.org/1999/xhtml" style={{ margin: 0, padding: 0, lineHeight: 0, width: '100%', height: '100%' }}>
+          <img
+            src="/jesus-and-person.png"
+            alt=""
+            style={{
+              display: 'block',
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              pointerEvents: 'none',
+            }}
+          />
+        </div>
+      </foreignObject>
     </g>
   )
 }
@@ -359,43 +298,6 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
               <stop offset="60%" stopColor="#D4A843" stopOpacity="0.55" />
               <stop offset="100%" stopColor="#D4A843" stopOpacity="0.25" />
             </linearGradient>
-            <radialGradient id="journeyJesusAuraGradient" cx="50%" cy="45%" r="55%">
-              <stop offset="0%" stopColor="#FFE4A8" stopOpacity="0.95" />
-              <stop offset="45%" stopColor="#E8A84A" stopOpacity="0.55" />
-              <stop offset="100%" stopColor="#8B5A14" stopOpacity="0" />
-            </radialGradient>
-            <radialGradient id="journeyJesusAuraOuter" cx="50%" cy="42%" r="65%">
-              <stop offset="0%" stopColor="#FFD27A" stopOpacity="0.5" />
-              <stop offset="50%" stopColor="#E8A84A" stopOpacity="0.2" />
-              <stop offset="100%" stopColor="#FFD27A" stopOpacity="0" />
-            </radialGradient>
-            <filter id="journeyJesusAura" x="-90%" y="-90%" width="280%" height="280%">
-              <feGaussianBlur in="SourceGraphic" stdDeviation="1.35" result="blur" />
-              <feColorMatrix
-                in="blur"
-                type="matrix"
-                values="1.05 0 0 0 0.02  0 0.98 0 0 0  0 0 0.75 0 0  0 0 0 1 0"
-                result="warm"
-              />
-            </filter>
-            <filter id="journeyJesusAuraOuterBlur" x="-100%" y="-100%" width="300%" height="300%">
-              <feGaussianBlur in="SourceGraphic" stdDeviation="2.2" result="b" />
-              <feMerge>
-                <feMergeNode in="b" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            <filter id="journeyJesusFigure" x="-55%" y="-55%" width="210%" height="210%">
-              <feGaussianBlur in="SourceAlpha" stdDeviation="0.45" result="s" />
-              <feFlood floodColor="#FFC14D" floodOpacity="0.72" result="f" />
-              <feComposite in="f" in2="s" operator="in" result="g" />
-              <feGaussianBlur in="g" stdDeviation="0.65" result="g2" />
-              <feMerge>
-                <feMergeNode in="g2" />
-                <feMergeNode in="g" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
           </defs>
 
           <path
@@ -447,7 +349,7 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
             )
           })}
 
-          {currentProgressStop ? <JourneyWalkingFigures stop={currentProgressStop} /> : null}
+          {currentProgressStop ? <JourneyProgressMarker stop={currentProgressStop} /> : null}
         </svg>
       </div>
 

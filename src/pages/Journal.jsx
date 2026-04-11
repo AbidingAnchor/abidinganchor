@@ -766,24 +766,17 @@ function Journal() {
             ) : (
               <>
             {visibleEntries.map((entry) => (
-              <article
+              <div
                 key={entry.id}
-                className={[
-                  'mb-3 rounded-2xl bg-[#1e1b3a] p-4 shadow-lg border border-white/10 border-l-4 border-l-amber-500',
-                  entry.entry_type === 'prayer' && entry.answered
-                    ? 'ring-1 ring-amber-400/45 shadow-[0_10px_40px_rgba(0,0,0,0.45),0_0_28px_rgba(212,168,67,0.22)]'
-                    : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
+                className="rounded-2xl p-4 mb-3 shadow-lg border-l-4 border-l-amber-500 border border-white/10 bg-[#1e1b3a]"
               >
-                <p className="text-xs font-semibold uppercase tracking-widest text-amber-400">
+                <p className="text-amber-400 text-xs uppercase tracking-widest">
                   {entry.date}
                 </p>
-                <p className="mt-1 text-lg font-bold text-white">
+                <p className="text-white font-bold text-lg">
                   {getEntryTitle(entry)}
                 </p>
-                <p className="mt-1 text-sm text-white/60">
+                <p className="text-white/60 text-sm">
                   {getEntryBodyPreview(entry)}
                 </p>
                 <div style={{
@@ -807,7 +800,7 @@ function Journal() {
                       </span>
                     )}
                     {entry.reference && (
-                      <span className="rounded-full border border-amber-500/30 bg-amber-500/20 px-3 py-1 text-xs text-amber-300">
+                      <span className="bg-amber-500/20 text-amber-300 text-xs px-3 py-1 rounded-full border border-amber-500/30">
                         {entry.reference}
                       </span>
                     )}
@@ -875,7 +868,7 @@ function Journal() {
                     </button>
                   </div>
                 </div>
-              </article>
+              </div>
             ))}
             {filteredEntries.length > 5 && (
               <button
