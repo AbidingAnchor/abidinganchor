@@ -489,9 +489,10 @@ function Home({ onOpenWorship, worshipStatus }) {
                 {days.map((day, index) => {
                   const isToday = index === todayIndex
                   const isPast = index < todayIndex && index >= todayIndex - (currentStreak - 1)
-                  const flameStyle = isToday
+                  const hasStreak = currentStreak >= 1
+                  const flameStyle = isToday && hasStreak
                     ? { fontSize: '36px', color: '#D4A843', filter: 'drop-shadow(0 0 8px rgba(212,168,67,0.8))', animation: 'flamePulse 2s ease-in-out infinite' }
-                    : isPast
+                    : isPast && hasStreak
                       ? { fontSize: '28px', color: '#D4A843', filter: 'drop-shadow(0 0 8px rgba(212,168,67,0.8))' }
                       : { fontSize: '28px', color: 'rgba(255,255,255,0.2)', filter: 'none' }
                   return (
