@@ -299,10 +299,10 @@ function Search({ onOpenWorship }) {
 
   // Define style objects that were missing
   const glassCard = {
-    background: 'rgba(15, 23, 42, 0.25)',
+    background: 'var(--glass-bg)',
     backdropFilter: 'blur(16px)',
     WebkitBackdropFilter: 'blur(16px)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
+    border: '1px solid var(--glass-border)',
   }
 
   const bodyStyle = {
@@ -503,7 +503,7 @@ function Search({ onOpenWorship }) {
                   style={{
                     width: '100%',
                     background: 'transparent',
-                    color: 'white',
+                    color: 'var(--text-primary)',
                     outline: 'none'
                   }}
                   placeholderStyle={{ color: 'rgba(255,255,255,0.5)' }}
@@ -742,11 +742,11 @@ function Search({ onOpenWorship }) {
                       placeholder="Type your question here..."
                       style={{
                         flex: 1,
-                        background: 'rgba(255,255,255,0.08)',
+                        background: 'var(--input-bg)',
                         border: '1px solid rgba(212,168,67,0.3)',
                         borderRadius: '12px',
                         padding: '12px 16px',
-                        color: 'white',
+                        color: 'var(--text-primary)',
                         fontSize: '14px',
                         outline: 'none'
                       }}
@@ -777,7 +777,7 @@ function Search({ onOpenWorship }) {
                       padding: '16px',
                       marginTop: '12px'
                     }}>
-                      <p style={{ color: 'white', fontSize: '14px', lineHeight: 1.6, margin: 0 }}>
+                      <p style={{ color: 'var(--text-primary)', fontSize: '14px', lineHeight: 1.6, margin: 0 }}>
                         {aiResponse}
                       </p>
                     </div>
@@ -839,7 +839,7 @@ function Search({ onOpenWorship }) {
                       transition: 'all 0.2s'
                     }}>
                       <button type="button" onClick={() => handleBookTap(book)} style={{ background: 'none', border: 'none', textAlign: 'left', padding: 0, width: '100%', cursor: 'pointer' }}>
-                        <p style={{ fontSize: '14px', fontWeight: 600, color: 'white', margin: 0 }}>{book.name}</p>
+                        <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{book.name}</p>
                         <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)', margin: '4px 0 0 0' }}>
                           {book.chapters} {book.chapters === 1 ? 'chapter' : 'chapters'}
                         </p>

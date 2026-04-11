@@ -42,31 +42,30 @@ function BackgroundLayer({ type, isVisible }) {
 }
 
 export default function BackgroundManager() {
-  const [currentBg, setCurrentBg] = useState(() => getBackgroundType());
+  const [currentBg, setCurrentBg] = useState(() => {
+    const initial = getBackgroundType();
+    document.documentElement.setAttribute("data-theme", initial);
+    return initial;
+  });
   const [previousBg, setPreviousBg] = useState(null);
 
   useEffect(() => {
     let fadeTimeout;
 
     const updateBackground = () => {
+      const nextBg = getBackgroundType();
       setCurrentBg((prevBg) => {
-        const nextBg = getBackgroundType();
         if (prevBg !== nextBg) {
+          document.documentElement.setAttribute("data-theme", nextBg);
           setPreviousBg(prevBg);
           clearTimeout(fadeTimeout);
-          fadeTimeout = setTimeout(() => {
-            setPreviousBg(null);
-          }, FADE_DURATION_MS);
-          document.documentElement.setAttribute('data-theme', nextBg);
+          fadeTimeout = setTimeout(() => setPreviousBg(null), FADE_DURATION_MS);
           return nextBg;
         }
         return prevBg;
       });
     };
 
-    // Set initial theme on load
-    document.documentElement.setAttribute('data-theme', getBackgroundType());
-    
     updateBackground();
     const interval = setInterval(updateBackground, 30 * 1000);
 
@@ -82,10 +81,6 @@ export default function BackgroundManager() {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', currentBg);
-  }, [currentBg]);
 
   return (
     <div className="fixed inset-0 -z-50 pointer-events-none overflow-hidden">

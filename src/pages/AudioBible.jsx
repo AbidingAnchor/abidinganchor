@@ -9,13 +9,12 @@ export default function AudioBible() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selectedVoice, setSelectedVoice] = useState('David')
-  const [mappedVoices, setMappedVoices] = useState({})
   const selectedVoiceRef = useRef('David')
   const [speechSupported, setSpeechSupported] = useState(true)
   const [currentVerseIndex, setCurrentVerseIndex] = useState(null)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
-  const [voiceSettings, setVoiceSettings] = useState({})
-  const [isMinimized, setIsMinimized] = useState(true)
+  const [isMinimized, setIsMinimized] = useState(false)
+  const [showVoiceSelector, setShowVoiceSelector] = useState(false)
 
   const handleBookChange = (e) => {
     const book = bibleBooks.find(b => b.name === e.target.value)
@@ -27,7 +26,136 @@ export default function AudioBible() {
     setSelectedChapter(parseInt(e.target.value))
   }
 
-  const togglePlay = () => {
+  // Voice profile definitions with gender keywords and pitch/rate settings
+  const voiceProfiles = {
+    David: {
+      genderKeywords: ['male', 'david', 'james', 'john', 'mark', 'daniel', 'google us english', 'microsoft david'],
+      pitch: 0.75,
+      rate: 0.9,
+    },
+    Elijah: {
+      genderKeywords: ['male', 'elijah', 'thomas', 'george', 'paul', 'richard', 'google uk english male'],
+      pitch: 0.70,
+      rate: 0.88,
+    },
+    Grace: {
+      genderKeywords: ['female', 'grace', 'samantha', 'karen', 'victoria', 'zira', 'susan', 'fiona', 'moira', 'tessa', 'google uk english female', 'microsoft zira', 'microsoft susan'],
+      pitch: 1.35,
+      rate: 0.93,
+    },
+    Miriam: {
+      genderKeywords: ['female', 'miriam', 'allison', 'ava', 'alex', 'linda', 'kate', 'stephanie', 'emily', 'lisa', 'google us english female'],
+      pitch: 1.45,
+      rate: 0.95,
+    },
+  }
+
+  // Get voice with profile based on voice name
+  const getVoice = (voiceName) => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+      return { voice: null, pitch: 1, rate: 1 }
+    }
+
+    const voices = window.speechSynthesis.getVoices()
+    const profile = voiceProfiles[voiceName]
+    
+    if (!profile) {
+      return { voice: voices[0] || null, pitch: 1, rate: 1 }
+    }
+
+    // Try to find a matching voice by keyword in name
+    const matched = voices.find((v) =>
+      profile.genderKeywords.some((kw) =>
+        v.name.toLowerCase().includes(kw)
+      )
+    )
+
+    // Fallback: for female profiles, pick any non-default voice
+    // For male profiles, use the first available voice
+    const fallback = profile.pitch > 1
+      ? voices.find((v) => v !== voices[0]) || voices[0]
+      : voices[0]
+
+    return {
+      voice: matched || fallback || null,
+      pitch: profile.pitch,
+      rate: profile.rate,
+    }
+  }
+
+  // Load voices with proper voiceschanged event handling
+  const loadVoices = () => {
+    return new Promise((resolve) => {
+      if (typeof window === 'undefined' || !window.speechSynthesis) {
+        resolve([])
+        return
+      }
+
+      const voices = window.speechSynthesis.getVoices()
+      if (voices.length > 0) {
+        resolve(voices)
+        return
+      }
+
+      window.speechSynthesis.addEventListener('voiceschanged', () => {
+        resolve(window.speechSynthesis.getVoices())
+      }, { once: true })
+    })
+  }
+
+  // Chunk text for iOS Safari workaround (prevents cutoff after ~15 seconds)
+  const chunkText = (text) => {
+    return text
+      .split(/(?<=[.!?])\s+/)
+      .reduce((chunks, sentence) => {
+        const last = chunks[chunks.length - 1]
+        if (last && (last + ' ' + sentence).length < 200) {
+          chunks[chunks.length - 1] = last + ' ' + sentence
+        } else {
+          chunks.push(sentence)
+        }
+        return chunks
+      }, [])
+  }
+
+  // Speak chunked text with voice profile
+  const speakChunked = async (fullText, voiceName) => {
+    await loadVoices()
+    window.speechSynthesis.cancel()
+
+    const chunks = chunkText(fullText)
+    const { voice, pitch, rate } = getVoice(voiceName)
+
+    chunks.forEach((chunk) => {
+      const utterance = new SpeechSynthesisUtterance(chunk)
+      if (voice) utterance.voice = voice
+      utterance.pitch = pitch
+      utterance.rate = rate * playbackSpeed
+      utterance.volume = 1
+      window.speechSynthesis.speak(utterance)
+    })
+  }
+
+  // Handle voice change with immediate effect
+  const handleVoiceChange = async (newVoiceName) => {
+    setSelectedVoice(newVoiceName)
+    selectedVoiceRef.current = newVoiceName
+    setShowVoiceSelector(false)
+    
+    if (!isPlaying) return
+    
+    // Stop current speech
+    window.speechSynthesis.cancel()
+    
+    // Small delay to let cancel() complete (required on some browsers)
+    await new Promise((r) => setTimeout(r, 120))
+    
+    // Re-speak from current position
+    const fullText = verses.map(v => `${v.verse}. ${v.text}`).join(' ')
+    speakChunked(fullText, newVoiceName)
+  }
+
+  const togglePlay = async () => {
     if (typeof window === 'undefined' || !window.speechSynthesis) {
       return
     }
@@ -41,56 +169,67 @@ export default function AudioBible() {
       window.speechSynthesis.resume()
       setIsPlaying(true)
     } else {
-      // Start new playback
+      // Start new playback with chunked speech
       const fullText = verses.map(v => `${v.verse}. ${v.text}`).join(' ')
-      const utterance = new SpeechSynthesisUtterance(fullText)
       
-      // Always read from ref to avoid stale closures
-      const voice = mappedVoices[selectedVoiceRef.current]
-      if (voice) {
-        utterance.voice = voice
-      }
-      
-      // Apply voice-specific pitch and rate settings
-      const settings = voiceSettings[selectedVoiceRef.current]
-      if (settings) {
-        utterance.pitch = settings.pitch
-        utterance.rate = settings.rate * playbackSpeed
-      } else {
-        utterance.rate = playbackSpeed
-      }
-      
-      // Track current verse being spoken
-      utterance.onboundary = (event) => {
-        if (event.name === 'word') {
-          // Calculate which verse we're currently reading
-          const textSoFar = fullText.substring(0, event.charIndex)
-          const versePattern = /(\d+)\.\s/g
-          let match
-          let lastVerseNum = 1
-          
-          while ((match = versePattern.exec(textSoFar)) !== null) {
-            lastVerseNum = parseInt(match[1])
-          }
-          
-          const verseIndex = verses.findIndex(v => v.verse === lastVerseNum)
-          if (verseIndex !== -1) {
-            setCurrentVerseIndex(verseIndex)
+      await loadVoices()
+      window.speechSynthesis.cancel()
+
+      const chunks = chunkText(fullText)
+      const { voice, pitch, rate } = getVoice(selectedVoiceRef.current)
+
+      let chunkIndex = 0
+      const speakNextChunk = () => {
+        if (chunkIndex >= chunks.length) {
+          setIsPlaying(false)
+          setCurrentVerseIndex(null)
+          return
+        }
+
+        const utterance = new SpeechSynthesisUtterance(chunks[chunkIndex])
+        if (voice) utterance.voice = voice
+        utterance.pitch = pitch
+        utterance.rate = rate * playbackSpeed
+        utterance.volume = 1
+
+        // Track current verse being spoken
+        utterance.onboundary = (event) => {
+          if (event.name === 'word') {
+            const textSoFar = chunks.slice(0, chunkIndex).join(' ') + ' ' + chunks[chunkIndex].substring(0, event.charIndex)
+            const versePattern = /(\d+)\.\s/g
+            let match
+            let lastVerseNum = 1
+            
+            while ((match = versePattern.exec(textSoFar)) !== null) {
+              lastVerseNum = parseInt(match[1])
+            }
+            
+            const verseIndex = verses.findIndex(v => v.verse === lastVerseNum)
+            if (verseIndex !== -1) {
+              setCurrentVerseIndex(verseIndex)
+            }
           }
         }
+
+        utterance.onend = () => {
+          chunkIndex++
+          if (isPlaying && chunkIndex < chunks.length) {
+            speakNextChunk()
+          } else if (chunkIndex >= chunks.length) {
+            setIsPlaying(false)
+            setCurrentVerseIndex(null)
+          }
+        }
+
+        utterance.onerror = () => {
+          setIsPlaying(false)
+          setCurrentVerseIndex(null)
+        }
+
+        window.speechSynthesis.speak(utterance)
       }
-      
-      utterance.onend = () => {
-        setIsPlaying(false)
-        setCurrentVerseIndex(null)
-      }
-      
-      utterance.onerror = () => {
-        setIsPlaying(false)
-        setCurrentVerseIndex(null)
-      }
-      
-      window.speechSynthesis.speak(utterance)
+
+      speakNextChunk()
       setIsPlaying(true)
     }
   }
@@ -145,78 +284,17 @@ export default function AudioBible() {
     }, 500)
   }
 
-  // Load and map voices using Web Speech API
+  // Initialize voices on mount
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.speechSynthesis) {
-      const loadVoices = () => {
-        const voices = window.speechSynthesis.getVoices()
-        console.log('Available voices:', voices.map(v => v.name))
-        
-        if (voices.length > 0) {
-          // Map voice personalities to available voices with flexible search
-          const englishVoices = voices.filter(v => v.lang.startsWith('en'))
-          console.log('English voices:', englishVoices.map(v => v.name))
-
-          // More flexible male voice search
-          const maleVoices = englishVoices.filter(v => 
-            v.name.toLowerCase().includes('male') || 
-            v.name.toLowerCase().includes('david') ||
-            v.name.toLowerCase().includes('daniel') ||
-            v.name.toLowerCase().includes('james') ||
-            v.name.toLowerCase().includes('google us english') ||
-            !v.name.toLowerCase().includes('female')
-          )
-          console.log('Male voices found:', maleVoices.map(v => v.name))
-
-          // More flexible female voice search
-          const femaleVoices = englishVoices.filter(v => 
-            v.name.toLowerCase().includes('female') ||
-            v.name.toLowerCase().includes('google uk english female') ||
-            v.name.toLowerCase().includes('samantha') ||
-            v.name.toLowerCase().includes('victoria') ||
-            v.name.toLowerCase().includes('karen') ||
-            v.name.toLowerCase().includes('moira') ||
-            v.name.toLowerCase().includes('google us english') && v.name.toLowerCase().includes('female')
-          )
-          console.log('Female voices found:', femaleVoices.map(v => v.name))
-
-          // Voice mappings with fallback
-          const voiceMappings = {
-            David: maleVoices[0] || englishVoices[0] || voices[0],
-            Grace: femaleVoices[0] || englishVoices[1] || voices[1],
-            Elijah: maleVoices[1] || maleVoices[0] || englishVoices[2] || voices[2],
-            Miriam: femaleVoices[1] || femaleVoices[0] || englishVoices[3] || voices[3]
-          }
-
-          console.log('Voice mappings:', {
-            David: voiceMappings.David?.name,
-            Grace: voiceMappings.Grace?.name,
-            Elijah: voiceMappings.Elijah?.name,
-            Miriam: voiceMappings.Miriam?.name
-          })
-
-          setMappedVoices(voiceMappings)
-
-          // Set voice settings with pitch/rate for gender differentiation
-          const settings = {
-            David: { pitch: 0.75, rate: 0.9 },
-            Grace: { pitch: 1.4, rate: 0.95 },
-            Elijah: { pitch: 0.8, rate: 0.9 },
-            Miriam: { pitch: 1.35, rate: 0.95 }
-          }
-          setVoiceSettings(settings)
-        }
+    const initVoices = async () => {
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        await loadVoices()
+        console.log('Voices loaded successfully')
+      } else {
+        setSpeechSupported(false)
       }
-
-      window.speechSynthesis.onvoiceschanged = loadVoices
-      loadVoices() // Call immediately
-
-      return () => {
-        window.speechSynthesis.onvoiceschanged = null
-      }
-    } else {
-      setSpeechSupported(false)
     }
+    initVoices()
   }, [])
 
   // Fetch Bible chapter text from API
@@ -243,58 +321,6 @@ export default function AudioBible() {
     fetchChapter()
   }, [selectedBook, selectedChapter])
 
-  // Auto-play when isPlaying becomes true and verses are loaded
-  useEffect(() => {
-    if (isPlaying && verses.length > 0 && !window.speechSynthesis?.speaking && !window.speechSynthesis?.paused) {
-      const fullText = verses.map(v => `${v.verse}. ${v.text}`).join(' ')
-      const utterance = new SpeechSynthesisUtterance(fullText)
-      
-      // Always read from ref to avoid stale closures
-      const voice = mappedVoices[selectedVoiceRef.current]
-      if (voice) {
-        utterance.voice = voice
-      }
-      
-      // Apply voice-specific pitch and rate settings
-      const settings = voiceSettings[selectedVoiceRef.current]
-      if (settings) {
-        utterance.pitch = settings.pitch
-        utterance.rate = settings.rate * playbackSpeed
-      } else {
-        utterance.rate = playbackSpeed
-      }
-      
-      utterance.onboundary = (event) => {
-        if (event.name === 'word') {
-          const textSoFar = fullText.substring(0, event.charIndex)
-          const versePattern = /(\d+)\.\s/g
-          let match
-          let lastVerseNum = 1
-          
-          while ((match = versePattern.exec(textSoFar)) !== null) {
-            lastVerseNum = parseInt(match[1])
-          }
-          
-          const verseIndex = verses.findIndex(v => v.verse === lastVerseNum)
-          if (verseIndex !== -1) {
-            setCurrentVerseIndex(verseIndex)
-          }
-        }
-      }
-      
-      utterance.onend = () => {
-        setIsPlaying(false)
-        setCurrentVerseIndex(null)
-      }
-      
-      utterance.onerror = () => {
-        setIsPlaying(false)
-        setCurrentVerseIndex(null)
-      }
-      
-      window.speechSynthesis.speak(utterance)
-    }
-  }, [isPlaying, verses, mappedVoices, playbackSpeed, voiceSettings])
 
   if (!speechSupported) {
     return (
@@ -313,7 +339,7 @@ export default function AudioBible() {
   }
 
   return (
-    <div className="content-scroll min-h-screen px-4 pt-6 pb-32">
+    <div className="content-scroll min-h-screen px-4 pt-6" style={{ paddingBottom: '160px' }}>
       {/* Screen Title */}
       <div className="flex items-center gap-3 mb-6">
         <span className="text-3xl">📖</span>
@@ -402,18 +428,35 @@ export default function AudioBible() {
         )}
       </div>
 
-      {/* Minimized Audio Player Pill */}
+      <style>{`
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+
+      {/* Audio Player Pill */}
       <div
-        className="glass"
         style={{
           position: 'fixed',
-          bottom: '65px',
-          left: '16px',
-          right: '16px',
-          zIndex: 9997,
-          padding: '12px 20px',
-          borderRadius: '50px',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+          bottom: '72px',
+          left: '12px',
+          right: '12px',
+          zIndex: 40,
+          height: isMinimized ? '36px' : '56px',
+          background: 'var(--glass-bg)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid var(--glass-border)',
+          borderRadius: isMinimized ? '18px' : '28px',
+          boxShadow: 'var(--glass-shadow)',
+          padding: isMinimized ? '0 12px' : '0 16px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -421,150 +464,229 @@ export default function AudioBible() {
           transition: 'all 0.3s ease',
         }}
       >
-        <div className="flex items-center gap-3">
-          <button
-            onClick={togglePlay}
-            className="w-10 h-10 rounded-full bg-[#D4A843] text-[#0a1a3e] hover:bg-[#B8902E] transition-all flex items-center justify-center font-semibold shadow-lg shadow-[#D4A843]/30"
-            style={{ fontSize: '16px' }}
-          >
-            {isPlaying ? '⏸' : '▶'}
-          </button>
-          <span className="text-white/90 text-sm font-medium">{selectedVoice}</span>
-        </div>
-        
+        {/* Play/Pause Button */}
         <button
-          onClick={() => setIsMinimized(false)}
-          className="text-[#D4A843] hover:text-[#B8902E] transition-colors"
-          style={{ fontSize: '18px' }}
+          onClick={togglePlay}
+          style={{
+            width: isMinimized ? '28px' : '32px',
+            height: isMinimized ? '28px' : '32px',
+            borderRadius: '50%',
+            background: 'var(--gold)',
+            color: '#0a1a3e',
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: isMinimized ? '14px' : '16px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
         >
-          ▲
+          {isPlaying ? '⏸' : '▶'}
+        </button>
+
+        {/* Voice Name (center) - only shown when expanded */}
+        {!isMinimized && (
+          <span
+            style={{
+              color: 'var(--text-primary)',
+              fontSize: '14px',
+              fontWeight: 500,
+              flex: 1,
+              textAlign: 'center',
+            }}
+          >
+            {selectedVoice}
+          </span>
+        )}
+
+        {/* Voice Selector Button (only when expanded) */}
+        {!isMinimized && (
+          <button
+            onClick={() => setShowVoiceSelector(!showVoiceSelector)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--gold)',
+              fontSize: '14px',
+              cursor: 'pointer',
+              padding: '4px 8px',
+            }}
+          >
+            🎤
+          </button>
+        )}
+
+        {/* Minimize/Expand Button */}
+        <button
+          onClick={() => setIsMinimized(!isMinimized)}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: 'var(--gold)',
+            fontSize: '16px',
+            cursor: 'pointer',
+            padding: '4px',
+          }}
+        >
+          {isMinimized ? '▲' : '▼'}
         </button>
       </div>
 
-      {/* Expanded Audio Player (hidden by default) */}
-      {!isMinimized && (
+      {/* Voice Selector Dropdown (opens upward from pill) */}
+      {showVoiceSelector && !isMinimized && (
         <div
-          className="glass"
           style={{
             position: 'fixed',
-            bottom: '65px',
-            left: '16px',
-            right: '16px',
-            zIndex: 9997,
-            padding: '16px',
-            borderRadius: '20px',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
-            transform: 'translateY(0)',
-            transition: 'transform 0.3s ease',
+            bottom: '136px',
+            left: '12px',
+            right: '12px',
+            zIndex: 50,
+            background: 'var(--glass-bg)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid var(--glass-border)',
+            borderRadius: '16px',
+            boxShadow: 'var(--glass-shadow)',
+            padding: '12px',
+            animation: 'slideUp 0.2s ease-out',
           }}
         >
-          {/* Minimize Button */}
-          <div className="flex justify-end mb-3">
-            <button
-              onClick={() => setIsMinimized(true)}
-              className="text-[#D4A843] hover:text-[#B8902E] transition-colors"
-              style={{ fontSize: '18px' }}
-            >
-              ▼
-            </button>
-          </div>
-
-          {/* Voice Selector */}
-          <div className="mb-4">
-            <label className="block text-xs font-semibold text-gold-accent mb-2 text-center">Voice</label>
-            <div className="flex flex-wrap justify-center gap-2">
-              {[
-                { id: 'David', emoji: '👨', name: 'David' },
-                { id: 'Grace', emoji: '👩', name: 'Grace' },
-                { id: 'Elijah', emoji: '👴', name: 'Elijah' },
-                { id: 'Miriam', emoji: '👩‍🦳', name: 'Miriam' }
-              ].map(voice => (
-                <button
-                  key={voice.id}
-                  onClick={() => {
-                    setSelectedVoice(voice.id)
-                    selectedVoiceRef.current = voice.id
-                    if (isPlaying) {
-                      stopPlayback()
-                      // Immediate restart with new voice
-                      setTimeout(() => {
-                        setIsPlaying(true)
-                      }, 50)
-                    }
-                  }}
-                  className={`
-                    px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200
-                    ${selectedVoice === voice.id
-                      ? 'bg-[#D4A843] text-[#0a1a3e]'
-                      : 'bg-white/5 text-white/70 hover:bg-white/10'
-                    }
-                  `}
-                >
-                  <span className="mr-1">{voice.emoji}</span>
-                  <span>{voice.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Playback Speed & Controls */}
-          <div className="flex items-center justify-between gap-4">
-            {/* Speed */}
-            <div className="flex gap-1">
-              {[0.75, 1, 1.25, 1.5].map(speed => (
-                <button
-                  key={speed}
-                  onClick={() => setPlaybackSpeed(speed)}
-                  className={`
-                    px-2 py-1 rounded-full text-xs font-medium transition-all duration-200
-                    ${playbackSpeed === speed
-                      ? 'bg-[#D4A843] text-[#0a1a3e]'
-                      : 'bg-white/5 text-white/60 hover:bg-white/10'
-                    }
-                  `}
-                >
-                  {speed}x
-                </button>
-              ))}
-            </div>
-
-            {/* Chapter Navigation */}
-            <div className="flex items-center gap-2">
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '8px',
+            justifyContent: 'center',
+          }}>
+            {[
+              { id: 'David', emoji: '👨', name: 'David' },
+              { id: 'Grace', emoji: '👩', name: 'Grace' },
+              { id: 'Elijah', emoji: '👴', name: 'Elijah' },
+              { id: 'Miriam', emoji: '👩‍🦳', name: 'Miriam' }
+            ].map(voice => (
               <button
-                onClick={goToPreviousChapter}
-                className="w-8 h-8 rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-[#D4A843] transition-all flex items-center justify-center"
-                style={{ fontSize: '14px' }}
-              >
-                ⏮
-              </button>
-              
-              <button
-                onClick={togglePlay}
-                className="w-12 h-12 rounded-full bg-[#D4A843] text-[#0a1a3e] hover:bg-[#B8902E] transition-all flex items-center justify-center font-semibold shadow-lg shadow-[#D4A843]/30"
-                style={{ fontSize: '18px' }}
-              >
-                {isPlaying ? '⏸' : '▶'}
-              </button>
-              
-              <button
-                onClick={goToNextChapter}
-                className="w-8 h-8 rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-[#D4A843] transition-all flex items-center justify-center"
-                style={{ fontSize: '14px' }}
-              >
-                ⏭
-              </button>
-            </div>
-
-            {/* Progress */}
-            <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-[#D4A843] transition-all duration-300"
+                key={voice.id}
+                onClick={() => handleVoiceChange(voice.id)}
                 style={{
-                  width: `${currentVerseIndex !== null ? ((currentVerseIndex + 1) / verses.length) * 100 : 0}%`
+                  padding: '8px 16px',
+                  borderRadius: '20px',
+                  background: selectedVoice === voice.id
+                    ? 'var(--gold)'
+                    : 'rgba(255, 255, 255, 0.08)',
+                  color: selectedVoice === voice.id
+                    ? '#0a1a3e'
+                    : 'var(--text-primary)',
+                  border: '1px solid var(--glass-border)',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
                 }}
-              />
-            </div>
+              >
+                <span style={{ marginRight: '6px' }}>{voice.emoji}</span>
+                <span>{voice.name}</span>
+              </button>
+            ))}
           </div>
+        </div>
+      )}
+
+      {/* Playback Speed Controls (separate pill, only when expanded) */}
+      {!isMinimized && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '136px',
+            right: '12px',
+            zIndex: 49,
+            background: 'var(--glass-bg)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid var(--glass-border)',
+            borderRadius: '20px',
+            boxShadow: 'var(--glass-shadow)',
+            padding: '8px',
+            display: 'flex',
+            gap: '4px',
+          }}
+        >
+          {[0.75, 1, 1.25, 1.5].map(speed => (
+            <button
+              key={speed}
+              onClick={() => setPlaybackSpeed(speed)}
+              style={{
+                padding: '6px 10px',
+                borderRadius: '12px',
+                background: playbackSpeed === speed
+                  ? 'var(--gold)'
+                  : 'rgba(255, 255, 255, 0.05)',
+                color: playbackSpeed === speed
+                  ? '#0a1a3e'
+                  : 'var(--text-primary)',
+                border: 'none',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              {speed}x
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Chapter Navigation (separate pill, only when expanded) */}
+      {!isMinimized && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '136px',
+            left: '12px',
+            zIndex: 49,
+            background: 'var(--glass-bg)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid var(--glass-border)',
+            borderRadius: '20px',
+            boxShadow: 'var(--glass-shadow)',
+            padding: '8px',
+            display: 'flex',
+            gap: '4px',
+          }}
+        >
+          <button
+            onClick={goToPreviousChapter}
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.1)',
+              color: 'var(--text-primary)',
+              border: 'none',
+              fontSize: '14px',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            ⏮
+          </button>
+          <button
+            onClick={goToNextChapter}
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.1)',
+              color: 'var(--text-primary)',
+              border: 'none',
+              fontSize: '14px',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            ⏭
+          </button>
         </div>
       )}
     </div>

@@ -51,10 +51,10 @@ export default function BottomNav() {
           left: 0,
           right: 0,
           zIndex: 9999,
-          background: 'rgba(7, 13, 26, 0.95)',
+          background: 'var(--nav-bg)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
-          borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+          borderTop: '1px solid var(--nav-border)',
           height: '72px',
           display: 'flex',
           justifyContent: 'space-around',
@@ -98,7 +98,7 @@ export default function BottomNav() {
               style={{
                 fontSize: '11px',
                 fontWeight: 500,
-                color: isActive(tab.path) ? '#D4A843' : 'rgba(255, 255, 255, 0.6)',
+                color: isActive(tab.path) ? 'var(--gold)' : 'var(--text-secondary)',
                 transition: 'color 0.2s ease',
               }}
             >

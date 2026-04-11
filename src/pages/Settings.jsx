@@ -370,7 +370,7 @@ export default function Settings() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   cursor: 'pointer',
-                  border: '2px solid rgba(15, 23, 42, 0.5)',
+                  border: '2px solid var(--glass-border-hover)',
                   fontSize: '14px'
                 }}
               >
@@ -385,7 +385,7 @@ export default function Settings() {
               />
             </div>
             <div>
-              <p style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: 700, marginBottom: '4px' }}>
+              <p style={{ color: 'var(--text-primary)', fontSize: '18px', fontWeight: 700, marginBottom: '4px' }}>
                 {displayName}
               </p>
               <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>
@@ -476,7 +476,7 @@ export default function Settings() {
               border: '1px solid rgba(255,80,80,0.4)',
               borderRadius: '12px',
               padding: '12px 16px',
-              color: 'white',
+              color: 'var(--text-primary)',
               fontSize: '14px'
             }}>
               {uploadError}
@@ -501,7 +501,7 @@ export default function Settings() {
             width: '100%',
             borderRadius: '16px',
             padding: '16px 20px',
-            color: '#FFFFFF',
+            color: 'var(--text-primary)',
             fontSize: '16px',
             fontWeight: 500,
             cursor: 'pointer',
@@ -531,7 +531,7 @@ export default function Settings() {
               width: '100%',
               borderRadius: '12px',
               padding: '12px',
-              color: '#FFFFFF',
+              color: 'var(--text-primary)',
               fontSize: '16px',
               cursor: 'pointer'
             }}
@@ -606,7 +606,7 @@ export default function Settings() {
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
                   border: '1px solid ' + (dailyReminderEnabled ? 'rgba(212,168,67,0.4)' : 'rgba(255,255,255,0.12)'),
-                  color: '#FFFFFF',
+                  color: 'var(--text-primary)',
                   fontSize: '16px',
                   cursor: 'pointer'
                 }}
@@ -624,7 +624,7 @@ export default function Settings() {
             width: '100%',
             borderRadius: '16px',
             padding: '16px 20px',
-            color: '#FFFFFF',
+            color: 'var(--text-primary)',
             fontSize: '16px',
             fontWeight: 500,
             cursor: 'pointer',
@@ -707,7 +707,7 @@ export default function Settings() {
             border: 'none',
             borderRadius: '16px',
             padding: '16px',
-            color: '#FFFFFF',
+            color: 'var(--text-primary)',
             fontSize: '16px',
             fontWeight: 700,
             cursor: 'pointer',

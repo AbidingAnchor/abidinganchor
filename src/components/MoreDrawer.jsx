@@ -36,10 +36,10 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
           left: 0,
           right: 0,
           zIndex: 10001,
-          background: 'rgba(7, 13, 26, 0.98)',
+          background: 'var(--nav-bg)',
           backdropFilter: 'blur(24px)',
           WebkitBackdropFilter: 'blur(24px)',
-          borderTop: '1px solid rgba(212, 168, 67, 0.15)',
+          borderTop: '1px solid var(--glass-border)',
           borderRadius: '24px 24px 0 0',
           paddingBottom: 'env(safe-area-inset-bottom, 20px)',
           paddingLeft: 'env(safe-area-inset-left, 0px)',
@@ -86,7 +86,7 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
               width: '32px',
               height: '32px',
               borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.08)',
+              background: 'var(--btn-secondary-bg)',
               border: '1px solid rgba(255, 255, 255, 0.12)',
               color: '#fff',
               display: 'flex',
@@ -113,8 +113,8 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
                   alignItems: 'center',
                   gap: '16px',
                   padding: '16px 16px',
-                  background: 'rgba(255, 255, 255, 0.04)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  background: 'var(--glass-bg)',
+                  border: '1px solid var(--glass-border)',
                   borderRadius: '12px',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
@@ -132,7 +132,7 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
                 <span
                   style={{
                     fontSize: '24px',
-                    filter: 'drop-shadow(0 0 4px rgba(212, 168, 67, 0.3))',
+                    opacity: 1,
                   }}
                 >
                   {option.icon}
@@ -142,7 +142,7 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
                     flex: 1,
                     fontSize: '16px',
                     fontWeight: 500,
-                    color: '#fff',
+                    color: 'var(--text-primary)',
                     textAlign: 'left',
                   }}
                 >

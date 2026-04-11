@@ -214,11 +214,11 @@ export default function Prayer() {
             }}>
               PRAYER
             </p>
-            <h1 style={{ color: '#FFFFFF', fontSize: '26px', fontWeight: 700, marginBottom: '8px', lineHeight: 1.2 }}>
+            <h1 style={{ color: 'var(--text-primary)', fontSize: '26px', fontWeight: 700, marginBottom: '8px', lineHeight: 1.2 }}>
               Draw near to <span style={{ color: '#D4A843' }}>God</span>
             </h1>
             <p style={{ 
-              color: 'rgba(255,255,255,0.38)', 
+              color: 'var(--text-muted)', 
               fontSize: '11px', 
               fontStyle: 'italic' 
             }}>
@@ -253,13 +253,13 @@ export default function Prayer() {
           </div>
           <div style={{
             flex: 1,
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.1)',
+            background: 'var(--chip-bg)',
+            border: '1px solid var(--chip-border)',
             borderRadius: '12px',
             padding: '12px',
             textAlign: 'center'
           }}>
-            <p style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: 700, marginBottom: '2px' }}>🙏 {stats.totalPrayers}</p>
+            <p style={{ color: 'var(--text-primary)', fontSize: '18px', fontWeight: 700, marginBottom: '2px' }}>🙏 {stats.totalPrayers}</p>
             <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Prayers</p>
           </div>
           <div style={{
@@ -304,7 +304,7 @@ export default function Prayer() {
             Prayer of the Day
           </p>
           <p style={{ 
-            color: 'rgba(255,255,255,0.85)', 
+            color: 'var(--text-primary)', 
             fontSize: '15px', 
             lineHeight: 1.6,
             marginBottom: '16px',
@@ -374,10 +374,10 @@ export default function Prayer() {
                 onChange={(e) => setTranscript(e.target.value)}
                 placeholder="Your prayer will appear here..."
                 style={{
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(212,168,67,0.3)',
+                  background: 'var(--input-bg)',
+                  border: '1px solid var(--gold-border)',
                   borderRadius: '12px',
-                  color: 'white',
+                  color: 'var(--text-primary)',
                   padding: '16px',
                   width: '100%',
                   minHeight: '120px',
@@ -413,7 +413,7 @@ export default function Prayer() {
         {/* Tabs */}
         <div style={{
           display: 'flex',
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          borderBottom: '1px solid var(--glass-border)',
           marginBottom: '20px'
         }}>
           <button
@@ -424,7 +424,7 @@ export default function Prayer() {
               padding: '12px',
               background: 'none',
               border: 'none',
-              color: activeTab === 'my-prayers' ? '#D4A843' : 'rgba(255,255,255,0.45)',
+              color: activeTab === 'my-prayers' ? '#D4A843' : 'var(--text-secondary)',
               borderBottom: activeTab === 'my-prayers' ? '2px solid #D4A843' : 'none',
               fontWeight: 600,
               fontSize: '14px',
@@ -441,7 +441,7 @@ export default function Prayer() {
               padding: '12px',
               background: 'none',
               border: 'none',
-              color: activeTab === 'answered' ? '#D4A843' : 'rgba(255,255,255,0.45)',
+              color: activeTab === 'answered' ? '#D4A843' : 'var(--text-secondary)',
               borderBottom: activeTab === 'answered' ? '2px solid #D4A843' : 'none',
               fontWeight: 600,
               fontSize: '14px',
@@ -454,7 +454,7 @@ export default function Prayer() {
 
         {/* Prayer Cards */}
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(255,255,255,0.6)' }}>
+          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
             Loading...
           </div>
         ) : activeTab === 'my-prayers' ? (
@@ -465,19 +465,19 @@ export default function Prayer() {
                   key={entry.id}
                   className="glass-panel"
                   style={{
-                    border: '1px solid rgba(212,168,67,0.2)',
-                    borderLeft: '3px solid rgba(212,168,67,0.5)',
+                    border: '1px solid var(--glass-border)',
+                    borderLeft: '3px solid var(--glass-border)',
                     borderRadius: '16px',
                     padding: '16px',
                     marginBottom: '12px',
                     position: 'relative'
                   }}
                 >
-                  <p style={{ color: '#FFFFFF', fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>
+                  <p style={{ color: 'var(--text-primary)', fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>
                     {entry.title || entry.text.split('\n')[0] || 'Untitled'}
                   </p>
                   <p style={{
-                    color: 'rgba(255,255,255,0.65)',
+                    color: 'var(--text-secondary)',
                     fontSize: '14px',
                     marginBottom: '12px',
                     lineHeight: 1.5
@@ -489,7 +489,7 @@ export default function Prayer() {
                     justifyContent: 'space-between',
                     alignItems: 'center'
                   }}>
-                    <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '12px' }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
                       {new Date(entry.date).toLocaleDateString()}
                     </p>
                     <div style={{ display: 'flex', gap: '12px' }}>
@@ -497,8 +497,8 @@ export default function Prayer() {
                         type="button"
                         onClick={() => markAsAnswered(entry)}
                         style={{
-                          background: 'rgba(212,168,67,0.15)',
-                          border: '1px solid rgba(212,168,67,0.4)',
+                          background: 'var(--glass-bg)',
+                          border: '1px solid var(--glass-border)',
                           color: '#D4A843',
                           borderRadius: '8px',
                           padding: '6px 12px',
@@ -517,7 +517,7 @@ export default function Prayer() {
                           border: 'none',
                           cursor: 'pointer',
                           fontSize: '16px',
-                          color: 'rgba(255,255,255,0.35)',
+                          color: 'var(--text-secondary)',
                           padding: 0
                         }}
                       >
@@ -538,10 +538,10 @@ export default function Prayer() {
               textAlign: 'center'
             }}>
               <p style={{ fontSize: '48px', marginBottom: '16px' }}>✝️</p>
-              <p style={{ color: '#FFFFFF', fontSize: '16px', marginBottom: '8px' }}>
+              <p style={{ color: 'var(--text-primary)', fontSize: '16px', marginBottom: '8px' }}>
                 No prayers yet
               </p>
-              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', marginBottom: '24px' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '24px' }}>
                 Bring everything before God
               </p>
               <button
@@ -570,8 +570,8 @@ export default function Prayer() {
                   key={entry.id}
                   className="glass-panel"
                   style={{
-                    border: '1px solid rgba(212,168,67,0.2)',
-                    borderLeft: '3px solid rgba(212,168,67,0.5)',
+                    border: '1px solid var(--glass-border)',
+                    borderLeft: '3px solid var(--glass-border)',
                     borderRadius: '16px',
                     padding: '16px',
                     marginBottom: '12px',
@@ -582,7 +582,7 @@ export default function Prayer() {
                     position: 'absolute',
                     top: '12px',
                     right: '12px',
-                    background: 'rgba(212,168,67,0.2)',
+                    background: 'var(--glass-bg)',
                     borderRadius: '20px',
                     padding: '2px 8px',
                     color: '#D4A843',
@@ -595,7 +595,7 @@ export default function Prayer() {
                     {entry.title || entry.text.split('\n')[0] || 'Untitled'}
                   </p>
                   <p style={{
-                    color: 'rgba(255,255,255,0.65)',
+                    color: 'var(--text-secondary)',
                     fontSize: '14px',
                     marginBottom: '12px',
                     lineHeight: 1.5
@@ -607,7 +607,7 @@ export default function Prayer() {
                     justifyContent: 'space-between',
                     alignItems: 'center'
                   }}>
-                    <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '12px' }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
                       {new Date(entry.date).toLocaleDateString()}
                     </p>
                     <div style={{ display: 'flex', gap: '12px' }}>
@@ -615,8 +615,8 @@ export default function Prayer() {
                         type="button"
                         onClick={() => markAsAnswered(entry)}
                         style={{
-                          background: 'rgba(212,168,67,0.15)',
-                          border: '1px solid rgba(212,168,67,0.4)',
+                          background: 'var(--glass-bg)',
+                          border: '1px solid var(--glass-border)',
                           color: '#D4A843',
                           borderRadius: '8px',
                           padding: '6px 12px',
@@ -635,7 +635,7 @@ export default function Prayer() {
                           border: 'none',
                           cursor: 'pointer',
                           fontSize: '16px',
-                          color: 'rgba(255,255,255,0.35)',
+                          color: 'var(--text-secondary)',
                           padding: 0
                         }}
                       >
@@ -656,10 +656,10 @@ export default function Prayer() {
               textAlign: 'center'
             }}>
               <p style={{ fontSize: '48px', marginBottom: '16px' }}>✝️</p>
-              <p style={{ color: '#FFFFFF', fontSize: '16px', marginBottom: '8px' }}>
+              <p style={{ color: 'var(--text-primary)', fontSize: '16px', marginBottom: '8px' }}>
                 No answered prayers yet
               </p>
-              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
                 Keep praying and trust in God's timing
               </p>
             </div>
@@ -692,7 +692,7 @@ export default function Prayer() {
             padding: '24px 20px 40px',
             position: 'relative',
             zIndex: 1001,
-            borderTop: '1px solid rgba(255,255,255,0.1)',
+            borderTop: '1px solid var(--glass-border)',
           }}>
             <h2 style={{
               color: '#D4A843',
@@ -710,10 +710,10 @@ export default function Prayer() {
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Title (optional)"
               style={{
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(212,168,67,0.3)',
+                background: 'var(--glass-bg)',
+                border: '1px solid var(--glass-border)',
                 borderRadius: '12px',
-                color: 'white',
+                color: 'var(--text-secondary)',
                 padding: '12px 16px',
                 width: '100%',
                 marginBottom: '16px',
@@ -726,12 +726,12 @@ export default function Prayer() {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Write your prayer to God..."
-              placeholderStyle={{ color: 'rgba(255,255,255,0.5)' }}
+              placeholderStyle={{ color: 'var(--text-secondary)' }}
               style={{
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(212,168,67,0.3)',
+                background: 'var(--glass-bg)',
+                border: '1px solid var(--glass-border)',
                 borderRadius: '12px',
-                color: 'white',
+                color: 'var(--text-secondary)',
                 padding: '12px 16px',
                 width: '100%',
                 minHeight: '180px',
@@ -766,7 +766,7 @@ export default function Prayer() {
               onClick={() => setShowModal(false)}
               style={{
                 background: 'none',
-                color: 'rgba(255,255,255,0.5)',
+                color: 'var(--text-muted)',
                 border: 'none',
                 cursor: 'pointer',
                 fontSize: '14px',

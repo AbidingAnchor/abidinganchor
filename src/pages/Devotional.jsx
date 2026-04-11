@@ -185,7 +185,7 @@ export default function Devotional() {
                 onClick={() => setActiveTopic(topic)}
                 className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold ${activeTopic === topic ? '' : 'glass-panel'}`}
                 style={{
-                  borderColor: activeTopic === topic ? '#D4A843' : 'rgba(255,255,255,0.08)',
+                  borderColor: activeTopic === topic ? 'var(--gold)' : 'var(--glass-border)',
                   color: activeTopic === topic ? '#D4A843' : 'rgba(255,255,255,0.85)',
                   background: activeTopic === topic ? 'rgba(212,168,67,0.13)' : undefined,
                 }}

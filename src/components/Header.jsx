@@ -70,8 +70,8 @@ export default function Header() {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '0 16px',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-        background: 'rgba(7, 13, 26, 0.95)',
+        borderBottom: '1px solid var(--glass-border)',
+        background: 'var(--nav-bg)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
       }}
@@ -154,8 +154,8 @@ export default function Header() {
           width: '36px',
           height: '36px',
           borderRadius: '50%',
-          background: 'rgba(255, 255, 255, 0.08)',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
+          background: 'var(--btn-secondary-bg)',
+          border: '1px solid var(--glass-border-hover)',
           color: '#fff',
           display: 'flex',
           alignItems: 'center',
@@ -165,12 +165,12 @@ export default function Header() {
           transition: 'all 0.2s ease',
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'
-          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)'
+          e.currentTarget.style.background = 'var(--btn-secondary-bg)'
+          e.currentTarget.style.borderColor = 'var(--glass-border-hover)'
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
-          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)'
+          e.currentTarget.style.background = 'var(--btn-secondary-bg)'
+          e.currentTarget.style.borderColor = 'var(--glass-border-hover)'
         }}
       >
         ⚙️

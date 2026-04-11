@@ -416,7 +416,7 @@ export default function Friends() {
                           alignItems: 'center',
                           justifyContent: 'center',
                           cursor: 'pointer',
-                          border: '2px solid rgba(15, 23, 42, 0.35)',
+                          border: '2px solid var(--glass-border)',
                           fontSize: '10px'
                         }}
                         title="Report profile picture"

@@ -120,7 +120,7 @@ export default function AICompanion() {
                   style={
                     message.role === 'user'
                       ? { background: '#D4A843', color: '#1a1a1a' }
-                      : { background: 'rgba(15, 23, 42, 0.25)', color: '#fff', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }
+                      : { background: 'var(--glass-bg)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }
                   }
                 >
                   {message.role === 'assistant' ? <p className="mb-1 text-xs font-semibold" style={{ color: '#D4A843' }}>✝</p> : null}

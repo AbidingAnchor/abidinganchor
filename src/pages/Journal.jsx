@@ -302,10 +302,10 @@ function Journal() {
         }}>
           <div style={{
             flex: 1,
-            background: 'rgba(15,23,42,0.25)',
+            background: 'var(--glass-bg)',
             backdropFilter: 'blur(16px)',
             WebkitBackdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            border: '1px solid var(--glass-border)',
             borderRadius: '12px',
             padding: '12px 16px',
             textAlign: 'center'
@@ -319,7 +319,7 @@ function Journal() {
               {totalEntries}
             </p>
             <p style={{
-              color: 'rgba(255,255,255,0.7)',
+              color: 'var(--text-secondary)',
               fontSize: '12px',
               fontWeight: 500,
               margin: 0
@@ -329,10 +329,10 @@ function Journal() {
           </div>
           <div style={{
             flex: 1,
-            background: 'rgba(15,23,42,0.25)',
+            background: 'var(--glass-bg)',
             backdropFilter: 'blur(16px)',
             WebkitBackdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            border: '1px solid var(--glass-border)',
             borderRadius: '12px',
             padding: '12px 16px',
             textAlign: 'center'
@@ -346,7 +346,7 @@ function Journal() {
               {prayerCount}
             </p>
             <p style={{
-              color: 'rgba(255,255,255,0.7)',
+              color: 'var(--text-secondary)',
               fontSize: '12px',
               fontWeight: 500,
               margin: 0
@@ -389,7 +389,7 @@ function Journal() {
         </h1>
 
         <div className="glass-panel" style={{
-          background: 'rgba(15,23,42,0.25)',
+          background: 'var(--glass-bg)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
           border: '1px solid rgba(255,255,255,0.08)',
@@ -399,7 +399,7 @@ function Journal() {
           marginBottom: '20px',
         }}>
           <p style={{
-            color: '#FFFFFF',
+            color: 'var(--text-primary)',
             fontSize: '15px',
             fontStyle: 'italic',
             margin: '0 0 8px 0',
@@ -472,7 +472,7 @@ function Journal() {
                   {entry.date}
                 </p>
                 <p style={{
-                  color: '#FFFFFF',
+                  color: 'var(--text-primary)',
                   fontSize: '17px',
                   fontWeight: 600,
                   marginTop: '4px'
@@ -480,7 +480,7 @@ function Journal() {
                   {entry.note.split('\n')[0] || 'Untitled'}
                 </p>
                 <p style={{
-                  color: 'rgba(255,255,255,0.65)',
+                  color: 'var(--text-secondary)',
                   fontSize: '14px',
                   marginTop: '4px',
                   overflow: 'hidden',
@@ -577,7 +577,7 @@ function Journal() {
                         border: 'none',
                         cursor: 'pointer',
                         fontSize: '16px',
-                        color: 'rgba(255,255,255,0.4)',
+                        color: 'var(--text-muted)',
                         padding: 0
                       }}
                     >
@@ -589,10 +589,10 @@ function Journal() {
             ))}
             {randomPastEntry && (
               <div className="glass-panel" style={{
-                background: 'rgba(15,23,42,0.25)',
+                background: 'var(--glass-bg)',
                 backdropFilter: 'blur(16px)',
                 WebkitBackdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255,255,255,0.08)',
+                border: '1px solid var(--glass-border)',
                 borderRadius: '16px',
                 padding: '16px',
                 marginTop: '24px',
@@ -609,7 +609,7 @@ function Journal() {
                   From {getDaysAgo(randomPastEntry.date)} days ago…
                 </p>
                 <p style={{
-                  color: '#FFFFFF',
+                  color: 'var(--text-primary)',
                   fontSize: '15px',
                   fontWeight: 500,
                   marginTop: '0',
@@ -749,7 +749,7 @@ function Journal() {
                   📖 Verse
                 </h2>
                 <p style={{
-                  color: 'rgba(255,255,255,0.7)',
+                  color: 'var(--text-secondary)',
                   fontSize: '14px',
                   textAlign: 'center',
                   marginBottom: '20px'
@@ -763,10 +763,10 @@ function Journal() {
                   onChange={(e) => setVerseReference(e.target.value)}
                   placeholder="Reference (e.g. John 3:16)"
                   style={{
-                    background: 'rgba(255,255,255,0.08)',
-                    border: '1px solid rgba(212,168,67,0.3)',
+                    background: 'var(--input-bg)',
+                    border: '1px solid var(--gold-border)',
                     borderRadius: '12px',
-                    color: 'white',
+                    color: 'var(--text-primary)',
                     padding: '12px 16px',
                     width: '100%',
                     marginBottom: '12px',
@@ -780,10 +780,10 @@ function Journal() {
                   onChange={(e) => setVerseText(e.target.value)}
                   placeholder="Paste the verse text here…"
                   style={{
-                    background: 'rgba(255,255,255,0.08)',
-                    border: '1px solid rgba(212,168,67,0.3)',
+                    background: 'var(--input-bg)',
+                    border: '1px solid var(--gold-border)',
                     borderRadius: '12px',
-                    color: 'white',
+                    color: 'var(--text-primary)',
                     padding: '12px 16px',
                     width: '100%',
                     minHeight: '120px',
@@ -808,7 +808,7 @@ function Journal() {
                   💭 Reflection
                 </h2>
                 <p style={{
-                  color: 'rgba(255,255,255,0.7)',
+                  color: 'var(--text-secondary)',
                   fontSize: '14px',
                   textAlign: 'center',
                   marginBottom: '20px'
@@ -821,10 +821,10 @@ function Journal() {
                   onChange={(e) => setReflection(e.target.value)}
                   placeholder="Write freely…"
                   style={{
-                    background: 'rgba(255,255,255,0.08)',
-                    border: '1px solid rgba(212,168,67,0.3)',
+                    background: 'var(--input-bg)',
+                    border: '1px solid var(--gold-border)',
                     borderRadius: '12px',
-                    color: 'white',
+                    color: 'var(--text-primary)',
                     padding: '12px 16px',
                     width: '100%',
                     minHeight: '180px',
@@ -849,7 +849,7 @@ function Journal() {
                   🙏 Prayer
                 </h2>
                 <p style={{
-                  color: 'rgba(255,255,255,0.7)',
+                  color: 'var(--text-secondary)',
                   fontSize: '14px',
                   textAlign: 'center',
                   marginBottom: '20px'
@@ -862,10 +862,10 @@ function Journal() {
                   onChange={(e) => setPrayer(e.target.value)}
                   placeholder="Talk to God…"
                   style={{
-                    background: 'rgba(255,255,255,0.08)',
-                    border: '1px solid rgba(212,168,67,0.3)',
+                    background: 'var(--input-bg)',
+                    border: '1px solid var(--gold-border)',
                     borderRadius: '12px',
-                    color: 'white',
+                    color: 'var(--text-primary)',
                     padding: '12px 16px',
                     width: '100%',
                     minHeight: '180px',
@@ -891,7 +891,7 @@ function Journal() {
                   🙌 Gratitude
                 </h2>
                 <p style={{
-                  color: 'rgba(255,255,255,0.7)',
+                  color: 'var(--text-secondary)',
                   fontSize: '14px',
                   textAlign: 'center',
                   marginBottom: '20px'
@@ -904,10 +904,10 @@ function Journal() {
                   onChange={(e) => setGratitude(e.target.value)}
                   placeholder="Even the small things…"
                   style={{
-                    background: 'rgba(255,255,255,0.08)',
-                    border: '1px solid rgba(212,168,67,0.3)',
+                    background: 'var(--input-bg)',
+                    border: '1px solid var(--gold-border)',
                     borderRadius: '12px',
-                    color: 'white',
+                    color: 'var(--text-primary)',
                     padding: '12px 16px',
                     width: '100%',
                     minHeight: '180px',
@@ -1001,7 +1001,7 @@ function Journal() {
               }}
               style={{
                 background: 'none',
-                color: 'rgba(255,255,255,0.5)',
+                color: 'var(--text-muted)',
                 border: 'none',
                 cursor: 'pointer',
                 fontSize: '14px',
@@ -1038,7 +1038,7 @@ function Journal() {
             fontFamily: 'Cinzel, serif',
             fontSize: '48px',
             fontWeight: 700,
-            color: '#FFFFFF',
+            color: 'var(--text-primary)',
             marginBottom: '16px',
             textAlign: 'center',
             animation: 'fadeIn 0.4s ease 0.2s both'
@@ -1132,7 +1132,7 @@ function Journal() {
                 Would you like to share this with the prayer wall anonymously?
               </p>
               <p style={{
-                color: 'rgba(255,255,255,0.6)',
+                color: 'var(--text-secondary)',
                 fontSize: '13px',
                 fontStyle: 'italic'
               }}>

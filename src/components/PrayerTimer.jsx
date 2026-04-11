@@ -50,7 +50,7 @@ export default function PrayerTimer({ open, onClose }) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 9300, background: 'rgba(13,31,78,0.95)', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <article style={{ width: '100%', maxWidth: '420px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(14px)', padding: '18px', textAlign: 'center' }}>
+      <article style={{ width: '100%', maxWidth: '420px', borderRadius: '20px', border: '1px solid var(--glass-border-hover)', background: 'var(--glass-bg)', backdropFilter: 'blur(14px)', padding: '18px', textAlign: 'center' }}>
         <h2 style={{ color: '#D4A843', margin: 0 }}>Prayer Timer</h2>
         <div style={{ margin: '16px auto', width: '220px', height: '220px', borderRadius: '999px', border: '6px solid rgba(212,168,67,0.7)', boxShadow: '0 0 25px rgba(212,168,67,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '44px', fontWeight: 700 }}>
           {mm}:{ss}

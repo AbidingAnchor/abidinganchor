@@ -253,7 +253,7 @@ export default function CommunityPrayer() {
                     fontSize: '12px',
                     fontWeight: filterCat === c ? 700 : 600,
                     background: filterCat === c ? '#D4A843' : undefined,
-                    border: filterCat === c ? 'none' : '1px solid rgba(255,255,255,0.08)',
+                    border: filterCat === c ? 'none' : '1px solid var(--glass-border)',
                     color: filterCat === c ? '#0a1a3e' : 'white',
                     cursor: 'pointer',
                     transition: 'all 0.2s'

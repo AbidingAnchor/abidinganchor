@@ -88,7 +88,7 @@ export default function Navbar() {
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0 16px',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          borderBottom: '1px solid var(--glass-border)',
         }}
       >
         {/* Profile avatar */}
@@ -169,8 +169,8 @@ export default function Navbar() {
             width: '36px',
             height: '36px',
             borderRadius: '50%',
-            background: 'rgba(255,255,255,0.08)',
-            border: '1px solid rgba(255,255,255,0.15)',
+            background: 'var(--btn-secondary-bg)',
+            border: '1px solid var(--glass-border-hover)',
             color: '#fff',
             display: 'flex',
             alignItems: 'center',
@@ -180,12 +180,12 @@ export default function Navbar() {
             transition: 'all 0.2s ease'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.15)'
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'
+            e.currentTarget.style.background = 'var(--btn-secondary-bg)'
+            e.currentTarget.style.borderColor = 'var(--glass-border-hover)'
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.08)'
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'
+            e.currentTarget.style.background = 'var(--btn-secondary-bg)'
+            e.currentTarget.style.borderColor = 'var(--glass-border-hover)'
           }}
         >
           ⚙️
@@ -199,10 +199,10 @@ export default function Navbar() {
           left: 0,
           right: 0,
           zIndex: 9999,
-          background: 'rgba(7, 13, 26, 0.95)',
+          background: 'var(--nav-bg)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
-          borderTop: '1px solid rgba(255,255,255,0.08)',
+          borderTop: '1px solid var(--nav-border)',
           height: '65px',
           display: 'flex',
           justifyContent: 'space-around',

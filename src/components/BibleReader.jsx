@@ -263,7 +263,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
         flex: 1,
         overflowY: 'auto',
         paddingTop: '140px', 
-        paddingBottom: mode === 'listen' ? '220px' : '120px', 
+        paddingBottom: mode === 'listen' ? '160px' : '120px', 
         padding: '24px 20px', 
         maxWidth: '680px', 
         margin: '0 auto'
@@ -295,7 +295,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
               fontSize: '1.1rem',
               lineHeight: '1.8',
               fontFamily: 'Lora, serif',
-              paddingBottom: mode === 'listen' ? '220px' : '80px'
+              paddingBottom: mode === 'listen' ? '160px' : '80px'
             }}>
               {verses.map(v => (
                 <p key={v.verse} style={{
