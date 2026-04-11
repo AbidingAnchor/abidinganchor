@@ -2,6 +2,7 @@
 const CACHE_VERSION = 'v2';
 const CACHE_NAME = `abidinganchor-${CACHE_VERSION}`;
 const NOTIF_CACHE_NAME = 'abidinganchor-notif-cache';
+/* Precache: shell only — do not list audio (e.g. /music/*.mp3); missing files break install/cache. */
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -131,8 +132,8 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
-          const clone = response.clone();
-          if (response.ok) {
+          if (response.status === 200) {
+            const clone = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
           }
           return response;
@@ -146,10 +147,12 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       caches.match(event.request).then((cached) => {
         return cached || fetch(event.request).then((response) => {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, clone);
-          });
+          if (response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, clone);
+            });
+          }
           return response;
         });
       })

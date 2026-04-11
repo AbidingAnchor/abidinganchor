@@ -4,6 +4,43 @@ import { useAuth } from '../context/AuthContext'
 
 const MOOD_TAGS = ['Grateful', 'Hopeful', 'Struggling', 'Peaceful', 'Convicted', 'Joyful']
 
+/** Local calendar YYYY-MM-DD (matches how users expect “today” for streaks). */
+function toLocalYmd(isoOrDate) {
+  const x = new Date(isoOrDate)
+  if (Number.isNaN(x.getTime())) return ''
+  const y = x.getFullYear()
+  const m = String(x.getMonth() + 1).padStart(2, '0')
+  const d = String(x.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+function localTodayYmd() {
+  return toLocalYmd(new Date())
+}
+
+function addDaysToYmd(ymd, deltaDays) {
+  const [y, m, d] = ymd.split('-').map(Number)
+  const next = new Date(y, m - 1, d + deltaDays)
+  return toLocalYmd(next)
+}
+
+/** Consecutive days with ≥1 entry, walking back from today (yesterday counts if today is empty). */
+function computeWritingStreak(rows) {
+  const dates = new Set((rows || []).map((e) => toLocalYmd(e.created_at)).filter(Boolean))
+  if (dates.size === 0) return 0
+  let cursor = localTodayYmd()
+  if (!dates.has(cursor)) {
+    cursor = addDaysToYmd(localTodayYmd(), -1)
+    if (!dates.has(cursor)) return 0
+  }
+  let streak = 0
+  while (dates.has(cursor)) {
+    streak += 1
+    cursor = addDaysToYmd(cursor, -1)
+  }
+  return streak
+}
+
 function normalizeEntry(entry) {
   const savedDate = entry.created_at ? new Date(entry.created_at).toLocaleDateString('en-US', {
     month: 'long',
@@ -43,35 +80,7 @@ function Journal() {
       const data = await getJournalEntries(user.id)
       if (!active) return
       setEntries((data || []).map(normalizeEntry))
-      
-      // Calculate writing streak
-      const entriesWithDates = (data || []).map(e => ({
-        date: new Date(e.created_at).toISOString().slice(0, 10)
-      }))
-      const uniqueDates = [...new Set(entriesWithDates.map(e => e.date))].sort().reverse()
-      
-      let streak = 0
-      const today = new Date().toISOString().slice(0, 10)
-      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
-      
-      if (uniqueDates.length > 0) {
-        const mostRecent = uniqueDates[0]
-        if (mostRecent === today || mostRecent === yesterday) {
-          streak = 1
-          for (let i = 1; i < uniqueDates.length; i++) {
-            const current = new Date(uniqueDates[i])
-            const prev = new Date(uniqueDates[i - 1])
-            const diffDays = Math.floor((prev - current) / (1000 * 60 * 60 * 24))
-            if (diffDays === 1) {
-              streak++
-            } else {
-              break
-            }
-          }
-        }
-      }
-      
-      setWritingStreak(streak)
+      setWritingStreak(computeWritingStreak(data))
       setLoading(false)
     }
     load()
@@ -112,6 +121,8 @@ function Journal() {
     
     if (!newEntry) return
     setEntries((prev) => [normalizeEntry(newEntry), ...prev])
+    const full = await getJournalEntries(user?.id)
+    setWritingStreak(computeWritingStreak(full))
     setTitle('')
     setContent('')
     setReference('')
@@ -123,6 +134,7 @@ function Journal() {
     await deleteJournalEntry(entry.id)
     const nextEntries = await getJournalEntries(user?.id)
     setEntries((nextEntries || []).map(normalizeEntry))
+    setWritingStreak(computeWritingStreak(nextEntries))
   }
 
   return (
@@ -131,41 +143,37 @@ function Journal() {
         className="content-scroll"
         style={{ padding: '0 16px', paddingTop: '200px', paddingBottom: '100px', maxWidth: '390px', margin: '0 auto', width: '100%' }}
       >
-        <h1 style={{ 
-          color: '#D4A843', 
-          fontSize: '20px', 
-          fontWeight: 700, 
-          letterSpacing: '0.1em', 
-          textAlign: 'center',
-          marginBottom: '24px'
-        }}>
-          MY JOURNAL
-        </h1>
-
         <div className="glass-panel" style={{
           border: '1px solid rgba(212,168,67,0.2)',
           borderRadius: '16px',
           padding: '16px',
           marginBottom: '20px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px'
         }}>
-          <span style={{ fontSize: '24px' }}>🔥</span>
-          <div>
-            <p style={{ 
-              color: '#D4A843', 
-              fontSize: '14px', 
-              fontWeight: 600, 
-              marginBottom: '2px' 
-            }}>
-              {writingStreak > 0 ? `${writingStreak} Day Writing Streak` : 'Start your writing streak today'}
-            </p>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px' }}>
-              {writingStreak > 0 ? 'Keep up the great work!' : 'Write your first entry to begin'}
-            </p>
-          </div>
+          <p style={{
+            color: '#D4A843',
+            fontSize: '14px',
+            fontWeight: 600,
+            marginBottom: '4px',
+          }}>
+            {writingStreak > 0
+              ? `🔥 ${writingStreak} ${writingStreak === 1 ? 'Day' : 'Days'} Writing Streak`
+              : '🔥 Start your writing streak today'}
+          </p>
+          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', margin: 0 }}>
+            {writingStreak > 0 ? 'Keep up the great work!' : 'Write your first entry to begin'}
+          </p>
         </div>
+
+        <h1 style={{
+          color: '#D4A843',
+          fontSize: '20px',
+          fontWeight: 700,
+          letterSpacing: '0.1em',
+          textAlign: 'center',
+          marginBottom: '24px',
+        }}>
+          MY JOURNAL
+        </h1>
 
         <button
           type="button"
@@ -378,7 +386,58 @@ function Journal() {
                 outline: 'none'
               }}
             />
-            
+
+            <p style={{
+              color: 'rgba(255,255,255,0.7)',
+              fontSize: '12px',
+              fontWeight: 600,
+              marginBottom: '8px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em'
+            }}>
+              How are you feeling?
+            </p>
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '8px',
+              marginBottom: '16px'
+            }}>
+              {MOOD_TAGS.map((mood) => {
+                const selected = selectedMood === mood
+                return (
+                  <button
+                    key={mood}
+                    type="button"
+                    onClick={() => setSelectedMood(selected ? '' : mood)}
+                    className={selected ? '' : 'glass-panel'}
+                    style={{
+                      ...(selected
+                        ? {
+                            background: 'rgba(212,168,67,0.15)',
+                            border: '1px solid #D4A843',
+                            color: '#D4A843',
+                            backdropFilter: 'none',
+                            WebkitBackdropFilter: 'none',
+                          }
+                        : {
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            color: 'rgba(255,255,255,0.75)',
+                          }),
+                      borderRadius: '50px',
+                      padding: '8px 16px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    {mood}
+                  </button>
+                )
+              })}
+            </div>
+
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
@@ -415,50 +474,7 @@ function Journal() {
                 outline: 'none'
               }}
             />
-            
-            <p style={{
-              color: 'rgba(255,255,255,0.7)',
-              fontSize: '12px',
-              fontWeight: 600,
-              marginBottom: '8px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em'
-            }}>
-              How are you feeling?
-            </p>
-            <div style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '8px',
-              marginBottom: '20px'
-            }}>
-              {MOOD_TAGS.map((mood) => (
-                <button
-                  key={mood}
-                  type="button"
-                  onClick={() => setSelectedMood(selectedMood === mood ? '' : mood)}
-                  className="glass-panel"
-                  style={{
-                    background: selectedMood === mood 
-                      ? 'rgba(212,168,67,0.12)' 
-                      : undefined,
-                    border: selectedMood === mood 
-                      ? '1px solid #D4A843' 
-                      : '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: '50px',
-                    padding: '8px 16px',
-                    color: selectedMood === mood ? '#D4A843' : 'rgba(255,255,255,0.6)',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  {mood}
-                </button>
-              ))}
-            </div>
-            
+
             <button
               type="button"
               onClick={handleSaveEntry}

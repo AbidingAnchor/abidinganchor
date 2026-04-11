@@ -517,7 +517,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                   minWidth: '140px',
                   minHeight: '100px',
                   textDecoration: 'none',
-                  border: '1px solid rgba(212, 168, 67, 0.35)',
+                  border: '1px solid #D4A843',
                   borderRadius: '16px',
                   padding: '20px',
                   display: 'flex',
@@ -533,7 +533,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.removeProperty('background')
-                  e.currentTarget.style.border = '1px solid rgba(212, 168, 67, 0.35)'
+                  e.currentTarget.style.border = '1px solid #D4A843'
                   e.currentTarget.style.boxShadow = 'none'
                 }}
               >
@@ -548,7 +548,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                   minWidth: '140px',
                   minHeight: '100px',
                   textDecoration: 'none',
-                  border: '1px solid rgba(212, 168, 67, 0.35)',
+                  border: '1px solid #D4A843',
                   borderRadius: '16px',
                   padding: '20px',
                   display: 'flex',
@@ -564,7 +564,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.removeProperty('background')
-                  e.currentTarget.style.border = '1px solid rgba(212, 168, 67, 0.35)'
+                  e.currentTarget.style.border = '1px solid #D4A843'
                   e.currentTarget.style.boxShadow = 'none'
                 }}
               >
@@ -579,7 +579,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                   minWidth: '140px',
                   minHeight: '100px',
                   textDecoration: 'none',
-                  border: '1px solid rgba(212, 168, 67, 0.35)',
+                  border: '1px solid #D4A843',
                   borderRadius: '16px',
                   padding: '20px',
                   display: 'flex',
@@ -595,7 +595,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.removeProperty('background')
-                  e.currentTarget.style.border = '1px solid rgba(212, 168, 67, 0.35)'
+                  e.currentTarget.style.border = '1px solid #D4A843'
                   e.currentTarget.style.boxShadow = 'none'
                 }}
               >
@@ -610,7 +610,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                   minWidth: '140px',
                   minHeight: '100px',
                   textDecoration: 'none',
-                  border: '1px solid rgba(212, 168, 67, 0.35)',
+                  border: '1px solid #D4A843',
                   borderRadius: '16px',
                   padding: '20px',
                   display: 'flex',
@@ -626,7 +626,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.removeProperty('background')
-                  e.currentTarget.style.border = '1px solid rgba(212, 168, 67, 0.35)'
+                  e.currentTarget.style.border = '1px solid #D4A843'
                   e.currentTarget.style.boxShadow = 'none'
                 }}
               >
@@ -639,7 +639,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                 style={{
                   minWidth: '140px',
                   minHeight: '100px',
-                  border: '1px solid rgba(212, 168, 67, 0.35)',
+                  border: '1px solid #D4A843',
                   borderRadius: '16px',
                   padding: '20px',
                   display: 'flex',
@@ -657,7 +657,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.removeProperty('background')
-                  e.currentTarget.style.border = '1px solid rgba(212, 168, 67, 0.35)'
+                  e.currentTarget.style.border = '1px solid #D4A843'
                   e.currentTarget.style.boxShadow = 'none'
                 }}
                 onClick={() => window.open('https://discord.gg/nZcZRkUMJh', '_blank')}
@@ -673,7 +673,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                   minWidth: '140px',
                   minHeight: '100px',
                   textDecoration: 'none',
-                  border: '1px solid rgba(212, 168, 67, 0.35)',
+                  border: '1px solid #D4A843',
                   borderRadius: '16px',
                   padding: '20px',
                   display: 'flex',
@@ -689,7 +689,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.removeProperty('background')
-                  e.currentTarget.style.border = '1px solid rgba(212, 168, 67, 0.35)'
+                  e.currentTarget.style.border = '1px solid #D4A843'
                   e.currentTarget.style.boxShadow = 'none'
                 }}
               >

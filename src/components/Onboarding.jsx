@@ -254,37 +254,47 @@ export default function Onboarding({ onComplete }) {
                 display: 'flex',
                 flexWrap: 'wrap',
                 gap: '12px',
-                marginBottom: '32px'
+                marginBottom: 0
               }}>
-                {GROWTH_GOALS.map((goal) => (
+                {GROWTH_GOALS.map((goal) => {
+                  const sel = selectedGoals.includes(goal.id)
+                  return (
                   <button
                     key={goal.id}
                     type="button"
                     onClick={() => toggleGoal(goal.id)}
+                    className={sel ? '' : 'glass-panel'}
                     style={{
-                      background: selectedGoals.includes(goal.id) 
-                        ? 'rgba(212,168,67,0.15)' 
-                        : 'rgba(255,255,255,0.04)',
-                      border: selectedGoals.includes(goal.id) 
-                        ? '1px solid #D4A843' 
-                        : '1px solid rgba(255,255,255,0.08)',
+                      ...(sel
+                        ? {
+                            background: 'rgba(212,168,67,0.15)',
+                            border: '1px solid #D4A843',
+                            color: '#D4A843',
+                            backdropFilter: 'none',
+                            WebkitBackdropFilter: 'none',
+                          }
+                        : {
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            color: '#FFFFFF',
+                          }),
                       borderRadius: '14px',
                       padding: '12px 16px',
                       fontSize: '15px',
-                      color: selectedGoals.includes(goal.id) ? '#D4A843' : '#FFFFFF',
                       cursor: 'pointer',
                       transition: 'all 0.2s ease'
                     }}
                   >
                     {goal.icon} {goal.label}
                   </button>
-                ))}
+                  )
+                })}
               </div>
               {selectedGoals.length > 0 && (
                 <button
                   type="button"
                   onClick={() => setScreen(3)}
                   style={{
+                    marginTop: '16px',
                     background: '#D4A843',
                     color: '#060f26',
                     border: 'none',
@@ -327,26 +337,34 @@ export default function Onboarding({ onComplete }) {
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '12px',
-                marginBottom: '32px'
+                marginBottom: 0
               }}>
-                {FAITH_DURATIONS.map((duration) => (
+                {FAITH_DURATIONS.map((duration) => {
+                  const sel = faithDuration === duration.id
+                  return (
                   <button
                     key={duration.id}
                     type="button"
                     onClick={() => setFaithDuration(duration.id)}
+                    className={sel ? '' : 'glass-panel'}
                     style={{
-                      background: faithDuration === duration.id 
-                        ? 'rgba(212,168,67,0.08)' 
-                        : 'rgba(255,255,255,0.04)',
-                      border: faithDuration === duration.id 
-                        ? '1px solid rgba(212,168,67,0.2)' 
-                        : '1px solid rgba(255,255,255,0.08)',
-                      borderLeft: faithDuration === duration.id ? '3px solid #D4A843' : '1px solid rgba(255,255,255,0.08)',
+                      ...(sel
+                        ? {
+                            background: 'rgba(212,168,67,0.08)',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            borderLeft: '3px solid #D4A843',
+                            color: '#D4A843',
+                            backdropFilter: 'none',
+                            WebkitBackdropFilter: 'none',
+                          }
+                        : {
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            color: '#FFFFFF',
+                          }),
                       borderRadius: '14px',
                       padding: '16px 20px',
                       fontSize: '16px',
                       fontWeight: 600,
-                      color: faithDuration === duration.id ? '#D4A843' : '#FFFFFF',
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
                       textAlign: 'left'
@@ -354,13 +372,15 @@ export default function Onboarding({ onComplete }) {
                   >
                     {duration.icon} {duration.label}
                   </button>
-                ))}
+                  )
+                })}
               </div>
               {faithDuration && (
                 <button
                   type="button"
                   onClick={() => setScreen(4)}
                   style={{
+                    marginTop: '16px',
                     background: '#D4A843',
                     color: '#060f26',
                     border: 'none',
@@ -403,26 +423,34 @@ export default function Onboarding({ onComplete }) {
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '12px',
-                marginBottom: '32px'
+                marginBottom: 0
               }}>
-                {DAILY_COMMITMENTS.map((commitment) => (
+                {DAILY_COMMITMENTS.map((commitment) => {
+                  const sel = dailyCommitment === commitment.id
+                  return (
                   <button
                     key={commitment.id}
                     type="button"
                     onClick={() => setDailyCommitment(commitment.id)}
+                    className={sel ? '' : 'glass-panel'}
                     style={{
-                      background: dailyCommitment === commitment.id 
-                        ? 'rgba(212,168,67,0.08)' 
-                        : 'rgba(255,255,255,0.04)',
-                      border: dailyCommitment === commitment.id 
-                        ? '1px solid rgba(212,168,67,0.2)' 
-                        : '1px solid rgba(255,255,255,0.08)',
-                      borderLeft: dailyCommitment === commitment.id ? '3px solid #D4A843' : '1px solid rgba(255,255,255,0.08)',
+                      ...(sel
+                        ? {
+                            background: 'rgba(212,168,67,0.08)',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            borderLeft: '3px solid #D4A843',
+                            color: '#D4A843',
+                            backdropFilter: 'none',
+                            WebkitBackdropFilter: 'none',
+                          }
+                        : {
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            color: '#FFFFFF',
+                          }),
                       borderRadius: '14px',
                       padding: '16px 20px',
                       fontSize: '16px',
                       fontWeight: 600,
-                      color: dailyCommitment === commitment.id ? '#D4A843' : '#FFFFFF',
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
                       textAlign: 'left'
@@ -438,13 +466,15 @@ export default function Onboarding({ onComplete }) {
                       {commitment.description}
                     </div>
                   </button>
-                ))}
+                  )
+                })}
               </div>
               {dailyCommitment && (
                 <button
                   type="button"
                   onClick={() => setScreen(5)}
                   style={{
+                    marginTop: '16px',
                     background: '#D4A843',
                     color: '#060f26',
                     border: 'none',

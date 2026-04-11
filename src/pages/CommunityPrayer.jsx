@@ -32,6 +32,7 @@ export default function CommunityPrayer() {
   const [submitting, setSubmitting] = useState(false)
   const [activeUsersCount, setActiveUsersCount] = useState(0)
   const [animatingPrayId, setAnimatingPrayId] = useState(null)
+  const [prayingId, setPrayingId] = useState(null)
 
   const firstName = useMemo(
     () => profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || '',
@@ -118,49 +119,32 @@ export default function CommunityPrayer() {
     }
   }, [tab, loadWall, loadMine, loadActiveUsersCount])
 
-  const togglePray = async (prayer) => {
+  /** Inserts into prayer_interactions (user_id + prayer_id) and bumps community_prayers.pray_count. */
+  const handlePray = async (prayer) => {
     if (!user?.id) return
     const id = prayer.id
-    const prayed = myPrayedIds.has(id)
+    if (myPrayedIds.has(id)) return
     const count = Math.max(0, Number(prayer.pray_count) || 0)
+    setPrayingId(id)
     try {
-      if (prayed) {
-        const { error: d1 } = await supabase
-          .from('prayer_interactions')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('prayer_id', id)
-        if (d1) throw d1
-        const { error: d2 } = await supabase
-          .from('community_prayers')
-          .update({ pray_count: Math.max(0, count - 1) })
-          .eq('id', id)
-        if (d2) throw d2
-        setMyPrayedIds((prev) => {
-          const next = new Set(prev)
-          next.delete(id)
-          return next
-        })
-        setPrayers((prev) => prev.map((p) => (p.id === id ? { ...p, pray_count: Math.max(0, count - 1) } : p)))
-      } else {
-        const { error: i1 } = await supabase.from('prayer_interactions').insert({
-          user_id: user.id,
-          prayer_id: id,
-        })
-        if (i1) throw i1
-        const { error: i2 } = await supabase
-          .from('community_prayers')
-          .update({ pray_count: count + 1 })
-          .eq('id', id)
-        if (i2) throw i2
-        setMyPrayedIds((prev) => new Set(prev).add(id))
-        setPrayers((prev) => prev.map((p) => (p.id === id ? { ...p, pray_count: count + 1 } : p)))
-        // Trigger animation
-        setAnimatingPrayId(id)
-        setTimeout(() => setAnimatingPrayId(null), 400)
-      }
+      const { error: i1 } = await supabase.from('prayer_interactions').insert({
+        user_id: user.id,
+        prayer_id: id,
+      })
+      if (i1) throw i1
+      const { error: i2 } = await supabase
+        .from('community_prayers')
+        .update({ pray_count: count + 1 })
+        .eq('id', id)
+      if (i2) throw i2
+      setMyPrayedIds((prev) => new Set(prev).add(id))
+      setPrayers((prev) => prev.map((p) => (p.id === id ? { ...p, pray_count: count + 1 } : p)))
+      setAnimatingPrayId(id)
+      setTimeout(() => setAnimatingPrayId(null), 400)
     } catch {
       await refresh()
+    } finally {
+      setPrayingId(null)
     }
   }
 
@@ -327,19 +311,25 @@ export default function CommunityPrayer() {
                   </div>
                   <p className="text-body leading-relaxed text-primary">{p.content}</p>
                   <p className="mt-2 text-xs font-medium text-gold-accent">{displayAuthor(p)}</p>
+                  <p className="mt-2 text-xs text-secondary">
+                    {cnt === 0 ? 'No prayers yet' : `${cnt} ${cnt === 1 ? 'person has' : 'people have'} prayed`}
+                  </p>
                   <button
                     type="button"
-                    onClick={() => togglePray(p)}
-                    className={`mt-3 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition sm:w-auto sm:px-6 ${
-                      prayed ? 'btn-primary' : 'btn-secondary text-gold-accent'
+                    onClick={() => !prayed && handlePray(p)}
+                    disabled={prayingId === p.id}
+                    aria-pressed={prayed}
+                    className={`mt-2 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition sm:w-auto sm:px-6 ${
+                      prayed ? 'btn-primary pointer-events-none' : 'btn-secondary text-gold-accent'
                     }`}
                     style={{
-                      transform: animatingPrayId === p.id ? 'scale(1.1)' : 'scale(1)',
+                      transform: animatingPrayId === p.id ? 'scale(1.06)' : 'scale(1)',
                       transition: animatingPrayId === p.id ? 'transform 0.15s ease-out, background-color 0.15s ease-out' : 'transform 0.2s ease',
-                      backgroundColor: animatingPrayId === p.id ? '#D4A843' : undefined
+                      backgroundColor: animatingPrayId === p.id ? '#D4A843' : undefined,
+                      opacity: prayingId === p.id ? 0.75 : 1,
                     }}
                   >
-                    <span>🙏 {cnt}</span>
+                    {prayed ? 'Prayed! 🙏' : prayingId === p.id ? 'Praying…' : '🙏 Pray'}
                   </button>
                 </li>
               )
@@ -349,7 +339,9 @@ export default function CommunityPrayer() {
 
         {!loading && tab === 'mine' && (
             <ul className="space-y-3">
-              {prayers.map((p) => (
+              {prayers.map((p) => {
+                const minePrayCount = Math.max(0, Number(p.pray_count) || 0)
+                return (
                 <li key={p.id} className="app-card p-4 text-primary border-l-[3px] border-gold">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     <span className="gold-badge">
@@ -359,6 +351,11 @@ export default function CommunityPrayer() {
                   </div>
                   <p className="text-body leading-relaxed text-primary">{p.content}</p>
                   <p className="mt-2 text-xs text-gold-accent">{displayAuthor(p)}</p>
+                  <p className="mt-2 text-xs text-secondary">
+                    {minePrayCount === 0
+                      ? 'No prayers yet'
+                      : `${minePrayCount} ${minePrayCount === 1 ? 'person has' : 'people have'} prayed`}
+                  </p>
                 <button
                   type="button"
                   onClick={() => deleteMine(p.id)}
@@ -367,7 +364,8 @@ export default function CommunityPrayer() {
                   Delete
                 </button>
               </li>
-            ))}
+                )
+              })}
           </ul>
         )}
       </div>

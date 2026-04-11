@@ -13,7 +13,11 @@ export async function getPrayerEntries(userIdArg) {
   }
   if (!userId) return []
   try {
-    const { data, error } = await supabase.from('prayers').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+    const { data, error } = await supabase
+      .from('prayers')
+      .select('id,user_id,content,answered,created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
     if (error) throw error
     return (data || []).map((entry) => ({ id: entry.id, text: entry.content, date: entry.created_at, answered: Boolean(entry.answered) }))
   } catch (err) {
@@ -35,7 +39,9 @@ export async function savePrayer({ text, date, answered = false, userId: userIdA
   }
   if (!userId || !text?.trim()) return []
   try {
-    const { error } = await supabase.from('prayers').insert({ user_id: userId, content: text.trim(), answered, created_at: date || new Date().toISOString() })
+    const payload = { user_id: userId, content: text.trim(), answered }
+    if (date) payload.created_at = date
+    const { error } = await supabase.from('prayers').insert(payload)
     if (error) throw error
   } catch (err) {
     console.error('Error saving prayer:', err)
@@ -45,7 +51,7 @@ export async function savePrayer({ text, date, answered = false, userId: userIdA
 
 export async function toggleAnswered(id) {
   try {
-    const { data, error } = await supabase.from('prayers').select('answered,user_id').eq('id', id).single()
+    const { data, error } = await supabase.from('prayers').select('id,answered,user_id').eq('id', id).single()
     if (error) throw error
     if (!data) return []
     const { error: updateError } = await supabase.from('prayers').update({ answered: !data.answered }).eq('id', id)
@@ -59,7 +65,7 @@ export async function toggleAnswered(id) {
 
 export async function deletePrayer(id) {
   try {
-    const { data, error } = await supabase.from('prayers').select('user_id').eq('id', id).single()
+    const { data, error } = await supabase.from('prayers').select('id,user_id').eq('id', id).single()
     if (error) throw error
     const { error: deleteError } = await supabase.from('prayers').delete().eq('id', id)
     if (deleteError) throw deleteError

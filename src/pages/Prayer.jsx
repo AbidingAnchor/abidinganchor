@@ -46,7 +46,7 @@ export default function Prayer() {
         // Fetch prayer counts
         const { data: prayersData, error: _prayersError } = await supabase
           .from('prayers')
-          .select('answered')
+          .select('id,answered')
           .eq('user_id', user.id)
         
         if (cancelled) return
@@ -101,17 +101,23 @@ export default function Prayer() {
     try {
       const { data, error } = await supabase
         .from('prayers')
-        .select('*')
+        .select('id,user_id,content,answered,created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
       if (error) throw error
-      setEntries((data || []).map((row) => ({
-        id: row.id,
-        title: row.title || '',
-        text: row.content,
-        date: row.created_at,
-        answered: Boolean(row.answered),
-      })))
+      setEntries((data || []).map((row) => {
+        const raw = row.content || ''
+        const parts = raw.split(/\n\n+/)
+        const titleFromBody = parts.length > 1 ? parts[0].trim() : ''
+        const textFromBody = parts.length > 1 ? parts.slice(1).join('\n\n').trim() : raw.trim()
+        return {
+          id: row.id,
+          title: titleFromBody,
+          text: textFromBody,
+          date: row.created_at,
+          answered: Boolean(row.answered),
+        }
+      }))
     } catch (err) {
       console.error('Error loading prayers:', err)
       setEntries([])
@@ -122,10 +128,12 @@ export default function Prayer() {
     const prayerContent = transcript.trim() || content.trim()
     if (!prayerContent) return
     try {
+      const storedContent = title.trim()
+        ? `${title.trim()}\n\n${prayerContent}`
+        : prayerContent
       const { error } = await supabase.from('prayers').insert({
         user_id: user.id,
-        title: title.trim() || null,
-        content: prayerContent,
+        content: storedContent,
         answered: false,
       })
       if (error) throw error

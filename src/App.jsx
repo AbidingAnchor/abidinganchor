@@ -45,8 +45,8 @@ function AppShell() {
   const [showSceneryTip, setShowSceneryTip] = useState(() => !localStorage.getItem('abidinganchor-scenery-tip-seen'))
   const [worshipVisible, setWorshipVisible] = useState(false)
   const [worshipAutoPlayToken, setWorshipAutoPlayToken] = useState(0)
-  const [worshipStatus, setWorshipStatus] = useState({ isPlaying: false, currentTrack: 'Peaceful Worship', isVisible: false })
-  const showNav = location.pathname !== '/auth'
+  const [worshipStatus, setWorshipStatus] = useState({ isPlaying: false, currentTrack: 'Soaking Worship', isVisible: false })
+  const showNav = location.pathname !== '/auth' && location.pathname !== '/onboarding'
   const showFooter = location.pathname !== '/auth' && location.pathname !== '/onboarding'
 
   const handleToggleScenery = () => {

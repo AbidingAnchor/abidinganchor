@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 const tracks = [
-  { name: 'Peaceful Worship', file: '/music/peaceful-worship.mp3' },
   { name: 'Soaking Worship', file: '/music/soaking-worship.mp3' },
   { name: 'Hymns Instrumental', file: '/music/hyms-instrumental.mp3' },
   { name: 'Nature & Worship', file: '/music/nature-worship.mp3' },
