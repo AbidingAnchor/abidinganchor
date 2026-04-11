@@ -424,111 +424,43 @@ function Journal() {
           gap: '8px',
           marginBottom: '20px'
         }}>
-          <div style={{
-            flex: 1,
-            background: 'rgba(255,255,255,0.6)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            border: '1px solid var(--glass-border)',
-            borderRadius: '14px',
-            padding: '10px 8px',
-            textAlign: 'center',
-            minWidth: 0,
-          }}>
-            <p style={{
-              color: ACCENT_GOLD,
-              fontSize: '22px',
-              fontWeight: 700,
-              margin: '0 0 4px 0'
-            }}>
+          <div className="min-w-0 flex-1 rounded-[14px] border border-white/10 bg-[#1e1b3a] px-2 py-2.5 text-center">
+            <p className="mb-1 text-2xl font-bold text-amber-400">
               {totalEntries}
             </p>
-            <p style={{
-              color: 'var(--text-secondary)',
-              fontSize: '11px',
-              fontWeight: 500,
-              margin: 0
-            }}>
+            <p className="m-0 text-sm text-white/60">
               {totalEntries === 1 ? 'Entry' : 'Entries'}
             </p>
           </div>
-          <div style={{
-            flex: 1,
-            background: 'rgba(255,255,255,0.6)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            border: '1px solid var(--glass-border)',
-            borderRadius: '14px',
-            padding: '10px 8px',
-            textAlign: 'center',
-            minWidth: 0,
-          }}>
-            <p style={{
-              color: ACCENT_GOLD,
-              fontSize: '22px',
-              fontWeight: 700,
-              margin: '0 0 4px 0'
-            }}>
+          <div className="min-w-0 flex-1 rounded-[14px] border border-white/10 bg-[#1e1b3a] px-2 py-2.5 text-center">
+            <p className="mb-1 text-2xl font-bold text-amber-400">
               {writingStreak}
             </p>
-            <p style={{
-              color: 'var(--text-secondary)',
-              fontSize: '11px',
-              fontWeight: 500,
-              margin: 0
-            }}>
+            <p className="m-0 text-sm text-white/60">
               Day streak
             </p>
           </div>
-          <div style={{
-            flex: 1,
-            background: 'rgba(255,255,255,0.6)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            border: '1px solid var(--glass-border)',
-            borderRadius: '14px',
-            padding: '10px 8px',
-            textAlign: 'center',
-            minWidth: 0,
-          }}>
-            <p style={{
-              color: ACCENT_GOLD,
-              fontSize: '22px',
-              fontWeight: 700,
-              margin: '0 0 4px 0'
-            }}>
+          <div className="min-w-0 flex-1 rounded-[14px] border border-white/10 bg-[#1e1b3a] px-2 py-2.5 text-center">
+            <p className="mb-1 text-2xl font-bold text-amber-400">
               {prayerCount}
             </p>
-            <p style={{
-              color: 'var(--text-secondary)',
-              fontSize: '11px',
-              fontWeight: 500,
-              margin: 0
-            }}>
+            <p className="m-0 text-sm text-white/60">
               Prayers
             </p>
           </div>
         </div>
 
-        <div style={{
-          background: 'rgba(255,255,255,0.6)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          border: '1px solid rgba(212,168,67,0.2)',
-          borderRadius: '14px',
-          padding: '14px 12px',
-          marginBottom: '20px',
-        }}>
+        <div className="mb-5 rounded-[14px] border border-white/10 bg-[#1e1b3a] px-3 py-3.5">
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             marginBottom: '12px',
           }}>
-            <span style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 600 }}>
+            <span className="text-sm font-semibold text-white">
               🔥 Writing streak
             </span>
-            <span style={{ color: ACCENT_GOLD, fontSize: '14px', fontWeight: 700 }}>
+            <span className="text-sm font-bold text-amber-400">
               {writingStreak} {writingStreak === 1 ? 'day' : 'days'}
             </span>
           </div>
@@ -768,15 +700,15 @@ function Journal() {
             {visibleEntries.map((entry) => (
               <div
                 key={entry.id}
-                className="rounded-2xl p-4 mb-3 shadow-lg border-l-4 border-l-amber-500 border border-white/10 bg-[#1e1b3a]"
+                className="bg-[#1e1b3a] border border-white/10 border-l-4 border-l-amber-500 rounded-2xl p-4 mb-3 shadow-lg"
               >
-                <p className="text-amber-400 text-xs uppercase tracking-widest">
+                <p className="text-amber-400 text-xs uppercase tracking-widest font-semibold">
                   {entry.date}
                 </p>
-                <p className="text-white font-bold text-lg">
+                <p className="text-white font-bold text-lg leading-snug">
                   {getEntryTitle(entry)}
                 </p>
-                <p className="text-white/60 text-sm">
+                <p className="text-white/60 text-sm mt-1">
                   {getEntryBodyPreview(entry)}
                 </p>
                 <div style={{

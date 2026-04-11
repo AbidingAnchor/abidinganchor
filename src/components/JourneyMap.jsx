@@ -22,162 +22,202 @@ export const JOURNEY_MAP_STOPS = [
   {
     id: 'bethlehem',
     label: 'Bethlehem',
-    x: 42,
+    x: 150,
     y: 382,
     description: 'Here the Savior was born, the promise of God made flesh.',
     scripture: 'Micah 5:2; Luke 2:7',
+    jesusVoice:
+      'I came to you small and humble, laid in a manger, so you would never doubt how near I am to the lowly place. I did not begin in power the world recognizes—I began in love you could draw near to. You can come to Me just as you are; My arms were open before you ever asked.',
   },
   {
     id: 'nazareth',
     label: 'Nazareth',
-    x: 80,
-    y: 346,
+    x: 182,
+    y: 364,
     description: 'Jesus grew in wisdom and stature in this quiet Galilean town.',
     scripture: 'Luke 2:51-52',
+    jesusVoice:
+      'I grew up in the ordinary days—learning, working, obeying—so you would know I understand the rhythm of your life. Holiness is not only for mountaintops; I sanctify your kitchen table and your quiet errands too. Walk with Me in the simple places; I am forming your heart there.',
   },
   {
     id: 'jordan',
     label: 'Jordan River',
-    x: 120,
-    y: 310,
+    x: 210,
+    y: 346,
     description: 'Jesus was baptized and the Father spoke joy over His Son.',
     scripture: 'Matthew 3:16-17',
+    jesusVoice:
+      'When I entered those waters, I joined you in repentance’s path so you would never walk alone. The Father’s voice over Me is the same love He speaks over you when you turn toward home. You are beloved; let that settle deeper than your shame.',
   },
   {
     id: 'wilderness',
     label: 'Wilderness',
-    x: 92,
-    y: 270,
+    x: 231,
+    y: 328,
     description: 'After baptism He was led into the wilderness and overcame the tempter.',
     scripture: 'Matthew 4:1-11',
+    jesusVoice:
+      'I faced hunger and noise in the wild so I could meet you in yours with mercy that has already won. The enemy’s whispers lose their power when you cling to My Father’s words as I did. I am with you in the empty stretch; I will not leave you to fight alone.',
   },
   {
     id: 'capernaum',
     label: 'Capernaum',
-    x: 150,
-    y: 246,
+    x: 241,
+    y: 309,
     description: 'A home base for His teaching and miracles beside the sea.',
     scripture: 'Matthew 4:13',
+    jesusVoice:
+      'Beside restless waters I made a home among neighbors, teaching and healing hands outstretched. I still draw near to the places where your life feels crowded yet lonely. Bring Me your burdens at the shoreline of your worry; My rest is real.',
   },
   {
     id: 'galilee',
     label: 'Galilee',
-    x: 184,
-    y: 226,
+    x: 240,
+    y: 291,
     description: 'He preached the kingdom and called disciples to follow Him.',
     scripture: 'Matthew 4:23',
+    jesusVoice:
+      'I walked those hills calling ordinary people to follow—not because they were finished, but because I would finish the work in them. The kingdom is near you still; say yes again today. I will teach your feet the next step and give your heart courage.',
   },
   {
     id: 'beatitudes',
     label: 'Mount of Beatitudes',
-    x: 206,
-    y: 204,
+    x: 228,
+    y: 273,
     description: 'On these slopes He opened the kingdom to the humble and merciful.',
     scripture: 'Matthew 5:1-12',
+    jesusVoice:
+      'On the slope I blessed the gentle, the grieving, the merciful—blessings this world often overlooks. If you feel small, you are not invisible to Me; My kingdom is shaped for souls like yours. Let My comfort be the strength you lean on when life feels upside down.',
   },
   {
     id: 'caesarea-philippi',
     label: 'Caesarea Philippi',
-    x: 228,
-    y: 178,
+    x: 206,
+    y: 255,
     description: 'Peter confessed Jesus as the Christ, the Son of the living God.',
     scripture: 'Matthew 16:13-16',
+    jesusVoice:
+      'I asked what people said about Me—and I still listen for what you say in your heart. When you confess Me as Lord, I build something eternal on that honest stone. Do not fear your doubts; bring them to Me, and I will meet you with truth that holds.',
   },
   {
     id: 'jerusalem',
     label: 'Jerusalem',
-    x: 200,
-    y: 140,
+    x: 177,
+    y: 237,
     description: 'He wept over the city and entered as King, humble on a donkey.',
     scripture: 'Luke 19:41-44',
+    jesusVoice:
+      'I wept over Jerusalem because I love her—and I weep with you over the places you love that still hurt. I entered gently, on a donkey, because My kingdom comes in humility before it comes in glory. Trust My pace; I am working peace deeper than you see.',
   },
   {
     id: 'gethsemane',
     label: 'Garden of Gethsemane',
-    x: 192,
-    y: 118,
+    x: 145,
+    y: 219,
     description: 'He prayed in deep sorrow, yielding fully to the Father’s cup.',
     scripture: 'Matthew 26:36-39',
+    jesusVoice:
+      'In the garden I asked if the cup could pass—then I surrendered to love that chose you. When your soul is overwhelmed, you are not failing Me; you are in the very place I understand. Pour out your heart to the Father; I am praying for you still.',
   },
   {
     id: 'golgotha',
     label: 'Golgotha',
-    x: 204,
-    y: 98,
+    x: 113,
+    y: 200,
     description: 'The cross stood here, where love bore the sin of the world.',
     scripture: 'John 19:17-18',
+    jesusVoice:
+      'I stretched out My arms between heaven and earth to carry what would crush you—so you would never have to carry it alone. My love is stronger than your worst moment. Look to Me here whenever guilt whispers; it is finished, and you are held.',
   },
   {
     id: 'empty-tomb',
     label: 'Empty Tomb',
-    x: 214,
-    y: 80,
+    x: 86,
+    y: 182,
     description: 'The stone was rolled away—He is not here; He has risen indeed.',
     scripture: 'Luke 24:2-6',
+    jesusVoice:
+      'The grave could not hold Me—and what I began that morning I continue in you. Death does not get the last word over your story in Me. Rise today in hope; I am alive, and My life is a quiet strength waking in your spirit.',
   },
   {
     id: 'damascus',
     label: 'Damascus',
-    x: 236,
-    y: 62,
+    x: 67,
+    y: 164,
     description: 'On the road, Saul met the risen Lord and was forever changed.',
     scripture: 'Acts 9:3-6',
+    jesusVoice:
+      'On the road to Damascus I stopped a violent heart with light—because no one is too far for mercy to reach. If you fear you have wandered too long, know I still intercept with grace. Surrender is not defeat; it is the moment I remake you.',
   },
   {
     id: 'antioch',
     label: 'Antioch',
-    x: 258,
-    y: 86,
+    x: 58,
+    y: 146,
     description: 'The church sent Paul and Barnabas to carry the gospel to the nations.',
     scripture: 'Acts 13:2-3',
+    jesusVoice:
+      'My Spirit set apart workers and sent them—My church was never meant to stay small or silent. You too are called and gifted for such a time as this, wherever your road leads. Step forward when I prompt you; I go with the ones I send.',
   },
   {
     id: 'philippi',
     label: 'Philippi',
-    x: 276,
-    y: 114,
+    x: 61,
+    y: 128,
     description: 'A jailer’s family believed after prayer and praise broke prison doors.',
     scripture: 'Acts 16:30-34',
+    jesusVoice:
+      'When My people prayed and sang in chains, I shook the prison—because worship in the dark moves My heart. Your praise does not depend on ease; it invites My presence into the cell. I can open doors no enemy locks forever.',
   },
   {
     id: 'thessalonica',
     label: 'Thessalonica',
-    x: 282,
-    y: 144,
+    x: 75,
+    y: 110,
     description: 'The Word sounded forth from here with faith, hope, and endurance.',
     scripture: '1 Thessalonians 1:8',
+    jesusVoice:
+      'I love when My word echoes from humble homes into streets and regions beyond. Your faithful endurance in ordinary days becomes a sound of hope others overhear. Keep sounding forth love and truth; I am glorified in your steady witness.',
   },
   {
     id: 'corinth',
     label: 'Corinth',
-    x: 268,
-    y: 184,
+    x: 98,
+    y: 91,
     description: 'Paul planted a church and taught Christ crucified in power.',
     scripture: 'Acts 18:1-8',
+    jesusVoice:
+      'In messy, gifted, struggling communities I build My body—because My power rests on the humble, not the polished. You do not need to pretend you have it all together; bring your fractures to Me. I am enough, and My grace is sufficient for you.',
   },
   {
     id: 'athens',
     label: 'Athens',
-    x: 246,
-    y: 218,
+    x: 128,
+    y: 73,
     description: 'He proclaimed the unknown God to seekers on Mars Hill.',
     scripture: 'Acts 17:22-31',
+    jesusVoice:
+      'I am the God your searching pointed toward—the one your altars to “the unknown” were reaching for. I am not far from any who seek; I give life and breath and purpose. Keep seeking honestly, and you will find Me nearer than your next breath.',
   },
   {
     id: 'ephesus',
     label: 'Ephesus',
-    x: 228,
-    y: 254,
+    x: 161,
+    y: 55,
     description: 'The word of the Lord grew mightily as truth overcame darkness.',
     scripture: 'Acts 19:20',
+    jesusVoice:
+      'Where truth is spoken in My name, darkness must yield—slowly sometimes, surely always. Let My word grow mightily in you: not as pride, but as healing light. I am building My church, and you are part of its strength.',
   },
   {
     id: 'rome',
     label: 'Rome',
-    x: 218,
-    y: 38,
+    x: 192,
+    y: 37,
     description: 'Paul preached the gospel openly, unashamed, to the heart of the empire.',
     scripture: 'Acts 28:30-31',
+    jesusVoice:
+      'Even bound, My gospel went forth boldly—because no chain can silence what I have spoken. Where you feel small or confined, I can still speak through you. I am not ashamed of the good news, and I am not ashamed of you. Preach with your life; I am with you to the ends of the earth.',
   },
 ]
 
@@ -193,6 +233,14 @@ const PROGRESS_IMG_W = 1024
 const PROGRESS_IMG_H = 1536
 /** Height in SVG user units (~50px when viewBox maps ~1:1 to CSS pixels). */
 const PROGRESS_MARKER_HEIGHT = 50
+
+/** Labels on the left of the dot when the node is on the right; avoids clipping long names. */
+function labelAnchor(stop) {
+  if (stop.x >= 168) {
+    return { textAnchor: 'end', x: stop.x - 14 }
+  }
+  return { textAnchor: 'start', x: stop.x + 14 }
+}
 
 function JourneyProgressMarker({ stop }) {
   if (!stop) return null
@@ -304,7 +352,7 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
             d={pathD}
             fill="none"
             stroke="url(#goldPath)"
-            strokeWidth="6"
+            strokeWidth="5"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
@@ -312,6 +360,7 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
           {JOURNEY_MAP_STOPS.map((stop, i) => {
             const unlocked = i < unlockedCount
             const seen = !!state?.seenFacts?.[stop.id]
+            const la = labelAnchor(stop)
             return (
               <g
                 key={stop.id}
@@ -337,9 +386,10 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
                   style={unlocked ? { animation: 'map-pulse 2s ease-in-out infinite' } : undefined}
                 />
                 <text
-                  x={stop.x + 14}
+                  x={la.x}
                   y={stop.y + 4}
-                  fontSize="9"
+                  fontSize="8.5"
+                  textAnchor={la.textAnchor}
                   fill={unlocked ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.45)'}
                 >
                   {unlocked ? stop.label : `🔒 ${stop.label}`}
@@ -354,20 +404,53 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
       </div>
 
       {activeStop ? (
-        <div className="mt-3 shrink-0 glass-panel rounded-2xl border border-[#D4A843]/50 p-4">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <p className="text-sm font-semibold" style={{ color: '#D4A843' }}>
-                {activeStop.label}
-              </p>
-              <p className="mt-2 text-sm text-white/85">{activeStop.description}</p>
-              <p className="mt-3 text-xs font-semibold text-white/70">
-                Scripture: <span style={{ color: '#D4A843' }}>{activeStop.scripture}</span>
-              </p>
-            </div>
-            <button type="button" onClick={() => setActiveStop(null)} className="text-xs text-white/70">
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="journey-map-modal-title"
+        >
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/55"
+            aria-label="Close"
+            onClick={() => setActiveStop(null)}
+          />
+          <div
+            className="relative z-10 w-full max-w-lg rounded-2xl border border-[#D4A843]/35 bg-[#1e1b3a] p-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setActiveStop(null)}
+              className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-lg text-lg text-white/70 transition hover:bg-white/10 hover:text-white"
+              aria-label="Close"
+            >
               ✕
             </button>
+            <h2 id="journey-map-modal-title" className="pr-10 text-lg font-bold text-[#D4A843]">
+              {activeStop.label}
+            </h2>
+            <div className="mt-4 flex gap-4">
+              <img
+                src="/jesus-and-person.png"
+                alt=""
+                className="h-[80px] w-auto shrink-0 object-contain"
+              />
+              <div className="relative min-w-0 flex-1">
+                <div
+                  className="absolute left-0 top-5 z-0 h-0 w-0 border-y-[7px] border-l-0 border-r-[9px] border-y-transparent border-r-[#2a2648]"
+                  aria-hidden
+                />
+                <div
+                  className="relative z-[1] rounded-xl border border-amber-500/25 bg-[#252244] px-3.5 py-3 text-sm leading-relaxed text-white/90 shadow-inner"
+                  style={{ marginLeft: '1px' }}
+                >
+                  <p className="m-0">{activeStop.jesusVoice}</p>
+                </div>
+              </div>
+            </div>
+            <p className="mt-4 text-center text-xs font-semibold text-amber-400">{activeStop.scripture}</p>
           </div>
         </div>
       ) : null}
