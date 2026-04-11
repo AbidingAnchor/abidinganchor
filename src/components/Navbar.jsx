@@ -16,7 +16,7 @@ const tabs = [
 
 export default function Navbar() {
   const navigate = useNavigate()
-  const { user, profile } = useAuth()
+  const { user, profile, refreshProfile } = useAuth()
   const [localAvatarUrl, setLocalAvatarUrl] = useState(null)
 
   useEffect(() => {
@@ -27,7 +27,10 @@ export default function Navbar() {
         .select('avatar_url')
         .eq('id', user.id)
         .maybeSingle()
-      if (data?.avatar_url) setLocalAvatarUrl(data.avatar_url)
+      if (data?.avatar_url) {
+        setLocalAvatarUrl(data.avatar_url)
+        refreshProfile(data)
+      }
     }
     loadAvatar()
   }, [user?.id])
@@ -69,7 +72,7 @@ export default function Navbar() {
         {/* Profile avatar */}
         {displayName ? (
           <div
-            key={(localAvatarUrl ?? profile?.avatar_url) || 'no-avatar'}
+            key={localAvatarUrl || 'no-avatar'}
             style={{
               width: '36px',
               height: '36px',
@@ -101,14 +104,10 @@ export default function Navbar() {
             </span>
             {rawAvatarUrl ? (
               <img
-                src={localAvatarUrl || profile?.avatar_url}
+                src={`${localAvatarUrl || profile?.avatar_url}?t=${Date.now()}`}
                 alt="Profile"
                 onError={(e) => {
-                  if (profile?.avatar_url && e.target.src !== profile.avatar_url) {
-                    e.target.src = profile.avatar_url
-                  } else {
-                    e.target.style.display = 'none'
-                  }
+                  e.target.style.display = 'none'
                 }}
                 style={{
                   position: 'absolute',
