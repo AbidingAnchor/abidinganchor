@@ -124,7 +124,7 @@ export default function ShareCard() {
   }
 
   return (
-    <div className="content-scroll min-h-screen px-4 pt-6 pb-40">
+    <div className="content-scroll px-4 pt-6 pb-40" style={{ minHeight: 'auto' }}>
       {/* Screen Title */}
       <div className="text-center mb-4">
         <h1 className="text-page-title text-gold-accent mb-2">
@@ -160,7 +160,7 @@ export default function ShareCard() {
 
       {/* Card Style Options - 2x2 grid */}
       <div className="mb-4">
-        <p className="text-gold-accent text-sm font-semibold uppercase tracking-wider mb-3">
+        <p className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--section-title)' }}>
           Card Style
         </p>
         <div className="grid grid-cols-2 gap-3">
@@ -172,12 +172,16 @@ export default function ShareCard() {
                 p-4 rounded-xl border-2 transition-all text-left
                 ${cardStyle === style.id
                   ? 'border-[#D4A843] bg-[#D4A843]/10 shadow-[0_0_20px_rgba(212,168,67,0.3)]'
-                  : 'border-white/10 bg-white/5 hover:border-white/20'
+                  : 'hover:border-white/20'
                 }
               `}
+              style={{
+                borderColor: cardStyle === style.id ? 'var(--gold-border)' : 'var(--glass-border)',
+                background: cardStyle === style.id ? 'rgba(212,168,67,0.1)' : 'var(--glass-bg)'
+              }}
             >
-              <p className="text-white font-semibold mb-1">{style.name}</p>
-              <p className="text-white/50 text-xs">{style.description}</p>
+              <p style={{ color: 'var(--text-primary)', fontWeight: 600, marginBottom: '4px' }}>{style.name}</p>
+              <p style={{ color: 'var(--text-primary)', fontSize: '12px', opacity: 0.7 }}>{style.description}</p>
             </button>
           ))}
         </div>
@@ -185,43 +189,58 @@ export default function ShareCard() {
 
       {/* Customization Fields */}
       <div className="mb-4">
-        <p className="text-gold-accent text-sm font-semibold uppercase tracking-wider mb-3">
+        <p className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--section-title)' }}>
           Customize
         </p>
         
         {/* Verse Reference */}
         <div className="mb-3">
-          <label className="text-white/70 text-sm mb-2 block">Verse Reference</label>
+          <label className="text-sm mb-2 block" style={{ color: 'var(--text-primary)' }}>Verse Reference</label>
           <input
             type="text"
             value={verseReference}
             onChange={(e) => setVerseReference(e.target.value)}
             placeholder="e.g., Psalm 23:1"
-            className="w-full bg-white/8 border border-white/20 rounded-xl p-3 text-white text-base outline-none focus:border-[#D4A843]/50 transition-all"
+            className="w-full rounded-xl p-3 text-base outline-none transition-all"
+            style={{
+              background: 'var(--input-bg)',
+              border: '1px solid var(--input-border)',
+              color: 'var(--text-primary)'
+            }}
           />
         </div>
 
         {/* Verse Text */}
         <div className="mb-3">
-          <label className="text-white/70 text-sm mb-2 block">Verse Text</label>
+          <label className="text-sm mb-2 block" style={{ color: 'var(--text-primary)' }}>Verse Text</label>
           <textarea
             value={verseText}
             onChange={(e) => setVerseText(e.target.value)}
             placeholder="Enter the scripture verse..."
             rows={3}
-            className="w-full bg-white/8 border border-white/20 rounded-xl p-3 text-white text-base outline-none resize-none focus:border-[#D4A843]/50 transition-all"
+            className="w-full rounded-xl p-3 text-base outline-none resize-none transition-all"
+            style={{
+              background: 'var(--input-bg)',
+              border: '1px solid var(--input-border)',
+              color: 'var(--text-primary)'
+            }}
           />
         </div>
 
         {/* Personal Reflection */}
         <div className="mb-4">
-          <label className="text-white/70 text-sm mb-2 block">Personal Reflection (optional)</label>
+          <label className="text-sm mb-2 block" style={{ color: 'var(--text-primary)' }}>Personal Reflection (optional)</label>
           <textarea
             value={userReflection}
             onChange={(e) => setUserReflection(e.target.value)}
             placeholder="What does this verse mean to you?"
             rows={3}
-            className="w-full bg-white/8 border border-white/20 rounded-xl p-3 text-white text-base outline-none resize-none focus:border-[#D4A843]/50 transition-all"
+            className="w-full rounded-xl p-3 text-base outline-none resize-none transition-all"
+            style={{
+              background: 'var(--input-bg)',
+              border: '1px solid var(--input-border)',
+              color: 'var(--text-primary)'
+            }}
           />
         </div>
 

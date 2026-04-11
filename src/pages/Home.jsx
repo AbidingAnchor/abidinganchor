@@ -336,16 +336,16 @@ function Home({ onOpenWorship, worshipStatus }) {
             <article
               className="text-white"
               style={{
-                background: 'transparent',
-                border: '1px solid rgba(255,255,255,0.15)',
+                background: 'var(--glass-bg)',
+                border: '1px solid var(--glass-border)',
                 borderRadius: '16px',
                 padding: '20px',
-                backdropFilter: 'none',
-                WebkitBackdropFilter: 'none',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                boxShadow: 'var(--glass-shadow)',
                 position: 'relative',
                 animation: 'fadeInUp 0.6s ease forwards',
                 animationDelay: '0.1s',
-                boxShadow: 'none',
               }}
             >
               <p

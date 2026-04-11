@@ -12,18 +12,17 @@ export default function DayBackground() {
     let particles = [];
     let animationFrameId;
 
-    const PARTICLE_COUNT = 80;
-
     const createParticles = () => {
-      particles = Array.from({ length: PARTICLE_COUNT }, () => ({
+      particles = Array.from({ length: 120 }, () => ({
         x: Math.random() * width,
         y: Math.random() * height,
-        r: Math.random() * 2.8 + 0.8,
-        opacity: Math.random() * 0.45 + 0.12,
-        vx: (Math.random() - 0.5) * 0.15,
-        vy: -(Math.random() * 0.25 + 0.05),
-        twinkle: Math.random() * 0.018 + 0.003,
+        r: Math.random() * 1.2 + 0.2,
+        opacity: Math.random() * 0.25 + 0.05,
+        vx: (Math.random() - 0.5) * 0.08,
+        vy: -(Math.random() * 0.15 + 0.02),
+        twinkle: Math.random() * 0.008 + 0.001,
         twinkleDirection: Math.random() > 0.5 ? 1 : -1,
+        type: Math.random() > 0.85 ? 'cross' : 'dot',
       }));
     };
 
@@ -34,30 +33,56 @@ export default function DayBackground() {
     };
 
     const drawParticle = (p) => {
-      // Outer soft glow
-      const outerGlow = ctx.createRadialGradient(
-        p.x, p.y, 0, p.x, p.y, p.r * 10
-      );
-      outerGlow.addColorStop(0, `rgba(255, 230, 120, ${p.opacity * 0.6})`);
-      outerGlow.addColorStop(0.4, `rgba(255, 210, 80, ${p.opacity * 0.25})`);
-      outerGlow.addColorStop(1, 'rgba(255, 210, 80, 0)');
+      ctx.save();
+      ctx.globalAlpha = p.opacity;
 
-      ctx.beginPath();
-      ctx.fillStyle = outerGlow;
-      ctx.arc(p.x, p.y, p.r * 10, 0, Math.PI * 2);
-      ctx.fill();
+      if (p.type === 'cross') {
+        const size = p.r * 4;
+        ctx.strokeStyle = `rgba(255, 220, 100, ${p.opacity})`;
+        ctx.lineWidth = 0.5;
+        
+        ctx.beginPath();
+        ctx.moveTo(p.x - size, p.y);
+        ctx.lineTo(p.x + size, p.y);
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y - size);
+        ctx.lineTo(p.x, p.y + size);
+        ctx.stroke();
+        
+        const diag = size * 0.5;
+        ctx.lineWidth = 0.3;
+        ctx.beginPath();
+        ctx.moveTo(p.x - diag, p.y - diag);
+        ctx.lineTo(p.x + diag, p.y + diag);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(p.x + diag, p.y - diag);
+        ctx.lineTo(p.x - diag, p.y + diag);
+        ctx.stroke();
 
-      // Bright core
-      const core = ctx.createRadialGradient(
-        p.x, p.y, 0, p.x, p.y, p.r * 1.5
-      );
-      core.addColorStop(0, `rgba(255, 255, 220, ${p.opacity * 1.2})`);
-      core.addColorStop(1, `rgba(255, 230, 150, 0)`);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r * 0.8, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 245, 200, ${p.opacity * 1.5})`;
+        ctx.fill();
 
-      ctx.beginPath();
-      ctx.fillStyle = core;
-      ctx.arc(p.x, p.y, p.r * 1.5, 0, Math.PI * 2);
-      ctx.fill();
+      } else {
+        const gradient = ctx.createRadialGradient(
+          p.x, p.y, 0,
+          p.x, p.y, p.r * 3
+        );
+        gradient.addColorStop(0, `rgba(255, 235, 150, ${p.opacity})`);
+        gradient.addColorStop(0.5, `rgba(255, 220, 100, ${p.opacity * 0.4})`);
+        gradient.addColorStop(1, 'rgba(255, 220, 100, 0)');
+
+        ctx.beginPath();
+        ctx.fillStyle = gradient;
+        ctx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
     };
 
     const updateParticles = () => {
@@ -65,7 +90,7 @@ export default function DayBackground() {
         p.x += p.vx;
         p.y += p.vy;
         p.opacity += p.twinkle * p.twinkleDirection;
-        if (p.opacity > 0.42 || p.opacity < 0.06) {
+        if (p.opacity > 0.28 || p.opacity < 0.04) {
           p.twinkleDirection *= -1;
         }
         if (p.x > width + 30) p.x = -30;

@@ -196,14 +196,14 @@ export default function CommunityPrayer() {
   }
 
   return (
-    <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
+    <div style={{ position: 'relative', minHeight: 'auto', overflow: 'hidden' }}>
       <div
         className="content-scroll"
         style={{
           position: 'relative',
           zIndex: 1,
           padding: '0 16px',
-          paddingTop: 'clamp(200px, 32vw, 240px)',
+          paddingTop: '16px',
           paddingBottom: '120px',
           maxWidth: '680px',
           margin: '0 auto',
