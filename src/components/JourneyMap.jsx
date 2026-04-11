@@ -187,6 +187,51 @@ function buildPathD(stops) {
   return `M ${first.x} ${first.y}` + rest.map((s) => ` L ${s.x} ${s.y}`).join('')
 }
 
+/** Minimal standing silhouette: head + simple robe/torso, feet at local y=0 (reverent, not cartoon). */
+function SilhouetteFigure({ variant }) {
+  const isJesus = variant === 'jesus'
+  const fill = isJesus ? '#FFF8ED' : 'rgba(255,252,248,0.96)'
+  const stroke = isJesus ? 'rgba(212,168,67,0.5)' : 'rgba(212,168,67,0.72)'
+  const glowFill = isJesus ? 'rgba(232,184,107,0.18)' : 'none'
+  const body = (
+    <>
+      <ellipse cx="0" cy="-12.2" rx="2.5" ry="2.75" fill={fill} stroke={stroke} strokeWidth="0.28" />
+      <path
+        d="M -2.15,-8.8 C -2.8,-6.2 -3.05,-2.8 -2.4,0 L 2.4,0 C 3.05,-2.8 2.8,-6.2 2.15,-8.8 C 0.9,-8 -0.9,-8 -2.15,-8.8 Z"
+        fill={fill}
+        stroke={stroke}
+        strokeWidth="0.28"
+        strokeLinejoin="round"
+      />
+    </>
+  )
+  if (!isJesus) {
+    return <g>{body}</g>
+  }
+  return (
+    <g>
+      <ellipse cx="0" cy="-7" rx="6.5" ry="13" fill={glowFill} style={{ filter: 'url(#journeyJesusAura)' }} />
+      <g style={{ filter: 'url(#journeyJesusFigure)' }}>{body}</g>
+    </g>
+  )
+}
+
+function JourneyWalkingFigures({ stop }) {
+  if (!stop) return null
+  const { x, y } = stop
+  const spread = 7.5
+  return (
+    <g pointerEvents="none" aria-hidden="true" transform={`translate(${x}, ${y})`}>
+      <g transform={`translate(${-spread}, 9)`}>
+        <SilhouetteFigure variant="user" />
+      </g>
+      <g transform={`translate(${spread}, 9)`}>
+        <SilhouetteFigure variant="jesus" />
+      </g>
+    </g>
+  )
+}
+
 export default function JourneyMap({ onExit, fillVertical = false }) {
   const [state, setState] = useState(() => readJson(KEY, { seenFacts: {}, updatedAt: '' }))
   const [activeStop, setActiveStop] = useState(null)
@@ -213,6 +258,12 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
   }
 
   const pathD = useMemo(() => buildPathD(JOURNEY_MAP_STOPS), [])
+
+  const currentProgressStop = useMemo(() => {
+    if (unlockedCount < 1) return null
+    const idx = Math.min(unlockedCount - 1, JOURNEY_MAP_STOPS.length - 1)
+    return JOURNEY_MAP_STOPS[idx]
+  }, [unlockedCount])
 
   return (
     <div
@@ -258,6 +309,25 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
               <stop offset="60%" stopColor="#D4A843" stopOpacity="0.55" />
               <stop offset="100%" stopColor="#D4A843" stopOpacity="0.25" />
             </linearGradient>
+            {/* Soft warm aura behind Jesus figure — subtle amber/gold, not loud */}
+            <filter id="journeyJesusAura" x="-80%" y="-80%" width="260%" height="260%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="3.2" result="blur" />
+              <feColorMatrix
+                in="blur"
+                type="matrix"
+                values="1 0 0 0 0  0 1 0 0 0  0 0 0.85 0 0  0 0 0 0.9 0"
+                result="warm"
+              />
+            </filter>
+            <filter id="journeyJesusFigure" x="-35%" y="-35%" width="170%" height="170%">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="0.6" result="s" />
+              <feFlood floodColor="#E8B86B" floodOpacity="0.35" result="f" />
+              <feComposite in="f" in2="s" operator="in" result="g" />
+              <feMerge>
+                <feMergeNode in="g" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
           </defs>
 
           <path
@@ -308,6 +378,8 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
               </g>
             )
           })}
+
+          {currentProgressStop ? <JourneyWalkingFigures stop={currentProgressStop} /> : null}
         </svg>
       </div>
 
