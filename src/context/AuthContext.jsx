@@ -81,9 +81,10 @@ async function ensureProfile(user) {
   profileSyncedUserIds.add(user.id)
 
   try {
+    // BEFORE building the upsert payload, ALWAYS fetch the current row first
     const { data: existingProfile, error: selectError } = await supabase
       .from('profiles')
-      .select('id, avatar_url')
+      .select('avatar_url')
       .eq('id', user.id)
       .maybeSingle()
 
@@ -93,53 +94,29 @@ async function ensureProfile(user) {
       return
     }
 
-    const metaAvatar =
-      user.user_metadata?.avatar_url ?? user.user_metadata?.picture ?? null
+    // NEVER overwrite avatar_url if it already has a value in the DB
+    const avatar_url = (existingProfile?.avatar_url && existingProfile.avatar_url.trim() !== '')
+      ? existingProfile.avatar_url
+      : (user.user_metadata?.avatar_url ?? user.user_metadata?.picture ?? null)
 
-    const syncFields = {
-      email: user.email ?? '',
-      full_name:
-        user.user_metadata?.full_name ?? user.user_metadata?.name ?? '',
-      bible_version: 'KJV',
-      last_active_date: new Date().toISOString().split('T')[0],
-    }
+    console.log('ensureProfile avatar_url:', avatar_url)
 
-    // Never use upsert for existing rows: PostgREST maps omitted/NULL avatar_url
-    // into EXCLUDED and can wipe Storage URLs on conflict. If a row exists,
-    // UPDATE only non-avatar fields so avatar_url is never touched.
-    if (existingProfile) {
-      const { error } = await supabase
-        .from('profiles')
-        .update(syncFields)
-        .eq('id', user.id)
-
-      if (error) {
-        console.error('Profile update error:', error)
-        profileSyncedUserIds.delete(user.id)
-      }
-    } else {
-      const { error } = await supabase.from('profiles').insert({
+    const { error } = await supabase.from('profiles').upsert(
+      {
         id: user.id,
-        ...syncFields,
-        avatar_url: metaAvatar,
-      })
+        email: user.email ?? '',
+        full_name:
+          user.user_metadata?.full_name ?? user.user_metadata?.name ?? '',
+        bible_version: 'KJV',
+        last_active_date: new Date().toISOString().split('T')[0],
+        avatar_url,
+      },
+      { onConflict: 'id' },
+    )
 
-      if (error) {
-        // Row may have been created concurrently; sync without touching avatar_url
-        if (error.code === '23505') {
-          const { error: retryErr } = await supabase
-            .from('profiles')
-            .update(syncFields)
-            .eq('id', user.id)
-          if (retryErr) {
-            console.error('Profile update after insert conflict:', retryErr)
-            profileSyncedUserIds.delete(user.id)
-          }
-        } else {
-          console.error('Profile insert error:', error)
-          profileSyncedUserIds.delete(user.id)
-        }
-      }
+    if (error) {
+      console.error('Profile upsert error:', error)
+      profileSyncedUserIds.delete(user.id)
     }
   } catch (err) {
     console.error('Profile upsert exception:', err)
