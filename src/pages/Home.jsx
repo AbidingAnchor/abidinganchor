@@ -498,7 +498,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                     ? { fontSize: '36px', color: '#D4A843', filter: 'drop-shadow(0 0 8px rgba(212,168,67,0.8))', animation: 'flamePulse 2s ease-in-out infinite' }
                     : isPast && hasStreak
                       ? { fontSize: '28px', color: '#D4A843', filter: 'drop-shadow(0 0 8px rgba(212,168,67,0.8))' }
-                      : { fontSize: '28px', color: 'rgba(255,255,255,0.2)', filter: 'none' }
+                      : { fontSize: '28px', opacity: 0.2, filter: 'grayscale(1)' }
                   return (
                     <div
                       key={day}
