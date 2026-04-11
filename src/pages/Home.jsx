@@ -60,14 +60,16 @@ function Home({ onOpenWorship, worshipStatus }) {
         const todayStr = today.toISOString().slice(0, 10)
         let streakStartDate = data?.streak_start_date
         let lastActiveDate = data?.last_active_date
-        let currentStreak = Number(data?.reading_streak) || 1
-        let longestStreak = Number(data?.longest_streak) || 1
+        let currentStreak = Number(data?.reading_streak) || 0
+        let longestStreak = Number(data?.longest_streak) || 0
+        let needsDbUpdate = false
 
         // Initialize streak for new users
         if (!streakStartDate) {
           streakStartDate = todayStr
-          currentStreak = 1
-          longestStreak = 1
+          currentStreak = 0
+          longestStreak = 0
+          needsDbUpdate = true
         } else if (lastActiveDate !== todayStr) {
           // Update streak data if last active date is different from today
           // Check if streak should continue (consecutive days)
@@ -76,11 +78,16 @@ function Home({ onOpenWorship, worshipStatus }) {
             const daysDiff = Math.floor((today - lastActive) / (1000 * 60 * 60 * 24))
             if (daysDiff === 1) {
               currentStreak += 1
+              needsDbUpdate = true
             } else if (daysDiff > 1) {
-              currentStreak = 1
+              currentStreak = 0
+              streakStartDate = todayStr
+              needsDbUpdate = true
             }
           } else {
-            currentStreak = 1
+            currentStreak = 0
+            streakStartDate = todayStr
+            needsDbUpdate = true
           }
 
           // Update longest streak
@@ -88,6 +95,15 @@ function Home({ onOpenWorship, worshipStatus }) {
             longestStreak = currentStreak
           }
 
+        }
+
+        // Write streak updates to database if needed
+        if (needsDbUpdate) {
+          await supabase.from('profiles').update({
+            reading_streak: currentStreak,
+            streak_start_date: streakStartDate,
+            longest_streak: longestStreak,
+          }).eq('id', user.id)
         }
 
         setStreak({ currentStreak: currentStreak })
