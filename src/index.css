@@ -46,8 +46,8 @@
 [data-theme="day"] {
   --sat: env(safe-area-inset-top, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
-  --glass-bg: rgba(255, 255, 255, 0.70);
-  --glass-bg-hover: rgba(255, 255, 255, 0.82);
+  --glass-bg: rgba(255, 255, 255, 0.88);
+  --glass-bg-hover: rgba(255, 255, 255, 0.95);
   --glass-border: rgba(180, 210, 240, 0.60);
   --glass-border-hover: rgba(180, 210, 240, 0.80);
   --glass-shadow: 0 8px 32px rgba(80, 120, 180, 0.14);
@@ -191,6 +191,9 @@ body {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  box-shadow: var(--glass-shadow);
+  transition: background 0.4s ease, border-color 0.4s ease;
 }
 
 .glass-nav-bar {
@@ -650,4 +653,38 @@ body {
   0% { transform: translateY(0) scale(1) rotate(-1deg); opacity: 0.26; }
   50% { transform: translateY(-1%) scale(1.02) rotate(0.5deg); opacity: 0.33; }
   100% { transform: translateY(0.5%) scale(1.03) rotate(1deg); opacity: 0.28; }
+}
+
+/* ── DAY THEME FORCE OVERRIDES ── */
+[data-theme="day"] .glass-panel,
+[data-theme="day"] .glass-card,
+[data-theme="day"] .glass {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border-color: rgba(180, 210, 240, 0.60) !important;
+}
+
+[data-theme="day"] .glass-panel *,
+[data-theme="day"] .glass-card *,
+[data-theme="day"] .glass * {
+  --text-primary: #0f1e3d;
+  --text-secondary: #2a3f6f;
+}
+
+/* Force nav text visible in all themes */
+[data-theme="day"] nav span {
+  color: var(--nav-text) !important;
+}
+
+[data-theme="day"] nav button[style*="isActive"] span,
+[data-theme="day"] .active-nav-link span {
+  color: var(--nav-text-active) !important;
+}
+
+/* More drawer in day mode */
+[data-theme="day"] [style*="zIndex: 10001"] {
+  background: rgba(255, 255, 255, 0.95) !important;
+}
+
+[data-theme="day"] [style*="zIndex: 10001"] span[style*="color"] {
+  color: #0f1e3d !important;
 }

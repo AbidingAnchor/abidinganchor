@@ -376,7 +376,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                     flex: 1,
                     height: '1px',
                     maxWidth: '120px',
-                    background: 'rgba(255,255,255,0.2)',
+                    background: 'var(--glass-border)',
                   }}
                 />
                 <p
@@ -397,7 +397,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                     flex: 1,
                     height: '1px',
                     maxWidth: '120px',
-                    background: 'rgba(255,255,255,0.2)',
+                    background: 'var(--glass-border)',
                   }}
                 />
               </div>

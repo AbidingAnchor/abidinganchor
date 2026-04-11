@@ -54,7 +54,7 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
           style={{
             width: '40px',
             height: '4px',
-            background: 'rgba(255, 255, 255, 0.2)',
+            background: 'var(--text-muted)',
             borderRadius: '2px',
             margin: '12px auto 16px',
           }}
@@ -87,8 +87,8 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
               height: '32px',
               borderRadius: '50%',
               background: 'var(--btn-secondary-bg)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              color: '#fff',
+              border: '1px solid var(--glass-border)',
+              color: 'var(--text-primary)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -121,12 +121,12 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
                   marginBottom: index < options.length - 1 ? '8px' : '0',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
-                  e.currentTarget.style.borderColor = 'rgba(212, 168, 67, 0.2)'
+                  e.currentTarget.style.background = 'var(--glass-bg-hover)'
+                  e.currentTarget.style.borderColor = 'var(--gold-border)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)'
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)'
+                  e.currentTarget.style.background = 'var(--glass-bg)'
+                  e.currentTarget.style.borderColor = 'var(--glass-border)'
                 }}
               >
                 <span
