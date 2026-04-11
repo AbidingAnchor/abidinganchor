@@ -4,7 +4,8 @@ import Home from './pages/Home'
 import ReadingPlan from './pages/ReadingPlan'
 import Search from './pages/Search'
 import Journal from './pages/Journal'
-import Prayer from './pages/Prayer'
+import PrayerWall from './pages/PrayerWall'
+import ShareCard from './pages/ShareCard'
 import Memorize from './pages/Memorize'
 import AICompanion from './pages/AICompanion'
 import FaithJourney from './pages/FaithJourney'
@@ -99,7 +100,8 @@ function AppShell() {
               <Route path="/read" element={<ProtectedRoute><ReadingPlan onOpenWorship={(startPlaying) => openWorship(startPlaying)} /></ProtectedRoute>} />
               <Route path="/reading-plan" element={<ProtectedRoute><ReadingPlan onOpenWorship={(startPlaying) => openWorship(startPlaying)} /></ProtectedRoute>} />
               <Route path="/search" element={<ProtectedRoute><Search onOpenWorship={(startPlaying) => openWorship(startPlaying)} /></ProtectedRoute>} />
-              <Route path="/prayer" element={<ProtectedRoute><Prayer /></ProtectedRoute>} />
+              <Route path="/prayer" element={<ProtectedRoute><PrayerWall /></ProtectedRoute>} />
+              <Route path="/share-card" element={<ProtectedRoute><ShareCard /></ProtectedRoute>} />
               <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
               <Route path="/memorize" element={<ProtectedRoute><Memorize /></ProtectedRoute>} />
               <Route path="/devotional" element={<ProtectedRoute><Devotional /></ProtectedRoute>} />

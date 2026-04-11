@@ -12,6 +12,8 @@ const tabs = [
   { label: 'Prayer', path: '/prayer', icon: '🙏' },
   { label: 'Community', path: '/community-prayer', icon: '🤝' },
   { label: 'Journal', path: '/journal', icon: '📓' },
+  { label: 'Create', path: '/share-card', icon: '✨' },
+  { label: 'Audio', path: '/audio-bible', icon: '🎧' },
 ]
 
 export default function Navbar() {

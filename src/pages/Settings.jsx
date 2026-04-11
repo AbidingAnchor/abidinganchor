@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { getAvatarUploadExtension } from '../utils/avatarUrl'
+import { LocalNotifications } from '@capacitor/local-notifications'
 
 export default function Settings() {
   const navigate = useNavigate()
   const { user, profile, signOut, refreshProfile } = useAuth()
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false)
   const [selectedTranslation, setSelectedTranslation] = useState('KJV')
   const [uploadStatus, setUploadStatus] = useState('idle') // idle, uploading, success
   const [uploadError, setUploadError] = useState('')
@@ -15,6 +15,8 @@ export default function Settings() {
   const [pendingAvatarFile, setPendingAvatarFile] = useState(null)
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState(null)
   const [localAvatarUrl, setLocalAvatarUrl] = useState(null)
+  const [dailyReminderEnabled, setDailyReminderEnabled] = useState(false)
+  const [reminderTime, setReminderTime] = useState('08:00')
   const fileInputRef = useRef(null)
 
   useEffect(() => {
@@ -45,6 +47,105 @@ export default function Settings() {
       if (avatarPreviewUrl) URL.revokeObjectURL(avatarPreviewUrl)
     }
   }, [avatarPreviewUrl])
+
+  // Load daily reminder preferences from localStorage
+  useEffect(() => {
+    const savedEnabled = localStorage.getItem('dailyReminderEnabled')
+    const savedTime = localStorage.getItem('reminderTime')
+    
+    if (savedEnabled !== null) {
+      setDailyReminderEnabled(savedEnabled === 'true')
+    }
+    if (savedTime) {
+      setReminderTime(savedTime)
+    }
+  }, [])
+
+  // Handle daily reminder toggle
+  const handleDailyReminderToggle = async () => {
+    const newValue = !dailyReminderEnabled
+    setDailyReminderEnabled(newValue)
+    localStorage.setItem('dailyReminderEnabled', newValue.toString())
+    
+    if (newValue) {
+      // Schedule notifications
+      await scheduleNotifications()
+    } else {
+      // Cancel all notifications
+      await LocalNotifications.cancel()
+    }
+  }
+
+  // Handle time change
+  const handleTimeChange = async (e) => {
+    const newTime = e.target.value
+    setReminderTime(newTime)
+    localStorage.setItem('reminderTime', newTime)
+    
+    // Reschedule if enabled
+    if (dailyReminderEnabled) {
+      await scheduleNotifications()
+    }
+  }
+
+  // Schedule notifications with current time
+  const scheduleNotifications = async () => {
+    try {
+      // Cancel existing notifications first
+      await LocalNotifications.cancel()
+      
+      const dailyMessages = {
+        0: 'A new week begins. What is God speaking to you today? 🙏',
+        1: 'Start your week anchored. Open your journal and meet with God. ✝️',
+        2: 'God is faithful. Take 5 minutes to reflect and pray today. 🕊️',
+        3: 'Midweek check-in — where have you seen God move this week? 🔥',
+        4: 'You are not alone. Bring your burdens to God in prayer today. 🙌',
+        5: 'End your week with gratitude. What has God done for you? 💛',
+        6: 'Rest in His presence today. Open your Bible and be still. 📖',
+      }
+      
+      const [hours, minutes] = reminderTime.split(':').map(Number)
+      const notifications = []
+      
+      for (let day = 0; day < 7; day++) {
+        const now = new Date()
+        const scheduledDate = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() + day,
+          hours,
+          minutes,
+          0
+        )
+        
+        if (scheduledDate <= now) {
+          scheduledDate.setDate(scheduledDate.getDate() + 7)
+        }
+        
+        notifications.push({
+          id: day + 1,
+          title: 'AbidingAnchor 🕊️',
+          body: dailyMessages[day],
+          schedule: {
+            at: scheduledDate,
+            repeats: true,
+            every: 'day',
+          },
+          sound: 'default',
+          smallIcon: 'ic_stat_icon_config_sample',
+          largeIcon: 'ic_launcher',
+          extra: {
+            route: '/journal',
+          },
+        })
+      }
+      
+      await LocalNotifications.schedule({ notifications })
+      console.log('Daily notifications scheduled at', reminderTime)
+    } catch (error) {
+      console.error('Error scheduling notifications:', error)
+    }
+  }
 
   const handleSignOut = async () => {
     await signOut()
@@ -442,47 +543,76 @@ export default function Settings() {
           </select>
         </div>
 
-        {/* Notifications Toggle */}
-          <div className="glass-panel" style={{
-            borderRadius: '16px',
-            padding: '16px 20px',
-            display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between'
+        {/* Daily Reminder */}
+        <div className="glass-panel" style={{
+          borderRadius: '16px',
+          padding: '20px'
         }}>
-          <div>
-            <p style={{ color: '#FFFFFF', fontSize: '16px', fontWeight: 500, marginBottom: '4px' }}>
-              Notifications
-            </p>
-            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>
-              Daily reminders and updates
-            </p>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '16px'
+          }}>
+            <div>
+              <p style={{ color: '#FFFFFF', fontSize: '16px', fontWeight: 500, marginBottom: '4px' }}>
+                Daily Reminder
+              </p>
+              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>
+                Receive daily Scripture notifications
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleDailyReminderToggle}
+              style={{
+                width: '52px',
+                height: '28px',
+                borderRadius: '14px',
+                background: dailyReminderEnabled ? '#D4A843' : 'rgba(255,255,255,0.15)',
+                border: 'none',
+                cursor: 'pointer',
+                position: 'relative',
+                transition: 'background 0.2s ease'
+              }}
+            >
+              <div style={{
+                width: '22px',
+                height: '22px',
+                borderRadius: '50%',
+                background: '#FFFFFF',
+                position: 'absolute',
+                top: '3px',
+                left: dailyReminderEnabled ? '27px' : '3px',
+                transition: 'left 0.2s ease'
+              }} />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => setNotificationsEnabled(!notificationsEnabled)}
-            style={{
-              width: '52px',
-              height: '28px',
-              borderRadius: '14px',
-              background: notificationsEnabled ? '#D4A843' : 'rgba(255,255,255,0.15)',
-              border: 'none',
-              cursor: 'pointer',
-              position: 'relative',
-              transition: 'background 0.2s ease'
-            }}
-          >
-            <div style={{
-              width: '22px',
-              height: '22px',
-              borderRadius: '50%',
-              background: '#FFFFFF',
-              position: 'absolute',
-              top: '3px',
-              left: notificationsEnabled ? '27px' : '3px',
-              transition: 'left 0.2s ease'
-            }} />
-          </button>
+          
+          {dailyReminderEnabled && (
+            <div>
+              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', marginBottom: '8px' }}>
+                Reminder Time
+              </p>
+              <input
+                type="time"
+                value={reminderTime}
+                onChange={handleTimeChange}
+                style={{
+                  width: '100%',
+                  borderRadius: '12px',
+                  padding: '12px',
+                  background: 'rgba(255,255,255,0.06)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  border: '1px solid ' + (dailyReminderEnabled ? 'rgba(212,168,67,0.4)' : 'rgba(255,255,255,0.12)'),
+                  color: '#FFFFFF',
+                  fontSize: '16px',
+                  cursor: 'pointer'
+                }}
+              />
+            </div>
+          )}
         </div>
 
         {/* Replay Tutorial */}

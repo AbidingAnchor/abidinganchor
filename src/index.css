@@ -184,6 +184,30 @@ body {
   animation: gold-shimmer 900ms ease;
 }
 
+@keyframes gold-glow {
+  0%, 100% { box-shadow: 0 0 0px #D4A843; }
+  50% { box-shadow: 0 0 18px #D4A843; }
+}
+
+.gold-glow-pulse {
+  animation: gold-glow 3s ease-in-out infinite;
+}
+
+@keyframes gold-radiate {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 0.4; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.celebration-glow {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(212,168,67,0.4) 0%, rgba(212,168,67,0) 70%);
+  border-radius: 50%;
+  animation: gold-radiate 2s ease-out infinite;
+}
+
 @keyframes nav-pop {
   0% { transform: scale(0.96); }
   100% { transform: scale(1); }
@@ -278,6 +302,21 @@ body {
     filter: drop-shadow(0 0 30px rgba(212,168,67,1)) 
             drop-shadow(0 0 60px rgba(212,168,67,0.8))
             drop-shadow(0 0 100px rgba(212,168,67,0.5));
+  }
+}
+
+@keyframes prayerPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(212, 168, 67, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 20px 0 rgba(212, 168, 67, 0.6);
+    transform: scale(1.05);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(212, 168, 67, 0);
+    transform: scale(1);
   }
 }
 

@@ -1,8 +1,33 @@
 import { useEffect, useState } from 'react'
-import { deleteJournalEntry, getJournalEntries, saveToJournal } from '../utils/journal'
+import { useNavigate } from 'react-router-dom'
+import { deleteJournalEntry, getJournalEntries, saveToJournal, markPrayerAnswered } from '../utils/journal'
 import { useAuth } from '../context/AuthContext'
+import { supabase } from '../lib/supabase'
 
-const MOOD_TAGS = ['Grateful', 'Hopeful', 'Struggling', 'Peaceful', 'Convicted', 'Joyful']
+const MOOD_TAGS = ['🙏 Prayer', '💭 Reflection', '🙌 Gratitude', '🔥 Breakthrough']
+
+const DAILY_PROMPTS = [
+  { day: 0, prompt: 'What does trusting God look like in your life right now?', verse: 'Proverbs 3:5-6' },
+  { day: 1, prompt: 'Where have you seen God\'s hand at work this week?', verse: 'Psalm 77:11-12' },
+  { day: 2, prompt: 'What is God teaching you through a current challenge?', verse: 'James 1:2-4' },
+  { day: 3, prompt: 'How can you be more intentional about prayer today?', verse: '1 Thessalonians 5:16-18' },
+  { day: 4, prompt: 'What scripture is speaking to your heart right now?', verse: 'Hebrews 4:12' },
+  { day: 5, prompt: 'In what area do you need to surrender control to God?', verse: 'Matthew 11:28-30' },
+  { day: 6, prompt: 'What blessing can you thank God for today?', verse: 'Psalm 107:1' },
+]
+
+function getDailyPrompt() {
+  const today = new Date().getDay()
+  return DAILY_PROMPTS.find(p => p.day === today) || DAILY_PROMPTS[0]
+}
+
+function getDaysAgo(dateString) {
+  const entryDate = new Date(dateString)
+  const today = new Date()
+  const diffTime = Math.abs(today - entryDate)
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  return diffDays
+}
 
 /** Local calendar YYYY-MM-DD (matches how users expect “today” for streaks). */
 function toLocalYmd(isoOrDate) {
@@ -57,20 +82,52 @@ function normalizeEntry(entry) {
     note: entry.content || '',
     date: savedDate,
     mood: entry.mood || '',
+    entry_type: entry.entry_type || 'reflection',
+    answered: entry.answered || false,
   }
 }
 
 function Journal() {
   const { user } = useAuth()
-  const [showModal, setShowModal] = useState(false)
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [reference, setReference] = useState('')
+  const navigate = useNavigate()
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
   const [saving, setSaving] = useState(false)
   const [selectedMood, setSelectedMood] = useState('')
   const [writingStreak, setWritingStreak] = useState(0)
+  const [totalEntries, setTotalEntries] = useState(0)
+  const [prayerCount, setPrayerCount] = useState(0)
+  const [randomPastEntry, setRandomPastEntry] = useState(null)
+  const [showCelebration, setShowCelebration] = useState(false)
+  const [showCloseButton, setShowCloseButton] = useState(false)
+  
+  // Prayer share prompt state
+  const [showPrayerSharePrompt, setShowPrayerSharePrompt] = useState(false)
+  const [pendingPrayerText, setPendingPrayerText] = useState('')
+  const [sharingToPrayerWall, setSharingToPrayerWall] = useState(false)
+  const [showToast, setShowToast] = useState(false)
+  
+  // Guided entry flow state
+  const [currentStep, setCurrentStep] = useState(1)
+  const [verseReference, setVerseReference] = useState('')
+  const [verseText, setVerseText] = useState('')
+  const [reflection, setReflection] = useState('')
+  const [prayer, setPrayer] = useState('')
+  const [gratitude, setGratitude] = useState('')
+
+  useEffect(() => {
+    let timer
+    if (showCelebration) {
+      timer = setTimeout(() => {
+        setShowCloseButton(true)
+      }, 1500)
+    }
+    return () => {
+      if (timer) clearTimeout(timer)
+      if (!showCelebration) setShowCloseButton(false)
+    }
+  }, [showCelebration])
 
   useEffect(() => {
     let active = true
@@ -81,40 +138,83 @@ function Journal() {
       if (!active) return
       setEntries((data || []).map(normalizeEntry))
       setWritingStreak(computeWritingStreak(data))
+      setTotalEntries((data || []).length)
+      setPrayerCount((data || []).filter(e => e.entry_type === 'prayer' && e.answered === true).length)
+
+      // Get entries older than 7 days
+      const sevenDaysAgo = new Date()
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+      const oldEntries = (data || []).filter(e => new Date(e.created_at) < sevenDaysAgo)
+      if (oldEntries.length > 0) {
+        const randomEntry = oldEntries[Math.floor(Math.random() * oldEntries.length)]
+        if (active) setRandomPastEntry(normalizeEntry(randomEntry))
+      }
+
       setLoading(false)
     }
     load()
     return () => { active = false }
   }, [user?.id])
 
-  const handleSaveEntry = async () => {
-    if (!content.trim()) return
+  const handleDeleteEntry = async (entry) => {
+    await deleteJournalEntry(entry.id)
+    const nextEntries = await getJournalEntries(user?.id)
+    setEntries((nextEntries || []).map(normalizeEntry))
+    setWritingStreak(computeWritingStreak(nextEntries))
+    setTotalEntries((nextEntries || []).length)
+    setPrayerCount((nextEntries || []).filter(e => e.entry_type === 'prayer' && e.answered === true).length)
+  }
+
+  const handleMarkAnswered = async (entry) => {
+    const updated = await markPrayerAnswered(entry.id)
+    if (updated) {
+      setEntries(prev => prev.map(e =>
+        e.id === entry.id ? { ...e, answered: true } : e
+      ))
+      const full = await getJournalEntries(user?.id)
+      setPrayerCount((full || []).filter(e => e.entry_type === 'prayer' && e.answered === true).length)
+      setShowCelebration(true)
+    }
+  }
+
+  const handleOpenModal = () => {
+    setCurrentStep(1)
+    setVerseReference('')
+    setVerseText('')
+    setReflection('')
+    setPrayer('')
+    setGratitude('')
+    setSelectedMood('')
+    setShowModal(true)
+  }
+
+  const handleNextStep = () => {
+    if (currentStep < 4) {
+      setCurrentStep(currentStep + 1)
+    }
+  }
+
+  const handlePreviousStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1)
+    }
+  }
+
+  const handleSaveGuidedEntry = async () => {
+    if (!reflection.trim()) return
     
     setSaving(true)
     
-    const today = new Date().toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    })
-    
-    const isDuplicate = entries.some(entry => 
-      entry.note.trim() === content.trim() && entry.date === today
-    )
-    
-    if (isDuplicate) {
-      alert('You already have an entry with this content today.')
-      setSaving(false)
-      return
-    }
-    
     const newEntry = await saveToJournal({
-      verse: reference.trim() ? content.trim() : null,
-      reference: reference.trim() || null,
-      note: content.trim(),
+      verse: verseText.trim() || null,
+      reference: verseReference.trim() || null,
+      note: reflection.trim(),
+      prayer: prayer.trim() || null,
+      gratitude: gratitude.trim() || null,
       tags: ['Reflection'],
       userId: user?.id,
       mood: selectedMood || null,
+      entry_type: 'guided',
     })
     
     setSaving(false)
@@ -123,18 +223,70 @@ function Journal() {
     setEntries((prev) => [normalizeEntry(newEntry), ...prev])
     const full = await getJournalEntries(user?.id)
     setWritingStreak(computeWritingStreak(full))
-    setTitle('')
-    setContent('')
-    setReference('')
+    setTotalEntries((full || []).length)
+    setPrayerCount((full || []).filter(e => e.entry_type === 'prayer' && e.answered === true).length)
+    
+    // Check if this is a prayer entry and show share prompt
+    const prayerText = prayer.trim() || reflection.trim()
+    if (prayerText) {
+      setPendingPrayerText(prayerText)
+      setShowPrayerSharePrompt(true)
+    }
+    
+    // Reset form
+    setCurrentStep(1)
+    setVerseReference('')
+    setVerseText('')
+    setReflection('')
+    setPrayer('')
+    setGratitude('')
     setSelectedMood('')
     setShowModal(false)
   }
 
-  const handleDeleteEntry = async (entry) => {
-    await deleteJournalEntry(entry.id)
-    const nextEntries = await getJournalEntries(user?.id)
-    setEntries((nextEntries || []).map(normalizeEntry))
-    setWritingStreak(computeWritingStreak(nextEntries))
+  const handleShareToPrayerWall = async () => {
+    if (!pendingPrayerText.trim() || !user?.id) return
+    
+    try {
+      setSharingToPrayerWall(true)
+      const { error } = await supabase
+        .from('prayer_wall')
+        .insert({
+          content: pendingPrayerText.trim(),
+          user_id: user.id,
+          is_anonymous: true,
+          praying_count: 0,
+        })
+      
+      if (error) throw error
+      
+      // Show confirmation toast
+      setShowPrayerSharePrompt(false)
+      setPendingPrayerText('')
+      
+      // Show toast notification
+      setShowToast(true)
+      setTimeout(() => setShowToast(false), 3000)
+    } catch (error) {
+      console.error('Error sharing to prayer wall:', error)
+    } finally {
+      setSharingToPrayerWall(false)
+    }
+  }
+
+  const handleKeepPrivate = () => {
+    setShowPrayerSharePrompt(false)
+    setPendingPrayerText('')
+  }
+
+  const handleShareEntry = (entry) => {
+    navigate('/share-card', {
+      state: {
+        verseReference: entry.reference || '',
+        verseText: entry.verse || '',
+        userReflection: entry.note || ''
+      }
+    })
   }
 
   return (
@@ -143,6 +295,67 @@ function Journal() {
         className="content-scroll"
         style={{ padding: '0 16px', paddingTop: '200px', paddingBottom: '100px', maxWidth: '390px', margin: '0 auto', width: '100%' }}
       >
+        <div style={{
+          display: 'flex',
+          gap: '12px',
+          marginBottom: '20px'
+        }}>
+          <div style={{
+            flex: 1,
+            background: 'rgba(15,23,42,0.25)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '12px',
+            padding: '12px 16px',
+            textAlign: 'center'
+          }}>
+            <p style={{
+              color: '#D4A843',
+              fontSize: '24px',
+              fontWeight: 700,
+              margin: '0 0 4px 0'
+            }}>
+              {totalEntries}
+            </p>
+            <p style={{
+              color: 'rgba(255,255,255,0.7)',
+              fontSize: '12px',
+              fontWeight: 500,
+              margin: 0
+            }}>
+              {totalEntries === 1 ? 'Entry' : 'Entries'}
+            </p>
+          </div>
+          <div style={{
+            flex: 1,
+            background: 'rgba(15,23,42,0.25)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '12px',
+            padding: '12px 16px',
+            textAlign: 'center'
+          }}>
+            <p style={{
+              color: '#D4A843',
+              fontSize: '24px',
+              fontWeight: 700,
+              margin: '0 0 4px 0'
+            }}>
+              {prayerCount}
+            </p>
+            <p style={{
+              color: 'rgba(255,255,255,0.7)',
+              fontSize: '12px',
+              fontWeight: 500,
+              margin: 0
+            }}>
+              Prayers
+            </p>
+          </div>
+        </div>
+
         <div className="glass-panel" style={{
           border: '1px solid rgba(212,168,67,0.2)',
           borderRadius: '16px',
@@ -175,9 +388,39 @@ function Journal() {
           MY JOURNAL
         </h1>
 
+        <div className="glass-panel" style={{
+          background: 'rgba(15,23,42,0.25)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderLeft: '4px solid #D4A843',
+          borderRadius: '12px',
+          padding: '16px',
+          marginBottom: '20px',
+        }}>
+          <p style={{
+            color: '#FFFFFF',
+            fontSize: '15px',
+            fontStyle: 'italic',
+            margin: '0 0 8px 0',
+            lineHeight: '1.5',
+          }}>
+            {getDailyPrompt().prompt}
+          </p>
+          <p style={{
+            color: '#D4A843',
+            fontSize: '12px',
+            fontWeight: 600,
+            margin: 0,
+          }}>
+            — {getDailyPrompt().verse}
+          </p>
+        </div>
+
         <button
           type="button"
-          onClick={() => setShowModal(true)}
+          onClick={() => handleOpenModal()}
+          className="gold-glow-pulse"
           style={{
             width: '100%',
             background: '#D4A843',
@@ -210,10 +453,13 @@ function Journal() {
                 key={entry.id}
                 className="glass-panel"
                 style={{
-                  border: '1px solid rgba(212,168,67,0.2)',
+                  border: entry.entry_type === 'prayer' && entry.answered ? '1px solid #D4A843' : '1px solid rgba(212,168,67,0.2)',
                   borderRadius: '16px',
                   padding: '16px',
-                  marginBottom: '12px'
+                  marginBottom: '12px',
+                  ...(entry.entry_type === 'prayer' && entry.answered && {
+                    boxShadow: '0 0 16px rgba(212,168,67,0.3)'
+                  })
                 }}
               >
                 <p style={{
@@ -275,24 +521,120 @@ function Journal() {
                         {entry.reference}
                       </span>
                     )}
+                    {entry.entry_type === 'prayer' && (
+                      entry.answered ? (
+                        <span style={{
+                          background: '#D4A843',
+                          color: '#0a1a3e',
+                          borderRadius: '20px',
+                          fontSize: '11px',
+                          padding: '4px 10px',
+                          fontWeight: 600
+                        }}>
+                          🙌 Answered
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleMarkAnswered(entry)}
+                          style={{
+                            background: 'transparent',
+                            border: '1px solid #D4A843',
+                            color: '#D4A843',
+                            borderRadius: '20px',
+                            fontSize: '11px',
+                            padding: '4px 10px',
+                            fontWeight: 600,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          ✅ God answered this
+                        </button>
+                      )
+                    )}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteEntry(entry)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: '16px',
-                      color: 'rgba(255,255,255,0.4)',
-                      padding: 0
-                    }}
-                  >
-                    🗑️
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleShareEntry(entry)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        color: '#D4A843',
+                        padding: 0
+                      }}
+                      title="Share as faith card"
+                    >
+                      🕊️
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteEntry(entry)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '16px',
+                        color: 'rgba(255,255,255,0.4)',
+                        padding: 0
+                      }}
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
               </article>
             ))}
+            {randomPastEntry && (
+              <div className="glass-panel" style={{
+                background: 'rgba(15,23,42,0.25)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '16px',
+                padding: '16px',
+                marginTop: '24px',
+                boxShadow: '0 0 16px rgba(212,168,67,0.15)'
+              }}>
+                <p style={{
+                  color: '#D4A843',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  marginBottom: '8px',
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase'
+                }}>
+                  From {getDaysAgo(randomPastEntry.date)} days ago…
+                </p>
+                <p style={{
+                  color: '#FFFFFF',
+                  fontSize: '15px',
+                  fontWeight: 500,
+                  marginTop: '0',
+                  marginBottom: '8px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  lineHeight: '1.5'
+                }}>
+                  {randomPastEntry.note}
+                </p>
+                {randomPastEntry.reference && (
+                  <p style={{
+                    color: '#D4A843',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    margin: 0
+                  }}>
+                    {randomPastEntry.reference}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           <div style={{
@@ -312,7 +654,7 @@ function Journal() {
             </p>
             <button
               type="button"
-              onClick={() => setShowModal(true)}
+              onClick={() => handleOpenModal()}
               style={{
                 background: '#D4A843',
                 color: '#0a1a3e',
@@ -347,6 +689,12 @@ function Journal() {
             }}
             onClick={() => {
               setShowModal(false)
+              setCurrentStep(1)
+              setVerseReference('')
+              setVerseText('')
+              setReflection('')
+              setPrayer('')
+              setGratitude('')
               setSelectedMood('')
             }}
           />
@@ -359,147 +707,296 @@ function Journal() {
             zIndex: 1001,
             borderTop: '1px solid rgba(255,255,255,0.1)',
           }}>
-            <h2 style={{
-              color: '#D4A843',
-              fontSize: '18px',
-              fontWeight: 700,
-              marginBottom: '20px',
-              textAlign: 'center'
-            }}>
-              New Journal Entry
-            </h2>
-            
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Title (optional)"
-              style={{
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(212,168,67,0.3)',
-                borderRadius: '12px',
-                color: 'white',
-                padding: '12px 16px',
-                width: '100%',
-                marginBottom: '16px',
-                fontSize: '16px',
-                outline: 'none'
-              }}
-            />
-
-            <p style={{
-              color: 'rgba(255,255,255,0.7)',
-              fontSize: '12px',
-              fontWeight: 600,
-              marginBottom: '8px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em'
-            }}>
-              How are you feeling?
-            </p>
+            {/* Progress Bar */}
             <div style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '8px',
-              marginBottom: '16px'
+              marginBottom: '24px'
             }}>
-              {MOOD_TAGS.map((mood) => {
-                const selected = selectedMood === mood
-                return (
-                  <button
-                    key={mood}
-                    type="button"
-                    onClick={() => setSelectedMood(selected ? '' : mood)}
-                    className={selected ? '' : 'glass-panel'}
-                    style={{
-                      ...(selected
-                        ? {
-                            background: 'rgba(212,168,67,0.15)',
-                            border: '1px solid #D4A843',
-                            color: '#D4A843',
-                            backdropFilter: 'none',
-                            WebkitBackdropFilter: 'none',
-                          }
-                        : {
-                            border: '1px solid rgba(255,255,255,0.08)',
-                            color: 'rgba(255,255,255,0.75)',
-                          }),
-                      borderRadius: '50px',
-                      padding: '8px 16px',
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    {mood}
-                  </button>
-                )
-              })}
+              <div style={{
+                height: '4px',
+                background: 'rgba(255,255,255,0.1)',
+                borderRadius: '2px',
+                marginBottom: '8px'
+              }}>
+                <div style={{
+                  height: '100%',
+                  background: '#D4A843',
+                  borderRadius: '2px',
+                  width: `${(currentStep / 4) * 100}%`,
+                  transition: 'width 0.3s ease'
+                }} />
+              </div>
+              <p style={{
+                color: '#D4A843',
+                fontSize: '12px',
+                fontWeight: 600,
+                textAlign: 'center',
+                margin: 0
+              }}>
+                {currentStep} of 4
+              </p>
             </div>
 
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Write your reflection, prayer, or thoughts..."
-              style={{
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(212,168,67,0.3)',
-                borderRadius: '12px',
-                color: 'white',
-                padding: '12px 16px',
-                width: '100%',
-                minHeight: '180px',
-                marginBottom: '16px',
-                fontSize: '16px',
-                outline: 'none',
-                resize: 'none'
-              }}
-            />
-            
-            <input
-              type="text"
-              value={reference}
-              onChange={(e) => setReference(e.target.value)}
-              placeholder="Scripture reference (e.g. John 3:16)"
-              style={{
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(212,168,67,0.3)',
-                borderRadius: '12px',
-                color: 'white',
-                padding: '12px 16px',
-                width: '100%',
-                marginBottom: '16px',
-                fontSize: '16px',
-                outline: 'none'
-              }}
-            />
+            {/* Step 1 - Verse */}
+            {currentStep === 1 && (
+              <div>
+                <h2 style={{
+                  color: '#D4A843',
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  marginBottom: '8px',
+                  textAlign: 'center'
+                }}>
+                  📖 Verse
+                </h2>
+                <p style={{
+                  color: 'rgba(255,255,255,0.7)',
+                  fontSize: '14px',
+                  textAlign: 'center',
+                  marginBottom: '20px'
+                }}>
+                  What Scripture is on your heart?
+                </p>
+                
+                <input
+                  type="text"
+                  value={verseReference}
+                  onChange={(e) => setVerseReference(e.target.value)}
+                  placeholder="Reference (e.g. John 3:16)"
+                  style={{
+                    background: 'rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(212,168,67,0.3)',
+                    borderRadius: '12px',
+                    color: 'white',
+                    padding: '12px 16px',
+                    width: '100%',
+                    marginBottom: '12px',
+                    fontSize: '16px',
+                    outline: 'none'
+                  }}
+                />
+                
+                <textarea
+                  value={verseText}
+                  onChange={(e) => setVerseText(e.target.value)}
+                  placeholder="Paste the verse text here…"
+                  style={{
+                    background: 'rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(212,168,67,0.3)',
+                    borderRadius: '12px',
+                    color: 'white',
+                    padding: '12px 16px',
+                    width: '100%',
+                    minHeight: '120px',
+                    fontSize: '16px',
+                    outline: 'none',
+                    resize: 'none'
+                  }}
+                />
+              </div>
+            )}
 
-            <button
-              type="button"
-              onClick={handleSaveEntry}
-              disabled={saving}
-              style={{
-                background: saving ? 'rgba(212,168,67,0.5)' : '#D4A843',
-                color: '#0a1a3e',
-                fontWeight: 700,
-                borderRadius: '50px',
-                padding: '14px',
-                width: '100%',
-                border: 'none',
-                cursor: saving ? 'not-allowed' : 'pointer',
-                fontSize: '16px',
-                marginBottom: '12px',
-                opacity: saving ? 0.7 : 1
-              }}
-            >
-              {saving ? 'Saving...' : 'Save Entry'}
-            </button>
-            
+            {/* Step 2 - Reflection */}
+            {currentStep === 2 && (
+              <div>
+                <h2 style={{
+                  color: '#D4A843',
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  marginBottom: '8px',
+                  textAlign: 'center'
+                }}>
+                  💭 Reflection
+                </h2>
+                <p style={{
+                  color: 'rgba(255,255,255,0.7)',
+                  fontSize: '14px',
+                  textAlign: 'center',
+                  marginBottom: '20px'
+                }}>
+                  What is God saying to you through this?
+                </p>
+                
+                <textarea
+                  value={reflection}
+                  onChange={(e) => setReflection(e.target.value)}
+                  placeholder="Write freely…"
+                  style={{
+                    background: 'rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(212,168,67,0.3)',
+                    borderRadius: '12px',
+                    color: 'white',
+                    padding: '12px 16px',
+                    width: '100%',
+                    minHeight: '180px',
+                    fontSize: '16px',
+                    outline: 'none',
+                    resize: 'none'
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Step 3 - Prayer */}
+            {currentStep === 3 && (
+              <div>
+                <h2 style={{
+                  color: '#D4A843',
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  marginBottom: '8px',
+                  textAlign: 'center'
+                }}>
+                  🙏 Prayer
+                </h2>
+                <p style={{
+                  color: 'rgba(255,255,255,0.7)',
+                  fontSize: '14px',
+                  textAlign: 'center',
+                  marginBottom: '20px'
+                }}>
+                  Talk to God about it
+                </p>
+                
+                <textarea
+                  value={prayer}
+                  onChange={(e) => setPrayer(e.target.value)}
+                  placeholder="Talk to God…"
+                  style={{
+                    background: 'rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(212,168,67,0.3)',
+                    borderRadius: '12px',
+                    color: 'white',
+                    padding: '12px 16px',
+                    width: '100%',
+                    minHeight: '180px',
+                    fontSize: '16px',
+                    outline: 'none',
+                    resize: 'none',
+                    boxShadow: '0 0 12px rgba(212,168,67,0.4)'
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Step 4 - Gratitude */}
+            {currentStep === 4 && (
+              <div>
+                <h2 style={{
+                  color: '#D4A843',
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  marginBottom: '8px',
+                  textAlign: 'center'
+                }}>
+                  🙌 Gratitude
+                </h2>
+                <p style={{
+                  color: 'rgba(255,255,255,0.7)',
+                  fontSize: '14px',
+                  textAlign: 'center',
+                  marginBottom: '20px'
+                }}>
+                  What are you grateful for today?
+                </p>
+                
+                <textarea
+                  value={gratitude}
+                  onChange={(e) => setGratitude(e.target.value)}
+                  placeholder="Even the small things…"
+                  style={{
+                    background: 'rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(212,168,67,0.3)',
+                    borderRadius: '12px',
+                    color: 'white',
+                    padding: '12px 16px',
+                    width: '100%',
+                    minHeight: '180px',
+                    fontSize: '16px',
+                    outline: 'none',
+                    resize: 'none'
+                  }}
+                />
+
+                <button
+                  type="button"
+                  onClick={handleSaveGuidedEntry}
+                  disabled={saving || !reflection.trim()}
+                  style={{
+                    background: saving || !reflection.trim() ? 'rgba(212,168,67,0.5)' : '#D4A843',
+                    color: '#0a1a3e',
+                    fontWeight: 700,
+                    borderRadius: '50px',
+                    padding: '14px',
+                    width: '100%',
+                    border: 'none',
+                    cursor: saving || !reflection.trim() ? 'not-allowed' : 'pointer',
+                    fontSize: '16px',
+                    marginTop: '16px',
+                    opacity: saving || !reflection.trim() ? 0.7 : 1
+                  }}
+                >
+                  {saving ? 'Saving...' : 'Save Entry'}
+                </button>
+              </div>
+            )}
+
+            {/* Navigation Buttons */}
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              marginTop: '20px'
+            }}>
+              {currentStep > 1 && (
+                <button
+                  type="button"
+                  onClick={handlePreviousStep}
+                  style={{
+                    flex: 1,
+                    background: 'transparent',
+                    border: '1px solid rgba(212,168,67,0.4)',
+                    color: '#D4A843',
+                    borderRadius: '50px',
+                    padding: '12px',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  ← Back
+                </button>
+              )}
+              
+              {currentStep < 4 && (
+                <button
+                  type="button"
+                  onClick={handleNextStep}
+                  style={{
+                    flex: 1,
+                    background: '#D4A843',
+                    color: '#0a1a3e',
+                    borderRadius: '50px',
+                    padding: '12px',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    border: 'none'
+                  }}
+                >
+                  Next →
+                </button>
+              )}
+            </div>
+
             <button
               type="button"
               onClick={() => {
                 setShowModal(false)
+                setCurrentStep(1)
+                setVerseReference('')
+                setVerseText('')
+                setReflection('')
+                setPrayer('')
+                setGratitude('')
                 setSelectedMood('')
               }}
               style={{
@@ -509,11 +1006,200 @@ function Journal() {
                 cursor: 'pointer',
                 fontSize: '14px',
                 width: '100%',
-                padding: '8px'
+                padding: '8px',
+                marginTop: '12px'
               }}
             >
               Cancel
             </button>
+          </div>
+        </div>
+      )}
+
+      {showCelebration && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 2000,
+          background: 'rgba(10,15,30,0.97)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          animation: 'fadeIn 0.4s ease'
+        }}>
+          <div className="celebration-glow" style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)'
+          }} />
+          <h1 style={{
+            fontFamily: 'Cinzel, serif',
+            fontSize: '48px',
+            fontWeight: 700,
+            color: '#FFFFFF',
+            marginBottom: '16px',
+            textAlign: 'center',
+            animation: 'fadeIn 0.4s ease 0.2s both'
+          }}>
+            God moved. 🙌
+          </h1>
+          <p style={{
+            fontSize: '18px',
+            color: 'rgba(255,255,255,0.8)',
+            marginBottom: '24px',
+            textAlign: 'center',
+            animation: 'fadeIn 0.4s ease 0.3s both'
+          }}>
+            Your faith was not in vain.
+          </p>
+          <p style={{
+            fontFamily: 'Cinzel, serif',
+            fontSize: '20px',
+            fontStyle: 'italic',
+            color: '#D4A843',
+            marginBottom: '40px',
+            textAlign: 'center',
+            animation: 'fadeIn 0.4s ease 0.4s both'
+          }}>
+            Romans 8:28
+          </p>
+          {showCloseButton && (
+            <button
+              type="button"
+              onClick={() => setShowCelebration(false)}
+              style={{
+                background: '#D4A843',
+                color: '#0a1a3e',
+                fontWeight: 700,
+                borderRadius: '50px',
+                padding: '14px 40px',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '16px',
+                animation: 'fadeIn 0.4s ease'
+              }}
+            >
+              Close
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Prayer Share Prompt Modal */}
+      {showPrayerSharePrompt && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 2000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          animation: 'fadeIn 0.3s ease'
+        }}>
+          <div
+            className="glass-scrim"
+            style={{
+              position: 'fixed',
+              inset: 0,
+            }}
+            onClick={handleKeepPrivate}
+          />
+          <div className="glass relative z-10 w-full max-w-md rounded-2xl p-6 border border-[#D4A843]/30" style={{
+            maxWidth: '360px',
+            margin: '16px'
+          }}>
+            <div style={{
+              textAlign: 'center',
+              marginBottom: '20px'
+            }}>
+              <span style={{ fontSize: '32px', display: 'block', marginBottom: '12px' }}>🙏</span>
+              <h2 style={{
+                color: '#D4A843',
+                fontSize: '18px',
+                fontWeight: 700,
+                marginBottom: '12px'
+              }}>
+                Share with the body of Christ?
+              </h2>
+              <p style={{
+                color: 'rgba(255,255,255,0.8)',
+                fontSize: '14px',
+                lineHeight: '1.5',
+                marginBottom: '8px'
+              }}>
+                Would you like to share this with the prayer wall anonymously?
+              </p>
+              <p style={{
+                color: 'rgba(255,255,255,0.6)',
+                fontSize: '13px',
+                fontStyle: 'italic'
+              }}>
+                The body of Christ can pray with you. 🙏
+              </p>
+            </div>
+            <div style={{
+              display: 'flex',
+              gap: '12px'
+            }}>
+              <button
+                onClick={handleShareToPrayerWall}
+                disabled={sharingToPrayerWall}
+                style={{
+                  flex: 1,
+                  background: '#D4A843',
+                  color: '#0a1a3e',
+                  fontWeight: 700,
+                  borderRadius: '12px',
+                  padding: '12px',
+                  border: 'none',
+                  cursor: sharingToPrayerWall ? 'not-allowed' : 'pointer',
+                  fontSize: '14px',
+                  opacity: sharingToPrayerWall ? 0.7 : 1
+                }}
+              >
+                {sharingToPrayerWall ? 'Sharing…' : 'Share Anonymously'}
+              </button>
+              <button
+                onClick={handleKeepPrivate}
+                style={{
+                  flex: 1,
+                  background: 'transparent',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  color: 'rgba(255,255,255,0.8)',
+                  fontWeight: 600,
+                  borderRadius: '12px',
+                  padding: '12px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                Keep Private
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {showToast && (
+        <div style={{
+          position: 'fixed',
+          top: '100px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 2001
+        }}>
+          <div className="glass px-6 py-3 rounded-full border border-[#D4A843]/50 bg-[#D4A843]/20">
+            <p style={{
+              color: '#D4A843',
+              fontSize: '14px',
+              fontWeight: 600,
+              margin: 0
+            }}>
+              Your prayer has been lifted up 🕊️
+            </p>
           </div>
         </div>
       )}

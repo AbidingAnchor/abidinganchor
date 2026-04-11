@@ -83,3 +83,20 @@ export async function deleteJournalEntry(id) {
     console.error('Error deleting journal entry:', err)
   }
 }
+
+export async function markPrayerAnswered(id) {
+  if (!id) return null
+  try {
+    const { data, error } = await supabase
+      .from('journal_entries')
+      .update({ answered: true })
+      .eq('id', id)
+      .select()
+      .single()
+    if (error) throw error
+    return data
+  } catch (err) {
+    console.error('Error marking prayer as answered:', err)
+    return null
+  }
+}
