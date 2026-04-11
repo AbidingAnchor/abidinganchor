@@ -20,6 +20,7 @@ export default function FaithCard({
   cardStyle = 'celestial',
   contentFont = 'serif',
   textColorChoice = 'white',
+  textColorChanged = false,
 }) {
   const bodyFont = CONTENT_FONTS[contentFont] ?? CONTENT_FONTS.serif
   const userTextColor = TEXT_COLOR_CHOICES[textColorChoice] ?? TEXT_COLOR_CHOICES.white
@@ -35,6 +36,8 @@ export default function FaithCard({
           textColor: '#FFFFFF',
           accentColor: '#D4A843',
           showStars: true,
+          mainFontScale: 1.1,
+          mainTextShadow: '0 0 20px rgba(255,255,255,0.3)',
         }
       case 'dawn':
         return {
@@ -55,6 +58,8 @@ export default function FaithCard({
           textColor: '#F5F5DC',
           accentColor: '#D4A843',
           showStars: false,
+          mainFontScale: 1.1,
+          mainTextShadow: '0 0 20px rgba(255,255,255,0.3)',
         }
       case 'midnight':
         return {
@@ -65,6 +70,8 @@ export default function FaithCard({
           textColor: '#FFFFFF',
           accentColor: '#D4A843',
           showStars: false,
+          mainFontScale: 1.1,
+          mainTextShadow: '0 0 20px rgba(255,255,255,0.3)',
         }
       case 'golden':
         return {
@@ -75,6 +82,7 @@ export default function FaithCard({
           textColor: '#1a1a1a',
           accentColor: '#8B6914',
           showStars: false,
+          mainTextShadow: '0 1px 4px rgba(0,0,0,0.15)',
         }
       case 'ocean':
         return {
@@ -95,6 +103,7 @@ export default function FaithCard({
           textColor: '#4a044e',
           accentColor: '#be185d',
           showStars: false,
+          mainTextShadow: '0 1px 4px rgba(0,0,0,0.15)',
         }
       case 'forest':
         return {
@@ -105,6 +114,8 @@ export default function FaithCard({
           textColor: '#F5F5DC',
           accentColor: '#c9a227',
           showStars: false,
+          mainFontScale: 1.1,
+          mainTextShadow: '0 0 20px rgba(255,255,255,0.3)',
         }
       default:
         return {
@@ -115,12 +126,24 @@ export default function FaithCard({
           textColor: '#FFFFFF',
           accentColor: '#D4A843',
           showStars: true,
+          mainFontScale: 1.1,
+          mainTextShadow: '0 0 20px rgba(255,255,255,0.3)',
         }
     }
   }
 
   const baseStyle = getCardStyle()
-  const currentStyle = { ...baseStyle, textColor: userTextColor }
+  const currentStyle = {
+    ...baseStyle,
+    textColor: textColorChanged ? userTextColor : baseStyle.textColor,
+  }
+  const fontMult = currentStyle.mainFontScale ?? 1
+  const refSizePx = 36 * fontMult
+  const verseSizePx = 42 * fontMult
+  const reflSizePx = 32 * fontMult
+  const refShadow = currentStyle.mainTextShadow ?? '0 2px 8px rgba(0, 0, 0, 0.35)'
+  const verseShadow = currentStyle.mainTextShadow ?? '0 2px 10px rgba(0, 0, 0, 0.5)'
+  const reflShadow = currentStyle.mainTextShadow ?? '0 2px 8px rgba(0, 0, 0, 0.4)'
 
   return (
     <div 
@@ -193,11 +216,11 @@ export default function FaithCard({
         {verseReference && (
           <p style={{
             fontFamily: bodyFont,
-            fontSize: '36px',
+            fontSize: `${refSizePx}px`,
             fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
             color: currentStyle.textColor,
             marginBottom: '40px',
-            textShadow: '0 2px 8px rgba(0, 0, 0, 0.35)',
+            textShadow: refShadow,
           }}>
             {verseReference}
           </p>
@@ -207,12 +230,12 @@ export default function FaithCard({
         {verseText && (
           <p style={{
             fontFamily: bodyFont,
-            fontSize: '42px',
+            fontSize: `${verseSizePx}px`,
             fontWeight: contentFont === 'modern' ? 600 : 500,
             color: currentStyle.textColor,
             lineHeight: '1.5',
             marginBottom: '50px',
-            textShadow: '0 2px 10px rgba(0, 0, 0, 0.5)',
+            textShadow: verseShadow,
           }}>
             {verseText}
           </p>
@@ -231,12 +254,12 @@ export default function FaithCard({
         {userReflection && (
           <p style={{
             fontFamily: bodyFont,
-            fontSize: '32px',
+            fontSize: `${reflSizePx}px`,
             fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
             color: currentStyle.textColor,
             lineHeight: '1.6',
             maxWidth: '800px',
-            textShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
+            textShadow: reflShadow,
           }}>
             {userReflection}
           </p>

@@ -15,6 +15,7 @@ export default function ShareCard() {
   const [cardStyle, setCardStyle] = useState('celestial')
   const [contentFont, setContentFont] = useState('serif')
   const [textColorChoice, setTextColorChoice] = useState('white')
+  const [textColorChanged, setTextColorChanged] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [generatedImage, setGeneratedImage] = useState(null)
 
@@ -166,6 +167,7 @@ export default function ShareCard() {
             cardStyle={cardStyle}
             contentFont={contentFont}
             textColorChoice={textColorChoice}
+            textColorChanged={textColorChanged}
           />
         </div>
       </div>
@@ -249,7 +251,10 @@ export default function ShareCard() {
             <button
               key={c.id}
               type="button"
-              onClick={() => setTextColorChoice(c.id)}
+              onClick={() => {
+                setTextColorChoice(c.id)
+                setTextColorChanged(true)
+              }}
               className="flex flex-col items-center gap-2 min-w-[4.5rem]"
               aria-label={`Text color ${c.label}`}
               aria-pressed={textColorChoice === c.id}
