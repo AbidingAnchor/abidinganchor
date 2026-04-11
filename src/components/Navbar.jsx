@@ -52,6 +52,7 @@ export default function Navbar() {
     <>
       {/* Premium header bar */}
       <div
+        className="glass-strong"
         style={{
           position: 'fixed',
           top: 'calc(env(safe-area-inset-top, 0px))',
@@ -63,9 +64,6 @@ export default function Navbar() {
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0 16px',
-          background: 'rgba(10,22,50,0.85)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
           borderBottom: '1px solid rgba(212,168,67,0.25)',
         }}
       >
@@ -170,15 +168,13 @@ export default function Navbar() {
         </button>
       </div>
       <nav
+        className="glass-strong"
         style={{
           position: 'fixed',
           bottom: 0,
           left: 0,
           right: 0,
           zIndex: 9999,
-          background: 'rgba(13,0,32,0.97)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
           borderTop: '1px solid rgba(212,168,67,0.15)',
           height: '65px',
           display: 'flex',

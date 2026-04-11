@@ -21,11 +21,7 @@ body {
   overflow-x: hidden;
   margin: 0;
   padding: 0;
-  background: linear-gradient(180deg, 
-    #0d0020 0%,
-    #1a0533 30%,
-    #2d0f4e 60%,
-    #1a0533 100%);
+  background: transparent;
   scroll-behavior: smooth;
 }
 
@@ -35,43 +31,16 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Inter', sans-serif;
-  position: relative; /* Added for pseudo-elements */
-  min-height: 100vh; /* Ensure body takes full height for gradient */
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(ellipse at 50% 0%, rgba(212,168,67,0.15) 0%, transparent 60%);
-  pointer-events: none;
-  z-index: -1;
-}
-
-body::after {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100px; /* Adjust size as needed */
-  height: 150px; /* Adjust size as needed */
-  background: linear-gradient(to bottom, rgba(212,168,67,0.4) 0%, transparent 100%);
-  mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M10.5 20.5v-7.5H3V10.5h7.5V3h3v7.5H21v3h-7.5v7.5z"/></svg>');
-  mask-size: contain;
-  mask-repeat: no-repeat;
-  mask-position: center;
-  opacity: 0.2; /* Subtle */
-  pointer-events: none;
-  z-index: -1;
+  position: relative;
+  min-height: 100vh;
 }
 
 #root {
   overflow-x: hidden;
   max-width: 100vw;
+  position: relative;
+  z-index: 1;
+  background: transparent;
 }
 
 .content-scroll {
@@ -86,7 +55,7 @@ body::after {
   to { opacity: 1; }
 }
 .app-card {
-  background: rgba(8, 20, 50, 0.80);
+  background: rgba(8, 20, 50, 0.45);
   border: 1px solid rgba(255,255,255,0.12);
   border-radius: 20px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
@@ -280,4 +249,61 @@ body {
             drop-shadow(0 0 60px rgba(212,168,67,0.8))
             drop-shadow(0 0 100px rgba(212,168,67,0.5));
   }
+}
+
+.nebula {
+  position: absolute;
+  inset: -25%;
+  filter: blur(90px);
+  opacity: 0.45;
+  mix-blend-mode: screen;
+}
+.nebula-1 {
+  background: radial-gradient(circle at 30% 40%, rgba(120,140,255,0.25), transparent 60%),
+              radial-gradient(circle at 70% 60%, rgba(180,120,255,0.2), transparent 65%);
+  animation: floatNebula 35s ease-in-out infinite;
+}
+.nebula-2 {
+  background: radial-gradient(circle at 60% 30%, rgba(80,120,255,0.18), transparent 60%),
+              radial-gradient(circle at 40% 70%, rgba(100,80,200,0.15), transparent 70%);
+  animation: floatNebulaSlow 55s ease-in-out infinite;
+}
+@keyframes floatNebula {
+  0% { transform: translate(0,0) scale(1); }
+  50% { transform: translate(-4%,3%) scale(1.06); }
+  100% { transform: translate(0,0) scale(1); }
+}
+@keyframes floatNebulaSlow {
+  0% { transform: translate(0,0) scale(1); }
+  50% { transform: translate(3%,-3%) scale(1.1); }
+  100% { transform: translate(0,0) scale(1); }
+}
+.center-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 45%, rgba(255,255,255,0.10), rgba(255,255,255,0.04) 25%, transparent 60%);
+  pointer-events: none;
+}
+.glass {
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.35), inset 0 0 20px rgba(255,255,255,0.02);
+}
+.glass-strong {
+  background: rgba(10, 15, 44, 0.55);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.app-card {
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.35), inset 0 0 20px rgba(255,255,255,0.02);
+  padding: 20px;
 }

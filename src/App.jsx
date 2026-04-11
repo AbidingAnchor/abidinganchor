@@ -29,6 +29,7 @@ import { getScenery, toggleScenery } from './utils/scenery'
 import Auth from './pages/Auth'
 import { useAuth } from './context/AuthContext'
 import LoadingScreen from './components/LoadingScreen'
+import CelestialBackground from './components/CelestialBackground'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -69,40 +70,43 @@ function AppShell() {
   }, [])
 
   return (
-    <>
-      <div style={{ minHeight: '100vh', position: 'relative', background: 'transparent', display: 'flex', flexDirection: 'column' }}>
-        <AppBackground />
-        <div style={{ position: 'fixed', inset: 0, zIndex: 2, pointerEvents: 'none', background: 'rgba(0, 0, 0, 0.15)' }} />
+    <div className="relative text-white">
+      <CelestialBackground />
+      <div style={{ position: 'relative', zIndex: 10 }}>
+        <div style={{ minHeight: '100vh', position: 'relative', display: 'flex', flexDirection: 'column' }}>
+          <AppBackground />
+          <div style={{ position: 'fixed', inset: 0, zIndex: 2, pointerEvents: 'none', background: 'rgba(0, 0, 0, 0.15)' }} />
 
-        <div style={{ position: 'relative', zIndex: 10, isolation: 'isolate', flex: 1, display: 'flex', flexDirection: 'column', paddingBottom: '80px' }}>
-          <Routes>
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/" element={<ProtectedRoute><Home onOpenWorship={(startPlaying) => openWorship(startPlaying)} worshipStatus={worshipStatus} /></ProtectedRoute>} />
-            <Route path="/read" element={<ProtectedRoute><ReadingPlan onOpenWorship={(startPlaying) => openWorship(startPlaying)} /></ProtectedRoute>} />
-            <Route path="/reading-plan" element={<ProtectedRoute><ReadingPlan onOpenWorship={(startPlaying) => openWorship(startPlaying)} /></ProtectedRoute>} />
-            <Route path="/search" element={<ProtectedRoute><Search onOpenWorship={(startPlaying) => openWorship(startPlaying)} /></ProtectedRoute>} />
-            <Route path="/prayer" element={<ProtectedRoute><Prayer /></ProtectedRoute>} />
-            <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
-            <Route path="/memorize" element={<ProtectedRoute><Memorize /></ProtectedRoute>} />
-            <Route path="/devotional" element={<ProtectedRoute><Devotional /></ProtectedRoute>} />
-            <Route path="/scripture-art" element={<ProtectedRoute><ScriptureArt /></ProtectedRoute>} />
-            <Route path="/reading-plans" element={<ProtectedRoute><ReadingPlans /></ProtectedRoute>} />
-            <Route path="/fasting" element={<ProtectedRoute><FastingTracker /></ProtectedRoute>} />
-            <Route path="/ai-companion" element={<ProtectedRoute><AICompanion /></ProtectedRoute>} />
-            <Route path="/faith-journey" element={<ProtectedRoute><FaithJourney /></ProtectedRoute>} />
-            <Route path="/community-prayer" element={<ProtectedRoute><CommunityPrayer /></ProtectedRoute>} />
-            <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
-            <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/onboarding" element={<ProtectedRoute><Onboarding onComplete={() => navigate('/')} /></ProtectedRoute>} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<TermsOfService />} />
-            <Route path="/terms-of-service" element={<TermsOfService />} />
-            <Route path="/legal" element={<Legal />} />
-            <Route path="*" element={<Navigate to={user ? '/' : '/auth'} replace />} />
-          </Routes>
-          {showFooter ? <Footer /> : null}
+          <div style={{ position: 'relative', zIndex: 10, isolation: 'isolate', flex: 1, display: 'flex', flexDirection: 'column', paddingBottom: '80px' }}>
+            <Routes>
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/" element={<ProtectedRoute><Home onOpenWorship={(startPlaying) => openWorship(startPlaying)} worshipStatus={worshipStatus} /></ProtectedRoute>} />
+              <Route path="/read" element={<ProtectedRoute><ReadingPlan onOpenWorship={(startPlaying) => openWorship(startPlaying)} /></ProtectedRoute>} />
+              <Route path="/reading-plan" element={<ProtectedRoute><ReadingPlan onOpenWorship={(startPlaying) => openWorship(startPlaying)} /></ProtectedRoute>} />
+              <Route path="/search" element={<ProtectedRoute><Search onOpenWorship={(startPlaying) => openWorship(startPlaying)} /></ProtectedRoute>} />
+              <Route path="/prayer" element={<ProtectedRoute><Prayer /></ProtectedRoute>} />
+              <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
+              <Route path="/memorize" element={<ProtectedRoute><Memorize /></ProtectedRoute>} />
+              <Route path="/devotional" element={<ProtectedRoute><Devotional /></ProtectedRoute>} />
+              <Route path="/scripture-art" element={<ProtectedRoute><ScriptureArt /></ProtectedRoute>} />
+              <Route path="/reading-plans" element={<ProtectedRoute><ReadingPlans /></ProtectedRoute>} />
+              <Route path="/fasting" element={<ProtectedRoute><FastingTracker /></ProtectedRoute>} />
+              <Route path="/ai-companion" element={<ProtectedRoute><AICompanion /></ProtectedRoute>} />
+              <Route path="/faith-journey" element={<ProtectedRoute><FaithJourney /></ProtectedRoute>} />
+              <Route path="/community-prayer" element={<ProtectedRoute><CommunityPrayer /></ProtectedRoute>} />
+              <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
+              <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              <Route path="/onboarding" element={<ProtectedRoute><Onboarding onComplete={() => navigate('/')} /></ProtectedRoute>} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/terms-of-service" element={<TermsOfService />} />
+              <Route path="/legal" element={<Legal />} />
+              <Route path="*" element={<Navigate to={user ? '/' : '/auth'} replace />} />
+            </Routes>
+            {showFooter ? <Footer /> : null}
+          </div>
         </div>
       </div>
       {showFooter ? <LegalModal onAgreed={() => navigate('/onboarding')} /> : null}
@@ -113,7 +117,7 @@ function AppShell() {
         onStatusChange={setWorshipStatus}
       />
       {showNav ? <Navbar scenery={scenery} onToggleScenery={handleToggleScenery} showSceneryTip={showSceneryTip} /> : null}
-    </>
+    </div>
   )
 }
 
