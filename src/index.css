@@ -509,7 +509,7 @@ body {
     #c5e8ff 30%,
     #ddf1ff 60%,
     #eef8ff 80%,
-    #fff8e8 100%
+    #ffffff 100%
   );
 }
 .day-sun-glow {
@@ -534,7 +534,7 @@ body {
   position: absolute;
   inset: -10% -20% 0 -20%;
   background: conic-gradient(from 180deg at 50% 0%, rgba(255,255,255,0.18) 0deg, rgba(255,255,255,0.02) 14deg, rgba(255,255,255,0.14) 28deg, rgba(255,255,255,0.015) 42deg, rgba(255,255,255,0.11) 58deg, rgba(255,255,255,0.01) 74deg, rgba(255,255,255,0.15) 92deg, rgba(255,255,255,0.02) 108deg, rgba(255,255,255,0.1) 128deg, rgba(255,255,255,0.01) 146deg, rgba(255,255,255,0.16) 164deg, rgba(255,255,255,0.02) 180deg, rgba(255,255,255,0.14) 196deg, rgba(255,255,255,0.02) 214deg, rgba(255,255,255,0.1) 232deg, rgba(255,255,255,0.01) 252deg, rgba(255,255,255,0.14) 270deg, rgba(255,255,255,0.02) 290deg, rgba(255,255,255,0.1) 312deg, rgba(255,255,255,0.015) 334deg, rgba(255,255,255,0.18) 360deg);
-  opacity: 0.25;
+  opacity: 0.1;
   filter: blur(16px);
   transform-origin: top center;
   animation: driftRays 24s ease-in-out infinite alternate;
@@ -548,7 +548,7 @@ body {
     radial-gradient(circle at 70% 80%, rgba(255, 230, 180, 0.10), transparent 40%),
     linear-gradient(180deg, transparent 40%, rgba(255, 245, 220, 0.18) 100%);
   mix-blend-mode: screen;
-  opacity: 0.4;
+  opacity: 0;
 }
 .cloud-layer { position: absolute; inset: 0; }
 .cloud {
