@@ -318,7 +318,7 @@ function Home({ onOpenWorship, worshipStatus }) {
           <section style={{ marginBottom: '28px' }}>
             <div style={{ marginBottom: '20px' }}>
               <p style={{ 
-                color: 'white', 
+                color: 'var(--heading-text)', 
                 fontSize: '22px', 
                 fontWeight: 700, 
                 marginBottom: '4px' 
@@ -326,7 +326,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                 {timeGreeting}, {firstName} {timeEmoji}
               </p>
               <p style={{
-                color: 'rgba(255,255,255,0.6)',
+                color: 'var(--text-secondary)',
                 fontSize: '13px',
                 marginBottom: '32px'
               }}>
@@ -354,7 +354,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                   textAlign: 'center',
                   fontSize: '18px',
                   lineHeight: 1.8,
-                  color: 'rgba(255,255,255,0.95)',
+                  color: 'var(--verse-text)',
                   fontStyle: 'italic',
                   fontFamily: 'Georgia, serif',
                 }}
@@ -382,7 +382,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                 <p
                   style={{
                     margin: 0,
-                    color: 'rgba(255,255,255,0.95)',
+                    color: 'var(--text-secondary)',
                     fontSize: '14px',
                     fontWeight: 500,
                     fontFamily: 'Georgia, serif',
@@ -409,9 +409,9 @@ function Home({ onOpenWorship, worshipStatus }) {
                   style={{
                     minWidth: '120px',
                     flex: 1,
-                    background: 'rgba(5, 12, 35, 0.55)',
-                    color: '#ffffff',
-                    border: '1px solid rgba(140, 200, 255, 0.5)',
+                    background: 'var(--btn-primary-bg)',
+                    color: 'var(--btn-primary-text)',
+                    border: '1px solid var(--gold-border)',
                     borderRadius: '50px',
                     padding: '10px 16px',
                     fontWeight: 600,
@@ -419,7 +419,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                     whiteSpace: 'nowrap',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
-                    boxShadow: '0 0 14px rgba(120, 190, 255, 0.28)',
+                    boxShadow: '0 0 14px rgba(212, 168, 67, 0.28)',
                   }}
                 >
                   Save to Journal
@@ -430,9 +430,9 @@ function Home({ onOpenWorship, worshipStatus }) {
                   style={{
                     minWidth: '140px',
                     flex: 1,
-                    background: 'rgba(5, 12, 35, 0.55)',
-                    color: '#D4A843',
-                    border: '1px solid rgba(212, 168, 67, 0.55)',
+                    background: 'var(--btn-secondary-bg)',
+                    color: 'var(--btn-secondary-text)',
+                    border: '1px solid var(--glass-border)',
                     borderRadius: '50px',
                     padding: '12px 24px',
                     fontWeight: 600,
@@ -460,15 +460,15 @@ function Home({ onOpenWorship, worshipStatus }) {
             >
               <div className="mb-4 flex items-center justify-between">
                 <h2 style={{ 
-                  color: '#D4A843', 
+                  color: 'var(--section-title)', 
                   fontSize: '13px', 
                   letterSpacing: '0.12em', 
                   fontWeight: 500,
                   textTransform: 'uppercase'
                 }}>Reading Streak</h2>
-                <p style={{ fontSize: '14px', color: '#D4A843', fontWeight: 700 }}>🔥 {currentStreak} Day Streak</p>
+                <p style={{ fontSize: '14px', color: 'var(--section-title)', fontWeight: 700 }}>🔥 {currentStreak} Day Streak</p>
               </div>
-              <p style={{ marginBottom: '16px', fontSize: '13px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>{streakMessage}</p>
+              <p style={{ marginBottom: '16px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{streakMessage}</p>
               <div className="flex items-center justify-between gap-2" style={{ overflowX: 'auto' }}>
                 {days.map((day, index) => {
                   const isToday = index === todayIndex
@@ -489,7 +489,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                       }}
                     >
                       <span style={{
-                        color: 'rgba(255,255,255,0.5)',
+                        color: 'var(--label-text)',
                         fontSize: '11px',
                         fontWeight: 600
                       }}>
@@ -508,7 +508,7 @@ function Home({ onOpenWorship, worshipStatus }) {
             </div>
 
             <div style={{ marginBottom: '28px', animation: 'fadeInUp 0.6s ease forwards', animationDelay: '0.3s' }}>
-              <h2 style={{ color: '#D4A843', fontSize: '13px', letterSpacing: '0.12em', fontWeight: 500, textTransform: 'uppercase' }}>TOOLS</h2>
+              <h2 style={{ color: 'var(--section-title)', fontSize: '13px', letterSpacing: '0.12em', fontWeight: 500, textTransform: 'uppercase' }}>TOOLS</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
               <Link
                 to="/scripture-art"
@@ -537,9 +537,9 @@ function Home({ onOpenWorship, worshipStatus }) {
                   e.currentTarget.style.boxShadow = 'none'
                 }}
               >
-                <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>🎨</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: '#FFFFFF', marginBottom: '4px' }}>Scripture Art</p>
-                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Create shareable verse images</p>
+                <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>🎨</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>Scripture Art</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Create shareable verse images</p>
               </Link>
               <Link
                 to="/reading-plans"
@@ -568,9 +568,9 @@ function Home({ onOpenWorship, worshipStatus }) {
                   e.currentTarget.style.boxShadow = 'none'
                 }}
               >
-                <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>📅</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: '#FFFFFF', marginBottom: '4px' }}>Reading Plans</p>
-                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Follow structured daily journeys</p>
+                <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>📅</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>Reading Plans</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Follow structured daily journeys</p>
               </Link>
               <Link
                 to="/fasting"
@@ -599,9 +599,9 @@ function Home({ onOpenWorship, worshipStatus }) {
                   e.currentTarget.style.boxShadow = 'none'
                 }}
               >
-                <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>🕐</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: '#FFFFFF', marginBottom: '4px' }}>Fasting Tracker</p>
-                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Track fasts and prayer notes</p>
+                <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>🕐</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>Fasting Tracker</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Track fasts and prayer notes</p>
               </Link>
               <Link
                 to="/support"
@@ -630,9 +630,9 @@ function Home({ onOpenWorship, worshipStatus }) {
                   e.currentTarget.style.boxShadow = 'none'
                 }}
               >
-                <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>🤝</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: '#FFFFFF', marginBottom: '4px' }}>Support</p>
-                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Help sustain the ministry</p>
+                <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>🤝</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>Support</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Help sustain the ministry</p>
               </Link>
               <div
                 className="glass-panel"
@@ -662,9 +662,9 @@ function Home({ onOpenWorship, worshipStatus }) {
                 }}
                 onClick={() => window.open('https://discord.gg/nZcZRkUMJh', '_blank')}
               >
-                <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>💬</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: '#FFFFFF', marginBottom: '4px' }}>Community</p>
-                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Join our Discord</p>
+                <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>💬</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>Community</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Join our Discord</p>
               </div>
               <Link
                 to="/worship"
@@ -693,9 +693,9 @@ function Home({ onOpenWorship, worshipStatus }) {
                   e.currentTarget.style.boxShadow = 'none'
                 }}
               >
-                <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>🎵</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: '#FFFFFF', marginBottom: '4px' }}>Worship Mode</p>
-                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Music & meditation</p>
+                <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>🎵</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>Worship Mode</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Music & meditation</p>
               </Link>
             </div>
           </div>
@@ -722,7 +722,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                 fontSize: '12px', 
                 fontWeight: 500, 
                 letterSpacing: '0.12em',
-                color: '#D4A843',
+                color: 'var(--section-title)',
                 textTransform: 'uppercase',
                 marginBottom: '16px'
               }}>Verse of the Week</p>
@@ -730,7 +730,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                 marginTop: '16px', 
                 fontSize: '16px', 
                 lineHeight: 1.9,
-                color: 'rgba(255,255,255,0.95)',
+                color: 'var(--verse-text)',
                 fontStyle: 'italic',
                 fontFamily: 'Georgia, serif',
                 paddingLeft: '24px'
@@ -743,15 +743,15 @@ function Home({ onOpenWorship, worshipStatus }) {
               fontSize: '13px', 
               fontWeight: 500, 
               letterSpacing: '0.1em',
-              color: '#D4A843'
+              color: 'var(--text-secondary)'
             }}>Psalm 23:1</p>
             <div className="mt-4 flex justify-end">
               <button
                 type="button"
                 onClick={handleSaveVerseOfWeek}
                 style={{
-                  background: 'linear-gradient(135deg, #D4A843 0%, #F4D03F 100%)',
-                  color: '#0d1f4e',
+                  background: 'var(--btn-primary-bg)',
+                  color: 'var(--btn-primary-text)',
                   border: 'none',
                   borderRadius: '50px',
                   padding: '8px 14px',

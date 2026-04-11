@@ -88,7 +88,7 @@ export default function BottomNav() {
               style={{
                 fontSize: '24px',
                 filter: isActive(tab.path) ? 'drop-shadow(0 0 8px rgba(212, 168, 67, 0.6))' : 'none',
-                opacity: isActive(tab.path) ? 1 : 0.5,
+                opacity: 1,
                 transition: 'opacity 0.2s ease',
               }}
             >
@@ -98,7 +98,7 @@ export default function BottomNav() {
               style={{
                 fontSize: '11px',
                 fontWeight: 500,
-                color: isActive(tab.path) ? 'var(--gold)' : 'var(--text-secondary)',
+                color: isActive(tab.path) ? 'var(--nav-text-active)' : 'var(--nav-text)',
                 transition: 'color 0.2s ease',
               }}
             >

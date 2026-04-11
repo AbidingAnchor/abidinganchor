@@ -212,11 +212,11 @@ export default function CommunityPrayer() {
       >
         <header className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="text-page-title">
+            <h1 style={{ color: 'var(--heading-text)', fontSize: '24px', fontWeight: 700, marginBottom: '8px' }}>
               🤝 Community Prayer
             </h1>
-            <p className="text-body">Lift each other up in prayer.</p>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', marginTop: '4px' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', fontStyle: 'italic' }}>Lift each other up in prayer.</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '4px' }}>
               🟢 {activeUsersCount} believers praying today
             </p>
           </div>
@@ -254,7 +254,7 @@ export default function CommunityPrayer() {
                     fontWeight: filterCat === c ? 700 : 600,
                     background: filterCat === c ? '#D4A843' : undefined,
                     border: filterCat === c ? 'none' : '1px solid var(--glass-border)',
-                    color: filterCat === c ? '#0a1a3e' : 'white',
+                    color: filterCat === c ? '#0a1a3e' : 'var(--text-primary)',
                     cursor: 'pointer',
                     transition: 'all 0.2s'
                   }}
@@ -282,17 +282,33 @@ export default function CommunityPrayer() {
         ) : null}
 
         {!loading && tab === 'wall' && prayers.length === 0 ? (
-          <article className="app-card p-6 text-center text-primary border-l-[3px] border-gold">
-            <p className="text-3xl text-gold-accent">🙏</p>
-            <p className="mt-2 font-semibold text-primary">No prayers in this category yet.</p>
-            <p className="mt-1 text-body">Be the first to share a request.</p>
+          <article style={{
+            background: 'var(--glass-bg)',
+            border: '1px solid var(--glass-border)',
+            borderLeft: '3px solid var(--gold)',
+            borderRadius: '12px',
+            padding: '24px',
+            textAlign: 'center',
+            height: 'auto'
+          }}>
+            <p style={{ fontSize: '32px', marginBottom: '8px' }}>🙏</p>
+            <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>No prayers in this category yet.</p>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Be the first to share a request.</p>
           </article>
         ) : null}
 
         {!loading && tab === 'mine' && prayers.length === 0 ? (
-          <article className="app-card p-6 text-center text-primary border-l-[3px] border-gold">
-            <p className="text-3xl text-gold-accent">✨</p>
-            <p className="mt-2 font-semibold text-primary">You haven&apos;t posted to the wall yet.</p>
+          <article style={{
+            background: 'var(--glass-bg)',
+            border: '1px solid var(--glass-border)',
+            borderLeft: '3px solid var(--gold)',
+            borderRadius: '12px',
+            padding: '24px',
+            textAlign: 'center',
+            height: 'auto'
+          }}>
+            <p style={{ fontSize: '32px', marginBottom: '8px' }}>✨</p>
+            <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>You haven&apos;t posted to the wall yet.</p>
           </article>
         ) : null}
 

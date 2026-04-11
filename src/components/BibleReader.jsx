@@ -174,7 +174,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
               style={{
                 background: 'none',
                 border: 'none',
-                color: '#D4A843',
+                color: 'var(--text-primary)',
                 fontSize: '18px',
                 fontWeight: 700,
                 cursor: 'pointer',
@@ -190,7 +190,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
               style={{
                 background: 'none',
                 border: 'none',
-                color: '#D4A843',
+                color: 'var(--text-primary)',
                 fontSize: '18px',
                 fontWeight: 700,
                 cursor: 'pointer',
@@ -201,7 +201,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
             </button>
 
             <div style={{
-              color: '#D4A843',
+              color: 'var(--text-primary)',
               fontSize: '13px',
               fontWeight: 600
             }}>
@@ -211,7 +211,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
 
           {/* Row 2: 📖 Read | 🎧 Listen toggle centered below */}
           {onModeChange && (
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '12px' }}>
               <div className="glass" style={{
                 borderRadius: '50px',
                 padding: '4px',
@@ -222,8 +222,8 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                   type="button"
                   onClick={() => onModeChange('read')}
                   style={{
-                    background: mode === 'read' ? '#D4A843' : 'transparent',
-                    color: mode === 'read' ? '#0a1a3e' : 'rgba(255,255,255,0.7)',
+                    background: mode === 'read' ? 'var(--gold)' : 'transparent',
+                    color: mode === 'read' ? '#0a1a3e' : 'var(--text-primary)',
                     border: 'none',
                     borderRadius: '50px',
                     padding: '8px 24px',
@@ -239,8 +239,8 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                   type="button"
                   onClick={() => onModeChange('listen')}
                   style={{
-                    background: mode === 'listen' ? '#D4A843' : 'transparent',
-                    color: mode === 'listen' ? '#0a1a3e' : 'rgba(255,255,255,0.7)',
+                    background: mode === 'listen' ? 'var(--gold)' : 'transparent',
+                    color: mode === 'listen' ? '#0a1a3e' : 'var(--text-primary)',
                     border: 'none',
                     borderRadius: '50px',
                     padding: '8px 24px',
@@ -262,7 +262,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
       <div style={{ 
         flex: 1,
         overflowY: 'auto',
-        paddingTop: '140px', 
+        paddingTop: '20px', 
         paddingBottom: mode === 'listen' ? '160px' : '120px', 
         padding: '24px 20px', 
         maxWidth: '680px', 
@@ -271,27 +271,14 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
         {loading ? (
           <div style={{ textAlign: 'center', padding: '40px' }}>
             <div style={{ fontSize: '32px', marginBottom: '16px' }}>✝</div>
-            <p style={{ color: 'rgba(245,230,200,0.6)' }}>Loading scripture...</p>
+            <p style={{ color: 'var(--text-secondary)' }}>Loading scripture...</p>
           </div>
         ) : (
           <div>
-            {/* Chapter Title */}
-            <h2 style={{
-              color: '#D4A843',
-              fontSize: '32px',
-              fontWeight: 600,
-              marginBottom: '40px',
-              textAlign: 'center',
-              fontFamily: 'Lora, serif',
-              letterSpacing: '0.02em'
-            }}>
-              {selectedBook?.name} {chapter}
-            </h2>
-            
             {/* Verse Text - Premium Styling */}
             <div style={{
               padding: '20px',
-              color: '#F5E6C8',
+              color: 'var(--text-primary)',
               fontSize: '1.1rem',
               lineHeight: '1.8',
               fontFamily: 'Lora, serif',
@@ -303,7 +290,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                   textAlign: 'justify'
                 }}>
                   <sup style={{
-                    color: '#D4A843',
+                    color: 'var(--gold)',
                     fontSize: '0.75em',
                     fontWeight: 600,
                     marginRight: '4px',
@@ -362,7 +349,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: '#D4A843',
+                  color: 'var(--gold)',
                   fontSize: '16px',
                   fontWeight: 700,
                   cursor: 'pointer',
