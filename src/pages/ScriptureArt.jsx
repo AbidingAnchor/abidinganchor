@@ -147,13 +147,13 @@ export default function ScriptureArt() {
     <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '110px', maxWidth: '680px', margin: '0 auto' }}>
       <h1 className="text-2xl font-bold text-white"><span style={{ color: '#D4A843' }}>🎨</span> Scripture Art</h1>
 
-      <section className="mt-4 rounded-2xl border border-white/20 bg-white/10 p-4 text-white backdrop-blur-md">
-        <textarea value={verse} onChange={(e) => setVerse(e.target.value)} rows={4} className="w-full rounded-xl border border-white/20 bg-black/20 p-3 text-sm text-white" />
-        <input value={reference} onChange={(e) => setReference(e.target.value)} className="mt-2 w-full rounded-xl border border-white/20 bg-black/20 p-3 text-sm text-white" placeholder="John 3:16" />
+      <section className="mt-4 glass-panel rounded-2xl p-4 text-white">
+        <textarea value={verse} onChange={(e) => setVerse(e.target.value)} rows={4} className="w-full glass-input-field rounded-xl p-3 text-sm text-white" />
+        <input value={reference} onChange={(e) => setReference(e.target.value)} className="mt-2 w-full glass-input-field rounded-xl p-3 text-sm text-white" placeholder="John 3:16" />
         <button type="button" onClick={() => setShowPicker(true)} className="mt-2 rounded-lg border border-[#D4A843] px-3 py-2 text-sm text-[#D4A843]">Pick a verse</button>
       </section>
 
-      <section className="mt-4 rounded-2xl border border-white/20 bg-white/10 p-4 text-white backdrop-blur-md">
+      <section className="mt-4 glass-panel rounded-2xl p-4 text-white">
         <p className="text-xs uppercase tracking-[0.12em] text-white/75">Background Theme</p>
         <div className="mt-2 flex flex-wrap gap-2">
           {Object.keys(themes).map((k) => (
@@ -184,7 +184,7 @@ export default function ScriptureArt() {
         </label>
       </section>
 
-      <section className="mt-4 rounded-2xl border border-white/20 bg-white/10 p-4 text-white backdrop-blur-md">
+      <section className="mt-4 glass-panel rounded-2xl p-4 text-white">
         <canvas ref={canvasRef} width={1080} height={1080} style={{ width: '100%', borderRadius: '12px' }} />
         <div className="mt-3 flex gap-2">
           <button type="button" onClick={download} className="rounded-xl px-3 py-2 text-sm font-semibold text-[#1a1a1a]" style={{ background: '#D4A843' }}>Download Image</button>
@@ -193,7 +193,7 @@ export default function ScriptureArt() {
         </div>
       </section>
 
-      <section className="mt-4 rounded-2xl border border-white/20 bg-white/10 p-4 text-white backdrop-blur-md">
+      <section className="mt-4 glass-panel rounded-2xl p-4 text-white">
         <p className="text-sm font-semibold text-[#D4A843]">Saved Gallery</p>
         <div className="mt-3 grid grid-cols-3 gap-2">
           {gallery.map((item) => (
@@ -203,8 +203,8 @@ export default function ScriptureArt() {
       </section>
 
       {showPicker ? (
-        <div className="fixed inset-0 z-50 bg-black/60 p-4">
-          <div className="mx-auto mt-20 max-h-[70vh] max-w-[680px] overflow-auto rounded-2xl border border-white/25 bg-[#0d1f4e] p-4 text-white">
+        <div className="glass-scrim fixed inset-0 z-50 p-4">
+          <div className="glass-panel mx-auto mt-20 max-h-[70vh] max-w-[680px] overflow-auto rounded-2xl p-4 text-white">
             <div className="mb-2 flex items-center justify-between">
               <p className="font-semibold text-[#D4A843]">Pick a Verse</p>
               <button type="button" onClick={() => setShowPicker(false)}>✕</button>
@@ -219,7 +219,7 @@ export default function ScriptureArt() {
                     setReference(v.ref)
                     setShowPicker(false)
                   }}
-                  className="w-full rounded-xl border border-white/20 bg-white/10 p-3 text-left"
+                  className="glass-panel w-full rounded-xl p-3 text-left"
                 >
                   <p className="text-xs text-[#D4A843]">{v.ref}</p>
                   <p className="text-sm text-white/90">{v.text}</p>

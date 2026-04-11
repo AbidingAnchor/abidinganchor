@@ -250,7 +250,7 @@ export default function BibleTrivia({ onExit, onRoundComplete }) {
   }
 
   return (
-    <div className="rounded-2xl border border-white/20 bg-white/10 p-4 text-white backdrop-blur-md">
+    <div className="glass-panel rounded-2xl p-4 text-white">
       <style>
         {`
           @keyframes trivia-confetti {
@@ -281,7 +281,7 @@ export default function BibleTrivia({ onExit, onRoundComplete }) {
             <div className="h-full rounded-full" style={{ width: `${progress}%`, background: '#D4A843' }} />
           </div>
 
-          <div className="rounded-2xl border border-white/15 bg-black/10 p-4">
+          <div className="glass-panel rounded-2xl p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/70">{current.category}</p>
             <p className="mt-2 text-lg font-semibold text-white">{current.q}</p>
           </div>
@@ -317,7 +317,7 @@ export default function BibleTrivia({ onExit, onRoundComplete }) {
           </div>
         </>
       ) : (
-        <div className="relative overflow-hidden rounded-2xl border border-[#D4A843] bg-black/10 p-4 text-center">
+        <div className="relative overflow-hidden glass-panel rounded-2xl border border-[#D4A843]/50 p-4 text-center">
           {confetti
             ? Array.from({ length: 22 }, (_, i) => (
                 <span

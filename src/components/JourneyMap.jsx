@@ -52,7 +52,7 @@ export default function JourneyMap({ onExit }) {
   }
 
   return (
-    <div className="rounded-2xl border border-white/20 bg-white/10 p-4 text-white backdrop-blur-md">
+    <div className="glass-panel rounded-2xl p-4 text-white">
       <style>
         {`
           @keyframes map-pulse {
@@ -71,14 +71,14 @@ export default function JourneyMap({ onExit }) {
         </button>
       </div>
 
-      <div className="mb-3 rounded-xl border border-white/15 bg-black/10 p-3 text-xs text-white/80">
+      <div className="mb-3 glass-panel rounded-xl p-3 text-xs text-white/80">
         Unlocks are earned by completing trivia and memorizing verses. <br />
         <span style={{ color: '#D4A843', fontWeight: 700 }}>
           Unlocked: {unlockedCount}/{STOPS.length}
         </span>
       </div>
 
-      <div className="rounded-2xl border border-white/15 bg-black/10 p-3">
+      <div className="glass-panel rounded-2xl p-3">
         <svg width="100%" viewBox="0 0 260 240" style={{ display: 'block' }}>
           <defs>
             <linearGradient id="goldPath" x1="0" x2="1">
@@ -123,7 +123,7 @@ export default function JourneyMap({ onExit }) {
       </div>
 
       {activeStop ? (
-        <div className="mt-3 rounded-2xl border border-[#D4A843] bg-black/10 p-4">
+        <div className="mt-3 glass-panel rounded-2xl border border-[#D4A843]/50 p-4">
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="text-sm font-semibold" style={{ color: '#D4A843' }}>

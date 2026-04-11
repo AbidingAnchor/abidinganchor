@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 export default function Footer() {
   return (
     <footer
+      className="glass-nav-bar"
       style={{
         position: 'static',
         width: '100%',
@@ -11,8 +12,7 @@ export default function Footer() {
         fontSize: '12px',
         color: 'rgba(255,255,255,0.4)',
         padding: '10px 10px 88px',
-        background: 'rgba(0,0,0,0.12)',
-        backdropFilter: 'blur(6px)',
+        borderTop: '1px solid rgba(255,255,255,0.06)',
       }}
     >
       <span>© 2026 AbidingAnchor Ministry</span>

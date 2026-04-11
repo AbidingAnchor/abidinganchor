@@ -198,11 +198,7 @@ export default function Settings() {
         </header>
 
         {/* User Profile Card */}
-        <div style={{
-          background: 'rgba(8,20,50,0.72)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          border: '1px solid rgba(212,168,67,0.25)',
+        <div className="glass-panel" style={{
           borderRadius: '16px',
           padding: '20px'
         }}>
@@ -273,7 +269,7 @@ export default function Settings() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   cursor: 'pointer',
-                  border: '2px solid rgba(8,20,50,0.9)',
+                  border: '2px solid rgba(15, 23, 42, 0.5)',
                   fontSize: '14px'
                 }}
               >
@@ -303,13 +299,10 @@ export default function Settings() {
           </div>
           {pendingAvatarFile && (
             <div
+              className="glass-panel"
               style={{
                 marginTop: '16px',
                 padding: '14px 16px',
-                background: 'rgba(8,20,50,0.5)',
-                backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
-                border: '1px solid rgba(212,168,67,0.25)',
                 borderRadius: '12px',
                 display: 'flex',
                 gap: '12px',
@@ -402,12 +395,9 @@ export default function Settings() {
         <button
           type="button"
           onClick={() => {}}
+          className="glass-panel"
           style={{
             width: '100%',
-            background: 'rgba(8,20,50,0.72)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            border: '1px solid rgba(212,168,67,0.25)',
             borderRadius: '16px',
             padding: '16px 20px',
             color: '#FFFFFF',
@@ -425,11 +415,7 @@ export default function Settings() {
         </button>
 
         {/* Bible Translation Preference */}
-        <div style={{
-          background: 'rgba(8,20,50,0.72)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          border: '1px solid rgba(212,168,67,0.25)',
+        <div className="glass-panel" style={{
           borderRadius: '16px',
           padding: '16px 20px'
         }}>
@@ -439,10 +425,9 @@ export default function Settings() {
           <select
             value={selectedTranslation}
             onChange={(e) => setSelectedTranslation(e.target.value)}
+            className="glass-input-field"
             style={{
               width: '100%',
-              background: 'rgba(0,0,0,0.3)',
-              border: '1px solid rgba(212,168,67,0.3)',
               borderRadius: '12px',
               padding: '12px',
               color: '#FFFFFF',
@@ -458,14 +443,10 @@ export default function Settings() {
         </div>
 
         {/* Notifications Toggle */}
-        <div style={{
-          background: 'rgba(8,20,50,0.72)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          border: '1px solid rgba(212,168,67,0.25)',
-          borderRadius: '16px',
-          padding: '16px 20px',
-          display: 'flex',
+          <div className="glass-panel" style={{
+            borderRadius: '16px',
+            padding: '16px 20px',
+            display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
@@ -508,12 +489,9 @@ export default function Settings() {
         <button
           type="button"
           onClick={handleReplayTutorial}
+          className="glass-panel"
           style={{
             width: '100%',
-            background: 'rgba(8,20,50,0.72)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            border: '1px solid rgba(212,168,67,0.25)',
             borderRadius: '16px',
             padding: '16px 20px',
             color: '#FFFFFF',
@@ -531,11 +509,7 @@ export default function Settings() {
         </button>
 
         {/* About AbidingAnchor */}
-        <div style={{
-          background: 'rgba(8,20,50,0.72)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          border: '1px solid rgba(212,168,67,0.25)',
+        <div className="glass-panel" style={{
           borderRadius: '16px',
           padding: '20px'
         }}>
@@ -551,14 +525,10 @@ export default function Settings() {
         </div>
 
         {/* Privacy Policy and Terms of Service */}
-        <div style={{
-          background: 'rgba(8,20,50,0.72)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          border: '1px solid rgba(212,168,67,0.25)',
-          borderRadius: '16px',
-          padding: '16px 20px',
-          display: 'flex',
+          <div className="glass-panel" style={{
+            borderRadius: '16px',
+            padding: '16px 20px',
+            display: 'flex',
           flexDirection: 'column',
           gap: '12px'
         }}>

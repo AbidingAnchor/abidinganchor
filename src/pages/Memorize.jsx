@@ -57,7 +57,7 @@ export default function Memorize() {
             <p className="text-white/85">Hide His Word in your heart</p>
           </header>
 
-          <article className="rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-md space-y-3">
+          <article className="glass-panel rounded-2xl p-4 space-y-3">
             <div className="flex flex-wrap gap-2">
               {memoryVerses.map((v) => (
                 <button key={v.reference} type="button" onClick={() => { setSelected(v); setCustomText(''); setRound(0); setCompleted(false) }} className="rounded-full border border-[#D4A843] px-3 py-1 text-xs text-[#D4A843]">
@@ -65,11 +65,11 @@ export default function Memorize() {
                 </button>
               ))}
             </div>
-            <input value={customRef} onChange={(e) => setCustomRef(e.target.value)} placeholder="Or custom reference" className="w-full rounded-xl border border-white/20 bg-black/10 p-2 text-white placeholder:text-white/60" />
-            <textarea value={customText} onChange={(e) => setCustomText(e.target.value)} rows={3} placeholder="Paste any verse..." className="w-full rounded-xl border border-white/20 bg-black/10 p-2 text-white placeholder:text-white/60" />
+            <input value={customRef} onChange={(e) => setCustomRef(e.target.value)} placeholder="Or custom reference" className="w-full glass-input-field rounded-xl p-2 text-white placeholder:text-white/60" />
+            <textarea value={customText} onChange={(e) => setCustomText(e.target.value)} rows={3} placeholder="Paste any verse..." className="w-full glass-input-field rounded-xl p-2 text-white placeholder:text-white/60" />
           </article>
 
-          <article className="rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-md">
+          <article className="glass-panel rounded-2xl p-4">
             <p className="text-sm text-[#D4A843]">{sourceRef}</p>
             <div className="mt-3 flex flex-wrap gap-2 leading-8 text-white">
               {tokens.map((token, i) => (
@@ -89,7 +89,7 @@ export default function Memorize() {
           </article>
 
           {completed && (
-            <article className="rounded-2xl border border-[#D4A843] bg-white/10 p-4 text-center text-white backdrop-blur-md">
+            <article className="glass-panel rounded-2xl border border-[#D4A843]/45 p-4 text-center text-white">
               <p className="text-lg text-[#D4A843]">You hid His Word in your heart! Psalm 119:11 💛</p>
               <button type="button" onClick={saveMemorized} className="mt-3 rounded-lg border border-[#D4A843] px-3 py-1.5 text-sm text-[#D4A843]">
                 Add to Memorized List

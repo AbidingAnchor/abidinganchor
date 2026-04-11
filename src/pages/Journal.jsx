@@ -142,11 +142,8 @@ function Journal() {
           MY JOURNAL
         </h1>
 
-        <div style={{
-          background: 'rgba(8,20,50,0.72)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(212,168,67,0.25)',
+        <div className="glass-panel" style={{
+          border: '1px solid rgba(212,168,67,0.2)',
           borderRadius: '16px',
           padding: '16px',
           marginBottom: '20px',
@@ -203,11 +200,9 @@ function Journal() {
             {entries.map((entry) => (
               <article
                 key={entry.id}
+                className="glass-panel"
                 style={{
-                  background: 'rgba(8,20,50,0.72)',
-                  backdropFilter: 'blur(12px)',
-                  WebkitBackdropFilter: 'blur(12px)',
-                  border: '1px solid rgba(212,168,67,0.25)',
+                  border: '1px solid rgba(212,168,67,0.2)',
                   borderRadius: '16px',
                   padding: '16px',
                   marginBottom: '12px'
@@ -337,24 +332,24 @@ function Journal() {
           justifyContent: 'center'
         }}>
           <div
+            className="glass-scrim"
             style={{
               position: 'fixed',
               inset: 0,
-              background: 'rgba(0,0,0,0.5)',
             }}
             onClick={() => {
               setShowModal(false)
               setSelectedMood('')
             }}
           />
-          <div style={{
-            background: 'rgba(8,20,50,0.95)',
+          <div className="glass-panel" style={{
             width: '100%',
             maxWidth: '390px',
             borderRadius: '24px 24px 0 0',
             padding: '24px 20px 40px',
             position: 'relative',
-            zIndex: 1001
+            zIndex: 1001,
+            borderTop: '1px solid rgba(255,255,255,0.1)',
           }}>
             <h2 style={{
               color: '#D4A843',
@@ -442,13 +437,14 @@ function Journal() {
                   key={mood}
                   type="button"
                   onClick={() => setSelectedMood(selectedMood === mood ? '' : mood)}
+                  className="glass-panel"
                   style={{
                     background: selectedMood === mood 
-                      ? 'rgba(212,168,67,0.15)' 
-                      : 'rgba(8,20,50,0.72)',
+                      ? 'rgba(212,168,67,0.12)' 
+                      : undefined,
                     border: selectedMood === mood 
                       ? '1px solid #D4A843' 
-                      : '1px solid rgba(212,168,67,0.3)',
+                      : '1px solid rgba(255,255,255,0.08)',
                     borderRadius: '50px',
                     padding: '8px 16px',
                     color: selectedMood === mood ? '#D4A843' : 'rgba(255,255,255,0.6)',

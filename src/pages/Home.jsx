@@ -336,88 +336,82 @@ function Home({ onOpenWorship, worshipStatus }) {
             <article
               className="text-white"
               style={{
-                background: 'rgba(8, 20, 50, 0.72)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(212,168,67,0.25)',
-                borderRadius: '24px',
-                padding: '28px',
+                background: 'transparent',
+                border: '1px solid rgba(255,255,255,0.15)',
+                borderRadius: '16px',
+                padding: '20px',
+                backdropFilter: 'none',
+                WebkitBackdropFilter: 'none',
                 position: 'relative',
                 animation: 'fadeInUp 0.6s ease forwards',
-                animationDelay: '0.1s'
+                animationDelay: '0.1s',
+                boxShadow: 'none',
               }}
             >
-              <div style={{ 
-                position: 'absolute', 
-                top: 0, 
-                left: 0, 
-                right: 0, 
-                height: '3px', 
-                background: '#D4A843',
-                borderRadius: '24px 24px 0 0'
-              }} />
-              
-              <div className="relative" style={{ marginBottom: '24px' }}>
-                <span style={{ 
-                  position: 'absolute', 
-                  top: '-8px', 
-                  left: 0, 
-                  fontSize: '60px', 
-                  lineHeight: 1, 
-                  opacity: 0.3,
-                  color: '#D4A843',
-                  fontFamily: 'Georgia, serif'
-                }}>"</span>
-                <p style={{ 
-                  paddingLeft: '32px', 
-                  paddingRight: '8px', 
-                  paddingTop: '8px', 
-                  fontSize: '18px', 
-                  lineHeight: 1.8, 
-                  color: 'rgba(255,255,255,0.95)', 
+              <p
+                style={{
+                  margin: '0 0 24px',
+                  textAlign: 'center',
+                  fontSize: '18px',
+                  lineHeight: 1.8,
+                  color: 'rgba(255,255,255,0.95)',
                   fontStyle: 'italic',
-                  fontFamily: 'Georgia, serif'
-                }}>
-                  {todaysVerse.text}
-                </p>
-              </div>
+                  fontFamily: 'Georgia, serif',
+                }}
+              >
+                {todaysVerse.text}
+              </p>
 
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'space-between',
-                marginBottom: '24px',
-                paddingBottom: '24px',
-                borderBottom: '1px solid rgba(255,255,255,0.1)'
-              }}>
-                <p style={{ 
-                  color: '#D4A843', 
-                  fontSize: '14px', 
-                  fontWeight: 500, 
-                  letterSpacing: '0.1em'
-                }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '16px',
+                  justifyContent: 'center',
+                  marginBottom: '24px',
+                }}
+              >
+                <div
+                  style={{
+                    flex: 1,
+                    height: '1px',
+                    maxWidth: '120px',
+                    background: 'rgba(255,255,255,0.2)',
+                  }}
+                />
+                <p
+                  style={{
+                    margin: 0,
+                    color: 'rgba(255,255,255,0.95)',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    fontFamily: 'Georgia, serif',
+                    letterSpacing: '0.06em',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
                   {todaysVerse.reference}
                 </p>
-                <p style={{ 
-                  fontSize: '12px', 
-                  fontWeight: 500, 
-                  letterSpacing: '0.15em',
-                  color: 'rgba(255,255,255,0.6)'
-                }}>
-                  Today&apos;s Verse
-                </p>
+                <div
+                  style={{
+                    flex: 1,
+                    height: '1px',
+                    maxWidth: '120px',
+                    background: 'rgba(255,255,255,0.2)',
+                  }}
+                />
               </div>
 
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
                 <button
                   type="button"
                   onClick={handleSaveDailyVerse}
-                  style={{ 
-                    minWidth: '120px', 
+                  style={{
+                    minWidth: '120px',
                     flex: 1,
-                    background: 'linear-gradient(135deg, #D4A843 0%, #F4D03F 100%)',
-                    color: '#0d1f4e',
-                    border: 'none',
+                    background: 'rgba(5, 12, 35, 0.55)',
+                    color: '#ffffff',
+                    border: '1px solid rgba(140, 200, 255, 0.5)',
                     borderRadius: '50px',
                     padding: '10px 16px',
                     fontWeight: 600,
@@ -425,7 +419,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                     whiteSpace: 'nowrap',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
-                    boxShadow: '0 4px 15px rgba(212,168,67,0.3)'
+                    boxShadow: '0 0 14px rgba(120, 190, 255, 0.28)',
                   }}
                 >
                   Save to Journal
@@ -433,21 +427,19 @@ function Home({ onOpenWorship, worshipStatus }) {
                 <button
                   type="button"
                   onClick={handleShareDailyVerse}
-                  style={{ 
-                    minWidth: '140px', 
+                  style={{
+                    minWidth: '140px',
                     flex: 1,
-                    background: 'rgba(255, 255, 255, 0.08)',
-                    backdropFilter: 'blur(20px)',
-                    WebkitBackdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    background: 'rgba(5, 12, 35, 0.55)',
                     color: '#D4A843',
+                    border: '1px solid rgba(212, 168, 67, 0.55)',
                     borderRadius: '50px',
                     padding: '12px 24px',
                     fontWeight: 600,
                     fontSize: '14px',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
-                    boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+                    boxShadow: '0 0 14px rgba(212, 168, 67, 0.22)',
                   }}
                 >
                   Share as Image
@@ -457,14 +449,11 @@ function Home({ onOpenWorship, worshipStatus }) {
 
             <div style={{ marginBottom: '28px' }}>
               <div
-              style={{
-                background: 'rgba(8, 20, 50, 0.72)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(212,168,67,0.25)',
+                className="glass-panel"
+                style={{
                 borderRadius: '20px',
                 padding: '20px',
-                boxShadow: currentStreak >= 7 ? '0 0 0 1px rgba(212,168,67,0.8), 0 0 20px rgba(212,168,67,0.35)' : undefined,
+                boxShadow: currentStreak >= 7 ? '0 0 0 1px rgba(212,168,67,0.45), 0 0 20px rgba(212,168,67,0.2)' : undefined,
                 animation: 'fadeInUp 0.6s ease forwards',
                 animationDelay: '0.2s'
               }}
@@ -523,15 +512,13 @@ function Home({ onOpenWorship, worshipStatus }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
               <Link
                 to="/scripture-art"
+                className="glass-panel"
                 style={{
                   minWidth: '140px',
                   minHeight: '100px',
                   textDecoration: 'none',
-                  background: 'rgba(8, 20, 50, 0.72)',
-                  border: '1px solid #D4A843',
+                  border: '1px solid rgba(212, 168, 67, 0.35)',
                   borderRadius: '16px',
-                  backdropFilter: 'blur(12px)',
-                  WebkitBackdropFilter: 'blur(12px)',
                   padding: '20px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -540,13 +527,13 @@ function Home({ onOpenWorship, worshipStatus }) {
                   transition: 'all 0.3s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#D4A843'
+                  e.currentTarget.style.border = '1px solid #D4A843'
                   e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
                   e.currentTarget.style.boxShadow = '0 0 8px rgba(212,168,67,0.2)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#D4A843'
-                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.72)'
+                  e.currentTarget.style.removeProperty('background')
+                  e.currentTarget.style.border = '1px solid rgba(212, 168, 67, 0.35)'
                   e.currentTarget.style.boxShadow = 'none'
                 }}
               >
@@ -556,15 +543,13 @@ function Home({ onOpenWorship, worshipStatus }) {
               </Link>
               <Link
                 to="/reading-plans"
+                className="glass-panel"
                 style={{
                   minWidth: '140px',
                   minHeight: '100px',
                   textDecoration: 'none',
-                  background: 'rgba(8, 20, 50, 0.72)',
-                  border: '1px solid #D4A843',
+                  border: '1px solid rgba(212, 168, 67, 0.35)',
                   borderRadius: '16px',
-                  backdropFilter: 'blur(12px)',
-                  WebkitBackdropFilter: 'blur(12px)',
                   padding: '20px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -573,13 +558,13 @@ function Home({ onOpenWorship, worshipStatus }) {
                   transition: 'all 0.3s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#D4A843'
+                  e.currentTarget.style.border = '1px solid #D4A843'
                   e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
                   e.currentTarget.style.boxShadow = '0 0 8px rgba(212,168,67,0.2)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#D4A843'
-                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.72)'
+                  e.currentTarget.style.removeProperty('background')
+                  e.currentTarget.style.border = '1px solid rgba(212, 168, 67, 0.35)'
                   e.currentTarget.style.boxShadow = 'none'
                 }}
               >
@@ -589,15 +574,13 @@ function Home({ onOpenWorship, worshipStatus }) {
               </Link>
               <Link
                 to="/fasting"
+                className="glass-panel"
                 style={{
                   minWidth: '140px',
                   minHeight: '100px',
                   textDecoration: 'none',
-                  background: 'rgba(8, 20, 50, 0.72)',
-                  border: '1px solid #D4A843',
+                  border: '1px solid rgba(212, 168, 67, 0.35)',
                   borderRadius: '16px',
-                  backdropFilter: 'blur(12px)',
-                  WebkitBackdropFilter: 'blur(12px)',
                   padding: '20px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -606,13 +589,13 @@ function Home({ onOpenWorship, worshipStatus }) {
                   transition: 'all 0.3s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#D4A843'
+                  e.currentTarget.style.border = '1px solid #D4A843'
                   e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
                   e.currentTarget.style.boxShadow = '0 0 8px rgba(212,168,67,0.2)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#D4A843'
-                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.72)'
+                  e.currentTarget.style.removeProperty('background')
+                  e.currentTarget.style.border = '1px solid rgba(212, 168, 67, 0.35)'
                   e.currentTarget.style.boxShadow = 'none'
                 }}
               >
@@ -622,15 +605,13 @@ function Home({ onOpenWorship, worshipStatus }) {
               </Link>
               <Link
                 to="/support"
+                className="glass-panel"
                 style={{
                   minWidth: '140px',
                   minHeight: '100px',
                   textDecoration: 'none',
-                  background: 'rgba(8, 20, 50, 0.72)',
-                  border: '1px solid #D4A843',
+                  border: '1px solid rgba(212, 168, 67, 0.35)',
                   borderRadius: '16px',
-                  backdropFilter: 'blur(12px)',
-                  WebkitBackdropFilter: 'blur(12px)',
                   padding: '20px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -639,13 +620,13 @@ function Home({ onOpenWorship, worshipStatus }) {
                   transition: 'all 0.3s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#D4A843'
+                  e.currentTarget.style.border = '1px solid #D4A843'
                   e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
                   e.currentTarget.style.boxShadow = '0 0 8px rgba(212,168,67,0.2)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#D4A843'
-                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.72)'
+                  e.currentTarget.style.removeProperty('background')
+                  e.currentTarget.style.border = '1px solid rgba(212, 168, 67, 0.35)'
                   e.currentTarget.style.boxShadow = 'none'
                 }}
               >
@@ -654,14 +635,12 @@ function Home({ onOpenWorship, worshipStatus }) {
                 <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>Help sustain the ministry</p>
               </Link>
               <div
+                className="glass-panel"
                 style={{
                   minWidth: '140px',
                   minHeight: '100px',
-                  background: 'rgba(8, 20, 50, 0.72)',
-                  border: '1px solid #D4A843',
+                  border: '1px solid rgba(212, 168, 67, 0.35)',
                   borderRadius: '16px',
-                  backdropFilter: 'blur(12px)',
-                  WebkitBackdropFilter: 'blur(12px)',
                   padding: '20px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -672,13 +651,13 @@ function Home({ onOpenWorship, worshipStatus }) {
                   cursor: 'pointer'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#D4A843'
+                  e.currentTarget.style.border = '1px solid #D4A843'
                   e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
                   e.currentTarget.style.boxShadow = '0 0 8px rgba(212,168,67,0.2)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#D4A843'
-                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.72)'
+                  e.currentTarget.style.removeProperty('background')
+                  e.currentTarget.style.border = '1px solid rgba(212, 168, 67, 0.35)'
                   e.currentTarget.style.boxShadow = 'none'
                 }}
                 onClick={() => window.open('https://discord.gg/nZcZRkUMJh', '_blank')}
@@ -689,15 +668,13 @@ function Home({ onOpenWorship, worshipStatus }) {
               </div>
               <Link
                 to="/worship"
+                className="glass-panel"
                 style={{
                   minWidth: '140px',
                   minHeight: '100px',
                   textDecoration: 'none',
-                  background: 'rgba(8, 20, 50, 0.72)',
-                  border: '1px solid #D4A843',
+                  border: '1px solid rgba(212, 168, 67, 0.35)',
                   borderRadius: '16px',
-                  backdropFilter: 'blur(12px)',
-                  WebkitBackdropFilter: 'blur(12px)',
                   padding: '20px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -706,13 +683,13 @@ function Home({ onOpenWorship, worshipStatus }) {
                   transition: 'all 0.3s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#D4A843'
+                  e.currentTarget.style.border = '1px solid #D4A843'
                   e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
                   e.currentTarget.style.boxShadow = '0 0 8px rgba(212,168,67,0.2)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#D4A843'
-                  e.currentTarget.style.background = 'rgba(8, 20, 50, 0.72)'
+                  e.currentTarget.style.removeProperty('background')
+                  e.currentTarget.style.border = '1px solid rgba(212, 168, 67, 0.35)'
                   e.currentTarget.style.boxShadow = 'none'
                 }}
               >
@@ -724,12 +701,8 @@ function Home({ onOpenWorship, worshipStatus }) {
           </div>
 
           <div
-            className="rounded-2xl p-6"
+            className="glass-panel rounded-2xl p-6"
             style={{
-              background: 'rgba(8, 20, 50, 0.72)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(212,168,67,0.25)',
               borderRadius: '16px',
               animation: 'fadeInUp 0.6s ease forwards',
               animationDelay: '0.4s'

@@ -30,15 +30,12 @@ export default function LegalModal({ onAgreed }) {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-4">
+    <div className="glass-scrim fixed inset-0 z-[9999] flex items-center justify-center p-4">
       <article
-        className="w-full text-center text-white"
+        className="glass-panel w-full text-center text-white"
         style={{
           maxWidth: '420px',
           padding: '40px 32px',
-          background: 'rgba(13, 31, 78, 0.92)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(212, 168, 67, 0.3)',
           borderRadius: '24px',
         }}
       >

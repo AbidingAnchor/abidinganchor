@@ -152,17 +152,20 @@ export default function BibleReader({ open, onClose }) {
   if (!open) return null
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#0a1a3e' }}>
+    <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'transparent' }}>
       {/* Top Bar */}
-      <div style={{
+      <div
+        className="glass-nav-bar"
+        style={{
         position: 'fixed',
         top: '60px',
         left: 0,
         right: 0,
         zIndex: 100,
-        background: '#0a1a3e',
-        padding: '10px 20px'
-      }}>
+        padding: '10px 20px',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
+      }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', maxWidth: '680px', margin: '0 auto' }}>
           <button
             type="button"
@@ -257,20 +260,16 @@ export default function BibleReader({ open, onClose }) {
             </div>
 
             {/* Font Size Controls - Fixed above tab bar */}
-            <div style={{
+            <div className="glass-panel" style={{
               position: 'fixed',
               bottom: '80px',
               right: '20px',
-              background: 'rgba(8,20,50,0.85)',
               borderRadius: '50px',
-              border: '1px solid rgba(212,168,67,0.3)',
               padding: '8px 16px',
               display: 'flex',
               gap: '12px',
               alignItems: 'center',
               zIndex: 150,
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)'
             }}>
               <button
                 type="button"
@@ -318,13 +317,12 @@ export default function BibleReader({ open, onClose }) {
             </div>
 
             {/* Chapter Navigation - Normal Flow */}
-            <div style={{
+            <div className="glass-panel" style={{
               padding: '16px 20px',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              background: '#0a1a3e',
-              borderTop: '1px solid rgba(255,255,255,0.1)',
+              borderTop: '1px solid rgba(255,255,255,0.08)',
               margin: '0 -24px'
             }}>
               <button
@@ -368,18 +366,12 @@ export default function BibleReader({ open, onClose }) {
         )}
       </div>
 
-      {/* Footer */}
-      <Footer />
-
       {/* Book Picker Modal */}
       {showBookPicker && (
-        <div style={{
+        <div className="glass-scrim" style={{
           position: 'fixed',
           inset: 0,
           zIndex: 200,
-          background: 'rgba(8,20,50,0.97)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)'
         }}>
           <div style={{ padding: '20px', height: '100%', overflowY: 'auto', maxWidth: '680px', margin: '0 auto' }}>
             <h2 style={{ 
@@ -451,24 +443,21 @@ export default function BibleReader({ open, onClose }) {
         <>
           <div 
             onClick={() => setShowChapterPicker(false)}
+            className="glass-scrim"
             style={{
               position: 'fixed',
               inset: 0,
               zIndex: 200,
-              background: 'rgba(0,0,0,0.5)'
             }}
           />
-          <div style={{
+          <div className="glass-panel" style={{
             position: 'fixed',
             bottom: 0,
             left: 0,
             right: 0,
             zIndex: 201,
-            background: 'rgba(8,20,50,0.97)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
             borderRadius: '24px 24px 0 0',
-            borderTop: '1px solid rgba(212,168,67,0.3)',
+            borderTop: '1px solid rgba(255,255,255,0.08)',
             padding: '24px 20px 32px',
             maxHeight: '70vh',
             overflowY: 'auto',

@@ -29,9 +29,9 @@ export default function Support() {
   }
 
   return (
-    <div style={{ position:'relative', minHeight:'100vh', 
+    <div style={{ position:'relative', zIndex: 10, minHeight:'100vh', 
       overflow:'hidden', fontFamily:'sans-serif' }}>
-      <div style={{ padding:'0 16px', paddingTop:'200px', paddingBottom:'120px', maxWidth:'680px', margin:'0 auto', width:'100%' }}>
+      <div className="content-scroll" style={{ padding:'0 16px', paddingTop:'200px', paddingBottom:'120px', maxWidth:'680px', margin:'0 auto', width:'100%' }}>
 
         <h1 style={{ textAlign:'center', color:'#fff', 
           fontSize:'26px', fontWeight:'bold', margin:'0 0 6px',
@@ -45,9 +45,7 @@ export default function Support() {
           Keeping the gospel free for everyone
         </p>
 
-        <div style={{ background:'rgba(8, 20, 50, 0.72)',
-          backdropFilter:'blur(20px)', borderRadius:'20px',
-          border:'1px solid rgba(255,255,255,0.12)',
+        <div className="glass-panel" style={{ borderRadius:'20px',
           padding:'20px', marginBottom:'16px' }}>
           <p style={{ color:'#fff', fontSize:'14px', lineHeight:'1.8',
             textAlign:'center', margin:0, fontFamily:'Georgia,serif',
@@ -67,11 +65,9 @@ export default function Support() {
           </p>
         </div>
 
-        <div style={{ background:'rgba(8, 20, 50, 0.72)',
-          backdropFilter:'blur(20px)',
-          border:'1px solid rgba(255,255,255,0.12)',
+        <div className="glass-panel" style={{
           padding:'14px 16px', marginBottom:'20px',
-          borderLeft:'3px solid rgba(255,220,80,0.8)',
+          borderLeft:'3px solid rgba(255,220,80,0.55)',
           borderRadius:'0 14px 14px 0' }}>
           <p style={{ color:'rgba(255,255,255,0.9)', fontSize:'13px',
             fontFamily:'Georgia,serif', fontStyle:'italic',
@@ -90,7 +86,7 @@ export default function Support() {
           <h2 style={{ color: '#D4A843', fontSize: '13px', fontWeight: 700, margin: '0 0 8px', letterSpacing: '0.06em' }}>
             Daily Notifications
           </h2>
-          <article style={{ background: 'rgba(8, 20, 50, 0.72)', backdropFilter: 'blur(20px)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.12)', padding: '14px 16px' }}>
+          <article className="glass-panel" style={{ borderRadius: '16px', padding: '14px 16px' }}>
             <p style={{ color: 'rgba(255,255,255,0.95)', fontSize: '12px', margin: '0 0 10px' }}>
               Receive a gentle daily reminder to spend time in the Word.
             </p>
@@ -108,7 +104,7 @@ export default function Support() {
           <h2 style={{ color: '#D4A843', fontSize: '13px', fontWeight: 700, margin: '0 0 8px', letterSpacing: '0.06em' }}>
             Join the Community
           </h2>
-          <article style={{ background: 'rgba(8, 20, 50, 0.72)', backdropFilter: 'blur(20px)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.12)', padding: '14px 16px' }}>
+          <article className="glass-panel" style={{ borderRadius: '16px', padding: '14px 16px' }}>
             <p style={{ color: 'rgba(255,255,255,0.95)', fontSize: '12px', margin: '0 0 12px', lineHeight: '1.6' }}>
               Connect with other believers, share prayer requests, and grow together in faith.
             </p>
@@ -145,9 +141,8 @@ export default function Support() {
             href={BMAC_LINK}
             target="_blank"
             rel="noopener noreferrer"
-            style={{ background:'rgba(8, 20, 50, 0.72)',
-              backdropFilter:'blur(20px)', borderRadius:'16px',
-              border:'1px solid rgba(255,255,255,0.12)',
+            className="glass-panel"
+            style={{ borderRadius:'16px',
               padding:'14px 18px', marginBottom:'10px',
               cursor:'pointer', display:'flex',
               alignItems:'center', gap:'14px',

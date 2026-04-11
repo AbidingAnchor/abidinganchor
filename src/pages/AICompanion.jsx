@@ -112,7 +112,7 @@ export default function AICompanion() {
             </div>
           </header>
 
-          <div ref={containerRef} className="space-y-3 rounded-2xl border border-white/20 bg-white/5 p-3 backdrop-blur-md" style={{ minHeight: '380px', maxHeight: '56vh', overflowY: 'auto' }}>
+          <div ref={containerRef} className="glass-panel space-y-3 rounded-2xl p-3" style={{ minHeight: '380px', maxHeight: '56vh', overflowY: 'auto' }}>
             {messages.map((message) => (
               <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <article
@@ -120,7 +120,7 @@ export default function AICompanion() {
                   style={
                     message.role === 'user'
                       ? { background: '#D4A843', color: '#1a1a1a' }
-                      : { background: 'rgba(8, 20, 50, 0.72)', color: '#fff', border: '1px solid rgba(255,255,255,0.12)' }
+                      : { background: 'rgba(15, 23, 42, 0.25)', color: '#fff', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }
                   }
                 >
                   {message.role === 'assistant' ? <p className="mb-1 text-xs font-semibold" style={{ color: '#D4A843' }}>✝</p> : null}
@@ -130,7 +130,7 @@ export default function AICompanion() {
             ))}
             {loading ? (
               <div className="flex justify-start">
-                <article className="max-w-[85%] rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white">
+                <article className="glass-panel max-w-[85%] rounded-2xl px-4 py-3 text-sm text-white">
                   <p className="mb-1 text-xs font-semibold" style={{ color: '#D4A843' }}>✝</p>
                   <div className="flex items-center gap-1">
                     <span className="h-2 w-2 animate-bounce rounded-full bg-white/80" />
@@ -147,12 +147,12 @@ export default function AICompanion() {
       <div style={{ position: 'fixed', bottom: '84px', left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: '680px', padding: '0 16px', zIndex: 30 }}>
         <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
           {quickPrompts.map((prompt) => (
-            <button key={prompt} type="button" onClick={() => sendMessage(prompt)} className="shrink-0 rounded-full border border-[#D4A843] bg-white/10 px-3 py-1 text-xs text-[#D4A843] backdrop-blur-md">
+            <button key={prompt} type="button" onClick={() => sendMessage(prompt)} className="glass-panel shrink-0 rounded-full border border-[#D4A843]/50 px-3 py-1 text-xs text-[#D4A843]">
               {prompt}
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2 rounded-2xl border border-white/20 bg-white/10 p-2 backdrop-blur-md">
+        <div className="glass-panel flex items-center gap-2 rounded-2xl p-2">
           <input
             type="text"
             value={input}

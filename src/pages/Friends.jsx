@@ -309,7 +309,7 @@ export default function Friends() {
                   onChange={(e) => setSearch(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && runSearch()}
                   placeholder="Start typing…"
-                  className="min-w-0 flex-1 rounded-xl border border-white/20 bg-black/20 p-3 text-white placeholder:text-white/50 focus:outline-none focus:ring-1 focus:ring-[#D4A843]"
+                  className="glass-input-field min-w-0 flex-1 rounded-xl p-3 text-white placeholder:text-white/50 focus:outline-none focus:ring-1 focus:ring-[#D4A843]"
                 />
                 <button type="button" className="gold-btn shrink-0 px-4" onClick={() => runSearch()}>
                   Search
@@ -416,7 +416,7 @@ export default function Friends() {
                           alignItems: 'center',
                           justifyContent: 'center',
                           cursor: 'pointer',
-                          border: '2px solid rgba(8,20,50,0.9)',
+                          border: '2px solid rgba(15, 23, 42, 0.35)',
                           fontSize: '10px'
                         }}
                         title="Report profile picture"

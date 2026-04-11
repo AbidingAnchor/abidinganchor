@@ -29,24 +29,21 @@ export default function BibleTranslationSelector({ isOpen, onClose, currentBible
     <>
       <div 
         onClick={onClose}
+        className="glass-scrim"
         style={{
           position: 'fixed',
           inset: 0,
           zIndex: 200,
-          background: 'rgba(0,0,0,0.5)'
         }}
       />
-      <div style={{
+      <div className="glass-panel" style={{
         position: 'fixed',
         bottom: 0,
         left: 0,
         right: 0,
         zIndex: 201,
-        background: 'rgba(8,20,50,0.97)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
         borderRadius: '24px 24px 0 0',
-        borderTop: '1px solid rgba(212,168,67,0.3)',
+        borderTop: '1px solid rgba(255,255,255,0.1)',
         padding: '24px 20px 32px',
         maxHeight: '80vh',
         overflowY: 'auto',

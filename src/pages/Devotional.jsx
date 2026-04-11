@@ -141,20 +141,10 @@ export default function Devotional() {
   }
 
   return (
-    <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 1,
-          pointerEvents: 'none',
-          background: 'linear-gradient(180deg, rgba(13,31,78,0.9) 0%, rgba(13,31,78,0.74) 55%, rgba(13,31,78,0.92) 100%)',
-        }}
-      />
-      <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '220px', paddingBottom: '110px', maxWidth: '680px', margin: '0 auto', width: '100%', zIndex: 2 }}>
+    <div style={{ position: 'relative', zIndex: 10, minHeight: '100vh', overflow: 'hidden' }}>
+      <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '220px', paddingBottom: '110px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
         <section className="space-y-4">
-          <div className="rounded-3xl border border-white/30 p-5 text-white backdrop-blur-md" style={{ background: 'rgba(8, 20, 50, 0.72)', boxShadow: '0 0 28px rgba(212,168,67,0.22)' }}>
+          <div className="glass-panel rounded-3xl p-5 text-white" style={{ boxShadow: '0 0 24px rgba(212,168,67,0.15)' }}>
             <p className="text-xs uppercase tracking-[0.2em] text-white/80">Today&apos;s Devotional</p>
             <h1 className="mt-2 text-3xl font-bold" style={{ color: '#D4A843' }}>{today.title}</h1>
             <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/75">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
@@ -171,18 +161,18 @@ export default function Devotional() {
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-xl border border-white/20 bg-white/10 p-3 text-white backdrop-blur-md">
+            <div className="glass-panel rounded-xl p-3 text-white">
               <p className="text-xs uppercase tracking-[0.12em] text-white/75">Streak</p>
               <p className={`mt-1 text-xl font-bold ${streak.count ? 'streak-shimmer' : ''}`} style={{ color: '#D4A843' }}>🔥 {streak.count || 0}</p>
             </div>
-            <div className="rounded-xl border border-white/20 bg-white/10 p-3 text-white backdrop-blur-md">
+            <div className="glass-panel rounded-xl p-3 text-white">
               <p className="text-xs uppercase tracking-[0.12em] text-white/75">Completed</p>
               <p className="mt-1 text-xl font-bold" style={{ color: '#D4A843' }}>{totalCompleted}</p>
             </div>
           </div>
 
           {streak.missedRecently ? (
-            <p className="rounded-xl border border-white/15 bg-black/15 p-3 text-sm text-white/85">
+            <p className="glass-panel rounded-xl p-3 text-sm text-white/85">
               Grace for today. If you missed a day, begin again - God&apos;s mercies are new every morning.
             </p>
           ) : null}
@@ -193,11 +183,11 @@ export default function Devotional() {
                 key={topic}
                 type="button"
                 onClick={() => setActiveTopic(topic)}
-                className="whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold"
+                className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold ${activeTopic === topic ? '' : 'glass-panel'}`}
                 style={{
-                  borderColor: activeTopic === topic ? '#D4A843' : 'rgba(255,255,255,0.3)',
+                  borderColor: activeTopic === topic ? '#D4A843' : 'rgba(255,255,255,0.08)',
                   color: activeTopic === topic ? '#D4A843' : 'rgba(255,255,255,0.85)',
-                  background: activeTopic === topic ? 'rgba(212,168,67,0.13)' : 'rgba(8, 20, 50, 0.72)',
+                  background: activeTopic === topic ? 'rgba(212,168,67,0.13)' : undefined,
                 }}
               >
                 {topic}
@@ -207,7 +197,7 @@ export default function Devotional() {
 
           <div className="grid gap-3 sm:grid-cols-2">
             {filtered.map((d) => (
-              <article key={d.id} className="rounded-2xl border border-white/20 bg-white/10 p-4 text-white backdrop-blur-md">
+              <article key={d.id} className="glass-panel rounded-2xl p-4 text-white">
                 <span className="rounded-full border border-[#D4A843]/60 px-2 py-1 text-[10px] uppercase tracking-[0.1em] text-[#D4A843]">{d.topic}</span>
                 <h2 className="mt-2 text-lg font-semibold">{d.title}</h2>
                 <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/70">{d.scripture}</p>
@@ -218,7 +208,7 @@ export default function Devotional() {
             ))}
           </div>
 
-          <div className="rounded-2xl border border-white/20 bg-white/10 p-4 text-white backdrop-blur-md">
+          <div className="glass-panel rounded-2xl p-4 text-white">
             <p className="text-xs uppercase tracking-[0.14em] text-white/75">Tomorrow</p>
             {isTodayCompleted ? (
               <>
@@ -231,7 +221,7 @@ export default function Devotional() {
             )}
           </div>
 
-          <div className="rounded-2xl border border-white/20 bg-white/10 p-4 text-white backdrop-blur-md">
+          <div className="glass-panel rounded-2xl p-4 text-white">
             <p className="text-sm font-semibold" style={{ color: '#D4A843' }}>Favorites</p>
             {loading ? (
               <div className="mt-2 space-y-2">
@@ -244,7 +234,7 @@ export default function Devotional() {
                   .filter((d) => favorites.includes(d.id))
                   .slice(0, 8)
                   .map((d) => (
-                    <button key={d.id} type="button" onClick={() => openReader(d)} className="rounded-xl border border-white/15 bg-black/15 p-3 text-left text-sm text-white/90">
+                    <button key={d.id} type="button" onClick={() => openReader(d)} className="glass-panel rounded-xl p-3 text-left text-sm text-white/90">
                       {d.title} <span className="text-white/65">- {d.scripture}</span>
                     </button>
                   ))}

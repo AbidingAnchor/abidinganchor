@@ -109,7 +109,7 @@ export default function VerseFlashcards({ onExit, onMemorizedChange }) {
   }
 
   return (
-    <div className="rounded-2xl border border-white/20 bg-white/10 p-4 text-white backdrop-blur-md">
+    <div className="glass-panel rounded-2xl p-4 text-white">
       <style>
         {`
           .flip-wrap { perspective: 1200px; }
@@ -130,7 +130,7 @@ export default function VerseFlashcards({ onExit, onMemorizedChange }) {
         </button>
       </div>
 
-      <div className="mb-3 flex items-center justify-between gap-2 rounded-xl border border-white/15 bg-black/10 p-3">
+      <div className="mb-3 flex items-center justify-between gap-2 glass-panel rounded-xl p-3">
         <div className="flex items-center gap-2">
           <ProgressRing percent={percent} />
           <div>
@@ -147,7 +147,7 @@ export default function VerseFlashcards({ onExit, onMemorizedChange }) {
             setIdx(0)
             setFlipped(false)
           }}
-          className="rounded-lg border border-white/20 bg-black/20 px-2 py-2 text-xs text-white"
+          className="glass-input-field rounded-lg px-2 py-2 text-xs text-white"
         >
           {categories.map((c) => (
             <option key={c} value={c}>
@@ -182,7 +182,7 @@ export default function VerseFlashcards({ onExit, onMemorizedChange }) {
         <button
           type="button"
           onClick={() => setFlipped((f) => !f)}
-          className={`flip-card w-full rounded-2xl border border-white/15 bg-black/10 p-0 text-left ${flipped ? 'flipped' : ''}`}
+          className={`flip-card glass-panel w-full rounded-2xl p-0 text-left ${flipped ? 'flipped' : ''}`}
           style={{ minHeight: '220px' }}
         >
           <div className="flip-face rounded-2xl p-5">
@@ -204,7 +204,7 @@ export default function VerseFlashcards({ onExit, onMemorizedChange }) {
         <button
           type="button"
           onClick={() => mark(false)}
-          className="rounded-xl border border-white/20 bg-white/5 px-4 py-3 text-sm font-semibold text-white"
+          className="glass-panel rounded-xl px-4 py-3 text-sm font-semibold text-white"
         >
           Still Learning
         </button>

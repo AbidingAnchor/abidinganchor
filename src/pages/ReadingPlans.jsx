@@ -81,7 +81,7 @@ export default function ReadingPlans() {
           <button type="button" onClick={() => setSelectedPlanId(null)} className="rounded-lg border border-white/30 px-3 py-1 text-sm text-white/85">← Back</button>
           <p className="text-xs text-white/70">🔥 Streak: {planState.streak || 0}</p>
         </div>
-        <article className="rounded-2xl border border-white/20 bg-white/10 p-4 text-white backdrop-blur-md">
+        <article className="glass-panel rounded-2xl p-4 text-white">
           <h1 className="text-2xl font-bold text-[#D4A843]">{selectedPlan.icon} {selectedPlan.title}</h1>
           <p className="mt-1 text-sm text-white/80">{selectedPlan.description}</p>
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/15">
@@ -91,7 +91,7 @@ export default function ReadingPlans() {
         </article>
 
         {done && celebratePlanId === selectedPlan.id ? (
-          <div className="mt-3 rounded-2xl border border-[#D4A843]/60 bg-black/20 p-4 text-center text-white">
+          <div className="mt-3 glass-panel rounded-2xl border border-[#D4A843]/45 p-4 text-center text-white">
             <p className="text-lg font-semibold text-[#D4A843]">🏆 Plan Complete!</p>
             <p className="mt-1 text-sm text-white/85">You finished {selectedPlan.title}. Keep walking in the Word.</p>
           </div>
@@ -101,7 +101,7 @@ export default function ReadingPlans() {
           {selectedPlan.days.map((d) => {
             const isDone = !!planState.completedDays?.[d.day]
             return (
-              <article key={d.day} className="rounded-2xl border border-white/20 bg-white/10 p-4 text-white backdrop-blur-md">
+              <article key={d.day} className="glass-panel rounded-2xl p-4 text-white">
                 <p className="text-xs uppercase tracking-[0.12em] text-[#D4A843]">Day {d.day}</p>
                 <h2 className="mt-1 text-lg font-semibold">{d.title}</h2>
                 <p className="mt-1 text-xs uppercase tracking-[0.12em] text-white/70">{d.scripture}</p>
@@ -124,7 +124,7 @@ export default function ReadingPlans() {
       <p className="mt-1 text-sm text-white/80">Start a journey with God&apos;s Word.</p>
 
       {activePlan ? (
-        <section className="mt-4 rounded-2xl border border-white/20 bg-white/10 p-4 text-white backdrop-blur-md">
+        <section className="mt-4 glass-panel rounded-2xl p-4 text-white">
           <p className="text-xs uppercase tracking-[0.12em] text-[#D4A843]">Active Plan</p>
           <p className="mt-1 font-semibold">{activePlan.title}</p>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/15">
@@ -140,11 +140,11 @@ export default function ReadingPlans() {
       <section className="mt-4 grid gap-3 sm:grid-cols-2">
         {loading ? (
           <>
-            <article className="rounded-2xl border border-white/20 bg-white/10 p-4"><div className="gold-skeleton" /><div className="mt-2 gold-skeleton" style={{ width: '75%' }} /></article>
-            <article className="rounded-2xl border border-white/20 bg-white/10 p-4"><div className="gold-skeleton" /><div className="mt-2 gold-skeleton" style={{ width: '75%' }} /></article>
+            <article className="glass-panel rounded-2xl p-4"><div className="gold-skeleton" /><div className="mt-2 gold-skeleton" style={{ width: '75%' }} /></article>
+            <article className="glass-panel rounded-2xl p-4"><div className="gold-skeleton" /><div className="mt-2 gold-skeleton" style={{ width: '75%' }} /></article>
           </>
         ) : readingPlans.map((p) => (
-          <article key={p.id} className="rounded-2xl border border-white/20 bg-white/10 p-4 text-white backdrop-blur-md">
+          <article key={p.id} className="glass-panel rounded-2xl p-4 text-white">
             <div className="flex items-center justify-between">
               <p className="text-lg font-semibold">{p.icon} {p.title}</p>
               <span className="rounded-full border border-[#D4A843]/60 px-2 py-1 text-[10px] uppercase tracking-[0.1em] text-[#D4A843]">{p.duration} days</span>

@@ -98,8 +98,8 @@ export default function ShareVerse({ text, reference, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/70 p-4">
-      <article className="w-full max-w-[860px] rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-md">
+    <div className="glass-scrim fixed inset-0 z-[9000] flex items-center justify-center p-4">
+      <article className="glass-panel w-full max-w-[860px] rounded-2xl p-4">
         <canvas ref={canvasRef} className="w-full rounded-xl border border-white/20" />
         <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
           <button type="button" onClick={handleDownload} className="rounded-xl px-3 py-2 text-sm font-semibold text-[#1a1a1a]" style={{ background: '#D4A843' }}>

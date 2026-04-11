@@ -97,7 +97,7 @@ export default function Achievements({ onExit }) {
   const earned = computed.filter((b) => b.unlockedAt).length
 
   return (
-    <div className="rounded-2xl border border-white/20 bg-white/10 p-4 text-white backdrop-blur-md">
+    <div className="glass-panel rounded-2xl p-4 text-white">
       <style>
         {`
           @keyframes badge-unlock {
@@ -117,7 +117,7 @@ export default function Achievements({ onExit }) {
         </button>
       </div>
 
-      <div className="mb-3 rounded-xl border border-white/15 bg-black/10 p-3 text-xs text-white/80">
+      <div className="mb-3 glass-panel rounded-xl p-3 text-xs text-white/80">
         Badges Earned:{' '}
         <span style={{ color: '#D4A843', fontWeight: 800 }}>
           {earned}/{computed.length}
@@ -130,7 +130,7 @@ export default function Achievements({ onExit }) {
           return (
             <div
               key={b.id}
-              className="relative rounded-2xl border border-white/15 bg-black/10 p-3"
+              className="relative glass-panel rounded-2xl p-3"
               style={{
                 filter: unlocked ? 'none' : 'grayscale(1)',
                 opacity: unlocked ? 1 : 0.55,

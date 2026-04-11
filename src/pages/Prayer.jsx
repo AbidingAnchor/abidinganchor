@@ -2,16 +2,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
-// Generate stars for hero section
-const HERO_STARS = Array.from({ length: 40 }).map(() => ({
-  width: Math.random() * 2 + 1,
-  height: Math.random() * 2 + 1,
-  top: Math.random() * 60,
-  left: Math.random() * 100,
-  opacity: Math.random() * 0.5 + 0.3,
-  duration: Math.random() * 3 + 2
-}))
-
 // Prayer prompts for daily rotation
 const PRAYER_PROMPTS = [
   "Thank God for His unfailing love and mercy today.",
@@ -204,56 +194,7 @@ export default function Prayer() {
       <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '60px', paddingBottom: '100px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
         
         {/* Hero Section */}
-        <header style={{ marginBottom: '20px', position: 'relative', borderRadius: '16px', overflow: 'hidden', minHeight: '200px' }}>
-          {/* Night Sky Background */}
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            zIndex: 0,
-            background: 'linear-gradient(to bottom, #0a1a3e 0%, #060f26 100%)'
-          }}>
-            {/* Stars */}
-            {HERO_STARS.map((star, i) => (
-              <div
-                key={i}
-                style={{
-                  position: 'absolute',
-                  width: star.width,
-                  height: star.height,
-                  background: '#fff',
-                  borderRadius: '50%',
-                  top: `${star.top}%`,
-                  left: `${star.left}%`,
-                  opacity: star.opacity,
-                  animation: `twinkle ${star.duration}s ease-in-out infinite`
-                }}
-              />
-            ))}
-            
-            {/* Moon */}
-            <div style={{
-              position: 'absolute',
-              top: '15%',
-              right: '10%',
-              width: '50px',
-              height: '50px',
-              background: 'radial-gradient(circle at 30% 30%, #fff9e6 0%, #ffe6b3 50%, #ffd280 100%)',
-              borderRadius: '50%',
-              boxShadow: '0 0 30px rgba(255, 230, 160, 0.6), 0 0 60px rgba(255, 230, 160, 0.3)',
-              opacity: 0.95
-            }} />
-          </div>
-          
-          {/* Dark Gradient Overlay for text readability */}
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            zIndex: 1,
-            background: 'linear-gradient(to bottom, transparent 40%, #060f26 100%)',
-            pointerEvents: 'none'
-          }} />
-          
-          {/* Hero Content */}
+        <header className="glass-panel" style={{ marginBottom: '20px', position: 'relative', borderRadius: '16px', overflow: 'hidden', minHeight: '160px' }}>
           <div style={{ position: 'relative', zIndex: 2, padding: '24px' }}>
             <p style={{ 
               color: '#D4A843', 
@@ -276,14 +217,6 @@ export default function Prayer() {
               Draw near to God and He will draw near to you — James 4:8
             </p>
           </div>
-          
-          {/* Star twinkle animation */}
-          <style>{`
-            @keyframes twinkle {
-              0%, 100% { opacity: 0.3; }
-              50% { opacity: 0.8; }
-            }
-          `}</style>
         </header>
 
         {/* Gold Divider */}
@@ -335,11 +268,8 @@ export default function Prayer() {
         </div>
 
         {/* Prayer of the Day Card */}
-        <div style={{
-          background: 'rgba(8,20,50,0.72)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(212,168,67,0.3)',
+        <div className="glass-panel" style={{
+          border: '1px solid rgba(212,168,67,0.2)',
           borderRadius: '16px',
           padding: '20px',
           marginBottom: '24px',
@@ -398,11 +328,8 @@ export default function Prayer() {
         </div>
 
         {/* Voice to Text Section */}
-        <div style={{
-          background: 'rgba(8,20,50,0.72)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(212,168,67,0.3)',
+        <div className="glass-panel" style={{
+          border: '1px solid rgba(212,168,67,0.2)',
           borderRadius: '16px',
           padding: '20px',
           marginBottom: '24px'
@@ -528,12 +455,10 @@ export default function Prayer() {
               {activePrayers.map((entry) => (
                 <article
                   key={entry.id}
+                  className="glass-panel"
                   style={{
-                    background: 'rgba(8,20,50,0.72)',
-                    backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)',
-                    border: '1px solid rgba(212,168,67,0.3)',
-                    borderLeft: '3px solid #D4A843',
+                    border: '1px solid rgba(212,168,67,0.2)',
+                    borderLeft: '3px solid rgba(212,168,67,0.5)',
                     borderRadius: '16px',
                     padding: '16px',
                     marginBottom: '12px',
@@ -635,12 +560,10 @@ export default function Prayer() {
               {answeredPrayers.map((entry) => (
                 <article
                   key={entry.id}
+                  className="glass-panel"
                   style={{
-                    background: 'rgba(8,20,50,0.72)',
-                    backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)',
-                    border: '1px solid rgba(212,168,67,0.3)',
-                    borderLeft: '3px solid #D4A843',
+                    border: '1px solid rgba(212,168,67,0.2)',
+                    borderLeft: '3px solid rgba(212,168,67,0.5)',
                     borderRadius: '16px',
                     padding: '16px',
                     marginBottom: '12px',
@@ -747,21 +670,21 @@ export default function Prayer() {
           justifyContent: 'center'
         }}>
           <div
+            className="glass-scrim"
             style={{
               position: 'fixed',
               inset: 0,
-              background: 'rgba(0,0,0,0.5)',
             }}
             onClick={() => setShowModal(false)}
           />
-          <div style={{
-            background: 'rgba(8,20,50,0.95)',
+          <div className="glass-panel" style={{
             width: '100%',
             maxWidth: '680px',
             borderRadius: '24px 24px 0 0',
             padding: '24px 20px 40px',
             position: 'relative',
-            zIndex: 1001
+            zIndex: 1001,
+            borderTop: '1px solid rgba(255,255,255,0.1)',
           }}>
             <h2 style={{
               color: '#D4A843',

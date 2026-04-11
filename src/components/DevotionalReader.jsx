@@ -56,13 +56,13 @@ export default function DevotionalReader({
       </div>
 
       <article
-        className="rounded-3xl border border-white/30 p-5 text-white backdrop-blur-md"
-        style={{ background: 'rgba(255,255,255,0.16)', animation: justCompleted ? 'devotional-shimmer 900ms ease' : 'none' }}
+        className="glass-panel rounded-3xl p-5 text-white"
+        style={{ animation: justCompleted ? 'devotional-shimmer 900ms ease' : 'none' }}
       >
         <h1 className="text-2xl font-bold" style={{ color: '#D4A843' }}>{devotional.title}</h1>
         <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/80">{devotional.scripture}</p>
 
-        <div className="mt-5 rounded-2xl border border-[#D4A843]/40 bg-black/15 p-4">
+        <div className="glass-panel mt-5 rounded-2xl border border-[#D4A843]/35 p-4">
           <p className="text-3xl leading-none text-[#D4A843]">"</p>
           <p className="mt-2 text-lg italic leading-relaxed [font-family:'Lora',serif] text-white/95">{devotional.verse}</p>
           <p className="mt-1 text-right text-3xl leading-none text-[#D4A843]">"</p>
@@ -87,7 +87,7 @@ export default function DevotionalReader({
       </article>
 
       {encouragement ? (
-        <div className="mt-4 rounded-2xl border border-[#D4A843]/50 bg-black/20 p-4 text-center text-white">
+        <div className="glass-panel mt-4 rounded-2xl border border-[#D4A843]/45 p-4 text-center text-white">
           <p className="text-sm font-semibold text-[#D4A843]">You&apos;ve completed today&apos;s devotional</p>
           <p className="mt-2 text-sm italic text-white/90">{encouragement.text}</p>
           <p className="mt-1 text-xs uppercase tracking-[0.12em] text-white/70">{encouragement.reference}</p>
@@ -95,7 +95,7 @@ export default function DevotionalReader({
       ) : null}
 
       <div
-        className="fixed left-1/2 z-40 flex w-[min(680px,calc(100%-24px))] -translate-x-1/2 items-center gap-2 rounded-2xl border border-white/20 bg-[#0d1f4ecc] p-3 backdrop-blur-md"
+        className="glass-panel fixed left-1/2 z-40 flex w-[min(680px,calc(100%-24px))] -translate-x-1/2 items-center gap-2 rounded-2xl p-3"
         style={{ bottom: '86px' }}
       >
         <button type="button" onClick={onToggleFavorite} className="flex-1 rounded-xl border border-white/25 px-3 py-2 text-sm text-white">

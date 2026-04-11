@@ -99,7 +99,7 @@ export default function WorshipPlayer({ visible, onClose, autoPlayToken = 0, onS
           <button
             type="button"
             onClick={() => setIsMinimized(false)}
-            className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-2 text-sm text-white backdrop-blur-md"
+            className="glass-panel flex items-center gap-2 rounded-full px-3 py-2 text-sm text-white"
             style={{
               borderColor: isPlaying ? '#facc15' : 'rgba(255,255,255,0.2)',
               animation: isPlaying ? 'worship-pulse 1.8s ease-in-out infinite' : 'none',
@@ -109,14 +109,11 @@ export default function WorshipPlayer({ visible, onClose, autoPlayToken = 0, onS
             <span>Worship</span>
           </button>
         ) : (
-          <article style={{
+          <article className="glass-panel" style={{
             width: '260px',
             borderRadius: '16px',
             padding: '12px',
-            background: 'rgba(8,20,50,0.92)',
-            border: '1px solid rgba(212,168,67,0.3)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
+            border: '1px solid rgba(212,168,67,0.25)',
             color: 'white'
           }}>
             <div className="mb-2 flex items-center justify-between">

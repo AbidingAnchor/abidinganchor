@@ -33,14 +33,6 @@ export default function CommunityPrayer() {
   const [activeUsersCount, setActiveUsersCount] = useState(0)
   const [animatingPrayId, setAnimatingPrayId] = useState(null)
 
-  // Define style objects that were missing
-  const cardStyle = {
-    background: 'rgba(255, 255, 255, 0.1)',
-    backdropFilter: 'blur(14px)',
-    WebkitBackdropFilter: 'blur(14px)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-  }
-
   const firstName = useMemo(
     () => profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || '',
     [profile?.full_name, user?.user_metadata?.full_name],
@@ -270,13 +262,14 @@ export default function CommunityPrayer() {
                   key={c}
                   type="button"
                   onClick={() => setFilterCat(c)}
+                  className={filterCat === c ? '' : 'glass-panel'}
                   style={{
                     borderRadius: '50px',
                     padding: '6px 12px',
                     fontSize: '12px',
                     fontWeight: filterCat === c ? 700 : 600,
-                    background: filterCat === c ? '#D4A843' : 'rgba(8,20,50,0.72)',
-                    border: filterCat === c ? 'none' : '1px solid rgba(212,168,67,0.3)',
+                    background: filterCat === c ? '#D4A843' : undefined,
+                    border: filterCat === c ? 'none' : '1px solid rgba(255,255,255,0.08)',
                     color: filterCat === c ? '#0a1a3e' : 'white',
                     cursor: 'pointer',
                     transition: 'all 0.2s'
@@ -299,7 +292,7 @@ export default function CommunityPrayer() {
         )}
 
         {loading ? (
-          <article className="p-4 text-white/70" style={cardStyle}>
+          <article className="glass-panel p-4 text-white/70">
             Loading…
           </article>
         ) : null}

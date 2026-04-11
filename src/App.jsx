@@ -20,7 +20,6 @@ import TermsOfService from './pages/TermsOfService'
 import Legal from './pages/Legal'
 import Settings from './pages/Settings'
 import Navbar from './components/Navbar'
-import AppBackground from './components/AppBackground'
 import LegalModal from './components/LegalModal'
 import WorshipPlayer from './components/WorshipPlayer'
 import Footer from './components/Footer'
@@ -70,14 +69,30 @@ function AppShell() {
   }, [])
 
   return (
-    <div className="relative text-white">
+    <div className="relative text-white" style={{ background: 'transparent' }}>
       <CelestialBackground />
-      <div style={{ position: 'relative', zIndex: 10 }}>
-        <div style={{ minHeight: '100vh', position: 'relative', display: 'flex', flexDirection: 'column' }}>
-          <AppBackground />
-          <div style={{ position: 'fixed', inset: 0, zIndex: 2, pointerEvents: 'none', background: 'rgba(0, 0, 0, 0.15)' }} />
-
-          <div style={{ position: 'relative', zIndex: 10, isolation: 'isolate', flex: 1, display: 'flex', flexDirection: 'column', paddingBottom: '80px' }}>
+      <div style={{ position: 'relative', zIndex: 10, background: 'transparent' }}>
+        <div
+          style={{
+            minHeight: '100vh',
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            background: 'transparent',
+          }}
+        >
+          <div
+            style={{
+              position: 'relative',
+              zIndex: 10,
+              isolation: 'isolate',
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              paddingBottom: '80px',
+              background: 'transparent',
+            }}
+          >
             <Routes>
               <Route path="/auth" element={<Auth />} />
               <Route path="/" element={<ProtectedRoute><Home onOpenWorship={(startPlaying) => openWorship(startPlaying)} worshipStatus={worshipStatus} /></ProtectedRoute>} />

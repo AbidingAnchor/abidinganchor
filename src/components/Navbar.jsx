@@ -52,7 +52,7 @@ export default function Navbar() {
     <>
       {/* Premium header bar */}
       <div
-        className="glass-strong"
+        className="glass-nav-bar"
         style={{
           position: 'fixed',
           top: 'calc(env(safe-area-inset-top, 0px))',
@@ -64,7 +64,7 @@ export default function Navbar() {
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0 16px',
-          borderBottom: '1px solid rgba(212,168,67,0.25)',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
         }}
       >
         {/* Profile avatar */}
@@ -168,14 +168,14 @@ export default function Navbar() {
         </button>
       </div>
       <nav
-        className="glass-strong"
+        className="glass-nav-bar"
         style={{
           position: 'fixed',
           bottom: 0,
           left: 0,
           right: 0,
           zIndex: 9999,
-          borderTop: '1px solid rgba(212,168,67,0.15)',
+          borderTop: '1px solid rgba(255,255,255,0.08)',
           height: '65px',
           display: 'flex',
           justifyContent: 'space-around',

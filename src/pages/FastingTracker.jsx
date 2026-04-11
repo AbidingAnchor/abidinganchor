@@ -115,25 +115,25 @@ export default function FastingTracker() {
       <h1 className="text-2xl font-bold text-white">🕐 <span style={{ color: '#D4A843' }}>Fasting Tracker</span></h1>
 
       {active ? (
-        <section className="mt-4 rounded-2xl border border-white/20 bg-white/10 p-4 text-white backdrop-blur-md">
+        <section className="mt-4 glass-panel rounded-2xl p-4 text-white">
           <div className="mx-auto flex h-52 w-52 items-center justify-center rounded-full border-4 border-[#D4A843]" style={{ boxShadow: '0 0 20px rgba(212,168,67,0.45)' }}>
             <p className="text-3xl font-semibold">{formatDuration(elapsedMs)}</p>
           </div>
           <p className="mt-3 text-center text-sm text-white/80">Fasting since {new Date(active.startedAt).toLocaleTimeString()}</p>
           <p className="mt-1 text-center text-xs text-[#D4A843]">{active.typeLabel}</p>
-          <div className="mt-4 rounded-xl border border-white/15 bg-black/20 p-3 text-sm">
+          <div className="mt-4 glass-panel rounded-xl p-3 text-sm">
             <p className="italic text-white/90">{versePick.text}</p>
             <p className="mt-1 text-xs text-[#D4A843]">{versePick.ref}</p>
             <p className="mt-1 text-xs text-white/70">{versePick.note}</p>
           </div>
           <div className="mt-3 flex gap-2">
             <button type="button" onClick={breakFast} className="rounded-lg border border-white/35 px-3 py-2 text-sm text-white">Break Fast</button>
-            <input value={note} onChange={(e) => setNote(e.target.value)} className="flex-1 rounded-lg border border-white/20 bg-black/20 px-3 py-2 text-sm text-white" placeholder="Add prayer note..." />
+            <input value={note} onChange={(e) => setNote(e.target.value)} className="flex-1 glass-input-field rounded-lg px-3 py-2 text-sm text-white" placeholder="Add prayer note..." />
             <button type="button" onClick={addNote} className="rounded-lg px-3 py-2 text-sm font-semibold text-[#1a1a1a]" style={{ background: '#D4A843' }}>Save</button>
           </div>
         </section>
       ) : (
-        <section className="mt-4 rounded-2xl border border-white/20 bg-white/10 p-4 text-white backdrop-blur-md">
+        <section className="mt-4 glass-panel rounded-2xl p-4 text-white">
           <p className="text-sm font-semibold text-[#D4A843]">Start Fast</p>
           <div className="mt-2 space-y-2">
             {fastTypes.map((f) => (
@@ -143,9 +143,9 @@ export default function FastingTracker() {
               </label>
             ))}
             {type === 'custom' ? (
-              <input type="number" min={1} max={168} value={customHours} onChange={(e) => setCustomHours(e.target.value)} className="w-full rounded-lg border border-white/20 bg-black/20 px-3 py-2 text-sm text-white" placeholder="Custom hours" />
+              <input type="number" min={1} max={168} value={customHours} onChange={(e) => setCustomHours(e.target.value)} className="w-full glass-input-field rounded-lg px-3 py-2 text-sm text-white" placeholder="Custom hours" />
             ) : null}
-            <input value={intention} onChange={(e) => setIntention(e.target.value)} className="w-full rounded-lg border border-white/20 bg-black/20 px-3 py-2 text-sm text-white" placeholder="What are you seeking God for? (optional)" />
+            <input value={intention} onChange={(e) => setIntention(e.target.value)} className="w-full glass-input-field rounded-lg px-3 py-2 text-sm text-white" placeholder="What are you seeking God for? (optional)" />
             <button type="button" onClick={startFast} className="w-full rounded-xl px-4 py-2 text-sm font-semibold text-[#1a1a1a]" style={{ background: '#D4A843' }}>
               Start Fast
             </button>
@@ -153,7 +153,7 @@ export default function FastingTracker() {
         </section>
       )}
 
-      <section className="mt-4 rounded-2xl border border-white/20 bg-white/10 p-4 text-white backdrop-blur-md">
+      <section className="mt-4 glass-panel rounded-2xl p-4 text-white">
         <p className="text-sm font-semibold text-[#D4A843]">History</p>
         <p className="mt-1 text-xs text-white/75">Total fasting hours: {totalHours.toFixed(1)} | Personal record: {personalRecord.toFixed(1)}h</p>
         <div className="mt-3 space-y-2">
@@ -163,7 +163,7 @@ export default function FastingTracker() {
               <div className="gold-skeleton" style={{ width: '72%' }} />
             </>
           ) : store.history.length ? store.history.map((h) => (
-            <article key={h.id} className="rounded-xl border border-white/15 bg-black/15 p-3 text-sm">
+            <article key={h.id} className="glass-panel rounded-xl p-3 text-sm">
               <p className="text-white/90">{h.typeLabel}</p>
               <p className="text-xs text-white/70">{h.date} - {(h.durationMs / 3600000).toFixed(1)}h</p>
             </article>

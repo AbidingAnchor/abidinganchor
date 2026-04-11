@@ -32,16 +32,6 @@ function getDayIndexForWeek() {
   return day - 1 // Monday=0, Friday=4
 }
 
-// Generate stars once at module level
-const HERO_STARS = Array.from({ length: 40 }).map(() => ({
-  width: Math.random() * 2 + 1,
-  height: Math.random() * 2 + 1,
-  top: Math.random() * 60,
-  left: Math.random() * 100,
-  opacity: Math.random() * 0.5 + 0.3,
-  duration: Math.random() * 3 + 2
-}))
-
 const LearningPathCard = ({ icon, title, subtitle, accentColor, iconBg, progress, featured, badge, onStart }) => (
   <article
     onClick={onStart}
@@ -193,56 +183,7 @@ export default function FaithJourney() {
         <div style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '20px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
           
           {/* Hero Section */}
-          <header style={{ marginBottom: '20px', position: 'relative', borderRadius: '16px', overflow: 'hidden', minHeight: '200px' }}>
-            {/* Clear Night Sky Background */}
-            <div style={{
-              position: 'absolute',
-              inset: 0,
-              zIndex: 0,
-              background: 'linear-gradient(to bottom, #0a1a3e 0%, #060f26 100%)'
-            }}>
-              {/* Stars */}
-              {HERO_STARS.map((star, i) => (
-                <div
-                  key={i}
-                  style={{
-                    position: 'absolute',
-                    width: star.width,
-                    height: star.height,
-                    background: '#fff',
-                    borderRadius: '50%',
-                    top: `${star.top}%`,
-                    left: `${star.left}%`,
-                    opacity: star.opacity,
-                    animation: `twinkle ${star.duration}s ease-in-out infinite`
-                  }}
-                />
-              ))}
-              
-              {/* Moon */}
-              <div style={{
-                position: 'absolute',
-                top: '15%',
-                right: '10%',
-                width: '50px',
-                height: '50px',
-                background: 'radial-gradient(circle at 30% 30%, #fff9e6 0%, #ffe6b3 50%, #ffd280 100%)',
-                borderRadius: '50%',
-                boxShadow: '0 0 30px rgba(255, 230, 160, 0.6), 0 0 60px rgba(255, 230, 160, 0.3)',
-                opacity: 0.95
-              }} />
-            </div>
-            
-            {/* Dark Gradient Overlay for text readability */}
-            <div style={{
-              position: 'absolute',
-              inset: 0,
-              zIndex: 1,
-              background: 'linear-gradient(to bottom, transparent 40%, #060f26 100%)',
-              pointerEvents: 'none'
-            }} />
-            
-            {/* Hero Content */}
+          <header className="glass-panel" style={{ marginBottom: '20px', position: 'relative', borderRadius: '16px', overflow: 'hidden', minHeight: '160px' }}>
             <div style={{ position: 'relative', zIndex: 2, padding: '24px' }}>
               <p style={{ 
                 color: '#D4A843', 
@@ -265,14 +206,6 @@ export default function FaithJourney() {
                 Thy word is a lamp unto my feet — Psalm 119:105
               </p>
             </div>
-            
-            {/* Star twinkle animation */}
-            <style>{`
-              @keyframes twinkle {
-                0%, 100% { opacity: 0.3; }
-                50% { opacity: 0.8; }
-              }
-            `}</style>
           </header>
 
           {/* Gold Divider */}

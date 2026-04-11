@@ -24,16 +24,6 @@ const DAILY_COMMITMENTS = [
   { id: 'deep', label: '30+ minutes', description: 'Deep study' },
 ]
 
-// Generate stars once at module level
-const ONBOARDING_STARS = Array.from({ length: 50 }).map(() => ({
-  width: Math.random() * 2 + 1,
-  height: Math.random() * 2 + 1,
-  top: Math.random() * 70,
-  left: Math.random() * 100,
-  opacity: Math.random() * 0.5 + 0.3,
-  duration: Math.random() * 3 + 2
-}))
-
 const APP_TOUR_FEATURES = [
   { icon: '📖', title: 'Bible Reader', description: 'Full KJV, all 66 books' },
   { icon: '🙏', title: 'Prayer', description: 'Speak prayers by voice, track answered ones' },
@@ -111,12 +101,6 @@ export default function Onboarding({ onComplete }) {
 
   return (
     <>
-      <style>{`
-        @keyframes twinkle {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 0.8; }
-        }
-      `}</style>
       <div style={{
         position: 'fixed',
         top: 0,
@@ -128,56 +112,9 @@ export default function Onboarding({ onComplete }) {
         flexDirection: 'column',
         alignItems: 'center',
         padding: '20px',
-        background: '#060f26',
+        background: 'transparent',
         overflowY: 'auto'
       }}>
-        {/* Night Sky Background */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 0,
-          background: 'linear-gradient(to bottom, #0a1a3e 0%, #060f26 100%)'
-        }}>
-          {/* Stars */}
-          {ONBOARDING_STARS.map((star, i) => (
-            <div
-              key={i}
-              style={{
-                position: 'absolute',
-                width: star.width,
-                height: star.height,
-                background: '#fff',
-                borderRadius: '50%',
-                top: `${star.top}%`,
-                left: `${star.left}%`,
-                opacity: star.opacity,
-                animation: `twinkle ${star.duration}s ease-in-out infinite`
-              }}
-            />
-          ))}
-          
-          {/* Moon */}
-          <div style={{
-            position: 'absolute',
-            top: '15%',
-            right: '10%',
-            width: '50px',
-            height: '50px',
-            background: 'radial-gradient(circle at 30% 30%, #fffbe6 0%, #f0d060 100%)',
-            borderRadius: '50%',
-            boxShadow: '0 0 30px rgba(255, 230, 160, 0.6), 0 0 60px rgba(255, 230, 160, 0.3)'
-          }} />
-        </div>
-        
-        {/* Overlay Gradient */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 1,
-          background: 'linear-gradient(to bottom, transparent 30%, #060f26 100%)',
-          pointerEvents: 'none'
-        }} />
-        
         {/* Skip Button */}
         {screen !== 6 && (
           <button

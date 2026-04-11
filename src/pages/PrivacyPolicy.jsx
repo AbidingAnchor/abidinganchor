@@ -17,7 +17,7 @@ export default function PrivacyPolicy() {
             <p className="text-sm text-white/80">Last Updated: March 27, 2026</p>
           </header>
 
-          <article className="rounded-2xl border border-white/20 bg-white/10 p-5 backdrop-blur-md text-white/90 space-y-4">
+          <article className="glass-panel rounded-2xl p-5 text-white/90 space-y-4">
             <section className="space-y-2">
               <h2 className="text-base font-semibold" style={{ color: '#D4A843' }}>I. Introduction &amp; Scope</h2>
               <p>AbidingAnchor (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) handles information as described in this Privacy Policy. This policy applies globally to all users of our Bible application. We are committed to a &quot;Privacy by Design&quot; approach, meaning we aim to collect the absolute minimum data necessary to function.</p>

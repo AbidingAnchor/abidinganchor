@@ -299,9 +299,10 @@ function Search({ onOpenWorship }) {
 
   // Define style objects that were missing
   const glassCard = {
-    background: 'rgba(255, 255, 255, 0.1)',
-    backdropFilter: 'blur(14px)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
+    background: 'rgba(15, 23, 42, 0.25)',
+    backdropFilter: 'blur(16px)',
+    WebkitBackdropFilter: 'blur(16px)',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
   }
 
   const bodyStyle = {
@@ -479,14 +480,13 @@ function Search({ onOpenWorship }) {
                 <button type="button" onClick={() => setSearchMode('keyword')} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${searchMode === 'keyword' ? 'bg-gold text-primary-purple' : 'text-white'}`}>Search by Keyword</button>
                 <button type="button" onClick={() => setSearchMode('topic')} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${searchMode === 'topic' ? 'bg-gold text-primary-purple' : 'text-white'}`}>Search by Topic</button>
               </div>
-              <label htmlFor="scripture-search" style={{
+              <label htmlFor="scripture-search" className="glass-panel" style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '12px',
                 borderRadius: '50px',
                 padding: '12px 16px',
-                background: 'rgba(8,20,50,0.72)',
-                border: '1px solid rgba(212,168,67,0.3)'
+                border: '1px solid rgba(212,168,67,0.25)'
               }}>
                   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'rgba(255,255,255,0.7)' }}>
                   <circle cx="11" cy="11" r="7" />
@@ -512,9 +512,9 @@ function Search({ onOpenWorship }) {
               </label>
 
               <div
+                className="glass-panel"
                 style={{
-                  background: 'rgba(8,20,50,0.72)',
-                  border: '1px solid rgba(212,168,67,0.25)',
+                  border: '1px solid rgba(212,168,67,0.2)',
                   borderRadius: '16px',
                   padding: '16px',
                   marginBottom: '16px'
@@ -525,9 +525,8 @@ function Search({ onOpenWorship }) {
                     <>
                       <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
                         {quickSuggestionsRow1.map((suggestion) => (
-                          <button key={suggestion} type="button" onClick={() => setSearchTerm(suggestion)} style={{
-                            background: 'rgba(8,20,50,0.72)',
-                            border: '1px solid rgba(212,168,67,0.3)',
+                          <button key={suggestion} type="button" onClick={() => setSearchTerm(suggestion)} className="glass-panel" style={{
+                            border: '1px solid rgba(212,168,67,0.25)',
                             borderRadius: '50px',
                             color: '#D4A843',
                             fontWeight: 600,
@@ -542,9 +541,8 @@ function Search({ onOpenWorship }) {
                       </div>
                       <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
                         {quickSuggestionsRow2.map((suggestion) => (
-                          <button key={suggestion} type="button" onClick={() => setSearchTerm(suggestion)} style={{
-                            background: 'rgba(8,20,50,0.72)',
-                            border: '1px solid rgba(212,168,67,0.3)',
+                          <button key={suggestion} type="button" onClick={() => setSearchTerm(suggestion)} className="glass-panel" style={{
+                            border: '1px solid rgba(212,168,67,0.25)',
                             borderRadius: '50px',
                             color: '#D4A843',
                             fontWeight: 600,
@@ -561,13 +559,13 @@ function Search({ onOpenWorship }) {
                   ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                       {TOPIC_LIST.map((topic) => (
-                        <button key={topic} type="button" onClick={() => setSelectedTopic(topic)} style={{
+                        <button key={topic} type="button" onClick={() => setSelectedTopic(topic)} className={selectedTopic === topic ? '' : 'glass-panel'} style={{
                           borderRadius: '50px',
                           padding: '6px 12px',
                           fontSize: '12px',
                           fontWeight: 600,
-                          background: selectedTopic === topic ? '#D4A843' : 'rgba(8,20,50,0.72)',
-                          border: '1px solid rgba(212,168,67,0.3)',
+                          background: selectedTopic === topic ? '#D4A843' : undefined,
+                          border: '1px solid rgba(212,168,67,0.25)',
                           color: selectedTopic === topic ? '#0a1a3e' : '#D4A843',
                           cursor: 'pointer'
                         }}>
@@ -725,11 +723,8 @@ function Search({ onOpenWorship }) {
                 <h2 className="text-section-header" style={{ color: '#D4A843', fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em' }}>
                   ✨ Ask the AI Companion
                 </h2>
-                <div style={{
-                  background: 'rgba(8,20,50,0.72)',
-                  backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(212,168,67,0.3)',
+                <div className="glass-panel" style={{
+                  border: '1px solid rgba(212,168,67,0.2)',
                   borderRadius: '16px',
                   padding: '20px'
                 }}>
@@ -807,23 +802,23 @@ function Search({ onOpenWorship }) {
               <section className="space-y-3">
                 <h2 className="text-lg font-semibold" style={headingStyle}>Browse by Book</h2>
                 <div style={{ display: 'inline-flex', borderRadius: '12px', padding: '4px' }}>
-                  <button type="button" onClick={() => setTestament('old')} style={{
+                  <button type="button" onClick={() => setTestament('old')} className={testament === 'old' ? '' : 'glass-panel'} style={{
                     borderRadius: '8px',
                     padding: '6px 12px',
                     fontSize: '14px',
                     fontWeight: 700,
-                    background: testament === 'old' ? '#D4A843' : 'rgba(8,20,50,0.72)',
-                    border: testament === 'old' ? 'none' : '1px solid rgba(212,168,67,0.3)',
+                    background: testament === 'old' ? '#D4A843' : undefined,
+                    border: testament === 'old' ? 'none' : '1px solid rgba(212,168,67,0.25)',
                     color: testament === 'old' ? '#0a1a3e' : 'white',
                     cursor: 'pointer'
                   }}>Old Testament</button>
-                  <button type="button" onClick={() => setTestament('new')} style={{
+                  <button type="button" onClick={() => setTestament('new')} className={testament === 'new' ? '' : 'glass-panel'} style={{
                     borderRadius: '8px',
                     padding: '6px 12px',
                     fontSize: '14px',
                     fontWeight: 700,
-                    background: testament === 'new' ? '#D4A843' : 'rgba(8,20,50,0.72)',
-                    border: testament === 'new' ? 'none' : '1px solid rgba(212,168,67,0.3)',
+                    background: testament === 'new' ? '#D4A843' : undefined,
+                    border: testament === 'new' ? 'none' : '1px solid rgba(212,168,67,0.25)',
                     color: testament === 'new' ? '#0a1a3e' : 'white',
                     cursor: 'pointer'
                   }}>New Testament</button>
@@ -836,9 +831,8 @@ function Search({ onOpenWorship }) {
                   }}
                 >
                   {visibleBooks.map((book) => (
-                    <article key={book.name} style={{
-                      background: 'rgba(8,20,50,0.72)',
-                      border: '1px solid rgba(212,168,67,0.25)',
+                    <article key={book.name} className="glass-panel" style={{
+                      border: '1px solid rgba(212,168,67,0.2)',
                       borderRadius: '12px',
                       padding: '12px',
                       textAlign: 'left',

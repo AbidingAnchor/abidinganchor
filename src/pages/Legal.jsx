@@ -23,23 +23,23 @@ export default function Legal() {
           <div className="space-y-3">
             <Link
               to="/privacy"
-              className="block rounded-2xl border border-white/20 bg-white/10 p-5 text-center text-lg font-semibold text-white backdrop-blur-md transition hover:brightness-105"
+              className="block glass-panel rounded-2xl p-5 text-center text-lg font-semibold text-white transition hover:brightness-105"
             >
               Privacy Policy
             </Link>
             <Link
               to="/terms"
-              className="block rounded-2xl border border-white/20 bg-white/10 p-5 text-center text-lg font-semibold text-white backdrop-blur-md transition hover:brightness-105"
+              className="block glass-panel rounded-2xl p-5 text-center text-lg font-semibold text-white transition hover:brightness-105"
             >
               Terms of Service
             </Link>
           </div>
 
-          <article className="rounded-2xl border border-white/20 bg-white/10 p-5 text-center text-white/90 backdrop-blur-md">
+          <article className="glass-panel rounded-2xl p-5 text-center text-white/90">
             Questions? Contact us at <span style={{ color: '#D4A843', fontWeight: 700 }}>AbidingAnchor@outlook.com</span>
           </article>
 
-          <article className="rounded-2xl border border-white/20 bg-white/10 p-5 text-white/90 backdrop-blur-md">
+          <article className="glass-panel rounded-2xl p-5 text-white/90">
             <p className="text-sm">
               2026 Compliance Notice: AbidingAnchor follows a Privacy by Design model and may receive anonymized age-category signals from Apple and Google Play solely for age-appropriate experience compliance. We do not store personal data on our servers.
             </p>
