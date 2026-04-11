@@ -20,22 +20,11 @@ function isValidUUID(str) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 }
 
-async function fetchProfileWithTimeout(user) {
-  if (!user?.id) return null
-  try {
-    await Promise.race([
-      ensureProfile(user),
-      new Promise((_, reject) => {
-        setTimeout(
-          () => reject(new Error('profile-fetch-timeout')),
-          PROFILE_FETCH_TIMEOUT_MS,
-        )
-      }),
-    ])
-  } catch {
-    // Timeout or ensureProfile failure — still try to load an existing row
-  }
-
+/**
+ * Loads profile after ensureProfile. No per-step timeout on the SELECT — the
+ * outer fetchProfileWithTimeout race caps total wait time.
+ */
+async function loadProfileRow(user) {
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
@@ -47,6 +36,40 @@ async function fetchProfileWithTimeout(user) {
     return null
   }
   return data ?? null
+}
+
+/**
+ * Full profile sync: ensure row exists, then fetch. Entire operation is capped
+ * at PROFILE_FETCH_TIMEOUT_MS so a hung Supabase request cannot block the app.
+ */
+async function fetchProfileWithTimeout(user) {
+  if (!user?.id) return null
+  try {
+    return await Promise.race([
+      (async () => {
+        try {
+          await Promise.race([
+            ensureProfile(user),
+            new Promise((_, reject) => {
+              setTimeout(
+                () => reject(new Error('ensure-profile-timeout')),
+                PROFILE_FETCH_TIMEOUT_MS,
+              )
+            }),
+          ])
+        } catch {
+          // Timeout or ensureProfile failure — still try to load an existing row
+        }
+        return loadProfileRow(user)
+      })(),
+      new Promise((resolve) => {
+        setTimeout(() => resolve(null), PROFILE_FETCH_TIMEOUT_MS)
+      }),
+    ])
+  } catch (err) {
+    console.error('fetchProfileWithTimeout:', err)
+    return null
+  }
 }
 
 async function ensureProfile(user) {
@@ -101,6 +124,11 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     let active = true
+    // Last-resort unblock if getSession() or anything before finally hangs
+    const loadingWatchdog = setTimeout(() => {
+      if (active) setLoading(false)
+    }, PROFILE_FETCH_TIMEOUT_MS + 1000)
+
     const boot = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession()
@@ -108,51 +136,62 @@ export function AuthProvider({ children }) {
         if (!active) return
         setUser(nextUser)
         if (nextUser) {
+          let nextProfile = null
           try {
-            const nextProfile = await fetchProfileWithTimeout(nextUser)
-            if (!active) return
-            setProfile(nextProfile)
-          } catch {
-            if (!active) return
-            setProfile(null)
+            nextProfile = await fetchProfileWithTimeout(nextUser)
+          } catch (err) {
+            console.error('Boot profile fetch:', err)
+            nextProfile = null
           }
+          if (!active) return
+          setProfile(nextProfile)
         } else {
           setProfile(null)
         }
-      } catch {
+      } catch (err) {
+        console.error('Auth boot error:', err)
         if (active) {
           setUser(null)
           setProfile(null)
         }
       } finally {
-        if (active) setLoading(false)
+        if (active) {
+          clearTimeout(loadingWatchdog)
+          setLoading(false)
+        }
       }
     }
     boot()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_, session) => {
-      const nextUser = session?.user ?? null
-      setUser(nextUser)
-      try {
-        if (nextUser) {
-          try {
-            const nextProfile = await fetchProfileWithTimeout(nextUser)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_, session) => {
+        const nextUser = session?.user ?? null
+        setUser(nextUser)
+        try {
+          if (nextUser) {
+            let nextProfile = null
+            try {
+              nextProfile = await fetchProfileWithTimeout(nextUser)
+            } catch (err) {
+              console.error('onAuthStateChange profile fetch:', err)
+              nextProfile = null
+            }
             setProfile(nextProfile)
-          } catch {
+          } else {
             setProfile(null)
           }
-        } else {
+        } catch (err) {
+          console.error('onAuthStateChange:', err)
           setProfile(null)
+        } finally {
+          setLoading(false)
         }
-      } catch {
-        setProfile(null)
-      } finally {
-        setLoading(false)
-      }
-    })
+      },
+    )
 
     return () => {
       active = false
+      clearTimeout(loadingWatchdog)
       subscription.unsubscribe()
     }
   }, [])
