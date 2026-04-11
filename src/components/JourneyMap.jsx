@@ -228,11 +228,19 @@ function buildPathD(stops) {
 }
 
 const NODE_DOT_R = 10
+/** Extra canvas height below the original 400-tall map so figures fit under the bottom node (Bethlehem). */
+const MAP_VIEWBOX_W = 320
+/** Bethlehem dot bottom ~392; gap + figure + nudge — keep margin at bottom. */
+const MAP_VIEWBOX_H = 456
 /** Natural pixels of /jesus-and-person.png — used only for aspect ratio. */
 const PROGRESS_IMG_W = 1024
 const PROGRESS_IMG_H = 1536
-/** Height in SVG user units (~50px when viewBox maps ~1:1 to CSS pixels). */
-const PROGRESS_MARKER_HEIGHT = 50
+/** Height in SVG user units (~40px on screen when viewBox maps ~1:1). */
+const PROGRESS_MARKER_HEIGHT = 40
+/** Padding between the bottom of the node dot and the top of the figure. */
+const PROGRESS_MARKER_GAP = 8
+/** Extra offset below the dot so figures clear the label and the path to the next stop. */
+const PROGRESS_MARKER_NUDGE_DOWN = 12
 
 /** Labels on the left of the dot when the node is on the right; avoids clipping long names. */
 function labelAnchor(stop) {
@@ -242,15 +250,26 @@ function labelAnchor(stop) {
   return { textAnchor: 'start', x: stop.x + 14 }
 }
 
+/** Centered under the active node, in the space below the dot (works well at Bethlehem with extra viewBox height). */
+function progressMarkerLayout(stop) {
+  const h = PROGRESS_MARKER_HEIGHT
+  const w = (PROGRESS_IMG_W / PROGRESS_IMG_H) * h
+  const { x, y } = stop
+  const top = y + NODE_DOT_R + PROGRESS_MARKER_GAP + PROGRESS_MARKER_NUDGE_DOWN
+  let left = x - w / 2
+  const margin = 4
+  left = Math.max(margin, Math.min(left, MAP_VIEWBOX_W - w - margin))
+  const maxTop = MAP_VIEWBOX_H - margin - h
+  const yClamped = Math.min(top, maxTop)
+  return { x: left, y: yClamped, w, h }
+}
+
 function JourneyProgressMarker({ stop }) {
   if (!stop) return null
-  const { x, y } = stop
-  const w = (PROGRESS_IMG_W / PROGRESS_IMG_H) * PROGRESS_MARKER_HEIGHT
-  const h = PROGRESS_MARKER_HEIGHT
-  const gap = 2
+  const { x, y, w, h } = progressMarkerLayout(stop)
   return (
     <g pointerEvents="none" aria-hidden="true">
-      <foreignObject x={x - w / 2} y={y + NODE_DOT_R + gap} width={w} height={h}>
+      <foreignObject x={x} y={y} width={w} height={h}>
         <div xmlns="http://www.w3.org/1999/xhtml" style={{ margin: 0, padding: 0, lineHeight: 0, width: '100%', height: '100%' }}>
           <img
             src="/jesus-and-person.png"
@@ -310,8 +329,8 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
       <style>
         {`
           @keyframes map-pulse {
-            0%, 100% { box-shadow: 0 0 10px rgba(212,168,67,0.35); transform: scale(1); }
-            50% { box-shadow: 0 0 22px rgba(212,168,67,0.65); transform: scale(1.05); }
+            0%, 100% { filter: drop-shadow(0 0 6px rgba(212,168,67,0.35)); transform: scale(1); }
+            50% { filter: drop-shadow(0 0 10px rgba(212,168,67,0.5)); transform: scale(1.08); }
           }
         `}
       </style>
@@ -335,7 +354,7 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
       <div className={`glass-panel min-h-0 rounded-2xl p-3 ${fillVertical ? 'flex flex-1 flex-col' : ''}`}>
         <svg
           width="100%"
-          viewBox="0 0 320 400"
+          viewBox={`0 0 ${MAP_VIEWBOX_W} ${MAP_VIEWBOX_H}`}
           preserveAspectRatio="xMidYMid meet"
           className={fillVertical ? 'min-h-[240px] flex-1' : ''}
           style={{ display: 'block' }}
@@ -361,6 +380,7 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
             const unlocked = i < unlockedCount
             const seen = !!state?.seenFacts?.[stop.id]
             const la = labelAnchor(stop)
+            const isCurrentProgress = currentProgressStop?.id === stop.id
             return (
               <g
                 key={stop.id}
@@ -383,7 +403,15 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
                   fill={unlocked ? '#D4A843' : 'rgba(255,255,255,0.22)'}
                   stroke={unlocked ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.22)'}
                   strokeWidth="2"
-                  style={unlocked ? { animation: 'map-pulse 2s ease-in-out infinite' } : undefined}
+                  style={
+                    unlocked && isCurrentProgress
+                      ? {
+                          animation: 'map-pulse 3s ease-in-out infinite',
+                          transformOrigin: 'center',
+                          transformBox: 'fill-box',
+                        }
+                      : undefined
+                  }
                 />
                 <text
                   x={la.x}
