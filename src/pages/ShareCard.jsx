@@ -13,6 +13,8 @@ export default function ShareCard() {
   const [verseText, setVerseText] = useState('The Lord is my shepherd; I shall not want.')
   const [userReflection, setUserReflection] = useState('This verse reminds me that I am never alone in my journey.')
   const [cardStyle, setCardStyle] = useState('celestial')
+  const [contentFont, setContentFont] = useState('serif')
+  const [textColorChoice, setTextColorChoice] = useState('white')
   const [generating, setGenerating] = useState(false)
   const [generatedImage, setGeneratedImage] = useState(null)
 
@@ -30,6 +32,24 @@ export default function ShareCard() {
     { id: 'dawn', name: 'Dawn', description: 'Purple to gold gradient' },
     { id: 'scripture', name: 'Scripture', description: 'Dark green, earthy' },
     { id: 'midnight', name: 'Midnight', description: 'Pure black, minimal' },
+    { id: 'golden', name: 'Golden Hour', description: 'Warm gold gradient' },
+    { id: 'ocean', name: 'Ocean', description: 'Deep blue & teal' },
+    { id: 'rose', name: 'Rose Garden', description: 'Soft pink & cream' },
+    { id: 'forest', name: 'Forest', description: 'Deep green & earth' },
+  ]
+
+  const fontOptions = [
+    { id: 'serif', name: 'Serif', description: 'Georgia' },
+    { id: 'modern', name: 'Modern', description: 'Inter' },
+    { id: 'elegant', name: 'Elegant', description: 'Cinzel' },
+    { id: 'handwritten', name: 'Handwritten', description: 'cursive' },
+  ]
+
+  const textColorOptions = [
+    { id: 'white', label: 'White', swatch: '#FFFFFF' },
+    { id: 'gold', label: 'Gold', swatch: '#D4A843' },
+    { id: 'cream', label: 'Cream', swatch: '#FFF8E7' },
+    { id: 'dark', label: 'Dark', swatch: '#1a1a1a' },
   ]
 
   const handleGenerateAndShare = async () => {
@@ -135,15 +155,17 @@ export default function ShareCard() {
         </p>
       </div>
 
-      {/* FaithCard Preview - Larger and more prominent */}
-      <div className="flex justify-center mb-4 overflow-hidden">
-        <div ref={cardRef} style={{ transform: 'scale(0.4)', transformOrigin: 'top center' }}>
+      {/* FaithCard Preview — fixed height clips scaled card excess */}
+      <div className="flex justify-center mb-4" style={{ height: '420px', overflow: 'hidden' }}>
+        <div ref={cardRef} style={{ transform: 'scale(0.4)', transformOrigin: 'top center', flexShrink: 0 }}>
           <FaithCard
             verseReference={verseReference}
             verseText={verseText}
             userReflection={userReflection}
             scale={1}
             cardStyle={cardStyle}
+            contentFont={contentFont}
+            textColorChoice={textColorChoice}
           />
         </div>
       </div>
@@ -182,6 +204,69 @@ export default function ShareCard() {
             >
               <p style={{ color: 'var(--text-primary)', fontWeight: 600, marginBottom: '4px' }}>{style.name}</p>
               <p style={{ color: 'var(--text-primary)', fontSize: '12px', opacity: 0.7 }}>{style.description}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Font */}
+      <div className="mb-4">
+        <p className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--section-title)' }}>
+          Font
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          {fontOptions.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => setContentFont(f.id)}
+              className={`
+                p-4 rounded-xl border-2 transition-all text-left
+                ${contentFont === f.id
+                  ? 'border-[#D4A843] bg-[#D4A843]/10 shadow-[0_0_20px_rgba(212,168,67,0.3)]'
+                  : 'hover:border-white/20'
+                }
+              `}
+              style={{
+                borderColor: contentFont === f.id ? 'var(--gold-border)' : 'var(--glass-border)',
+                background: contentFont === f.id ? 'rgba(212,168,67,0.1)' : 'var(--glass-bg)',
+              }}
+            >
+              <p style={{ color: 'var(--text-primary)', fontWeight: 600, marginBottom: '4px' }}>{f.name}</p>
+              <p style={{ color: 'var(--text-primary)', fontSize: '12px', opacity: 0.7 }}>{f.description}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Text color */}
+      <div className="mb-4">
+        <p className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--section-title)' }}>
+          Text Color
+        </p>
+        <div className="flex flex-wrap gap-4 justify-center sm:justify-start">
+          {textColorOptions.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => setTextColorChoice(c.id)}
+              className="flex flex-col items-center gap-2 min-w-[4.5rem]"
+              aria-label={`Text color ${c.label}`}
+              aria-pressed={textColorChoice === c.id}
+            >
+              <span
+                className="rounded-full border-2 transition-all shadow-md"
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  background: c.swatch,
+                  borderColor: textColorChoice === c.id ? 'var(--gold-border)' : 'var(--glass-border)',
+                  boxShadow: textColorChoice === c.id ? '0 0 0 3px rgba(212,168,67,0.35)' : undefined,
+                }}
+              />
+              <span className="text-xs" style={{ color: 'var(--text-primary)', opacity: 0.85 }}>
+                {c.label}
+              </span>
             </button>
           ))}
         </div>

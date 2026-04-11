@@ -1,13 +1,28 @@
-import { useRef } from 'react'
+const CONTENT_FONTS = {
+  serif: "'Georgia', Georgia, 'Times New Roman', serif",
+  modern: "'Inter', system-ui, -apple-system, sans-serif",
+  elegant: "'Cinzel', Georgia, serif",
+  handwritten: "ui-serif, 'Segoe Print', 'Segoe Script', 'Brush Script MT', cursive",
+}
 
-export default function FaithCard({ 
-  verseReference = '', 
-  verseText = '', 
+const TEXT_COLOR_CHOICES = {
+  white: '#FFFFFF',
+  gold: '#D4A843',
+  cream: '#FFF8E7',
+  dark: '#1a1a1a',
+}
+
+export default function FaithCard({
+  verseReference = '',
+  verseText = '',
   userReflection = '',
   scale = 0.25,
-  cardStyle = 'celestial'
+  cardStyle = 'celestial',
+  contentFont = 'serif',
+  textColorChoice = 'white',
 }) {
-  const cardRef = useRef(null)
+  const bodyFont = CONTENT_FONTS[contentFont] ?? CONTENT_FONTS.serif
+  const userTextColor = TEXT_COLOR_CHOICES[textColorChoice] ?? TEXT_COLOR_CHOICES.white
 
   const getCardStyle = () => {
     switch (cardStyle) {
@@ -51,6 +66,46 @@ export default function FaithCard({
           accentColor: '#D4A843',
           showStars: false,
         }
+      case 'golden':
+        return {
+          background: 'linear-gradient(165deg, #fff5e6 0%, #ffd89b 38%, #e8a84e 72%, #c77d2a 100%)',
+          starOpacity: 0,
+          borderColor: '#B8860B',
+          borderWidth: '4px',
+          textColor: '#1a1a1a',
+          accentColor: '#8B6914',
+          showStars: false,
+        }
+      case 'ocean':
+        return {
+          background: 'linear-gradient(180deg, #051937 0%, #0c2461 35%, #145a5a 70%, #0d7377 100%)',
+          starOpacity: 0,
+          borderColor: '#5eead4',
+          borderWidth: '4px',
+          textColor: '#FFFFFF',
+          accentColor: '#5eead4',
+          showStars: false,
+        }
+      case 'rose':
+        return {
+          background: 'linear-gradient(170deg, #fffdfb 0%, #fce7f3 40%, #fbcfe8 75%, #f9a8d4 100%)',
+          starOpacity: 0,
+          borderColor: '#db2777',
+          borderWidth: '4px',
+          textColor: '#4a044e',
+          accentColor: '#be185d',
+          showStars: false,
+        }
+      case 'forest':
+        return {
+          background: 'linear-gradient(180deg, #0f1f14 0%, #1b3d2f 45%, #2d4a3a 78%, #3d2918 100%)',
+          starOpacity: 0,
+          borderColor: '#a3b18a',
+          borderWidth: '4px',
+          textColor: '#F5F5DC',
+          accentColor: '#c9a227',
+          showStars: false,
+        }
       default:
         return {
           background: 'radial-gradient(ellipse at top, #0f1729 0%, #070d1a 100%)',
@@ -64,11 +119,11 @@ export default function FaithCard({
     }
   }
 
-  const currentStyle = getCardStyle()
+  const baseStyle = getCardStyle()
+  const currentStyle = { ...baseStyle, textColor: userTextColor }
 
   return (
     <div 
-      ref={cardRef}
       style={{
         width: '1080px',
         height: '1080px',
@@ -108,7 +163,7 @@ export default function FaithCard({
         marginTop: '20px',
       }}>
         <p style={{
-          fontFamily: 'Cinzel, serif',
+          fontFamily: CONTENT_FONTS.elegant,
           fontSize: '24px',
           fontWeight: 700,
           color: currentStyle.accentColor,
@@ -137,12 +192,12 @@ export default function FaithCard({
         {/* Verse reference */}
         {verseReference && (
           <p style={{
-            fontFamily: 'Lora, serif',
+            fontFamily: bodyFont,
             fontSize: '36px',
-            fontStyle: 'italic',
-            color: currentStyle.accentColor,
+            fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
+            color: currentStyle.textColor,
             marginBottom: '40px',
-            textShadow: '0 2px 8px rgba(212, 168, 67, 0.3)',
+            textShadow: '0 2px 8px rgba(0, 0, 0, 0.35)',
           }}>
             {verseReference}
           </p>
@@ -151,9 +206,9 @@ export default function FaithCard({
         {/* Verse text */}
         {verseText && (
           <p style={{
-            fontFamily: 'Lora, serif',
+            fontFamily: bodyFont,
             fontSize: '42px',
-            fontWeight: 500,
+            fontWeight: contentFont === 'modern' ? 600 : 500,
             color: currentStyle.textColor,
             lineHeight: '1.5',
             marginBottom: '50px',
@@ -175,9 +230,9 @@ export default function FaithCard({
         {/* User reflection/prayer */}
         {userReflection && (
           <p style={{
-            fontFamily: 'Lora, serif',
+            fontFamily: bodyFont,
             fontSize: '32px',
-            fontStyle: 'italic',
+            fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
             color: currentStyle.textColor,
             lineHeight: '1.6',
             maxWidth: '800px',

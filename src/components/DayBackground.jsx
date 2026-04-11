@@ -19,27 +19,27 @@ function drawGodRays(ctx, w, h, sunX, sunY) {
   ctx.globalAlpha = 0.14;
   const g = ctx.createConicGradient(-Math.PI / 2, sunX, sunY);
   const stops = [
-    [0, "rgba(255,255,255,0.22)"],
-    [0.04, "rgba(255,255,255,0.02)"],
-    [0.08, "rgba(255,248,220,0.18)"],
-    [0.12, "rgba(255,255,255,0.02)"],
-    [0.17, "rgba(255,255,255,0.16)"],
-    [0.21, "rgba(255,255,255,0.015)"],
-    [0.26, "rgba(255,245,200,0.14)"],
-    [0.31, "rgba(255,255,255,0.02)"],
-    [0.36, "rgba(255,255,255,0.15)"],
-    [0.41, "rgba(255,255,255,0.01)"],
-    [0.46, "rgba(255,248,230,0.12)"],
-    [0.51, "rgba(255,255,255,0.02)"],
-    [0.56, "rgba(255,255,255,0.14)"],
-    [0.61, "rgba(255,255,255,0.015)"],
-    [0.66, "rgba(255,250,215,0.13)"],
-    [0.71, "rgba(255,255,255,0.02)"],
-    [0.76, "rgba(255,255,255,0.11)"],
-    [0.81, "rgba(255,255,255,0.01)"],
-    [0.86, "rgba(255,248,220,0.15)"],
-    [0.91, "rgba(255,255,255,0.02)"],
-    [1, "rgba(255,255,255,0.2)"],
+    [0, "rgba(255,255,255,0.33)"],
+    [0.04, "rgba(255,255,255,0.03)"],
+    [0.08, "rgba(255,248,220,0.27)"],
+    [0.12, "rgba(255,255,255,0.03)"],
+    [0.17, "rgba(255,255,255,0.24)"],
+    [0.21, "rgba(255,255,255,0.0225)"],
+    [0.26, "rgba(255,245,200,0.21)"],
+    [0.31, "rgba(255,255,255,0.03)"],
+    [0.36, "rgba(255,255,255,0.225)"],
+    [0.41, "rgba(255,255,255,0.015)"],
+    [0.46, "rgba(255,248,230,0.18)"],
+    [0.51, "rgba(255,255,255,0.03)"],
+    [0.56, "rgba(255,255,255,0.21)"],
+    [0.61, "rgba(255,255,255,0.0225)"],
+    [0.66, "rgba(255,250,215,0.195)"],
+    [0.71, "rgba(255,255,255,0.03)"],
+    [0.76, "rgba(255,255,255,0.165)"],
+    [0.81, "rgba(255,255,255,0.015)"],
+    [0.86, "rgba(255,248,220,0.225)"],
+    [0.91, "rgba(255,255,255,0.03)"],
+    [1, "rgba(255,255,255,0.3)"],
   ];
   for (const [t, c] of stops) g.addColorStop(t, c);
 
@@ -123,9 +123,9 @@ function drawGroundHaze(ctx, w, h) {
   const y0 = h * 0.85;
   const g = ctx.createLinearGradient(0, y0, 0, h);
   g.addColorStop(0, "rgba(255, 220, 170, 0)");
-  g.addColorStop(0.35, "rgba(255, 210, 150, 0.18)");
-  g.addColorStop(0.7, "rgba(245, 190, 120, 0.32)");
-  g.addColorStop(1, "rgba(235, 175, 95, 0.42)");
+  g.addColorStop(0.35, "rgba(255, 210, 150, 0.09)");
+  g.addColorStop(0.7, "rgba(245, 190, 120, 0.16)");
+  g.addColorStop(1, "rgba(235, 175, 95, 0.21)");
   ctx.fillStyle = g;
   ctx.fillRect(0, y0, w, h - y0);
 }
@@ -171,7 +171,6 @@ export default function DayBackground() {
 
     const layout = () => {
       clouds = [];
-      const sunY = height * 0.3;
       for (let i = 0; i < cloudCount; i++) {
         const nx = 0.05 + Math.random() * 0.9;
         const ny = 0.12 + Math.random() * 0.48;
@@ -214,7 +213,7 @@ export default function DayBackground() {
       drawSkyGradient(ctx, width, height);
 
       const sunX = width * 0.5;
-      const sunY = height * 0.3;
+      const sunY = height * 0.15;
 
       drawGodRays(ctx, width, height, sunX, sunY);
       drawSun(ctx, sunX, sunY, t);
