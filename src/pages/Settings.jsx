@@ -14,11 +14,22 @@ export default function Settings() {
   const [pendingAvatarUrl, setPendingAvatarUrl] = useState(null)
   const [pendingAvatarFile, setPendingAvatarFile] = useState(null)
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState(null)
+  const [localAvatarUrl, setLocalAvatarUrl] = useState(null)
   const fileInputRef = useRef(null)
 
   useEffect(() => {
-    console.log('Settings avatar_url:', profile?.avatar_url)
-  }, [profile?.avatar_url])
+    const loadAvatar = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('id', user.id)
+        .maybeSingle()
+      if (data?.avatar_url) setLocalAvatarUrl(data.avatar_url)
+    }
+    loadAvatar()
+  }, [])
 
   useEffect(() => {
     if (
@@ -132,6 +143,7 @@ export default function Settings() {
       if (updateError) throw updateError
 
       await refreshProfile(updatedRow)
+      setLocalAvatarUrl(avatarUrl)
 
       if (blobUrlToRevoke) URL.revokeObjectURL(blobUrlToRevoke)
       setAvatarPreviewUrl(null)
@@ -170,7 +182,7 @@ export default function Settings() {
 
   const displayName = profile?.full_name || user?.user_metadata?.full_name || 'User'
   const userEmail = user?.email || ''
-  const serverRawAvatarUrl = pendingAvatarUrl ?? profile?.avatar_url
+  const serverRawAvatarUrl = pendingAvatarUrl ?? localAvatarUrl ?? profile?.avatar_url
   const avatarDisplayUrl = useMemo(() => {
     if (avatarPreviewUrl) return avatarPreviewUrl
     return appendAvatarCacheBust(serverRawAvatarUrl)

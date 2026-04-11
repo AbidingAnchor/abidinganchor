@@ -4,14 +4,7 @@ import { supabase } from '../lib/supabase'
 const AuthContext = createContext({})
 
 const PROFILE_FETCH_TIMEOUT_MS = 5000
-/** If profile row loads without avatar_url, brief refetch (display race / replication lag). */
-const PROFILE_AVATAR_REFETCH_ATTEMPTS = 3
-const PROFILE_AVATAR_REFETCH_DELAY_MS = 350
 const profileSyncedUserIds = new Set()
-
-function profileHasAvatarUrl(row) {
-  return Boolean(row?.avatar_url && String(row.avatar_url).trim() !== '')
-}
 const EMAIL_CONFIRMATION_SEND_ERROR_MARKERS = [
   'error sending confirmation email',
   'error sending email',
@@ -47,26 +40,6 @@ async function loadProfileRow(user) {
 }
 
 /**
- * Loads full profile; if row exists but avatar_url is empty, retries a few times
- * in case the first read races ahead of DB/RLS.
- */
-async function loadProfileRowWithAvatarRetry(user) {
-  let data = await loadProfileRow(user)
-  if (data && !profileHasAvatarUrl(data)) {
-    for (let i = 0; i < PROFILE_AVATAR_REFETCH_ATTEMPTS; i++) {
-      await new Promise((r) => setTimeout(r, PROFILE_AVATAR_REFETCH_DELAY_MS))
-      const again = await loadProfileRow(user)
-      if (again && profileHasAvatarUrl(again)) {
-        data = again
-        break
-      }
-      if (again) data = again
-    }
-  }
-  return data
-}
-
-/**
  * Full profile sync: ensure row exists, then fetch. Entire operation is capped
  * at PROFILE_FETCH_TIMEOUT_MS so a hung Supabase request cannot block the app.
  */
@@ -89,7 +62,7 @@ async function fetchProfileWithTimeout(user) {
           // Timeout or ensureProfile failure — still try to load an existing row
         }
         // Separate SELECT: full profile (avatar_url comes from DB only, never from upsert)
-        return loadProfileRowWithAvatarRetry(user)
+        return loadProfileRow(user)
       })(),
       new Promise((resolve) => {
         setTimeout(() => resolve(null), PROFILE_FETCH_TIMEOUT_MS)
@@ -173,7 +146,6 @@ export function AuthProvider({ children }) {
           }
           if (!active) return
           setProfile(nextProfile)
-          console.log('Profile loaded:', nextProfile?.avatar_url)
         } else {
           setProfile(null)
         }
@@ -206,7 +178,6 @@ export function AuthProvider({ children }) {
               nextProfile = null
             }
             setProfile(nextProfile)
-            console.log('Profile loaded:', nextProfile?.avatar_url)
           } else {
             setProfile(null)
           }
@@ -259,7 +230,6 @@ export function AuthProvider({ children }) {
   const refreshProfile = useCallback(async (serverRow) => {
     if (serverRow && typeof serverRow === 'object') {
       setProfile(serverRow)
-      console.log('Profile loaded:', serverRow?.avatar_url)
       return serverRow
     }
     if (!user?.id) return null
@@ -274,7 +244,6 @@ export function AuthProvider({ children }) {
         return null
       }
       setProfile(data ?? null)
-      console.log('Profile loaded:', data?.avatar_url)
       return data ?? null
     } catch (error) {
       console.error('Profile refresh error:', error)

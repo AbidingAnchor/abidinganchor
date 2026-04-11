@@ -1,7 +1,8 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { supabase } from '../lib/supabase'
 import { appendAvatarCacheBust } from '../utils/avatarUrl'
 
 const tabs = [
@@ -17,11 +18,25 @@ const tabs = [
 export default function Navbar() {
   const navigate = useNavigate()
   const { user, profile } = useAuth()
+  const [localAvatarUrl, setLocalAvatarUrl] = useState(null)
+
   useEffect(() => {
-    console.log('Navbar avatar_url:', profile?.avatar_url)
-  }, [profile?.avatar_url])
+    const loadAvatar = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('id', user.id)
+        .maybeSingle()
+      if (data?.avatar_url) setLocalAvatarUrl(data.avatar_url)
+    }
+    loadAvatar()
+  }, [])
+
   const displayName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email || ''
   const rawAvatarUrl =
+    localAvatarUrl ??
     profile?.avatar_url ??
     user?.user_metadata?.avatar_url ??
     user?.user_metadata?.picture
@@ -54,7 +69,7 @@ export default function Navbar() {
         {/* Profile avatar */}
         {displayName ? (
           <div
-            key={profile?.avatar_url || 'no-avatar'}
+            key={(localAvatarUrl ?? profile?.avatar_url) || 'no-avatar'}
             style={{
               width: '36px',
               height: '36px',
