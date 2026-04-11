@@ -250,7 +250,6 @@ export default function Settings() {
                   <img
                     src={avatarDisplayUrl}
                     alt="Profile"
-                    crossOrigin="anonymous"
                     onError={(e) => {
                       e.target.style.display = 'none'
                     }}

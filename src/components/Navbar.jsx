@@ -104,7 +104,6 @@ export default function Navbar() {
               <img
                 src={avatarDisplayUrl}
                 alt="Profile"
-                crossOrigin="anonymous"
                 onError={(e) => {
                   e.target.style.display = 'none'
                 }}
