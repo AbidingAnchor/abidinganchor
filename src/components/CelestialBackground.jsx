@@ -44,10 +44,7 @@ export default function CelestialBackground() {
   }, []);
 
   return (
-    <div
-      className="overflow-hidden"
-      style={{ position: "fixed", inset: 0, zIndex: -50 }}
-    >
+    <div className="absolute inset-0 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-[#050816] via-[#0A0F2C] to-[#050816]" />
       <div className="nebula nebula-1" />
       <div className="nebula nebula-2" />

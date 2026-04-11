@@ -29,7 +29,7 @@ import Onboarding from './components/Onboarding'
 import Auth from './pages/Auth'
 import { useAuth } from './context/AuthContext'
 import LoadingScreen from './components/LoadingScreen'
-import CelestialBackground from './components/CelestialBackground'
+import BackgroundManager from './components/BackgroundManager'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -46,7 +46,7 @@ function AppShell() {
   const [worshipAutoPlayToken, setWorshipAutoPlayToken] = useState(0)
   const [worshipStatus, setWorshipStatus] = useState({ isPlaying: false, currentTrack: 'Soaking Worship', isVisible: false })
   const showNav = location.pathname !== '/auth' && location.pathname !== '/onboarding'
-  const showFooter = location.pathname !== '/auth' && location.pathname !== '/onboarding'
+  const showFooter = location.pathname !== '/auth' && location.pathname !== '/onboarding' && location.pathname !== '/read' && location.pathname !== '/reading-plan'
   const showHeader = location.pathname !== '/auth' && location.pathname !== '/onboarding'
 
   const openWorship = (startPlaying = false) => {
@@ -62,7 +62,7 @@ function AppShell() {
 
   return (
     <div className="relative text-white" style={{ background: 'transparent' }}>
-      <CelestialBackground />
+      <BackgroundManager />
       <div style={{ position: 'relative', zIndex: 10, background: 'transparent' }}>
         <div
           style={{

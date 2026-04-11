@@ -15,6 +15,7 @@ export default function AudioBible() {
   const [currentVerseIndex, setCurrentVerseIndex] = useState(null)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
   const [voiceSettings, setVoiceSettings] = useState({})
+  const [isMinimized, setIsMinimized] = useState(true)
 
   const handleBookChange = (e) => {
     const book = bibleBooks.find(b => b.name === e.target.value)
@@ -401,7 +402,7 @@ export default function AudioBible() {
         )}
       </div>
 
-      {/* Fixed Audio Controls Overlay */}
+      {/* Minimized Audio Player Pill */}
       <div
         className="glass"
         style={{
@@ -410,108 +411,162 @@ export default function AudioBible() {
           left: '16px',
           right: '16px',
           zIndex: 9997,
-          padding: '16px',
-          borderRadius: '20px',
+          padding: '12px 20px',
+          borderRadius: '50px',
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px',
+          transition: 'all 0.3s ease',
         }}
       >
-        {/* Voice Selector */}
-        <div className="mb-4">
-          <label className="block text-xs font-semibold text-gold-accent mb-2 text-center">Voice</label>
-          <div className="flex flex-wrap justify-center gap-2">
-            {[
-              { id: 'David', emoji: '👨', name: 'David' },
-              { id: 'Grace', emoji: '👩', name: 'Grace' },
-              { id: 'Elijah', emoji: '👴', name: 'Elijah' },
-              { id: 'Miriam', emoji: '👩‍🦳', name: 'Miriam' }
-            ].map(voice => (
-              <button
-                key={voice.id}
-                onClick={() => {
-                  setSelectedVoice(voice.id)
-                  selectedVoiceRef.current = voice.id
-                  if (isPlaying) {
-                    stopPlayback()
-                    // Immediate restart with new voice
-                    setTimeout(() => {
-                      setIsPlaying(true)
-                    }, 50)
-                  }
-                }}
-                className={`
-                  px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200
-                  ${selectedVoice === voice.id
-                    ? 'bg-[#D4A843] text-[#0a1a3e]'
-                    : 'bg-white/5 text-white/70 hover:bg-white/10'
-                  }
-                `}
-              >
-                <span className="mr-1">{voice.emoji}</span>
-                <span>{voice.name}</span>
-              </button>
-            ))}
-          </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={togglePlay}
+            className="w-10 h-10 rounded-full bg-[#D4A843] text-[#0a1a3e] hover:bg-[#B8902E] transition-all flex items-center justify-center font-semibold shadow-lg shadow-[#D4A843]/30"
+            style={{ fontSize: '16px' }}
+          >
+            {isPlaying ? '⏸' : '▶'}
+          </button>
+          <span className="text-white/90 text-sm font-medium">{selectedVoice}</span>
         </div>
+        
+        <button
+          onClick={() => setIsMinimized(false)}
+          className="text-[#D4A843] hover:text-[#B8902E] transition-colors"
+          style={{ fontSize: '18px' }}
+        >
+          ▲
+        </button>
+      </div>
 
-        {/* Playback Speed & Controls */}
-        <div className="flex items-center justify-between gap-4">
-          {/* Speed */}
-          <div className="flex gap-1">
-            {[0.75, 1, 1.25, 1.5].map(speed => (
-              <button
-                key={speed}
-                onClick={() => setPlaybackSpeed(speed)}
-                className={`
-                  px-2 py-1 rounded-full text-xs font-medium transition-all duration-200
-                  ${playbackSpeed === speed
-                    ? 'bg-[#D4A843] text-[#0a1a3e]'
-                    : 'bg-white/5 text-white/60 hover:bg-white/10'
-                  }
-                `}
-              >
-                {speed}x
-              </button>
-            ))}
-          </div>
-
-          {/* Chapter Navigation */}
-          <div className="flex items-center gap-2">
+      {/* Expanded Audio Player (hidden by default) */}
+      {!isMinimized && (
+        <div
+          className="glass"
+          style={{
+            position: 'fixed',
+            bottom: '65px',
+            left: '16px',
+            right: '16px',
+            zIndex: 9997,
+            padding: '16px',
+            borderRadius: '20px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+            transform: 'translateY(0)',
+            transition: 'transform 0.3s ease',
+          }}
+        >
+          {/* Minimize Button */}
+          <div className="flex justify-end mb-3">
             <button
-              onClick={goToPreviousChapter}
-              className="w-8 h-8 rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-[#D4A843] transition-all flex items-center justify-center"
-              style={{ fontSize: '14px' }}
-            >
-              ⏮
-            </button>
-            
-            <button
-              onClick={togglePlay}
-              className="w-12 h-12 rounded-full bg-[#D4A843] text-[#0a1a3e] hover:bg-[#B8902E] transition-all flex items-center justify-center font-semibold shadow-lg shadow-[#D4A843]/30"
+              onClick={() => setIsMinimized(true)}
+              className="text-[#D4A843] hover:text-[#B8902E] transition-colors"
               style={{ fontSize: '18px' }}
             >
-              {isPlaying ? '⏸' : '▶'}
-            </button>
-            
-            <button
-              onClick={goToNextChapter}
-              className="w-8 h-8 rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-[#D4A843] transition-all flex items-center justify-center"
-              style={{ fontSize: '14px' }}
-            >
-              ⏭
+              ▼
             </button>
           </div>
 
-          {/* Progress */}
-          <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[#D4A843] transition-all duration-300"
-              style={{
-                width: `${currentVerseIndex !== null ? ((currentVerseIndex + 1) / verses.length) * 100 : 0}%`
-              }}
-            />
+          {/* Voice Selector */}
+          <div className="mb-4">
+            <label className="block text-xs font-semibold text-gold-accent mb-2 text-center">Voice</label>
+            <div className="flex flex-wrap justify-center gap-2">
+              {[
+                { id: 'David', emoji: '👨', name: 'David' },
+                { id: 'Grace', emoji: '👩', name: 'Grace' },
+                { id: 'Elijah', emoji: '👴', name: 'Elijah' },
+                { id: 'Miriam', emoji: '👩‍🦳', name: 'Miriam' }
+              ].map(voice => (
+                <button
+                  key={voice.id}
+                  onClick={() => {
+                    setSelectedVoice(voice.id)
+                    selectedVoiceRef.current = voice.id
+                    if (isPlaying) {
+                      stopPlayback()
+                      // Immediate restart with new voice
+                      setTimeout(() => {
+                        setIsPlaying(true)
+                      }, 50)
+                    }
+                  }}
+                  className={`
+                    px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200
+                    ${selectedVoice === voice.id
+                      ? 'bg-[#D4A843] text-[#0a1a3e]'
+                      : 'bg-white/5 text-white/70 hover:bg-white/10'
+                    }
+                  `}
+                >
+                  <span className="mr-1">{voice.emoji}</span>
+                  <span>{voice.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Playback Speed & Controls */}
+          <div className="flex items-center justify-between gap-4">
+            {/* Speed */}
+            <div className="flex gap-1">
+              {[0.75, 1, 1.25, 1.5].map(speed => (
+                <button
+                  key={speed}
+                  onClick={() => setPlaybackSpeed(speed)}
+                  className={`
+                    px-2 py-1 rounded-full text-xs font-medium transition-all duration-200
+                    ${playbackSpeed === speed
+                      ? 'bg-[#D4A843] text-[#0a1a3e]'
+                      : 'bg-white/5 text-white/60 hover:bg-white/10'
+                    }
+                  `}
+                >
+                  {speed}x
+                </button>
+              ))}
+            </div>
+
+            {/* Chapter Navigation */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={goToPreviousChapter}
+                className="w-8 h-8 rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-[#D4A843] transition-all flex items-center justify-center"
+                style={{ fontSize: '14px' }}
+              >
+                ⏮
+              </button>
+              
+              <button
+                onClick={togglePlay}
+                className="w-12 h-12 rounded-full bg-[#D4A843] text-[#0a1a3e] hover:bg-[#B8902E] transition-all flex items-center justify-center font-semibold shadow-lg shadow-[#D4A843]/30"
+                style={{ fontSize: '18px' }}
+              >
+                {isPlaying ? '⏸' : '▶'}
+              </button>
+              
+              <button
+                onClick={goToNextChapter}
+                className="w-8 h-8 rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-[#D4A843] transition-all flex items-center justify-center"
+                style={{ fontSize: '14px' }}
+              >
+                ⏭
+              </button>
+            </div>
+
+            {/* Progress */}
+            <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-[#D4A843] transition-all duration-300"
+                style={{
+                  width: `${currentVerseIndex !== null ? ((currentVerseIndex + 1) / verses.length) * 100 : 0}%`
+                }}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

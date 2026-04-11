@@ -295,7 +295,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
               fontSize: '1.1rem',
               lineHeight: '1.8',
               fontFamily: 'Lora, serif',
-              paddingBottom: mode === 'listen' ? '220px' : '120px'
+              paddingBottom: mode === 'listen' ? '220px' : '80px'
             }}>
               {verses.map(v => (
                 <p key={v.verse} style={{
