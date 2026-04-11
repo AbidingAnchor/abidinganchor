@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
-import { appendAvatarCacheBust } from '../utils/avatarUrl'
 
 const tabs = [
   { label: 'Home', path: '/', icon: '🏠' },
@@ -33,16 +32,18 @@ export default function Navbar() {
     loadAvatar()
   }, [user?.id])
 
+  useEffect(() => {
+    if (profile?.avatar_url && !localAvatarUrl) {
+      setLocalAvatarUrl(profile.avatar_url)
+    }
+  }, [profile?.avatar_url, localAvatarUrl])
+
   const displayName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email || ''
   const rawAvatarUrl =
     localAvatarUrl ??
     profile?.avatar_url ??
     user?.user_metadata?.avatar_url ??
     user?.user_metadata?.picture
-  const avatarDisplayUrl = useMemo(
-    () => appendAvatarCacheBust(rawAvatarUrl),
-    [rawAvatarUrl],
-  )
 
   return (
     <>
@@ -98,9 +99,9 @@ export default function Navbar() {
             >
               {displayName.charAt(0).toUpperCase()}
             </span>
-            {avatarDisplayUrl ? (
+            {rawAvatarUrl ? (
               <img
-                src={avatarDisplayUrl}
+                src={localAvatarUrl || profile?.avatar_url}
                 alt="Profile"
                 onError={(e) => {
                   e.target.style.display = 'none'

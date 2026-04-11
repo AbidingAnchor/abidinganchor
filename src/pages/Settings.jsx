@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
-import { appendAvatarCacheBust, getAvatarUploadExtension } from '../utils/avatarUrl'
+import { getAvatarUploadExtension } from '../utils/avatarUrl'
 
 export default function Settings() {
   const navigate = useNavigate()
@@ -181,12 +181,8 @@ export default function Settings() {
 
   const displayName = profile?.full_name || user?.user_metadata?.full_name || 'User'
   const userEmail = user?.email || ''
-  const serverRawAvatarUrl = pendingAvatarUrl ?? localAvatarUrl ?? profile?.avatar_url
-  const avatarDisplayUrl = useMemo(() => {
-    if (avatarPreviewUrl) return avatarPreviewUrl
-    return appendAvatarCacheBust(serverRawAvatarUrl)
-  }, [avatarPreviewUrl, serverRawAvatarUrl])
-  const hasAvatarImage = Boolean(avatarPreviewUrl || serverRawAvatarUrl)
+  const avatarUrl = avatarPreviewUrl || localAvatarUrl || profile?.avatar_url
+  const hasAvatarImage = Boolean(avatarPreviewUrl || localAvatarUrl || profile?.avatar_url)
 
   return (
     <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '110px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
@@ -244,9 +240,9 @@ export default function Settings() {
                 >
                   {displayName.charAt(0).toUpperCase()}
                 </span>
-                {avatarDisplayUrl ? (
+                {avatarUrl ? (
                   <img
-                    src={avatarDisplayUrl}
+                    src={avatarUrl}
                     alt="Profile"
                     onError={(e) => {
                       e.target.style.display = 'none'
