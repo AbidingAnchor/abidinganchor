@@ -204,7 +204,7 @@ export default function CommunityPrayer() {
           zIndex: 1,
           padding: '0 16px',
           paddingTop: 'clamp(200px, 32vw, 240px)',
-          paddingBottom: '100px',
+          paddingBottom: '120px',
           maxWidth: '680px',
           margin: '0 auto',
           width: '100%',

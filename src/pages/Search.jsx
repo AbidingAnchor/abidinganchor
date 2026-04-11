@@ -450,7 +450,7 @@ function Search({ onOpenWorship }) {
     <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
       <div
         className="content-scroll"
-        style={{ padding: '0 16px', paddingTop: '220px', paddingBottom: '100px', maxWidth: '680px', margin: '0 auto', width: '100%' }}
+        style={{ padding: '0 16px', paddingTop: '220px', paddingBottom: '120px', maxWidth: '680px', margin: '0 auto', width: '100%' }}
       >
         {selectedBook ? (
           <BibleReader

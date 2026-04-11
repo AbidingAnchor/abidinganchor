@@ -249,7 +249,7 @@ export default function AudioBible() {
   }, [isPlaying, verses, mappedVoices, selectedVoice, playbackSpeed])
 
   return (
-    <div className="content-scroll min-h-screen px-4 pt-6 pb-24">
+    <div className="content-scroll min-h-screen px-4 pt-6 pb-32">
       {/* Screen Title */}
       <div className="flex items-center gap-3 mb-6">
         <span className="text-3xl">📖</span>

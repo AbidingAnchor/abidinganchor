@@ -124,7 +124,7 @@ export default function ShareCard() {
   }
 
   return (
-    <div className="content-scroll min-h-screen px-4 pt-6 pb-24">
+    <div className="content-scroll min-h-screen px-4 pt-6 pb-40">
       {/* Screen Title */}
       <div className="text-center mb-4">
         <h1 className="text-page-title text-gold-accent mb-2">
@@ -135,9 +135,9 @@ export default function ShareCard() {
         </p>
       </div>
 
-      {/* FaithCard Preview */}
-      <div className="flex justify-center mb-6 overflow-hidden">
-        <div ref={cardRef} style={{ transform: 'scale(0.25)', transformOrigin: 'top center' }}>
+      {/* FaithCard Preview - Larger and more prominent */}
+      <div className="flex justify-center mb-4 overflow-hidden">
+        <div ref={cardRef} style={{ transform: 'scale(0.4)', transformOrigin: 'top center' }}>
           <FaithCard
             verseReference={verseReference}
             verseText={verseText}
@@ -150,16 +150,16 @@ export default function ShareCard() {
 
       {/* Loading State */}
       {generating && (
-        <div className="glass p-6 rounded-2xl text-center mb-6">
+        <div className="glass p-4 rounded-2xl text-center mb-4">
           <p className="text-gold-accent text-lg font-semibold mb-2">
             Preparing your card... 🙏
           </p>
-          <div className="w-16 h-16 mx-auto rounded-full border-4 border-[#D4A843]/30 border-t-[#D4A843] animate-spin" />
+          <div className="w-12 h-12 mx-auto rounded-full border-4 border-[#D4A843]/30 border-t-[#D4A843] animate-spin" />
         </div>
       )}
 
-      {/* Card Style Options */}
-      <div className="mb-6">
+      {/* Card Style Options - 2x2 grid */}
+      <div className="mb-4">
         <p className="text-gold-accent text-sm font-semibold uppercase tracking-wider mb-3">
           Card Style
         </p>
@@ -171,7 +171,7 @@ export default function ShareCard() {
               className={`
                 p-4 rounded-xl border-2 transition-all text-left
                 ${cardStyle === style.id
-                  ? 'border-[#D4A843] bg-[#D4A843]/10'
+                  ? 'border-[#D4A843] bg-[#D4A843]/10 shadow-[0_0_20px_rgba(212,168,67,0.3)]'
                   : 'border-white/10 bg-white/5 hover:border-white/20'
                 }
               `}
@@ -184,13 +184,13 @@ export default function ShareCard() {
       </div>
 
       {/* Customization Fields */}
-      <div>
+      <div className="mb-4">
         <p className="text-gold-accent text-sm font-semibold uppercase tracking-wider mb-3">
           Customize
         </p>
         
         {/* Verse Reference */}
-        <div className="mb-4">
+        <div className="mb-3">
           <label className="text-white/70 text-sm mb-2 block">Verse Reference</label>
           <input
             type="text"
@@ -202,7 +202,7 @@ export default function ShareCard() {
         </div>
 
         {/* Verse Text */}
-        <div className="mb-4">
+        <div className="mb-3">
           <label className="text-white/70 text-sm mb-2 block">Verse Text</label>
           <textarea
             value={verseText}
@@ -214,7 +214,7 @@ export default function ShareCard() {
         </div>
 
         {/* Personal Reflection */}
-        <div className="mb-6">
+        <div className="mb-4">
           <label className="text-white/70 text-sm mb-2 block">Personal Reflection (optional)</label>
           <textarea
             value={userReflection}

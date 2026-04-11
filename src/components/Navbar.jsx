@@ -13,7 +13,6 @@ const tabs = [
   { label: 'Community', path: '/community-prayer', icon: '🤝' },
   { label: 'Journal', path: '/journal', icon: '📓' },
   { label: 'Create', path: '/share-card', icon: '✨' },
-  { label: 'Audio', path: '/audio-bible', icon: '🎧' },
 ]
 
 export default function Navbar() {
@@ -177,6 +176,9 @@ export default function Navbar() {
           left: 0,
           right: 0,
           zIndex: 9999,
+          background: 'rgba(7, 13, 26, 0.95)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
           borderTop: '1px solid rgba(255,255,255,0.08)',
           height: '65px',
           display: 'flex',

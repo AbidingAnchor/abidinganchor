@@ -304,7 +304,7 @@ function Home({ onOpenWorship, worshipStatus }) {
           }
         }
       `}</style>
-      <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: 'transparent', paddingBottom: '80px', paddingTop: '60px' }}>
+      <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: 'transparent', paddingBottom: '120px', paddingTop: '60px' }}>
         <div
           className="content-scroll"
           style={{

@@ -199,7 +199,7 @@ export default function Prayer() {
 
   return (
     <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: 'transparent' }}>
-      <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '60px', paddingBottom: '100px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
+      <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '60px', paddingBottom: '120px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
         
         {/* Hero Section */}
         <header className="glass-panel" style={{ marginBottom: '20px', position: 'relative', borderRadius: '16px', overflow: 'hidden', minHeight: '160px' }}>

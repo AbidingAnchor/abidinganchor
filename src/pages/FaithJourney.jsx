@@ -176,11 +176,11 @@ export default function FaithJourney() {
       minHeight: '100%',
       height: 'auto',
       overflow: 'hidden',
-      paddingBottom: '24px',
+      paddingBottom: '120px',
       background: 'transparent'
     }}>
       {view === 'hub' ? (
-        <div style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '20px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
+        <div style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '120px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
           
           {/* Hero Section */}
           <header className="glass-panel" style={{ marginBottom: '20px', position: 'relative', borderRadius: '16px', overflow: 'hidden', minHeight: '160px' }}>

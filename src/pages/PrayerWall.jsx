@@ -127,7 +127,7 @@ export default function PrayerWall() {
   }
 
   return (
-    <div className="content-scroll min-h-screen px-4 pt-6 pb-24">
+    <div className="content-scroll min-h-screen px-4 pt-6 pb-32">
       {/* Screen Title */}
       <div className="flex items-center gap-3 mb-4">
         <span className="text-3xl">🙏</span>
