@@ -216,7 +216,7 @@ export default function BibleReader({ open, onClose }) {
         flex: 1,
         overflowY: 'auto',
         paddingTop: '110px', 
-        paddingBottom: '20px', 
+        paddingBottom: '120px', 
         padding: '24px 20px', 
         maxWidth: '680px', 
         margin: '0 auto'
@@ -231,32 +231,42 @@ export default function BibleReader({ open, onClose }) {
             {/* Chapter Title */}
             <h2 style={{
               color: '#D4A843',
-              fontSize: '24px',
-              fontWeight: 700,
-              marginBottom: '32px',
-              textAlign: 'center'
+              fontSize: '32px',
+              fontWeight: 600,
+              marginBottom: '40px',
+              textAlign: 'center',
+              fontFamily: 'Lora, serif',
+              letterSpacing: '0.02em'
             }}>
               {selectedBook?.name} {chapter}
             </h2>
             
-            {/* Verse Text - Continuous Flow */}
+            {/* Verse Text - Premium Styling */}
             <div style={{
               padding: '20px',
               color: '#F5E6C8',
-              fontSize: `${fontSize}px`,
+              fontSize: '1.1rem',
               lineHeight: '1.8',
-              fontFamily: 'Georgia, serif'
+              fontFamily: 'Lora, serif',
+              paddingBottom: '120px'
             }}>
-              <p>
-                {verses.map(v => (
-                  <span key={v.verse}>
-                    <sup style={{ color: '#D4A843', fontSize: '0.7em', marginRight: '2px' }}>
-                      {v.verse}
-                    </sup>
-                    {v.text.replace(/¶/g, '').replace(/\d+\.\d+[^:]*: [A-Za-z]+\.?/g, '').trim()}{' '}
-                  </span>
-                ))}
-              </p>
+              {verses.map(v => (
+                <p key={v.verse} style={{
+                  marginBottom: '1.2rem',
+                  textAlign: 'justify'
+                }}>
+                  <sup style={{
+                    color: '#D4A843',
+                    fontSize: '0.75em',
+                    fontWeight: 600,
+                    marginRight: '4px',
+                    verticalAlign: 'super'
+                  }}>
+                    {v.verse}
+                  </sup>
+                  {v.text.replace(/¶/g, '').replace(/\d+\.\d+[^:]*: [A-Za-z]+\.?/g, '').trim()}
+                </p>
+              ))}
             </div>
 
             {/* Font Size Controls - Fixed above tab bar */}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 
@@ -17,8 +18,30 @@ const tabs = [
 
 export default function Navbar() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, profile, refreshProfile } = useAuth()
   const [localAvatarUrl, setLocalAvatarUrl] = useState(null)
+
+  const screenTitles = {
+    '/': 'ABIDING ANCHOR',
+    '/read': '📖 Read',
+    '/search': '🔍 Search',
+    '/faith-journey': '🧭 Journey',
+    '/prayer': '🙏 Prayer Wall',
+    '/community-prayer': '🤝 Community',
+    '/journal': '📓 Journal',
+    '/share-card': '🕊️ Share Your Faith',
+    '/memorize': '📖 Memorize',
+    '/devotional': '📖 Devotional',
+    '/scripture-art': '🎨 Scripture Art',
+    '/reading-plans': '📚 Reading Plans',
+    '/fasting': '🍃 Fasting Tracker',
+    '/ai-companion': '🤖 AI Companion',
+    '/friends': '👥 Friends',
+    '/settings': '⚙️ Settings',
+  }
+
+  const currentTitle = screenTitles[location.pathname] || 'ABIDING ANCHOR'
 
   useEffect(() => {
     if (!user?.id) return
@@ -135,7 +158,7 @@ export default function Navbar() {
             textShadow: '0 2px 8px rgba(0,0,0,0.3)'
           }}
         >
-          ABIDING ANCHOR
+          {currentTitle}
         </h1>
 
         {/* Settings icon */}

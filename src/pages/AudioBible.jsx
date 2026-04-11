@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { bibleBooks } from '../data/bibleBooks'
 
 export default function AudioBible() {
@@ -10,6 +10,8 @@ export default function AudioBible() {
   const [error, setError] = useState(null)
   const [selectedVoice, setSelectedVoice] = useState('David')
   const [mappedVoices, setMappedVoices] = useState({})
+  const selectedVoiceRef = useRef('David')
+  const [speechSupported, setSpeechSupported] = useState(true)
   const [currentVerseIndex, setCurrentVerseIndex] = useState(null)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
 
@@ -41,7 +43,8 @@ export default function AudioBible() {
       const fullText = verses.map(v => `${v.verse}. ${v.text}`).join(' ')
       const utterance = new SpeechSynthesisUtterance(fullText)
       
-      const voice = mappedVoices[selectedVoice]
+      // Always read from ref to avoid stale closures
+      const voice = mappedVoices[selectedVoiceRef.current]
       if (voice) {
         utterance.voice = voice
       }
@@ -138,44 +141,43 @@ export default function AudioBible() {
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       const loadVoices = () => {
         const voices = window.speechSynthesis.getVoices()
+        if (voices.length > 0) {
+          // Map voice personalities to available voices
+          const englishVoices = voices.filter(v => v.lang.startsWith('en'))
+          const maleVoices = englishVoices.filter(v => 
+            v.name.toLowerCase().includes('male') || 
+            v.name.toLowerCase().includes('david') ||
+            v.name.toLowerCase().includes('daniel') ||
+            v.name.toLowerCase().includes('james') ||
+            !v.name.toLowerCase().includes('female')
+          )
+          const femaleVoices = englishVoices.filter(v => 
+            v.name.toLowerCase().includes('female') ||
+            v.name.toLowerCase().includes('samantha') ||
+            v.name.toLowerCase().includes('victoria') ||
+            v.name.toLowerCase().includes('karen') ||
+            v.name.toLowerCase().includes('moira')
+          )
 
-        // Map voice personalities to available voices
-        const englishVoices = voices.filter(v => v.lang.startsWith('en'))
-        const maleVoices = englishVoices.filter(v => 
-          v.name.toLowerCase().includes('male') || 
-          v.name.toLowerCase().includes('david') ||
-          v.name.toLowerCase().includes('daniel') ||
-          v.name.toLowerCase().includes('james') ||
-          !v.name.toLowerCase().includes('female')
-        )
-        const femaleVoices = englishVoices.filter(v => 
-          v.name.toLowerCase().includes('female') ||
-          v.name.toLowerCase().includes('samantha') ||
-          v.name.toLowerCase().includes('victoria') ||
-          v.name.toLowerCase().includes('karen') ||
-          v.name.toLowerCase().includes('moira')
-        )
+          const mappings = {
+            David: maleVoices[0] || englishVoices[0] || voices[0],
+            Grace: femaleVoices[0] || englishVoices[1] || voices[1],
+            Elijah: maleVoices[1] || maleVoices[0] || englishVoices[2] || voices[2],
+            Miriam: femaleVoices[1] || femaleVoices[0] || englishVoices[3] || voices[3]
+          }
 
-        const mappings = {
-          David: maleVoices[0] || englishVoices[0] || voices[0],
-          Grace: femaleVoices[0] || englishVoices[1] || voices[1],
-          Elijah: maleVoices[1] || maleVoices[0] || englishVoices[2] || voices[2],
-          Miriam: femaleVoices[1] || femaleVoices[0] || englishVoices[3] || voices[3]
+          setMappedVoices(mappings)
         }
-
-        setMappedVoices(mappings)
-      }
-
-      // Load voices immediately if available, otherwise wait for onvoiceschanged
-      if (window.speechSynthesis.getVoices().length > 0) {
-        loadVoices()
       }
 
       window.speechSynthesis.onvoiceschanged = loadVoices
+      loadVoices() // Call immediately
 
       return () => {
         window.speechSynthesis.onvoiceschanged = null
       }
+    } else {
+      setSpeechSupported(false)
     }
   }, [])
 
@@ -209,7 +211,8 @@ export default function AudioBible() {
       const fullText = verses.map(v => `${v.verse}. ${v.text}`).join(' ')
       const utterance = new SpeechSynthesisUtterance(fullText)
       
-      const voice = mappedVoices[selectedVoice]
+      // Always read from ref to avoid stale closures
+      const voice = mappedVoices[selectedVoiceRef.current]
       if (voice) {
         utterance.voice = voice
       }
@@ -246,7 +249,23 @@ export default function AudioBible() {
       
       window.speechSynthesis.speak(utterance)
     }
-  }, [isPlaying, verses, mappedVoices, selectedVoice, playbackSpeed])
+  }, [isPlaying, verses, mappedVoices, playbackSpeed])
+
+  if (!speechSupported) {
+    return (
+      <div className="content-scroll min-h-screen px-4 pt-6 pb-32 flex items-center justify-center">
+        <div className="glass p-8 rounded-2xl text-center max-w-md">
+          <div className="text-5xl mb-4">🙏</div>
+          <p className="text-white/90 text-lg mb-2">
+            Audio not supported on this device.
+          </p>
+          <p className="text-white/60 text-sm">
+            We're working on bringing you more options soon.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="content-scroll min-h-screen px-4 pt-6 pb-32">
@@ -256,44 +275,44 @@ export default function AudioBible() {
         <h1 className="text-page-title text-gold-accent">Audio Bible</h1>
       </div>
 
-      {/* Book Selector */}
-      <div className="mb-4">
-        <label className="block text-section-header mb-2 text-gold-accent">Book</label>
-        <select
-          value={selectedBook.name}
-          onChange={handleBookChange}
-          className="app-input cursor-pointer"
-          style={{ appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23D4A843'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '20px' }}
-        >
-          {bibleBooks.map(book => (
-            <option key={book.id} value={book.name} className="bg-slate-900 text-white">
-              {book.name}
-            </option>
-          ))}
-        </select>
+      {/* Book & Chapter Selectors */}
+      <div className="flex gap-4 mb-6">
+        <div className="flex-1">
+          <label className="block text-section-header mb-2 text-gold-accent text-sm">Book</label>
+          <select
+            value={selectedBook.name}
+            onChange={handleBookChange}
+            className="app-input cursor-pointer"
+            style={{ appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23D4A843'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '20px' }}
+          >
+            {bibleBooks.map(book => (
+              <option key={book.id} value={book.name} className="bg-slate-900 text-white">
+                {book.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="w-32">
+          <label className="block text-section-header mb-2 text-gold-accent text-sm">Chapter</label>
+          <select
+            value={selectedChapter}
+            onChange={handleChapterChange}
+            className="app-input cursor-pointer"
+            style={{ appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23D4A843'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '20px' }}
+          >
+            {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map(chapter => (
+              <option key={chapter} value={chapter} className="bg-slate-900 text-white">
+                {chapter}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      {/* Chapter Selector */}
-      <div className="mb-6">
-        <label className="block text-section-header mb-2 text-gold-accent">Chapter</label>
-        <select
-          value={selectedChapter}
-          onChange={handleChapterChange}
-          className="app-input cursor-pointer"
-          style={{ appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23D4A843'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '20px' }}
-        >
-          {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map(chapter => (
-            <option key={chapter} value={chapter} className="bg-slate-900 text-white">
-              Chapter {chapter}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Glass Card with Chapter Text */}
-      <div className="glass p-6 mb-6 min-h-[300px]">
-        <div className="text-center mb-4">
-          <h2 className="text-section-header text-gold-accent">
+      {/* Verse Text Background */}
+      <div className="glass p-6 mb-6 min-h-[400px]" style={{ paddingBottom: '140px' }}>
+        <div className="text-center mb-6">
+          <h2 className="text-3xl font-semibold text-gold-accent mb-2" style={{ fontFamily: 'Lora, serif', letterSpacing: '0.02em' }}>
             {selectedBook.name} {selectedChapter}
           </h2>
         </div>
@@ -309,167 +328,136 @@ export default function AudioBible() {
             </p>
           </div>
         ) : (
-          <div className="space-y-4 font-serif text-white leading-relaxed">
+          <div className="space-y-0" style={{ fontFamily: 'Lora, serif', fontSize: '1.1rem', lineHeight: '1.8', color: '#F5E6C8' }}>
             {verses.map((verse, index) => (
-              <div 
+              <p 
                 key={verse.verse} 
-                className={`flex gap-3 transition-all duration-300 ${
-                  currentVerseIndex === index ? 'bg-[#D4A843]/10 -mx-2 px-2 py-1 rounded' : ''
-                }`}
+                style={{ 
+                  marginBottom: '1.2rem',
+                  textAlign: 'justify',
+                  transition: 'all 0.3s ease',
+                  padding: currentVerseIndex === index ? '8px 12px' : '0',
+                  background: currentVerseIndex === index ? 'rgba(212, 168, 67, 0.15)' : 'transparent',
+                  borderRadius: currentVerseIndex === index ? '8px' : '0'
+                }}
               >
-                <span className={`font-bold min-w-[24px] ${
-                  currentVerseIndex === index ? 'text-[#D4A843] scale-110' : 'text-gold-accent'
-                }`}>
+                <sup style={{
+                  color: '#D4A843',
+                  fontSize: '0.75em',
+                  fontWeight: 600,
+                  marginRight: '4px',
+                  verticalAlign: 'super'
+                }}>
                   {verse.verse}
-                </span>
-                <span className={currentVerseIndex === index ? 'text-white' : 'text-white/90'}>
-                  {verse.text}
-                </span>
-              </div>
+                </sup>
+                {verse.text}
+              </p>
             ))}
           </div>
         )}
       </div>
 
-      {/* Voice Selector */}
-      <div className="mb-6">
-        <label className="block text-section-header mb-3 text-gold-accent text-center">Voice</label>
-        <div className="flex flex-wrap justify-center gap-3">
-          {[
-            { id: 'David', emoji: '👨', name: 'David', desc: 'deep, calm' },
-            { id: 'Grace', emoji: '👩', name: 'Grace', desc: 'warm, gentle' },
-            { id: 'Elijah', emoji: '👴', name: 'Elijah', desc: 'strong, resonant' },
-            { id: 'Miriam', emoji: '👩‍🦳', name: 'Miriam', desc: 'soft, contemplative' }
-          ].map(voice => (
-            <button
-              key={voice.id}
-              onClick={() => setSelectedVoice(voice.id)}
-              className={`
-                px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
-                ${selectedVoice === voice.id
-                  ? 'bg-[#D4A843] text-[#1a0533]'
-                  : 'glass border border-[#D4A843] text-white hover:bg-[#D4A843]/10'
-                }
-              `}
-            >
-              <span className="mr-1">{voice.emoji}</span>
-              <span>{voice.name}</span>
-              <span className="text-xs opacity-70 ml-1">({voice.desc})</span>
-            </button>
-          ))}
+      {/* Fixed Audio Controls Overlay */}
+      <div
+        className="glass"
+        style={{
+          position: 'fixed',
+          bottom: 'calc(72px + env(safe-area-inset-bottom, 0px))',
+          left: '16px',
+          right: '16px',
+          zIndex: 9997,
+          padding: '16px',
+          borderRadius: '20px',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+        }}
+      >
+        {/* Voice Selector */}
+        <div className="mb-4">
+          <label className="block text-xs font-semibold text-gold-accent mb-2 text-center">Voice</label>
+          <div className="flex flex-wrap justify-center gap-2">
+            {[
+              { id: 'David', emoji: '👨', name: 'David' },
+              { id: 'Grace', emoji: '👩', name: 'Grace' },
+              { id: 'Elijah', emoji: '👴', name: 'Elijah' },
+              { id: 'Miriam', emoji: '👩‍🦳', name: 'Miriam' }
+            ].map(voice => (
+              <button
+                key={voice.id}
+                onClick={() => {
+                  setSelectedVoice(voice.id)
+                  selectedVoiceRef.current = voice.id
+                  if (isPlaying) {
+                    stopPlayback()
+                    setTimeout(() => {
+                      setIsPlaying(true)
+                    }, 100)
+                  }
+                }}
+                className={`
+                  px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200
+                  ${selectedVoice === voice.id
+                    ? 'bg-[#D4A843] text-[#0a1a3e]'
+                    : 'bg-white/5 text-white/70 hover:bg-white/10'
+                  }
+                `}
+              >
+                <span className="mr-1">{voice.emoji}</span>
+                <span>{voice.name}</span>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Playback Speed Control */}
-      <div className="mb-4">
-        <label className="block text-section-header mb-2 text-gold-accent text-center">Speed</label>
-        <div className="flex justify-center gap-2">
-          {[0.75, 1, 1.25, 1.5].map(speed => (
-            <button
-              key={speed}
-              onClick={() => setPlaybackSpeed(speed)}
-              className={`
-                px-3 py-1 rounded-full text-xs font-medium transition-all duration-200
-                ${playbackSpeed === speed
-                  ? 'bg-[#D4A843] text-[#1a0533]'
-                  : 'glass border border-[#D4A843]/50 text-white/70 hover:bg-[#D4A843]/10 hover:text-white'
-                }
-              `}
-            >
-              {speed}x
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Playback Controls */}
-      <div className="flex justify-center gap-4">
-        <button
-          onClick={togglePlay}
-          className="btn-primary flex items-center gap-2"
-          disabled={!selectedBook}
-        >
-          {isPlaying ? (
-            <>
-              <span>⏸</span>
-              <span>Pause</span>
-            </>
-          ) : (
-            <>
-              <span>▶</span>
-              <span>Play</span>
-            </>
-          )}
-        </button>
-        
-        <button
-          onClick={stopPlayback}
-          className="btn-secondary flex items-center gap-2"
-          disabled={!isPlaying}
-        >
-          <span>⏹</span>
-          <span>Stop</span>
-        </button>
-      </div>
-
-      {/* Fixed Bottom Player Bar */}
-      {isPlaying && (
-        <div
-          className="glass"
-          style={{
-            position: 'fixed',
-            bottom: 'calc(65px + env(safe-area-inset-bottom, 12px))',
-            left: '16px',
-            right: '16px',
-            zIndex: 9997,
-            padding: '12px 16px',
-            borderRadius: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '12px',
-            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.3)',
-          }}
-        >
-          {/* Current chapter info */}
-          <div className="flex items-center gap-2">
-            <span className="text-gold-accent font-semibold text-sm">
-              {selectedBook.name} {selectedChapter}
-            </span>
-            <span className="text-white/50 text-xs">
-              {currentVerseIndex !== null ? `${currentVerseIndex + 1}/${verses.length}` : `0/${verses.length}`}
-            </span>
+        {/* Playback Speed & Controls */}
+        <div className="flex items-center justify-between gap-4">
+          {/* Speed */}
+          <div className="flex gap-1">
+            {[0.75, 1, 1.25, 1.5].map(speed => (
+              <button
+                key={speed}
+                onClick={() => setPlaybackSpeed(speed)}
+                className={`
+                  px-2 py-1 rounded-full text-xs font-medium transition-all duration-200
+                  ${playbackSpeed === speed
+                    ? 'bg-[#D4A843] text-[#0a1a3e]'
+                    : 'bg-white/5 text-white/60 hover:bg-white/10'
+                  }
+                `}
+              >
+                {speed}x
+              </button>
+            ))}
           </div>
 
-          {/* Playback controls */}
-          <div className="flex items-center gap-3">
+          {/* Chapter Navigation */}
+          <div className="flex items-center gap-2">
             <button
               onClick={goToPreviousChapter}
-              className="text-white/70 hover:text-[#D4A843] transition-colors text-xl"
-              style={{ fontSize: '20px' }}
+              className="w-8 h-8 rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-[#D4A843] transition-all flex items-center justify-center"
+              style={{ fontSize: '14px' }}
             >
               ⏮
             </button>
             
             <button
               onClick={togglePlay}
-              className="bg-[#D4A843] text-[#1a0533] w-10 h-10 rounded-full flex items-center justify-center font-semibold hover:bg-[#B8902E] transition-colors"
-              style={{ fontSize: '16px' }}
+              className="w-12 h-12 rounded-full bg-[#D4A843] text-[#0a1a3e] hover:bg-[#B8902E] transition-all flex items-center justify-center font-semibold shadow-lg shadow-[#D4A843]/30"
+              style={{ fontSize: '18px' }}
             >
-              {window.speechSynthesis?.paused ? '▶' : '⏸'}
+              {isPlaying ? '⏸' : '▶'}
             </button>
             
             <button
               onClick={goToNextChapter}
-              className="text-white/70 hover:text-[#D4A843] transition-colors text-xl"
-              style={{ fontSize: '20px' }}
+              className="w-8 h-8 rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-[#D4A843] transition-all flex items-center justify-center"
+              style={{ fontSize: '14px' }}
             >
               ⏭
             </button>
           </div>
 
-          {/* Progress bar */}
-          <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+          {/* Progress */}
+          <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
             <div
               className="h-full bg-[#D4A843] transition-all duration-300"
               style={{
@@ -478,7 +466,7 @@ export default function AudioBible() {
             />
           </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }

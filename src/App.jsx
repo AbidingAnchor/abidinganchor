@@ -20,12 +20,12 @@ import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsOfService from './pages/TermsOfService'
 import Legal from './pages/Legal'
 import Settings from './pages/Settings'
-import Navbar from './components/Navbar'
+import BottomNav from './components/BottomNav'
+import Header from './components/Header'
 import LegalModal from './components/LegalModal'
 import WorshipPlayer from './components/WorshipPlayer'
 import Footer from './components/Footer'
 import Onboarding from './components/Onboarding'
-import { getScenery, toggleScenery } from './utils/scenery'
 import Auth from './pages/Auth'
 import { useAuth } from './context/AuthContext'
 import LoadingScreen from './components/LoadingScreen'
@@ -42,21 +42,12 @@ function AppShell() {
   const { user } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
-  const [scenery, setScenery] = useState(() => getScenery())
-  const [showSceneryTip, setShowSceneryTip] = useState(() => !localStorage.getItem('abidinganchor-scenery-tip-seen'))
   const [worshipVisible, setWorshipVisible] = useState(false)
   const [worshipAutoPlayToken, setWorshipAutoPlayToken] = useState(0)
   const [worshipStatus, setWorshipStatus] = useState({ isPlaying: false, currentTrack: 'Soaking Worship', isVisible: false })
   const showNav = location.pathname !== '/auth' && location.pathname !== '/onboarding'
   const showFooter = location.pathname !== '/auth' && location.pathname !== '/onboarding'
-
-  const handleToggleScenery = () => {
-    setScenery((prev) => toggleScenery(prev))
-    if (showSceneryTip) {
-      localStorage.setItem('abidinganchor-scenery-tip-seen', 'true')
-      setShowSceneryTip(false)
-    }
-  }
+  const showHeader = location.pathname !== '/auth' && location.pathname !== '/onboarding'
 
   const openWorship = (startPlaying = false) => {
     setWorshipVisible(true)
@@ -90,6 +81,7 @@ function AppShell() {
               flex: 1,
               display: 'flex',
               flexDirection: 'column',
+              paddingTop: showHeader ? '56px' : '0px',
               paddingBottom: '80px',
               background: 'transparent',
             }}
@@ -133,7 +125,8 @@ function AppShell() {
         autoPlayToken={worshipAutoPlayToken}
         onStatusChange={setWorshipStatus}
       />
-      {showNav ? <Navbar scenery={scenery} onToggleScenery={handleToggleScenery} showSceneryTip={showSceneryTip} /> : null}
+      {showHeader ? <Header /> : null}
+      {showNav ? <BottomNav /> : null}
     </div>
   )
 }
