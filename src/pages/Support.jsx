@@ -86,33 +86,6 @@ export default function Support() {
           </p>
         </div>
 
-        <p style={{ color:'rgba(255,255,255,0.7)', fontSize:'11px',
-          fontWeight:'600', letterSpacing:'0.1em', 
-          textTransform:'uppercase', textAlign:'center',
-          marginBottom:'10px' }}>
-          Choose how you'd like to give
-        </p>
-
-        <section style={{ marginBottom: '16px' }}>
-          <h2 style={{ color: '#D4A843', fontSize: '13px', fontWeight: 700, margin: '0 0 8px', letterSpacing: '0.06em' }}>
-            Features
-          </h2>
-          <div style={{ display: 'grid', gap: '10px' }}>
-            <Link to="/ai-companion" style={{ textDecoration: 'none' }}>
-              <article style={{ background: 'rgba(8, 20, 50, 0.72)', backdropFilter: 'blur(20px)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.12)', padding: '14px 16px' }}>
-                <p style={{ color: '#D4A843', fontWeight: 700, margin: 0 }}>✦ AI Bible Companion</p>
-                <p style={{ color: 'rgba(255,255,255,0.95)', fontSize: '12px', margin: '4px 0 0' }}>Ask questions about any Scripture passage</p>
-              </article>
-            </Link>
-            <Link to="/faith-journey" style={{ textDecoration: 'none' }}>
-              <article style={{ background: 'rgba(8, 20, 50, 0.72)', backdropFilter: 'blur(20px)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.12)', padding: '14px 16px' }}>
-                <p style={{ color: '#D4A843', fontWeight: 700, margin: 0 }}>✦ Faith Journey</p>
-                <p style={{ color: 'rgba(255,255,255,0.95)', fontSize: '12px', margin: '4px 0 0' }}>View your spiritual growth milestones</p>
-              </article>
-            </Link>
-          </div>
-        </section>
-
         <section style={{ marginBottom: '14px' }}>
           <h2 style={{ color: '#D4A843', fontSize: '13px', fontWeight: 700, margin: '0 0 8px', letterSpacing: '0.06em' }}>
             Daily Notifications

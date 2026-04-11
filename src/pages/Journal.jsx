@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { deleteJournalEntry, getJournalEntries, saveToJournal } from '../utils/journal'
 import { useAuth } from '../context/AuthContext'
 
+const MOOD_TAGS = ['Grateful', 'Hopeful', 'Struggling', 'Peaceful', 'Convicted', 'Joyful']
+
 function normalizeEntry(entry) {
   const savedDate = entry.created_at ? new Date(entry.created_at).toLocaleDateString('en-US', {
     month: 'long',
@@ -17,6 +19,7 @@ function normalizeEntry(entry) {
     reference: entry.verse_reference || '',
     note: entry.content || '',
     date: savedDate,
+    mood: entry.mood || '',
   }
 }
 
@@ -29,6 +32,8 @@ function Journal() {
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [selectedMood, setSelectedMood] = useState('')
+  const [writingStreak, setWritingStreak] = useState(0)
 
   useEffect(() => {
     let active = true
@@ -38,6 +43,35 @@ function Journal() {
       const data = await getJournalEntries(user.id)
       if (!active) return
       setEntries((data || []).map(normalizeEntry))
+      
+      // Calculate writing streak
+      const entriesWithDates = (data || []).map(e => ({
+        date: new Date(e.created_at).toISOString().slice(0, 10)
+      }))
+      const uniqueDates = [...new Set(entriesWithDates.map(e => e.date))].sort().reverse()
+      
+      let streak = 0
+      const today = new Date().toISOString().slice(0, 10)
+      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+      
+      if (uniqueDates.length > 0) {
+        const mostRecent = uniqueDates[0]
+        if (mostRecent === today || mostRecent === yesterday) {
+          streak = 1
+          for (let i = 1; i < uniqueDates.length; i++) {
+            const current = new Date(uniqueDates[i])
+            const prev = new Date(uniqueDates[i - 1])
+            const diffDays = Math.floor((prev - current) / (1000 * 60 * 60 * 24))
+            if (diffDays === 1) {
+              streak++
+            } else {
+              break
+            }
+          }
+        }
+      }
+      
+      setWritingStreak(streak)
       setLoading(false)
     }
     load()
@@ -71,6 +105,7 @@ function Journal() {
       note: content.trim(),
       tags: ['Reflection'],
       userId: user?.id,
+      mood: selectedMood || null,
     })
     
     setSaving(false)
@@ -80,6 +115,7 @@ function Journal() {
     setTitle('')
     setContent('')
     setReference('')
+    setSelectedMood('')
     setShowModal(false)
   }
 
@@ -105,6 +141,34 @@ function Journal() {
         }}>
           MY JOURNAL
         </h1>
+
+        <div style={{
+          background: 'rgba(8,20,50,0.72)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(212,168,67,0.25)',
+          borderRadius: '16px',
+          padding: '16px',
+          marginBottom: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px'
+        }}>
+          <span style={{ fontSize: '24px' }}>🔥</span>
+          <div>
+            <p style={{ 
+              color: '#D4A843', 
+              fontSize: '14px', 
+              fontWeight: 600, 
+              marginBottom: '2px' 
+            }}>
+              {writingStreak > 0 ? `${writingStreak} Day Writing Streak` : 'Start your writing streak today'}
+            </p>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px' }}>
+              {writingStreak > 0 ? 'Keep up the great work!' : 'Write your first entry to begin'}
+            </p>
+          </div>
+        </div>
 
         <button
           type="button"
@@ -184,18 +248,31 @@ function Journal() {
                   alignItems: 'center',
                   marginTop: '12px'
                 }}>
-                  {entry.reference && (
-                    <span style={{
-                      background: 'rgba(212,168,67,0.15)',
-                      color: '#D4A843',
-                      borderRadius: '20px',
-                      fontSize: '12px',
-                      padding: '3px 10px'
-                    }}>
-                      {entry.reference}
-                    </span>
-                  )}
-                  {!entry.reference && <span />}
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {entry.mood && (
+                      <span style={{
+                        background: 'rgba(212,168,67,0.15)',
+                        color: '#D4A843',
+                        borderRadius: '20px',
+                        fontSize: '11px',
+                        padding: '3px 10px',
+                        fontWeight: 600
+                      }}>
+                        {entry.mood}
+                      </span>
+                    )}
+                    {entry.reference && (
+                      <span style={{
+                        background: 'rgba(212,168,67,0.15)',
+                        color: '#D4A843',
+                        borderRadius: '20px',
+                        fontSize: '12px',
+                        padding: '3px 10px'
+                      }}>
+                        {entry.reference}
+                      </span>
+                    )}
+                  </div>
                   <button
                     type="button"
                     onClick={() => handleDeleteEntry(entry)}
@@ -265,7 +342,10 @@ function Journal() {
               inset: 0,
               background: 'rgba(0,0,0,0.5)',
             }}
-            onClick={() => setShowModal(false)}
+            onClick={() => {
+              setShowModal(false)
+              setSelectedMood('')
+            }}
           />
           <div style={{
             background: 'rgba(8,20,50,0.95)',
@@ -335,11 +415,53 @@ function Journal() {
                 color: 'white',
                 padding: '12px 16px',
                 width: '100%',
-                marginBottom: '20px',
+                marginBottom: '16px',
                 fontSize: '16px',
                 outline: 'none'
               }}
             />
+            
+            <p style={{
+              color: 'rgba(255,255,255,0.7)',
+              fontSize: '12px',
+              fontWeight: 600,
+              marginBottom: '8px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em'
+            }}>
+              How are you feeling?
+            </p>
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '8px',
+              marginBottom: '20px'
+            }}>
+              {MOOD_TAGS.map((mood) => (
+                <button
+                  key={mood}
+                  type="button"
+                  onClick={() => setSelectedMood(selectedMood === mood ? '' : mood)}
+                  style={{
+                    background: selectedMood === mood 
+                      ? 'rgba(212,168,67,0.15)' 
+                      : 'rgba(8,20,50,0.72)',
+                    border: selectedMood === mood 
+                      ? '1px solid #D4A843' 
+                      : '1px solid rgba(212,168,67,0.3)',
+                    borderRadius: '50px',
+                    padding: '8px 16px',
+                    color: selectedMood === mood ? '#D4A843' : 'rgba(255,255,255,0.6)',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {mood}
+                </button>
+              ))}
+            </div>
             
             <button
               type="button"
@@ -364,7 +486,10 @@ function Journal() {
             
             <button
               type="button"
-              onClick={() => setShowModal(false)}
+              onClick={() => {
+                setShowModal(false)
+                setSelectedMood('')
+              }}
               style={{
                 background: 'none',
                 color: 'rgba(255,255,255,0.5)',

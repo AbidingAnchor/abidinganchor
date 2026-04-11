@@ -26,7 +26,7 @@ export async function getJournalEntries(userIdArg) {
   }
 }
 
-export async function saveToJournal({ verse, reference, note = '', tags = [], userId: userIdArg, id: existingId }) {
+export async function saveToJournal({ verse, reference, note = '', tags = [], userId: userIdArg, id: existingId, mood }) {
   let userId = userIdArg
   if (!userId) {
     try {
@@ -62,6 +62,7 @@ export async function saveToJournal({ verse, reference, note = '', tags = [], us
     verse: verse || null,
     verse_reference: reference || null,
     entry_type: tags?.[0] || 'Reflection',
+    mood: mood || null,
   }
   try {
     const { data, error } = await supabase.from('journal_entries').upsert(payload, { onConflict: 'id' }).select().single()

@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import BibleTrivia from '../components/BibleTrivia'
 import VerseFlashcards from '../components/VerseFlashcards'
 import JourneyMap from '../components/JourneyMap'
 import Achievements from '../components/Achievements'
 import { useAuth } from '../context/AuthContext'
+import { supabase } from '../lib/supabase'
 
 const VERSE_PROGRESS_KEY = 'abidinganchor-verse-progress'
 const TRIVIA_STREAK_KEY = 'abidinganchor-trivia-streak'
@@ -130,19 +131,52 @@ const LearningPathCard = ({ icon, title, subtitle, accentColor, iconBg, progress
 
 export default function FaithJourney() {
   const [view, setView] = useState('hub') // hub | trivia | flashcards | map | achievements
-  const { profile } = useAuth()
+  const { user, profile } = useAuth()
+  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState({ versesRead: 0, streak: 0, badges: 0 })
 
-  const stats = useMemo(() => {
-    const verseProgress = readJson(VERSE_PROGRESS_KEY, {})
-    const memorized = Object.values(verseProgress).filter((p) => p?.memorized).length
-    const triviaStreak = readJson(TRIVIA_STREAK_KEY, { count: 0 }).count || 0
-    const achievements = readJson(ACHIEVEMENTS_KEY, {})
-    const badges = Object.values(achievements).filter((a) => a?.unlockedAt).length
-    return { memorized, triviaStreak, badges }
-  }, [])
+  useEffect(() => {
+    if (!user?.id) {
+      setLoading(false)
+      return
+    }
+    let cancelled = false
+    ;(async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('reading_streak, verses_read, lessons_completed')
+          .eq('id', user.id)
+          .single()
+        if (error) throw error
+        if (cancelled) return
+        setStats({
+          versesRead: Number(data?.verses_read) || 0,
+          streak: Number(data?.reading_streak) || 0,
+          badges: Number(data?.lessons_completed) || 0
+        })
+      } catch {
+        // Fallback to localStorage on error
+        const verseProgress = readJson(VERSE_PROGRESS_KEY, {})
+        const memorized = Object.values(verseProgress).filter((p) => p?.memorized).length
+        const triviaStreak = readJson(TRIVIA_STREAK_KEY, { count: 0 }).count || 0
+        const achievements = readJson(ACHIEVEMENTS_KEY, {})
+        const badges = Object.values(achievements).filter((a) => a?.unlockedAt).length
+        setStats({
+          versesRead: memorized,
+          streak: profile?.reading_streak || triviaStreak,
+          badges: badges
+        })
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [user?.id, profile?.reading_streak])
 
-  // Use Supabase streak if available, otherwise use localStorage
-  const streakCount = profile?.prayer_streak || stats.triviaStreak
+  const streakCount = loading ? 0 : stats.streak
   const dayIndex = getDayIndexForWeek()
   const days = ['M', 'T', 'W', 'T', 'F']
 
@@ -262,17 +296,17 @@ export default function FaithJourney() {
             <span style={{ fontSize: '22px' }}>🔥</span>
             <div style={{ flex: 1 }}>
               <p style={{ color: '#FFFFFF', fontSize: '13px', fontWeight: 600, marginBottom: '2px' }}>
-                {streakCount} day streak
+                {loading ? '...' : `${streakCount} day streak`}
               </p>
               <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px' }}>
-                {streakCount === 0 ? 'Complete an activity to start your streak' : 'Keep up the great work!'}
+                {loading ? 'Loading...' : streakCount === 0 ? 'Complete an activity to start your streak' : 'Keep up the great work!'}
               </p>
             </div>
             {/* Day of week dots */}
             <div style={{ display: 'flex', gap: '6px' }}>
               {days.map((day, i) => {
                 const isToday = i === dayIndex
-                const isCompleted = i < dayIndex && dayIndex !== -1
+                const isCompleted = !loading && i < streakCount && dayIndex !== -1
                 return (
                   <div
                     key={day}
@@ -285,12 +319,20 @@ export default function FaithJourney() {
                       justifyContent: 'center',
                       fontSize: '10px',
                       fontWeight: 600,
-                      background: isToday 
-                        ? '#D4A843' 
-                        : isCompleted 
-                          ? 'rgba(212,168,67,0.3)' 
-                          : 'rgba(255,255,255,0.06)',
-                      color: isToday ? '#0a1a3e' : isCompleted ? '#D4A843' : 'rgba(255,255,255,0.3)'
+                      background: loading
+                        ? 'rgba(255,255,255,0.06)'
+                        : isToday
+                          ? '#D4A843'
+                          : isCompleted
+                            ? 'rgba(212,168,67,0.3)'
+                            : 'rgba(255,255,255,0.06)',
+                      color: loading
+                        ? 'rgba(255,255,255,0.3)'
+                        : isToday
+                          ? '#0a1a3e'
+                          : isCompleted
+                            ? '#D4A843'
+                            : 'rgba(255,255,255,0.3)'
                     }}
                   >
                     {day}
@@ -362,7 +404,7 @@ export default function FaithJourney() {
               padding: '14px',
               textAlign: 'center'
             }}>
-              <p style={{ color: '#D4A843', fontSize: '22px', fontWeight: 700, marginBottom: '2px' }}>{stats.memorized}</p>
+              <p style={{ color: '#D4A843', fontSize: '22px', fontWeight: 700, marginBottom: '2px' }}>{stats.versesRead}</p>
               <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Verses</p>
             </div>
             <div style={{

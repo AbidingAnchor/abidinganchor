@@ -82,7 +82,8 @@ export default function AppBackground() {
                   top: `${star.top}%`,
                   left: `${star.left}%`,
                   opacity: star.opacity,
-                  animation: `twinkle ${star.duration}s ease-in-out infinite`
+                  animation: `twinkle ${star.duration}s ease-in-out infinite`,
+                  zIndex: 1
                 }}
               />
             ))}
@@ -90,13 +91,14 @@ export default function AppBackground() {
             {/* Moon */}
             <div style={{
               position: 'absolute',
-              top: '15%',
+              top: '8%',
               right: '10%',
               width: '50px',
               height: '50px',
               background: 'radial-gradient(circle at 30% 30%, #fffbe6 0%, #f0d060 100%)',
               borderRadius: '50%',
-              boxShadow: '0 0 30px rgba(255, 230, 160, 0.6), 0 0 60px rgba(255, 230, 160, 0.3)'
+              boxShadow: '0 0 30px rgba(255, 230, 160, 0.6), 0 0 60px rgba(255, 230, 160, 0.3)',
+              zIndex: 1
             }} />
           </>
         )}

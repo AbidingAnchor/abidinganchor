@@ -30,6 +30,8 @@ export default function CommunityPrayer() {
   const [formCategory, setFormCategory] = useState('General')
   const [formAnonymous, setFormAnonymous] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [activeUsersCount, setActiveUsersCount] = useState(0)
+  const [animatingPrayId, setAnimatingPrayId] = useState(null)
 
   // Define style objects that were missing
   const cardStyle = {
@@ -93,6 +95,20 @@ export default function CommunityPrayer() {
     return loadMine()
   }, [tab, loadWall, loadMine])
 
+  const loadActiveUsersCount = useCallback(async () => {
+    try {
+      const today = new Date().toISOString().slice(0, 10)
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .gte('last_active_date', today)
+      if (error) throw error
+      setActiveUsersCount(data?.length || 0)
+    } catch {
+      setActiveUsersCount(0)
+    }
+  }, [])
+
   useEffect(() => {
     let alive = true
     ;(async () => {
@@ -100,6 +116,7 @@ export default function CommunityPrayer() {
       try {
         if (tab === 'wall') await loadWall()
         else await loadMine()
+        await loadActiveUsersCount()
       } finally {
         if (alive) setLoading(false)
       }
@@ -107,7 +124,7 @@ export default function CommunityPrayer() {
     return () => {
       alive = false
     }
-  }, [tab, loadWall, loadMine])
+  }, [tab, loadWall, loadMine, loadActiveUsersCount])
 
   const togglePray = async (prayer) => {
     if (!user?.id) return
@@ -146,6 +163,9 @@ export default function CommunityPrayer() {
         if (i2) throw i2
         setMyPrayedIds((prev) => new Set(prev).add(id))
         setPrayers((prev) => prev.map((p) => (p.id === id ? { ...p, pray_count: count + 1 } : p)))
+        // Trigger animation
+        setAnimatingPrayId(id)
+        setTimeout(() => setAnimatingPrayId(null), 400)
       }
     } catch {
       await refresh()
@@ -204,6 +224,8 @@ export default function CommunityPrayer() {
       <div
         className="content-scroll"
         style={{
+          position: 'relative',
+          zIndex: 1,
           padding: '0 16px',
           paddingTop: 'clamp(200px, 32vw, 240px)',
           paddingBottom: '100px',
@@ -218,6 +240,9 @@ export default function CommunityPrayer() {
               🤝 Community Prayer
             </h1>
             <p className="text-body">Lift each other up in prayer.</p>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', marginTop: '4px' }}>
+              🟢 {activeUsersCount} believers praying today
+            </p>
           </div>
           <Link to="/friends" className="btn-secondary">
             Friends 👥
@@ -312,11 +337,16 @@ export default function CommunityPrayer() {
                   <button
                     type="button"
                     onClick={() => togglePray(p)}
-                    className={`mt-3 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition sm:w-auto sm:px-6 ${prayed ? 'btn-primary' : 'btn-secondary text-gold-accent'}`}
+                    className={`mt-3 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition sm:w-auto sm:px-6 ${
+                      prayed ? 'btn-primary' : 'btn-secondary text-gold-accent'
+                    }`}
+                    style={{
+                      transform: animatingPrayId === p.id ? 'scale(1.1)' : 'scale(1)',
+                      transition: animatingPrayId === p.id ? 'transform 0.15s ease-out, background-color 0.15s ease-out' : 'transform 0.2s ease',
+                      backgroundColor: animatingPrayId === p.id ? '#D4A843' : undefined
+                    }}
                   >
-                    <span>🙏</span>
-                    <span>{prayed ? 'Praying' : 'Pray for this'}</span>
-                    <span className="rounded-full bg-black/20 px-2 py-0.5 text-xs">{cnt}</span>
+                    <span>🙏 {cnt}</span>
                   </button>
                 </li>
               )

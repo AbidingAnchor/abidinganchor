@@ -286,6 +286,9 @@ function Search({ onOpenWorship }) {
   const [toastTrigger, setToastTrigger] = useState(0)
   const [shareVerse, setShareVerse] = useState(null)
   const [overviewBook, setOverviewBook] = useState(null)
+  const [aiQuestion, setAiQuestion] = useState('')
+  const [aiResponse, setAiResponse] = useState('')
+  const [aiLoading, setAiLoading] = useState(false)
 
   const visibleBooks = testament === 'new' ? books.new : books.old
   const trimmedSearch = searchTerm.trim()
@@ -408,6 +411,37 @@ function Search({ onOpenWorship }) {
     const seen = JSON.parse(localStorage.getItem('abidinganchor-book-overviews-seen') || '[]')
     if (!seen.includes(bookName)) {
       localStorage.setItem('abidinganchor-book-overviews-seen', JSON.stringify([...seen, bookName]))
+    }
+  }
+
+  const handleAskAI = async () => {
+    const question = aiQuestion.trim()
+    if (!question || aiLoading) return
+    
+    setAiLoading(true)
+    setAiResponse('')
+    
+    try {
+      const response = await fetch('/api/ai-companion', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: question }],
+        }),
+      })
+      
+      if (!response.ok) {
+        throw new Error('Unable to get a response. Please try again.')
+      }
+      
+      const data = await response.json()
+      setAiResponse(data.reply || 'No response received.')
+    } catch (_err) {
+      setAiResponse('Sorry, I encountered an error. Please try again.')
+    } finally {
+      setAiLoading(false)
     }
   }
 
@@ -572,6 +606,7 @@ function Search({ onOpenWorship }) {
                 )}
               </section>
             ) : trimmedSearch ? (
+              <>
               <section className="space-y-3">
                 <h2 className="text-section-header">Search Results for "{trimmedSearch}"</h2>
                 {isLoading ? (
@@ -682,6 +717,91 @@ function Search({ onOpenWorship }) {
                   <article className="rounded-xl p-4" style={{ ...glassCard, ...bodyStyle }}>No verses found. Try a different search.</article>
                 ) : null}
               </section>
+
+              {/* AI Companion Section */}
+              <section className="space-y-3" style={{ marginTop: '24px' }}>
+                <h2 className="text-section-header" style={{ color: '#D4A843', fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em' }}>
+                  ✨ Ask the AI Companion
+                </h2>
+                <div style={{
+                  background: 'rgba(8,20,50,0.72)',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(212,168,67,0.3)',
+                  borderRadius: '16px',
+                  padding: '20px'
+                }}>
+                  <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px', marginBottom: '16px' }}>
+                    Ask anything about Scripture, faith, or what God's Word says about a topic
+                  </p>
+                  <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+                    <input
+                      type="text"
+                      value={aiQuestion}
+                      onChange={(e) => setAiQuestion(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleAskAI()
+                      }}
+                      placeholder="Type your question here..."
+                      style={{
+                        flex: 1,
+                        background: 'rgba(255,255,255,0.08)',
+                        border: '1px solid rgba(212,168,67,0.3)',
+                        borderRadius: '12px',
+                        padding: '12px 16px',
+                        color: 'white',
+                        fontSize: '14px',
+                        outline: 'none'
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAskAI}
+                      disabled={aiLoading}
+                      style={{
+                        background: '#D4A843',
+                        color: '#0a1a3e',
+                        border: 'none',
+                        borderRadius: '12px',
+                        padding: '12px 24px',
+                        fontWeight: 600,
+                        fontSize: '14px',
+                        cursor: aiLoading ? 'not-allowed' : 'pointer',
+                        opacity: aiLoading ? 0.6 : 1
+                      }}
+                    >
+                      {aiLoading ? '...' : 'Ask'}
+                    </button>
+                  </div>
+                  {aiResponse && (
+                    <div style={{
+                      background: 'rgba(255,255,255,0.05)',
+                      borderRadius: '12px',
+                      padding: '16px',
+                      marginTop: '12px'
+                    }}>
+                      <p style={{ color: 'white', fontSize: '14px', lineHeight: 1.6, margin: 0 }}>
+                        {aiResponse}
+                      </p>
+                    </div>
+                  )}
+                  {aiLoading && !aiResponse && (
+                    <div style={{
+                      background: 'rgba(255,255,255,0.05)',
+                      borderRadius: '12px',
+                      padding: '16px',
+                      marginTop: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>Thinking</span>
+                      <span className="animate-pulse" style={{ color: '#D4A843' }}>...</span>
+                    </div>
+                  )}
+                </div>
+              </section>
+              </>
             ) : (
               <section className="space-y-3">
                 <h2 className="text-lg font-semibold" style={headingStyle}>Browse by Book</h2>

@@ -528,7 +528,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                   minHeight: '100px',
                   textDecoration: 'none',
                   background: 'rgba(8, 20, 50, 0.72)',
-                  border: '1px solid rgba(212, 168, 67, 0.25)',
+                  border: '1px solid #D4A843',
                   borderRadius: '16px',
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
@@ -540,12 +540,14 @@ function Home({ onOpenWorship, worshipStatus }) {
                   transition: 'all 0.3s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(212,168,67,0.4)'
+                  e.currentTarget.style.borderColor = '#D4A843'
                   e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
+                  e.currentTarget.style.boxShadow = '0 0 8px rgba(212,168,67,0.2)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(212, 168, 67, 0.25)'
+                  e.currentTarget.style.borderColor = '#D4A843'
                   e.currentTarget.style.background = 'rgba(8, 20, 50, 0.72)'
+                  e.currentTarget.style.boxShadow = 'none'
                 }}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>🎨</p>
@@ -559,7 +561,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                   minHeight: '100px',
                   textDecoration: 'none',
                   background: 'rgba(8, 20, 50, 0.72)',
-                  border: '1px solid rgba(212, 168, 67, 0.25)',
+                  border: '1px solid #D4A843',
                   borderRadius: '16px',
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
@@ -571,12 +573,14 @@ function Home({ onOpenWorship, worshipStatus }) {
                   transition: 'all 0.3s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(212,168,67,0.4)'
+                  e.currentTarget.style.borderColor = '#D4A843'
                   e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
+                  e.currentTarget.style.boxShadow = '0 0 8px rgba(212,168,67,0.2)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(212, 168, 67, 0.25)'
+                  e.currentTarget.style.borderColor = '#D4A843'
                   e.currentTarget.style.background = 'rgba(8, 20, 50, 0.72)'
+                  e.currentTarget.style.boxShadow = 'none'
                 }}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>📅</p>
@@ -590,7 +594,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                   minHeight: '100px',
                   textDecoration: 'none',
                   background: 'rgba(8, 20, 50, 0.72)',
-                  border: '1px solid rgba(212, 168, 67, 0.25)',
+                  border: '1px solid #D4A843',
                   borderRadius: '16px',
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
@@ -602,12 +606,14 @@ function Home({ onOpenWorship, worshipStatus }) {
                   transition: 'all 0.3s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(212,168,67,0.4)'
+                  e.currentTarget.style.borderColor = '#D4A843'
                   e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
+                  e.currentTarget.style.boxShadow = '0 0 8px rgba(212,168,67,0.2)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(212, 168, 67, 0.25)'
+                  e.currentTarget.style.borderColor = '#D4A843'
                   e.currentTarget.style.background = 'rgba(8, 20, 50, 0.72)'
+                  e.currentTarget.style.boxShadow = 'none'
                 }}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>🕐</p>
@@ -621,7 +627,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                   minHeight: '100px',
                   textDecoration: 'none',
                   background: 'rgba(8, 20, 50, 0.72)',
-                  border: '1px solid rgba(212, 168, 67, 0.25)',
+                  border: '1px solid #D4A843',
                   borderRadius: '16px',
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
@@ -633,12 +639,14 @@ function Home({ onOpenWorship, worshipStatus }) {
                   transition: 'all 0.3s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(212,168,67,0.4)'
+                  e.currentTarget.style.borderColor = '#D4A843'
                   e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
+                  e.currentTarget.style.boxShadow = '0 0 8px rgba(212,168,67,0.2)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(212, 168, 67, 0.25)'
+                  e.currentTarget.style.borderColor = '#D4A843'
                   e.currentTarget.style.background = 'rgba(8, 20, 50, 0.72)'
+                  e.currentTarget.style.boxShadow = 'none'
                 }}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>🤝</p>
@@ -650,7 +658,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                   minWidth: '140px',
                   minHeight: '100px',
                   background: 'rgba(8, 20, 50, 0.72)',
-                  border: '1px solid rgba(212, 168, 67, 0.25)',
+                  border: '1px solid #D4A843',
                   borderRadius: '16px',
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
@@ -663,9 +671,15 @@ function Home({ onOpenWorship, worshipStatus }) {
                   transition: 'all 0.3s ease',
                   cursor: 'pointer'
                 }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = '#D4A843'
+                  e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
+                  e.currentTarget.style.boxShadow = '0 0 8px rgba(212,168,67,0.2)'
+                }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(212, 168, 67, 0.25)'
+                  e.currentTarget.style.borderColor = '#D4A843'
                   e.currentTarget.style.background = 'rgba(8, 20, 50, 0.72)'
+                  e.currentTarget.style.boxShadow = 'none'
                 }}
                 onClick={() => window.open('https://discord.gg/nZcZRkUMJh', '_blank')}
               >
@@ -680,7 +694,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                   minHeight: '100px',
                   textDecoration: 'none',
                   background: 'rgba(8, 20, 50, 0.72)',
-                  border: '1px solid rgba(212, 168, 67, 0.25)',
+                  border: '1px solid #D4A843',
                   borderRadius: '16px',
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
@@ -692,12 +706,14 @@ function Home({ onOpenWorship, worshipStatus }) {
                   transition: 'all 0.3s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(212,168,67,0.4)'
+                  e.currentTarget.style.borderColor = '#D4A843'
                   e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
+                  e.currentTarget.style.boxShadow = '0 0 8px rgba(212,168,67,0.2)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(212, 168, 67, 0.25)'
+                  e.currentTarget.style.borderColor = '#D4A843'
                   e.currentTarget.style.background = 'rgba(8, 20, 50, 0.72)'
+                  e.currentTarget.style.boxShadow = 'none'
                 }}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: '#D4A843' }}>🎵</p>

@@ -1,6 +1,30 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+
+// Generate stars for hero section
+const HERO_STARS = Array.from({ length: 40 }).map(() => ({
+  width: Math.random() * 2 + 1,
+  height: Math.random() * 2 + 1,
+  top: Math.random() * 60,
+  left: Math.random() * 100,
+  opacity: Math.random() * 0.5 + 0.3,
+  duration: Math.random() * 3 + 2
+}))
+
+// Prayer prompts for daily rotation
+const PRAYER_PROMPTS = [
+  "Thank God for His unfailing love and mercy today.",
+  "Pray for wisdom and guidance in your daily decisions.",
+  "Ask God to give you strength to face today's challenges.",
+  "Pray for those who are hurting or in need around you.",
+  "Thank God for the blessings in your life, big and small.",
+  "Pray for patience and kindness in your interactions with others.",
+  "Ask God to help you trust Him more fully.",
+  "Pray for peace that surpasses understanding.",
+  "Thank God for His faithfulness throughout your life.",
+  "Pray for opportunities to be a light to others today."
+]
 
 export default function Prayer() {
   const { user } = useAuth()
@@ -10,6 +34,77 @@ export default function Prayer() {
   const [content, setContent] = useState('')
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState({ streak: 0, totalPrayers: 0, answeredPrayers: 0 })
+  const [prayerOfTheDay, setPrayerOfTheDay] = useState('')
+  const [isListening, setIsListening] = useState(false)
+  const [transcript, setTranscript] = useState('')
+  const [recognition, setRecognition] = useState(null)
+
+  // Load stats from Supabase
+  useEffect(() => {
+    if (!user?.id) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        // Fetch streak from profiles
+        const { data: profileData, error: _profileError } = await supabase
+          .from('profiles')
+          .select('reading_streak')
+          .eq('id', user.id)
+          .single()
+        
+        // Fetch prayer counts
+        const { data: prayersData, error: _prayersError } = await supabase
+          .from('prayers')
+          .select('answered')
+          .eq('user_id', user.id)
+        
+        if (cancelled) return
+        
+        const streak = Number(profileData?.reading_streak) || 0
+        const totalPrayers = (prayersData || []).length
+        const answeredPrayers = (prayersData || []).filter((p) => p.answered).length
+        
+        setStats({ streak, totalPrayers, answeredPrayers })
+      } catch (err) {
+        console.error('Error loading stats:', err)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [user?.id])
+
+  // Set prayer of the day based on date
+  useEffect(() => {
+    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24))
+    setPrayerOfTheDay(PRAYER_PROMPTS[dayOfYear % PRAYER_PROMPTS.length])
+  }, [])
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
+      const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition
+      const rec = new SpeechRecognition()
+      rec.continuous = false
+      rec.interimResults = true
+      rec.lang = 'en-US'
+      
+      rec.onresult = (event) => {
+        const current = event.resultIndex
+        const transcriptText = event.results[current][0].transcript
+        setTranscript(transcriptText)
+      }
+      
+      rec.onend = () => {
+        setIsListening(false)
+      }
+      
+      rec.onerror = () => {
+        setIsListening(false)
+      }
+      
+      setRecognition(rec)
+    }
+  }, [])
 
   const loadPrayers = async () => {
     if (!user?.id) return
@@ -33,24 +128,27 @@ export default function Prayer() {
     }
   }
 
-  const addPrayer = async () => {
-    if (!content.trim()) return
+  const addPrayer = useCallback(async () => {
+    const prayerContent = transcript.trim() || content.trim()
+    if (!prayerContent) return
     try {
       const { error } = await supabase.from('prayers').insert({
         user_id: user.id,
         title: title.trim() || null,
-        content: content.trim(),
+        content: prayerContent,
         answered: false,
       })
       if (error) throw error
       await loadPrayers()
       setTitle('')
       setContent('')
+      setTranscript('')
       setShowModal(false)
     } catch (err) {
       console.error('Error adding prayer:', err)
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, title, content, transcript])
 
   const markAsAnswered = async (entry) => {
     try {
@@ -72,6 +170,20 @@ export default function Prayer() {
     }
   }
 
+  const startListening = () => {
+    if (recognition) {
+      setTranscript('')
+      setIsListening(true)
+      recognition.start()
+    }
+  }
+
+  const stopListening = () => {
+    if (recognition && isListening) {
+      recognition.stop()
+    }
+  }
+
   useEffect(() => {
     let active = true
     const boot = async () => {
@@ -81,6 +193,7 @@ export default function Prayer() {
     }
     boot()
     return () => { active = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id])
 
   const activePrayers = (entries || []).filter((p) => !p.answered)
@@ -88,22 +201,285 @@ export default function Prayer() {
 
   return (
     <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: 'transparent' }}>
-      <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '200px', paddingBottom: '100px', maxWidth: '390px', margin: '0 auto', width: '100%' }}>
-        <h1 style={{ 
-          color: '#D4A843', 
-          fontSize: '20px', 
-          fontWeight: 700, 
-          letterSpacing: '0.1em', 
-          textAlign: 'center',
+      <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '60px', paddingBottom: '100px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
+        
+        {/* Hero Section */}
+        <header style={{ marginBottom: '20px', position: 'relative', borderRadius: '16px', overflow: 'hidden', minHeight: '200px' }}>
+          {/* Night Sky Background */}
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 0,
+            background: 'linear-gradient(to bottom, #0a1a3e 0%, #060f26 100%)'
+          }}>
+            {/* Stars */}
+            {HERO_STARS.map((star, i) => (
+              <div
+                key={i}
+                style={{
+                  position: 'absolute',
+                  width: star.width,
+                  height: star.height,
+                  background: '#fff',
+                  borderRadius: '50%',
+                  top: `${star.top}%`,
+                  left: `${star.left}%`,
+                  opacity: star.opacity,
+                  animation: `twinkle ${star.duration}s ease-in-out infinite`
+                }}
+              />
+            ))}
+            
+            {/* Moon */}
+            <div style={{
+              position: 'absolute',
+              top: '15%',
+              right: '10%',
+              width: '50px',
+              height: '50px',
+              background: 'radial-gradient(circle at 30% 30%, #fff9e6 0%, #ffe6b3 50%, #ffd280 100%)',
+              borderRadius: '50%',
+              boxShadow: '0 0 30px rgba(255, 230, 160, 0.6), 0 0 60px rgba(255, 230, 160, 0.3)',
+              opacity: 0.95
+            }} />
+          </div>
+          
+          {/* Dark Gradient Overlay for text readability */}
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 1,
+            background: 'linear-gradient(to bottom, transparent 40%, #060f26 100%)',
+            pointerEvents: 'none'
+          }} />
+          
+          {/* Hero Content */}
+          <div style={{ position: 'relative', zIndex: 2, padding: '24px' }}>
+            <p style={{ 
+              color: '#D4A843', 
+              fontSize: '9px', 
+              fontWeight: 600, 
+              letterSpacing: '0.15em', 
+              textTransform: 'uppercase', 
+              marginBottom: '8px' 
+            }}>
+              PRAYER
+            </p>
+            <h1 style={{ color: '#FFFFFF', fontSize: '26px', fontWeight: 700, marginBottom: '8px', lineHeight: 1.2 }}>
+              Draw near to <span style={{ color: '#D4A843' }}>God</span>
+            </h1>
+            <p style={{ 
+              color: 'rgba(255,255,255,0.38)', 
+              fontSize: '11px', 
+              fontStyle: 'italic' 
+            }}>
+              Draw near to God and He will draw near to you — James 4:8
+            </p>
+          </div>
+          
+          {/* Star twinkle animation */}
+          <style>{`
+            @keyframes twinkle {
+              0%, 100% { opacity: 0.3; }
+              50% { opacity: 0.8; }
+            }
+          `}</style>
+        </header>
+
+        {/* Gold Divider */}
+        <div style={{
+          height: '1px',
+          background: 'linear-gradient(90deg, transparent, rgba(212,168,67,0.3), transparent)',
+          marginBottom: '20px'
+        }} />
+
+        {/* Stat Pills Row */}
+        <div style={{
+          display: 'flex',
+          gap: '10px',
           marginBottom: '24px'
         }}>
-          PRAYER
-        </h1>
+          <div style={{
+            flex: 1,
+            background: 'rgba(212,168,67,0.12)',
+            border: '1px solid rgba(212,168,67,0.3)',
+            borderRadius: '12px',
+            padding: '12px',
+            textAlign: 'center'
+          }}>
+            <p style={{ color: '#D4A843', fontSize: '18px', fontWeight: 700, marginBottom: '2px' }}>🔥 {stats.streak}</p>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Day Streak</p>
+          </div>
+          <div style={{
+            flex: 1,
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '12px',
+            padding: '12px',
+            textAlign: 'center'
+          }}>
+            <p style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: 700, marginBottom: '2px' }}>🙏 {stats.totalPrayers}</p>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Prayers</p>
+          </div>
+          <div style={{
+            flex: 1,
+            background: 'rgba(45,212,191,0.12)',
+            border: '1px solid rgba(45,212,191,0.3)',
+            borderRadius: '12px',
+            padding: '12px',
+            textAlign: 'center'
+          }}>
+            <p style={{ color: '#2dd4bf', fontSize: '18px', fontWeight: 700, marginBottom: '2px' }}>✅ {stats.answeredPrayers}</p>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Answered</p>
+          </div>
+        </div>
 
+        {/* Prayer of the Day Card */}
+        <div style={{
+          background: 'rgba(8,20,50,0.72)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(212,168,67,0.3)',
+          borderRadius: '16px',
+          padding: '20px',
+          marginBottom: '24px',
+          position: 'relative'
+        }}>
+          <div style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: '3px',
+            background: '#D4A843',
+            borderRadius: '16px 0 0 16px'
+          }} />
+          <p style={{ 
+            color: '#D4A843', 
+            fontSize: '9px', 
+            fontWeight: 600, 
+            letterSpacing: '0.15em', 
+            textTransform: 'uppercase', 
+            marginBottom: '12px',
+            marginLeft: '12px'
+          }}>
+            Prayer of the Day
+          </p>
+          <p style={{ 
+            color: 'rgba(255,255,255,0.85)', 
+            fontSize: '15px', 
+            lineHeight: 1.6,
+            marginBottom: '16px',
+            marginLeft: '12px'
+          }}>
+            {prayerOfTheDay}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setContent(prayerOfTheDay)
+              setShowModal(true)
+            }}
+            style={{
+              background: 'linear-gradient(135deg, #D4A843 0%, #F4D03F 100%)',
+              color: '#0a1a3e',
+              border: 'none',
+              borderRadius: '50px',
+              padding: '10px 20px',
+              fontWeight: 600,
+              fontSize: '13px',
+              cursor: 'pointer',
+              marginLeft: '12px',
+              boxShadow: '0 4px 15px rgba(212,168,67,0.3)'
+            }}
+          >
+            Pray this
+          </button>
+        </div>
+
+        {/* Voice to Text Section */}
+        <div style={{
+          background: 'rgba(8,20,50,0.72)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(212,168,67,0.3)',
+          borderRadius: '16px',
+          padding: '20px',
+          marginBottom: '24px'
+        }}>
+          <button
+            type="button"
+            onClick={isListening ? stopListening : startListening}
+            style={{
+              width: '100%',
+              background: isListening ? 'rgba(212,168,67,0.3)' : 'linear-gradient(135deg, #D4A843 0%, #F4D03F 100%)',
+              color: isListening ? '#D4A843' : '#0a1a3e',
+              border: 'none',
+              borderRadius: '12px',
+              padding: '16px',
+              fontWeight: 700,
+              fontSize: '16px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              marginBottom: '16px',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            <span style={{ fontSize: '24px' }}>🎙️</span>
+            <span>{isListening ? 'Listening...' : 'Speak your prayer'}</span>
+          </button>
+          
+          {transcript && (
+            <>
+              <textarea
+                value={transcript}
+                onChange={(e) => setTranscript(e.target.value)}
+                placeholder="Your prayer will appear here..."
+                style={{
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(212,168,67,0.3)',
+                  borderRadius: '12px',
+                  color: 'white',
+                  padding: '16px',
+                  width: '100%',
+                  minHeight: '120px',
+                  marginBottom: '12px',
+                  fontSize: '15px',
+                  outline: 'none',
+                  resize: 'none',
+                  fontFamily: 'inherit'
+                }}
+              />
+              <button
+                type="button"
+                onClick={addPrayer}
+                style={{
+                  background: 'linear-gradient(135deg, #D4A843 0%, #F4D03F 100%)',
+                  color: '#0a1a3e',
+                  fontWeight: 700,
+                  borderRadius: '50px',
+                  padding: '12px 24px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  width: '100%',
+                  boxShadow: '0 4px 15px rgba(212,168,67,0.3)'
+                }}
+              >
+                Save Prayer
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Tabs */}
         <div style={{
           display: 'flex',
           borderBottom: '1px solid rgba(255,255,255,0.1)',
-          marginBottom: '16px'
+          marginBottom: '20px'
         }}>
           <button
             type="button"
@@ -141,28 +517,7 @@ export default function Prayer() {
           </button>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setShowModal(true)}
-          style={{
-            background: 'rgba(212,168,67,0.15)',
-            border: '1px solid rgba(212,168,67,0.4)',
-            borderRadius: '50px',
-            color: '#D4A843',
-            fontWeight: 600,
-            padding: '10px 24px',
-            marginBottom: '20px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontSize: '14px'
-          }}
-        >
-          <span>🙏</span>
-          <span>Add Prayer</span>
-        </button>
-
+        {/* Prayer Cards */}
         {loading ? (
           <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(255,255,255,0.6)' }}>
             Loading...
@@ -177,33 +532,29 @@ export default function Prayer() {
                     background: 'rgba(8,20,50,0.72)',
                     backdropFilter: 'blur(12px)',
                     WebkitBackdropFilter: 'blur(12px)',
-                    border: '1px solid rgba(212,168,67,0.25)',
+                    border: '1px solid rgba(212,168,67,0.3)',
+                    borderLeft: '3px solid #D4A843',
                     borderRadius: '16px',
                     padding: '16px',
-                    marginBottom: '10px',
+                    marginBottom: '12px',
                     position: 'relative'
                   }}
                 >
-                  <p style={{ color: '#FFFFFF', fontSize: '16px', fontWeight: 600 }}>
+                  <p style={{ color: '#FFFFFF', fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>
                     {entry.title || entry.text.split('\n')[0] || 'Untitled'}
                   </p>
                   <p style={{
                     color: 'rgba(255,255,255,0.65)',
                     fontSize: '14px',
-                    marginTop: '4px',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical'
+                    marginBottom: '12px',
+                    lineHeight: 1.5
                   }}>
                     {entry.text}
                   </p>
                   <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginTop: '12px'
+                    alignItems: 'center'
                   }}>
                     <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '12px' }}>
                       {new Date(entry.date).toLocaleDateString()}
@@ -213,15 +564,17 @@ export default function Prayer() {
                         type="button"
                         onClick={() => markAsAnswered(entry)}
                         style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          fontSize: '18px',
-                          color: 'rgba(212,168,67,0.7)',
-                          padding: 0
+                          background: 'rgba(212,168,67,0.15)',
+                          border: '1px solid rgba(212,168,67,0.4)',
+                          color: '#D4A843',
+                          borderRadius: '8px',
+                          padding: '6px 12px',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          cursor: 'pointer'
                         }}
                       >
-                        ✓
+                        Mark as Answered
                       </button>
                       <button
                         type="button"
@@ -286,10 +639,11 @@ export default function Prayer() {
                     background: 'rgba(8,20,50,0.72)',
                     backdropFilter: 'blur(12px)',
                     WebkitBackdropFilter: 'blur(12px)',
-                    border: '1px solid rgba(212,168,67,0.25)',
+                    border: '1px solid rgba(212,168,67,0.3)',
+                    borderLeft: '3px solid #D4A843',
                     borderRadius: '16px',
                     padding: '16px',
-                    marginBottom: '10px',
+                    marginBottom: '12px',
                     position: 'relative'
                   }}
                 >
@@ -306,26 +660,21 @@ export default function Prayer() {
                   }}>
                     Answered ✓
                   </span>
-                  <p style={{ color: '#FFFFFF', fontSize: '16px', fontWeight: 600, paddingRight: '80px' }}>
+                  <p style={{ color: '#FFFFFF', fontSize: '16px', fontWeight: 600, marginBottom: '8px', paddingRight: '80px' }}>
                     {entry.title || entry.text.split('\n')[0] || 'Untitled'}
                   </p>
                   <p style={{
                     color: 'rgba(255,255,255,0.65)',
                     fontSize: '14px',
-                    marginTop: '4px',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical'
+                    marginBottom: '12px',
+                    lineHeight: 1.5
                   }}>
                     {entry.text}
                   </p>
                   <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginTop: '12px'
+                    alignItems: 'center'
                   }}>
                     <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '12px' }}>
                       {new Date(entry.date).toLocaleDateString()}
@@ -335,15 +684,17 @@ export default function Prayer() {
                         type="button"
                         onClick={() => markAsAnswered(entry)}
                         style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          fontSize: '18px',
-                          color: 'rgba(212,168,67,0.7)',
-                          padding: 0
+                          background: 'rgba(212,168,67,0.15)',
+                          border: '1px solid rgba(212,168,67,0.4)',
+                          color: '#D4A843',
+                          borderRadius: '8px',
+                          padding: '6px 12px',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          cursor: 'pointer'
                         }}
                       >
-                        ✓
+                        Unmark
                       </button>
                       <button
                         type="button"
@@ -385,6 +736,7 @@ export default function Prayer() {
         )}
       </div>
 
+      {/* Add Prayer Modal */}
       {showModal && (
         <div style={{
           position: 'fixed',
@@ -405,7 +757,7 @@ export default function Prayer() {
           <div style={{
             background: 'rgba(8,20,50,0.95)',
             width: '100%',
-            maxWidth: '390px',
+            maxWidth: '680px',
             borderRadius: '24px 24px 0 0',
             padding: '24px 20px 40px',
             position: 'relative',
