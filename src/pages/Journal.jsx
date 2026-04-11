@@ -49,6 +49,12 @@ function toLocalYmd(iso) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
+/** Prefer DB `local_date` (set at save); else derive from created_at (can drift near midnight UTC). */
+function entryLocalYmd(entry) {
+  if (!entry) return ''
+  return entry.local_date || toLocalYmd(entry.created_at)
+}
+
 function localTodayYmd() {
   const now = new Date()
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
@@ -62,7 +68,7 @@ function addDaysToYmd(ymd, deltaDays) {
 
 /** Consecutive days with ≥1 entry, walking back from today (yesterday counts if today is empty). */
 function computeWritingStreak(rows) {
-  const dates = new Set((rows || []).map((e) => toLocalYmd(e.created_at)).filter(Boolean))
+  const dates = new Set((rows || []).map((e) => entryLocalYmd(e)).filter(Boolean))
   if (dates.size === 0) return 0
   let cursor = localTodayYmd()
   if (!dates.has(cursor)) {
@@ -90,7 +96,7 @@ function getMondayOfWeek(d) {
 }
 
 function getWeekHeatmapDays(rows) {
-  const dateSet = new Set((rows || []).map((e) => toLocalYmd(e.created_at)).filter(Boolean))
+  const dateSet = new Set((rows || []).map((e) => entryLocalYmd(e)).filter(Boolean))
   const monday = getMondayOfWeek(new Date())
   const now = new Date()
   const todayYmd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
@@ -108,9 +114,8 @@ function getWeekHeatmapDays(rows) {
   })
 }
 
-function isInCurrentCalendarWeek(iso) {
-  if (!iso) return false
-  const ymd = toLocalYmd(iso)
+function isInCurrentCalendarWeek(ymd) {
+  if (!ymd || typeof ymd !== 'string') return false
   const monday = getMondayOfWeek(new Date())
   for (let i = 0; i < 7; i++) {
     const dt = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i, 12, 0, 0, 0)
@@ -119,11 +124,13 @@ function isInCurrentCalendarWeek(iso) {
   return false
 }
 
-function isInThisMonth(iso) {
-  if (!iso) return false
-  const t = new Date(iso)
+function isInThisMonth(ymd) {
+  if (!ymd || typeof ymd !== 'string') return false
+  const parts = ymd.split('-').map(Number)
+  if (parts.length !== 3 || parts.some(Number.isNaN)) return false
+  const [y, m] = parts
   const n = new Date()
-  return t.getFullYear() === n.getFullYear() && t.getMonth() === n.getMonth()
+  return y === n.getFullYear() && m - 1 === n.getMonth()
 }
 
 function getEntryTitle(entry) {
@@ -157,6 +164,7 @@ function normalizeEntry(entry) {
     note: entry.content || '',
     date: savedDate,
     created_at: entry.created_at || null,
+    local_date: entry.local_date || toLocalYmd(entry.created_at),
     mood: entry.mood || '',
     entry_type: entry.entry_type || 'reflection',
     answered: entry.answered || false,
@@ -377,9 +385,9 @@ function Journal() {
   const filteredEntries = useMemo(() => {
     let list = [...entries]
     if (entryFilter === 'week') {
-      list = list.filter((e) => isInCurrentCalendarWeek(e.created_at))
+      list = list.filter((e) => isInCurrentCalendarWeek(entryLocalYmd(e)))
     } else if (entryFilter === 'month') {
-      list = list.filter((e) => isInThisMonth(e.created_at))
+      list = list.filter((e) => isInThisMonth(entryLocalYmd(e)))
     }
     const q = searchQuery.trim().toLowerCase()
     if (q) {

@@ -1,5 +1,16 @@
 import { supabase } from '../lib/supabase'
 
+function localYmdFromDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+function entryLocalYmdRow(e) {
+  if (!e) return ''
+  if (e.local_date) return e.local_date
+  if (!e.created_at) return ''
+  return localYmdFromDate(new Date(e.created_at))
+}
+
 export async function getJournalEntries(userIdArg) {
   let userId = userIdArg
   if (!userId) {
@@ -26,6 +37,8 @@ export async function getJournalEntries(userIdArg) {
   }
 }
 
+// NOTE: Run this migration in Supabase if local_date column is missing:
+// ALTER TABLE journal_entries ADD COLUMN IF NOT EXISTS local_date TEXT;
 export async function saveToJournal({ verse, reference, note = '', tags = [], userId: userIdArg, id: existingId, mood }) {
   let userId = userIdArg
   if (!userId) {
@@ -41,14 +54,11 @@ export async function saveToJournal({ verse, reference, note = '', tags = [], us
   const content = (note || verse || '').trim()
   if (!content) return null
   
-  // Check for duplicate entry from today (only for new entries)
+  // Check for duplicate entry from today (only for new entries) — compare local calendar days
   if (!existingId) {
-    const today = new Date().toISOString().slice(0, 10)
+    const todayLocal = localYmdFromDate(new Date())
     const entries = await getJournalEntries(userId)
-    const isDuplicate = entries.some(e => 
-      e.content === content && 
-      e.created_at?.startsWith(today)
-    )
+    const isDuplicate = entries.some((e) => e.content === content && entryLocalYmdRow(e) === todayLocal)
     if (isDuplicate) return null
   }
   
@@ -63,6 +73,11 @@ export async function saveToJournal({ verse, reference, note = '', tags = [], us
     verse_reference: reference || null,
     entry_type: tags?.[0] || 'Reflection',
     mood: mood || null,
+    // User's local calendar date at save time (TEXT YYYY-MM-DD). Supabase ignores unknown columns until migrated.
+    local_date: (() => {
+      const now = new Date()
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+    })(),
   }
   try {
     const { data, error } = await supabase.from('journal_entries').upsert(payload, { onConflict: 'id' }).select().single()
