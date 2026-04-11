@@ -187,31 +187,78 @@ function buildPathD(stops) {
   return `M ${first.x} ${first.y}` + rest.map((s) => ` L ${s.x} ${s.y}`).join('')
 }
 
-/** Minimal standing silhouette: head + simple robe/torso, feet at local y=0 (reverent, not cartoon). */
-function SilhouetteFigure({ variant }) {
-  const isJesus = variant === 'jesus'
-  const fill = isJesus ? '#FFF8ED' : 'rgba(255,252,248,0.96)'
-  const stroke = isJesus ? 'rgba(212,168,67,0.5)' : 'rgba(212,168,67,0.72)'
-  const glowFill = isJesus ? 'rgba(232,184,107,0.18)' : 'none'
-  const body = (
-    <>
-      <ellipse cx="0" cy="-12.2" rx="2.5" ry="2.75" fill={fill} stroke={stroke} strokeWidth="0.28" />
-      <path
-        d="M -2.15,-8.8 C -2.8,-6.2 -3.05,-2.8 -2.4,0 L 2.4,0 C 3.05,-2.8 2.8,-6.2 2.15,-8.8 C 0.9,-8 -0.9,-8 -2.15,-8.8 Z"
-        fill={fill}
-        stroke={stroke}
-        strokeWidth="0.28"
-        strokeLinejoin="round"
-      />
-    </>
-  )
-  if (!isJesus) {
-    return <g>{body}</g>
-  }
+/** ~3× prior visual size (was 2.55). Local coords: feet on y=0, ~24 units tall (user), Jesus slightly taller. */
+const FIGURE_SCALE = 7.65
+const NODE_DOT_R = 10
+/** Feet baseline just under the gold node (center y + radius + hairline gap). */
+const FEET_BELOW_NODE_CENTER = NODE_DOT_R + 1
+
+/**
+ * Plain pilgrim: round head, shoulders, simple robe — white with soft gold stroke, no glow.
+ */
+function MapUserFigure() {
+  const outline = 'rgba(212,168,67,0.88)'
   return (
     <g>
-      <ellipse cx="0" cy="-7" rx="6.5" ry="13" fill={glowFill} style={{ filter: 'url(#journeyJesusAura)' }} />
-      <g style={{ filter: 'url(#journeyJesusFigure)' }}>{body}</g>
+      <circle cx="0" cy="-11" r="3.1" fill="#FFFFFF" stroke={outline} strokeWidth="0.42" />
+      <path
+        d="M -4.2,-7.8 C -4.5,-6.5 -4.8,0 -3.1,0 L 3.1,0 C 4.8,0 4.5,-6.5 4.2,-7.8 C 2.2,-6.8 -2.2,-6.8 -4.2,-7.8 Z"
+        fill="#FFFFFF"
+        stroke={outline}
+        strokeWidth="0.42"
+        strokeLinejoin="round"
+      />
+    </g>
+  )
+}
+
+/**
+ * Same family of silhouette, taller robe; halo arc above head; warm aura; optional hand toward companion.
+ */
+function MapJesusFigure() {
+  const fill = '#FFF8ED'
+  const stroke = '#C9A050'
+  const haloStroke = '#E8B565'
+  return (
+    <g>
+      <ellipse cx="0" cy="-9" rx="12" ry="23" fill="url(#journeyJesusAuraGradient)" style={{ filter: 'url(#journeyJesusAura)' }} />
+      <ellipse cx="0" cy="-9" rx="16" ry="30" fill="url(#journeyJesusAuraOuter)" opacity="0.92" style={{ filter: 'url(#journeyJesusAuraOuterBlur)' }} />
+      {/* Crown of light — shallow arc above the head (open upward, not a closed ring) */}
+      <path
+        d="M -8.5,-21 Q 0,-30 8.5,-21"
+        fill="none"
+        stroke={haloStroke}
+        strokeWidth="0.6"
+        strokeLinecap="round"
+        opacity="0.95"
+      />
+      <path
+        d="M -8,-21.5 Q 0,-28.5 8,-21.5"
+        fill="none"
+        stroke="#F5D78A"
+        strokeWidth="0.3"
+        strokeLinecap="round"
+        opacity="0.8"
+      />
+      <g style={{ filter: 'url(#journeyJesusFigure)' }}>
+        {/* Slightly taller than user: higher head, longer robe */}
+        <circle cx="0" cy="-13" r="3.2" fill={fill} stroke={stroke} strokeWidth="0.45" />
+        <path
+          d="M -4.6,-9.6 C -5,-8 -5.35,0.25 -3.45,0.25 L 3.45,0.25 C 5.35,0.25 5,-8 4.6,-9.6 C 2.4,-8.3 -2.4,-8.3 -4.6,-9.6 Z"
+          fill={fill}
+          stroke={stroke}
+          strokeWidth="0.45"
+          strokeLinejoin="round"
+        />
+        {/* Hand extended toward the companion on the left */}
+        <path
+          d="M 2.6,-6.2 L -5,-2 Q -7.2,-0.8 -6.6,1 L -4.8,0.95 Q -4,0 2.2,-4.5 Z"
+          fill={fill}
+          stroke={stroke}
+          strokeWidth="0.32"
+          strokeLinejoin="round"
+        />
+      </g>
     </g>
   )
 }
@@ -219,14 +266,16 @@ function SilhouetteFigure({ variant }) {
 function JourneyWalkingFigures({ stop }) {
   if (!stop) return null
   const { x, y } = stop
-  const spread = 7.5
+  /* Half-width of silhouette ~4.5 local × FIGURE_SCALE — keep centers ≥2× that apart */
+  const spread = 36
+  const scale = FIGURE_SCALE
   return (
-    <g pointerEvents="none" aria-hidden="true" transform={`translate(${x}, ${y})`}>
-      <g transform={`translate(${-spread}, 9)`}>
-        <SilhouetteFigure variant="user" />
+    <g pointerEvents="none" aria-hidden="true" transform={`translate(${x}, ${y + FEET_BELOW_NODE_CENTER})`}>
+      <g transform={`translate(${-spread}, 0) scale(${scale})`}>
+        <MapUserFigure />
       </g>
-      <g transform={`translate(${spread}, 9)`}>
-        <SilhouetteFigure variant="jesus" />
+      <g transform={`translate(${spread}, 0) scale(${scale})`}>
+        <MapJesusFigure />
       </g>
     </g>
   )
@@ -309,21 +358,39 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
               <stop offset="60%" stopColor="#D4A843" stopOpacity="0.55" />
               <stop offset="100%" stopColor="#D4A843" stopOpacity="0.25" />
             </linearGradient>
-            {/* Soft warm aura behind Jesus figure — subtle amber/gold, not loud */}
-            <filter id="journeyJesusAura" x="-80%" y="-80%" width="260%" height="260%">
-              <feGaussianBlur in="SourceGraphic" stdDeviation="3.2" result="blur" />
+            <radialGradient id="journeyJesusAuraGradient" cx="50%" cy="45%" r="55%">
+              <stop offset="0%" stopColor="#FFE4A8" stopOpacity="0.95" />
+              <stop offset="45%" stopColor="#E8A84A" stopOpacity="0.55" />
+              <stop offset="100%" stopColor="#8B5A14" stopOpacity="0" />
+            </radialGradient>
+            <radialGradient id="journeyJesusAuraOuter" cx="50%" cy="42%" r="65%">
+              <stop offset="0%" stopColor="#FFD27A" stopOpacity="0.5" />
+              <stop offset="50%" stopColor="#E8A84A" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="#FFD27A" stopOpacity="0" />
+            </radialGradient>
+            <filter id="journeyJesusAura" x="-90%" y="-90%" width="280%" height="280%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="4.5" result="blur" />
               <feColorMatrix
                 in="blur"
                 type="matrix"
-                values="1 0 0 0 0  0 1 0 0 0  0 0 0.85 0 0  0 0 0 0.9 0"
+                values="1.05 0 0 0 0.02  0 0.98 0 0 0  0 0 0.75 0 0  0 0 0 1 0"
                 result="warm"
               />
             </filter>
-            <filter id="journeyJesusFigure" x="-35%" y="-35%" width="170%" height="170%">
-              <feGaussianBlur in="SourceAlpha" stdDeviation="0.6" result="s" />
-              <feFlood floodColor="#E8B86B" floodOpacity="0.35" result="f" />
-              <feComposite in="f" in2="s" operator="in" result="g" />
+            <filter id="journeyJesusAuraOuterBlur" x="-100%" y="-100%" width="300%" height="300%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="b" />
               <feMerge>
+                <feMergeNode in="b" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+            <filter id="journeyJesusFigure" x="-55%" y="-55%" width="210%" height="210%">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="1.2" result="s" />
+              <feFlood floodColor="#FFC14D" floodOpacity="0.72" result="f" />
+              <feComposite in="f" in2="s" operator="in" result="g" />
+              <feGaussianBlur in="g" stdDeviation="1.8" result="g2" />
+              <feMerge>
+                <feMergeNode in="g2" />
                 <feMergeNode in="g" />
                 <feMergeNode in="SourceGraphic" />
               </feMerge>

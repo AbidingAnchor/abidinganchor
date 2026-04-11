@@ -768,45 +768,23 @@ function Journal() {
             {visibleEntries.map((entry) => (
               <article
                 key={entry.id}
-                style={{
-                  background: 'linear-gradient(145deg, rgba(30, 27, 58, 0.92) 0%, rgba(15, 23, 42, 0.88) 100%)',
-                  backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
-                  border: entry.entry_type === 'prayer' && entry.answered
-                    ? `1px solid ${ACCENT_GOLD}`
-                    : '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: '14px',
-                  padding: '16px',
-                  marginBottom: '12px',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,0.06)',
-                  ...(entry.entry_type === 'prayer' && entry.answered && {
-                    boxShadow: `0 0 20px ${ACCENT_GOLD}55, 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,0.06)`,
-                  })
-                }}
+                className={[
+                  'mb-3 rounded-xl bg-[#1a1535] p-4 shadow-lg border-l-4 border-l-amber-500',
+                  'border-t border-r border-b border-white/[0.08]',
+                  entry.entry_type === 'prayer' && entry.answered
+                    ? 'ring-1 ring-amber-400/45 shadow-[0_10px_40px_rgba(0,0,0,0.45),0_0_28px_rgba(212,168,67,0.22)]'
+                    : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
               >
-                <p style={{
-                  color: '#fbbf24',
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase'
-                }}>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-amber-400">
                   {entry.date}
                 </p>
-                <p style={{
-                  color: '#ffffff',
-                  fontSize: '17px',
-                  fontWeight: 700,
-                  marginTop: '4px'
-                }}>
+                <p className="mt-1 text-[17px] font-bold text-white">
                   {getEntryTitle(entry)}
                 </p>
-                <p style={{
-                  color: 'rgba(255,255,255,0.78)',
-                  fontSize: '14px',
-                  marginTop: '4px',
-                  lineHeight: 1.45,
-                }}>
+                <p className="mt-1 text-sm leading-[1.45] text-white/70">
                   {getEntryBodyPreview(entry)}
                 </p>
                 <div style={{
@@ -830,15 +808,7 @@ function Journal() {
                       </span>
                     )}
                     {entry.reference && (
-                      <span style={{
-                        background: 'rgba(10, 12, 28, 0.95)',
-                        border: '1px solid rgba(255,255,255,0.12)',
-                        color: '#fbbf24',
-                        borderRadius: '20px',
-                        fontSize: '12px',
-                        padding: '4px 10px',
-                        fontWeight: 600,
-                      }}>
+                      <span className="rounded-full border border-amber-500/30 bg-amber-500/20 px-2.5 py-1 text-xs font-semibold text-amber-300">
                         {entry.reference}
                       </span>
                     )}
