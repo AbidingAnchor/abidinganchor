@@ -12,17 +12,17 @@ export default function DayBackground() {
     let particles = [];
     let animationFrameId;
 
-    const PARTICLE_COUNT = 55;
+    const PARTICLE_COUNT = 80;
 
     const createParticles = () => {
       particles = Array.from({ length: PARTICLE_COUNT }, () => ({
         x: Math.random() * width,
         y: Math.random() * height,
-        r: Math.random() * 2.2 + 0.6,
-        opacity: Math.random() * 0.35 + 0.08,
-        vx: Math.random() * 0.18 + 0.03,
-        vy: -(Math.random() * 0.08 + 0.01),
-        twinkle: Math.random() * 0.02 + 0.002,
+        r: Math.random() * 2.8 + 0.8,
+        opacity: Math.random() * 0.45 + 0.12,
+        vx: (Math.random() - 0.5) * 0.15,
+        vy: -(Math.random() * 0.25 + 0.05),
+        twinkle: Math.random() * 0.018 + 0.003,
         twinkleDirection: Math.random() > 0.5 ? 1 : -1,
       }));
     };
@@ -34,14 +34,29 @@ export default function DayBackground() {
     };
 
     const drawParticle = (p) => {
-      const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 6);
-      gradient.addColorStop(0, `rgba(255, 247, 220, ${p.opacity})`);
-      gradient.addColorStop(0.35, `rgba(255, 240, 200, ${p.opacity * 0.45})`);
-      gradient.addColorStop(1, "rgba(255, 240, 200, 0)");
+      // Outer soft glow
+      const outerGlow = ctx.createRadialGradient(
+        p.x, p.y, 0, p.x, p.y, p.r * 10
+      );
+      outerGlow.addColorStop(0, `rgba(255, 230, 120, ${p.opacity * 0.6})`);
+      outerGlow.addColorStop(0.4, `rgba(255, 210, 80, ${p.opacity * 0.25})`);
+      outerGlow.addColorStop(1, 'rgba(255, 210, 80, 0)');
 
       ctx.beginPath();
-      ctx.fillStyle = gradient;
-      ctx.arc(p.x, p.y, p.r * 6, 0, Math.PI * 2);
+      ctx.fillStyle = outerGlow;
+      ctx.arc(p.x, p.y, p.r * 10, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Bright core
+      const core = ctx.createRadialGradient(
+        p.x, p.y, 0, p.x, p.y, p.r * 1.5
+      );
+      core.addColorStop(0, `rgba(255, 255, 220, ${p.opacity * 1.2})`);
+      core.addColorStop(1, `rgba(255, 230, 150, 0)`);
+
+      ctx.beginPath();
+      ctx.fillStyle = core;
+      ctx.arc(p.x, p.y, p.r * 1.5, 0, Math.PI * 2);
       ctx.fill();
     };
 

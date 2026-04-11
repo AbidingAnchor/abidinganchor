@@ -214,25 +214,30 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
       {/* Read | Listen toggle - in normal document flow */}
       {onModeChange && (
         <div style={{ 
-          maxWidth: '280px', 
-          margin: '12px auto 16px auto',
-          position: 'relative'
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 'fit-content',
+          margin: '100px auto 12px auto',
+          position: 'relative',
+          zIndex: 1
         }}>
           <div className="glass" style={{
             borderRadius: '50px',
             padding: '4px',
             display: 'flex',
-            gap: '4px'
+            gap: '4px',
+            border: '1px solid var(--glass-border)'
           }}>
             <button
               type="button"
               onClick={() => onModeChange('read')}
               style={{
                 background: mode === 'read' ? 'var(--gold)' : 'transparent',
-                color: mode === 'read' ? '#0a1a3e' : 'var(--text-primary)',
+                color: mode === 'read' ? 'white' : 'var(--text-secondary)',
                 border: 'none',
                 borderRadius: '50px',
-                padding: '8px 24px',
+                padding: '6px 20px',
                 fontSize: '14px',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -246,10 +251,10 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
               onClick={() => onModeChange('listen')}
               style={{
                 background: mode === 'listen' ? 'var(--gold)' : 'transparent',
-                color: mode === 'listen' ? '#0a1a3e' : 'var(--text-primary)',
+                color: mode === 'listen' ? 'white' : 'var(--text-secondary)',
                 border: 'none',
                 borderRadius: '50px',
-                padding: '8px 24px',
+                padding: '6px 20px',
                 fontSize: '14px',
                 fontWeight: 600,
                 cursor: 'pointer',
