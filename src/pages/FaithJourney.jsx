@@ -306,7 +306,8 @@ export default function FaithJourney() {
             <div style={{ display: 'flex', gap: '6px' }}>
               {days.map((day, i) => {
                 const isToday = i === dayIndex
-                const isCompleted = !loading && i < streakCount && dayIndex !== -1
+                const isPast = i < dayIndex && dayIndex !== -1
+                const isCompleted = !loading && isPast
                 return (
                   <div
                     key={day}
