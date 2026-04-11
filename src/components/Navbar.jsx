@@ -21,10 +21,8 @@ export default function Navbar() {
   const [localAvatarUrl, setLocalAvatarUrl] = useState(null)
 
   useEffect(() => {
+    if (!user?.id) return
     const loadAvatar = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      const user = session?.user
-      if (!user) return
       const { data } = await supabase
         .from('profiles')
         .select('avatar_url')
@@ -33,7 +31,7 @@ export default function Navbar() {
       if (data?.avatar_url) setLocalAvatarUrl(data.avatar_url)
     }
     loadAvatar()
-  }, [])
+  }, [user?.id])
 
   const displayName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email || ''
   const rawAvatarUrl =

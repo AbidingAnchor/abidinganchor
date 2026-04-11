@@ -18,10 +18,8 @@ export default function Settings() {
   const fileInputRef = useRef(null)
 
   useEffect(() => {
+    if (!user?.id) return
     const loadAvatar = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      const user = session?.user
-      if (!user) return
       const { data } = await supabase
         .from('profiles')
         .select('avatar_url')
@@ -30,7 +28,7 @@ export default function Settings() {
       if (data?.avatar_url) setLocalAvatarUrl(data.avatar_url)
     }
     loadAvatar()
-  }, [])
+  }, [user?.id])
 
   useEffect(() => {
     if (
