@@ -24,6 +24,8 @@ export default function FaithCard({
   contentFont = 'serif',
   textColorChoice = null,
 }) {
+  console.log('FaithCard render - textColorChoice prop:', textColorChoice)
+
   const bodyFont = CONTENT_FONTS[contentFont] ?? CONTENT_FONTS.serif
 
   const getCardStyle = () => {

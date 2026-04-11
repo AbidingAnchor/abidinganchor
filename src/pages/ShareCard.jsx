@@ -143,6 +143,8 @@ export default function ShareCard() {
     })
   }
 
+  console.log('ShareCard render - textColorChoice:', textColorChoice)
+
   return (
     <div className="content-scroll px-4 pt-6 pb-40" style={{ minHeight: 'auto' }}>
       {/* Screen Title */}
