@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase'
 
 export default function Settings() {
   const navigate = useNavigate()
-  const { user, profile, signOut } = useAuth()
+  const { user, profile, signOut, refreshProfile } = useAuth()
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
   const [selectedTranslation, setSelectedTranslation] = useState('KJV')
   const [uploadStatus, setUploadStatus] = useState('idle') // idle, uploading, success
@@ -82,6 +82,9 @@ export default function Settings() {
           .update({ avatar_url: avatarUrl })
           .eq('id', user.id)
         if (updateError) throw updateError
+        
+        // Refresh profile to get latest avatar_url from Supabase
+        await refreshProfile()
       } catch (error) {
         console.error('Profile update error:', error)
         // Continue anyway - avatar is saved, profile update may fail gracefully

@@ -60,7 +60,7 @@ export default function AppBackground() {
         style={{
           position: 'fixed',
           inset: 0,
-          zIndex: 0,
+          zIndex: -1,
           background: gradient,
           pointerEvents: 'none'
         }}
