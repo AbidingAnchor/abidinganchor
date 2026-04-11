@@ -15,8 +15,21 @@ const TEXT_COLOR_CHOICES = {
 /** Dark backgrounds: bold body copy + filter glow wrapper */
 const DARK_THEME = new Set(['celestial', 'midnight', 'scripture', 'forest', 'ocean'])
 
-/** Crisp readable edge on all card text */
-const TEXT_CRISP_SHADOW = '0 2px 4px rgba(0,0,0,0.9)'
+const BASE_TEXT_SHADOW = '0 2px 4px rgba(0,0,0,0.9)'
+
+function textShadowForColorChoice(textColorChoice) {
+  switch (textColorChoice) {
+    case 'gold':
+      return '0 0 20px rgba(212,168,67,0.9), 0 2px 4px rgba(0,0,0,0.9)'
+    case 'dark':
+      return '0 0 3px #fff, 0 2px 4px rgba(0,0,0,0.9)'
+    case 'cream':
+      return '0 0 15px rgba(255,248,231,0.8), 0 2px 4px rgba(0,0,0,0.9)'
+    case 'white':
+    default:
+      return BASE_TEXT_SHADOW
+  }
+}
 
 export default function FaithCard({
   verseReference = '',
@@ -26,8 +39,6 @@ export default function FaithCard({
   contentFont = 'serif',
   textColorChoice = null,
 }) {
-  console.log('FaithCard render - textColorChoice prop:', textColorChoice)
-
   const bodyFont = CONTENT_FONTS[contentFont] ?? CONTENT_FONTS.serif
 
   const getCardStyle = () => {
@@ -129,10 +140,11 @@ export default function FaithCard({
   const textColor = (textColorChoice && TEXT_COLOR_CHOICES[textColorChoice])
     ? TEXT_COLOR_CHOICES[textColorChoice]
     : baseStyle.textColor
-  console.log('resolved textColor:', textColor)
   const currentStyle = { ...baseStyle, textColor }
 
   const isDarkTheme = DARK_THEME.has(cardStyle)
+  const previewTextShadow = textShadowForColorChoice(textColorChoice)
+  const darkFontWeight = isDarkTheme ? 900 : undefined
 
   const darkTextGlow = { filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.8))' }
 
@@ -208,12 +220,12 @@ export default function FaithCard({
           <p style={{
             fontFamily: CONTENT_FONTS.elegant,
             fontSize: '28px',
-            fontWeight: 700,
+            fontWeight: isDarkTheme ? 900 : 700,
             color: currentStyle.accentColor,
             letterSpacing: '0.15em',
             textTransform: 'uppercase',
             margin: 0,
-            textShadow: TEXT_CRISP_SHADOW,
+            textShadow: previewTextShadow,
           }}>
             🕊️ AbidingAnchor
           </p>
@@ -236,10 +248,10 @@ export default function FaithCard({
               fontFamily: bodyFont,
               fontSize: '48px',
               fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
-              fontWeight: isDarkTheme ? 700 : undefined,
+              fontWeight: darkFontWeight,
               color: currentStyle.textColor,
               marginBottom: '40px',
-              textShadow: TEXT_CRISP_SHADOW,
+              textShadow: previewTextShadow,
             }}>
               {verseReference}
             </p>
@@ -250,11 +262,11 @@ export default function FaithCard({
             <p style={{
               fontFamily: bodyFont,
               fontSize: '54px',
-              fontWeight: isDarkTheme ? 700 : (contentFont === 'modern' ? 600 : 500),
+              fontWeight: isDarkTheme ? 900 : (contentFont === 'modern' ? 600 : 500),
               color: currentStyle.textColor,
               lineHeight: '1.5',
               marginBottom: '50px',
-              textShadow: TEXT_CRISP_SHADOW,
+              textShadow: previewTextShadow,
             }}>
               {verseText}
             </p>
@@ -275,11 +287,11 @@ export default function FaithCard({
               fontFamily: bodyFont,
               fontSize: '40px',
               fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
-              fontWeight: isDarkTheme ? 700 : undefined,
+              fontWeight: darkFontWeight,
               color: currentStyle.textColor,
               lineHeight: '1.6',
               maxWidth: '800px',
-              textShadow: TEXT_CRISP_SHADOW,
+              textShadow: previewTextShadow,
             }}>
               {userReflection}
             </p>
@@ -294,12 +306,12 @@ export default function FaithCard({
           <p style={{
             fontFamily: 'Inter, sans-serif',
             fontSize: '28px',
-            fontWeight: 500,
+            fontWeight: isDarkTheme ? 900 : 500,
             color: currentStyle.accentColor,
             letterSpacing: '0.05em',
             margin: 0,
             opacity: 0.7,
-            textShadow: TEXT_CRISP_SHADOW,
+            textShadow: previewTextShadow,
           }}>
             abidinganchor.vercel.app
           </p>
