@@ -10,6 +10,12 @@ const TEXT_COLOR_CHOICES = {
   gold: '#D4A843',
   cream: '#FFF8E7',
   dark: '#1a1a1a',
+  red: '#E53E3E',
+  blue: '#3B82F6',
+  purple: '#8B5CF6',
+  green: '#10B981',
+  pink: '#EC4899',
+  orange: '#F97316',
 }
 
 /** Dark backgrounds: bold body copy + filter glow wrapper */
@@ -25,6 +31,18 @@ function textShadowForColorChoice(textColorChoice) {
       return '0 0 3px #fff, 0 2px 4px rgba(0,0,0,0.9)'
     case 'cream':
       return '0 0 15px rgba(255,248,231,0.8), 0 2px 4px rgba(0,0,0,0.9)'
+    case 'red':
+      return '0 0 20px rgba(229,62,62,0.9), 0 2px 4px rgba(0,0,0,0.9)'
+    case 'blue':
+      return '0 0 20px rgba(59,130,246,0.9), 0 2px 4px rgba(0,0,0,0.9)'
+    case 'purple':
+      return '0 0 20px rgba(139,92,246,0.9), 0 2px 4px rgba(0,0,0,0.9)'
+    case 'green':
+      return '0 0 20px rgba(16,185,129,0.9), 0 2px 4px rgba(0,0,0,0.9)'
+    case 'pink':
+      return '0 0 20px rgba(236,72,153,0.9), 0 2px 4px rgba(0,0,0,0.9)'
+    case 'orange':
+      return '0 0 20px rgba(249,115,22,0.9), 0 2px 4px rgba(0,0,0,0.9)'
     case 'white':
     default:
       return BASE_TEXT_SHADOW

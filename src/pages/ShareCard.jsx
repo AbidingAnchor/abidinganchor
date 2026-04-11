@@ -50,6 +50,12 @@ export default function ShareCard() {
     { id: 'gold', label: 'Gold', swatch: '#D4A843' },
     { id: 'cream', label: 'Cream', swatch: '#FFF8E7' },
     { id: 'dark', label: 'Dark', swatch: '#1a1a1a' },
+    { id: 'red', label: 'Red', swatch: '#E53E3E' },
+    { id: 'blue', label: 'Blue', swatch: '#3B82F6' },
+    { id: 'purple', label: 'Purple', swatch: '#8B5CF6' },
+    { id: 'green', label: 'Green', swatch: '#10B981' },
+    { id: 'pink', label: 'Pink', swatch: '#EC4899' },
+    { id: 'orange', label: 'Orange', swatch: '#F97316' },
   ]
 
   const handleGenerateAndShare = async () => {
