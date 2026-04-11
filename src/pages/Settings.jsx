@@ -220,21 +220,51 @@ export default function Settings() {
                   width: '80px',
                   height: '80px',
                   borderRadius: '50%',
-                  background: avatarDisplayUrl
-                    ? `url(${avatarDisplayUrl}) center/cover`
-                    : '#D4A843',
+                  background: '#D4A843',
+                  position: 'relative',
+                  overflow: 'hidden',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#fff',
-                  fontSize: '32px',
-                  fontWeight: 600,
                   boxShadow: '0 2px 8px rgba(212,168,67,0.3)',
                   cursor: 'pointer',
-                  border: hasAvatarImage ? '2px solid rgba(212,168,67,0.4)' : 'none'
+                  border: hasAvatarImage ? '2px solid rgba(212,168,67,0.4)' : 'none',
                 }}
               >
-                {!hasAvatarImage && displayName.charAt(0).toUpperCase()}
+                <span
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#fff',
+                    fontSize: '32px',
+                    fontWeight: 600,
+                    zIndex: 0,
+                  }}
+                >
+                  {displayName.charAt(0).toUpperCase()}
+                </span>
+                {avatarDisplayUrl ? (
+                  <img
+                    src={avatarDisplayUrl}
+                    alt="Profile"
+                    crossOrigin="anonymous"
+                    onError={(e) => {
+                      e.target.style.display = 'none'
+                    }}
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      borderRadius: '50%',
+                      zIndex: 1,
+                    }}
+                  />
+                ) : null}
               </div>
               <div
                 onClick={() => fileInputRef.current?.click()}
