@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import { appendAvatarCacheBust, getAvatarUploadExtension } from '../utils/avatarUrl'
 
 export default function Settings() {
   const navigate = useNavigate()
@@ -55,10 +56,18 @@ export default function Settings() {
       setUploadStatus('uploading')
       setUploadError('')
 
-      // File type validation
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
-      if (!allowedTypes.includes(file.type)) {
-        setUploadError('Please choose a JPG or PNG image')
+      // File type validation (MIME and/or extension — some mobile picks omit type)
+      const allowedTypes = [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+      ]
+      const ext = getAvatarUploadExtension(file)
+      const extAllowed = ['jpg', 'png', 'webp', 'gif'].includes(ext)
+      const mimeOk = file.type ? allowedTypes.includes(file.type) : false
+      if (!mimeOk && !extAllowed) {
+        setUploadError('Please choose a JPG, PNG, WebP, or GIF image')
         setUploadStatus('idle')
         return
       }
@@ -71,13 +80,18 @@ export default function Settings() {
         return
       }
 
-      // Upload to Supabase
-      const filePath = `${user.id}/avatar-${Date.now()}.jpg`
+      const filePath = `${user.id}/avatar-${Date.now()}.${ext}`
+      const contentTypeByExt = {
+        jpg: 'image/jpeg',
+        png: 'image/png',
+        webp: 'image/webp',
+        gif: 'image/gif',
+      }
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file, {
           upsert: true,
-          contentType: file.type
+          contentType: file.type || contentTypeByExt[ext] || 'image/jpeg',
         })
 
       if (uploadError) throw uploadError
@@ -118,7 +132,11 @@ export default function Settings() {
 
   const displayName = profile?.full_name || user?.user_metadata?.full_name || 'User'
   const userEmail = user?.email || ''
-  const avatarUrl = pendingAvatarUrl ?? profile?.avatar_url
+  const rawAvatarUrl = pendingAvatarUrl ?? profile?.avatar_url
+  const avatarDisplayUrl = useMemo(
+    () => appendAvatarCacheBust(rawAvatarUrl),
+    [rawAvatarUrl],
+  )
 
   return (
     <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '110px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
@@ -145,8 +163,8 @@ export default function Settings() {
                   width: '80px',
                   height: '80px',
                   borderRadius: '50%',
-                  background: avatarUrl 
-                    ? `url(${avatarUrl}) center/cover` 
+                  background: avatarDisplayUrl
+                    ? `url(${avatarDisplayUrl}) center/cover`
                     : '#D4A843',
                   display: 'flex',
                   alignItems: 'center',
@@ -156,10 +174,10 @@ export default function Settings() {
                   fontWeight: 600,
                   boxShadow: '0 2px 8px rgba(212,168,67,0.3)',
                   cursor: 'pointer',
-                  border: avatarUrl ? '2px solid rgba(212,168,67,0.4)' : 'none'
+                  border: rawAvatarUrl ? '2px solid rgba(212,168,67,0.4)' : 'none'
                 }}
               >
-                {!avatarUrl && displayName.charAt(0).toUpperCase()}
+                {!rawAvatarUrl && displayName.charAt(0).toUpperCase()}
               </div>
               <div
                 onClick={() => fileInputRef.current?.click()}

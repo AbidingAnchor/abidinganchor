@@ -1,6 +1,8 @@
+import { useMemo } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { appendAvatarCacheBust } from '../utils/avatarUrl'
 
 const tabs = [
   { label: 'Home', path: '/', icon: '🏠' },
@@ -16,10 +18,14 @@ export default function Navbar() {
   const navigate = useNavigate()
   const { user, profile } = useAuth()
   const displayName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email || ''
-  const avatarUrl =
+  const rawAvatarUrl =
     profile?.avatar_url ??
     user?.user_metadata?.avatar_url ??
     user?.user_metadata?.picture
+  const avatarDisplayUrl = useMemo(
+    () => appendAvatarCacheBust(rawAvatarUrl),
+    [rawAvatarUrl],
+  )
 
   return (
     <>
@@ -50,8 +56,8 @@ export default function Navbar() {
               width: '36px',
               height: '36px',
               borderRadius: '50%',
-              background: avatarUrl
-                ? `url(${avatarUrl}) center/cover`
+              background: avatarDisplayUrl
+                ? `url(${avatarDisplayUrl}) center/cover`
                 : '#D4A843',
               display: 'flex',
               alignItems: 'center',
@@ -60,10 +66,10 @@ export default function Navbar() {
               fontSize: '14px',
               fontWeight: 600,
               boxShadow: '0 2px 8px rgba(212,168,67,0.3)',
-              border: avatarUrl ? '2px solid rgba(212,168,67,0.4)' : 'none'
+              border: rawAvatarUrl ? '2px solid rgba(212,168,67,0.4)' : 'none'
             }}
           >
-            {!avatarUrl && displayName.charAt(0).toUpperCase()}
+            {!rawAvatarUrl && displayName.charAt(0).toUpperCase()}
           </div>
         ) : (
           <div style={{ width: '36px' }} />
