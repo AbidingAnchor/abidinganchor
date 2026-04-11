@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 import { bibleBooks } from '../data/bibleBooks'
 
 export default function AudioBible() {
@@ -11,6 +12,10 @@ export default function AudioBible() {
   const [selectedVoice, setSelectedVoice] = useState('David')
   const selectedVoiceRef = useRef('David')
   const [speechSupported, setSpeechSupported] = useState(true)
+  const currentChunkRef = useRef(0)
+  const chunksRef = useRef([])
+  const isPlayingRef = useRef(false)
+  const location = useLocation()
   const [currentVerseIndex, setCurrentVerseIndex] = useState(null)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
   const [isMinimized, setIsMinimized] = useState(false)
@@ -106,34 +111,88 @@ export default function AudioBible() {
   // Chunk text for iOS Safari workaround (prevents cutoff after ~15 seconds)
   const chunkText = (text) => {
     return text
-      .split(/(?<=[.!?])\s+/)
+      .split(/(?<=[.!?;,])\s+/)
       .reduce((chunks, sentence) => {
         const last = chunks[chunks.length - 1]
-        if (last && (last + ' ' + sentence).length < 200) {
+        if (last && (last + ' ' + sentence).length < 180) {
           chunks[chunks.length - 1] = last + ' ' + sentence
         } else {
           chunks.push(sentence)
         }
         return chunks
       }, [])
+      .filter(Boolean)
   }
 
-  // Speak chunked text with voice profile
-  const speakChunked = async (fullText, voiceName) => {
+  // Speak from specific chunk with locked voice
+  const speakFromChunk = async (startIndex) => {
     await loadVoices()
     window.speechSynthesis.cancel()
+    await new Promise(r => setTimeout(r, 150))
 
-    const chunks = chunkText(fullText)
-    const { voice, pitch, rate } = getVoice(voiceName)
+    const { voice, pitch, rate } = getVoice(selectedVoiceRef.current)
+    const chunks = chunksRef.current
+    if (!chunks.length || startIndex >= chunks.length) return
 
-    chunks.forEach((chunk) => {
-      const utterance = new SpeechSynthesisUtterance(chunk)
-      if (voice) utterance.voice = voice
+    isPlayingRef.current = true
+    setIsPlaying(true)
+
+    const speakChunk = (index) => {
+      if (index >= chunks.length || !isPlayingRef.current) {
+        if (index >= chunks.length) {
+          setIsPlaying(false)
+          isPlayingRef.current = false
+          currentChunkRef.current = 0
+          setCurrentVerseIndex(null)
+        }
+        return
+      }
+
+      currentChunkRef.current = index
+      const utterance = new SpeechSynthesisUtterance(chunks[index])
+      utterance.voice = voice
       utterance.pitch = pitch
       utterance.rate = rate * playbackSpeed
       utterance.volume = 1
+
+      // Track current verse being spoken
+      utterance.onboundary = (event) => {
+        if (event.name === 'word') {
+          const textSoFar = chunks.slice(0, index).join(' ') + ' ' + chunks[index].substring(0, event.charIndex)
+          const versePattern = /(\d+)\.\s/g
+          let match
+          let lastVerseNum = 1
+          
+          while ((match = versePattern.exec(textSoFar)) !== null) {
+            lastVerseNum = parseInt(match[1])
+          }
+          
+          const verseIndex = verses.findIndex(v => v.verse === lastVerseNum)
+          if (verseIndex !== -1) {
+            setCurrentVerseIndex(verseIndex)
+          }
+        }
+      }
+
+      utterance.onend = () => {
+        if (isPlayingRef.current) {
+          speakChunk(index + 1)
+        }
+      }
+
+      utterance.onerror = (e) => {
+        if (e.error !== 'canceled' && e.error !== 'interrupted') {
+          console.error('Speech error:', e.error)
+          if (isPlayingRef.current) {
+            speakChunk(index + 1)
+          }
+        }
+      }
+
       window.speechSynthesis.speak(utterance)
-    })
+    }
+
+    speakChunk(startIndex)
   }
 
   // Handle voice change with immediate effect
@@ -142,100 +201,43 @@ export default function AudioBible() {
     selectedVoiceRef.current = newVoiceName
     setShowVoiceSelector(false)
     
-    if (!isPlaying) return
+    if (!isPlayingRef.current) return
     
-    // Stop current speech
+    // Stop and restart with new voice from current position
+    const resumeFrom = currentChunkRef.current
+    isPlayingRef.current = false
     window.speechSynthesis.cancel()
     
-    // Small delay to let cancel() complete (required on some browsers)
-    await new Promise((r) => setTimeout(r, 120))
-    
-    // Re-speak from current position
-    const fullText = verses.map(v => `${v.verse}. ${v.text}`).join(' ')
-    speakChunked(fullText, newVoiceName)
+    await new Promise(r => setTimeout(r, 150))
+    speakFromChunk(resumeFrom)
   }
 
-  const togglePlay = async () => {
+  const togglePlay = () => {
     if (typeof window === 'undefined' || !window.speechSynthesis) {
       return
     }
 
-    if (isPlaying) {
-      // Pause
-      window.speechSynthesis.pause()
+    if (isPlayingRef.current) {
+      // PAUSE: stop speech, remember position
+      isPlayingRef.current = false
       setIsPlaying(false)
-    } else if (window.speechSynthesis.paused) {
-      // Resume
-      window.speechSynthesis.resume()
-      setIsPlaying(true)
-    } else {
-      // Start new playback with chunked speech
-      const fullText = verses.map(v => `${v.verse}. ${v.text}`).join(' ')
-      
-      await loadVoices()
       window.speechSynthesis.cancel()
-
-      const chunks = chunkText(fullText)
-      const { voice, pitch, rate } = getVoice(selectedVoiceRef.current)
-
-      let chunkIndex = 0
-      const speakNextChunk = () => {
-        if (chunkIndex >= chunks.length) {
-          setIsPlaying(false)
-          setCurrentVerseIndex(null)
-          return
-        }
-
-        const utterance = new SpeechSynthesisUtterance(chunks[chunkIndex])
-        if (voice) utterance.voice = voice
-        utterance.pitch = pitch
-        utterance.rate = rate * playbackSpeed
-        utterance.volume = 1
-
-        // Track current verse being spoken
-        utterance.onboundary = (event) => {
-          if (event.name === 'word') {
-            const textSoFar = chunks.slice(0, chunkIndex).join(' ') + ' ' + chunks[chunkIndex].substring(0, event.charIndex)
-            const versePattern = /(\d+)\.\s/g
-            let match
-            let lastVerseNum = 1
-            
-            while ((match = versePattern.exec(textSoFar)) !== null) {
-              lastVerseNum = parseInt(match[1])
-            }
-            
-            const verseIndex = verses.findIndex(v => v.verse === lastVerseNum)
-            if (verseIndex !== -1) {
-              setCurrentVerseIndex(verseIndex)
-            }
-          }
-        }
-
-        utterance.onend = () => {
-          chunkIndex++
-          if (isPlaying && chunkIndex < chunks.length) {
-            speakNextChunk()
-          } else if (chunkIndex >= chunks.length) {
-            setIsPlaying(false)
-            setCurrentVerseIndex(null)
-          }
-        }
-
-        utterance.onerror = () => {
-          setIsPlaying(false)
-          setCurrentVerseIndex(null)
-        }
-
-        window.speechSynthesis.speak(utterance)
+      // currentChunkRef.current already holds our position
+    } else {
+      // PLAY/RESUME: start from saved position
+      if (!chunksRef.current.length) {
+        // First play — chunk the text
+        const fullText = verses.map(v => `${v.verse}. ${v.text}`).join(' ')
+        chunksRef.current = chunkText(fullText)
+        currentChunkRef.current = 0
       }
-
-      speakNextChunk()
-      setIsPlaying(true)
+      speakFromChunk(currentChunkRef.current)
     }
   }
 
   const stopPlayback = () => {
     setIsPlaying(false)
+    isPlayingRef.current = false
     setCurrentVerseIndex(null)
     if (window.speechSynthesis) {
       window.speechSynthesis.cancel()
@@ -255,12 +257,6 @@ export default function AudioBible() {
         setSelectedChapter(prevBook.chapters)
       }
     }
-    // Auto-start after chapter loads
-    setTimeout(() => {
-      if (window.speechSynthesis && !window.speechSynthesis.speaking) {
-        setIsPlaying(true)
-      }
-    }, 500)
   }
 
   const goToNextChapter = () => {
@@ -276,13 +272,57 @@ export default function AudioBible() {
         setSelectedChapter(1)
       }
     }
-    // Auto-start after chapter loads
-    setTimeout(() => {
-      if (window.speechSynthesis && !window.speechSynthesis.speaking) {
-        setIsPlaying(true)
-      }
-    }, 500)
   }
+
+  // Cleanup on unmount - stop all speech
+  useEffect(() => {
+    return () => {
+      window.speechSynthesis.cancel()
+      setIsPlaying(false)
+      isPlayingRef.current = false
+    }
+  }, [])
+
+  // Stop speech on visibility change (tab switch, app minimize)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        window.speechSynthesis.cancel()
+        setIsPlaying(false)
+        isPlayingRef.current = false
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [])
+
+  // Stop speech on route change away from audio bible
+  useEffect(() => {
+    if (!location.pathname.includes('audio')) {
+      window.speechSynthesis.cancel()
+      setIsPlaying(false)
+      isPlayingRef.current = false
+    }
+  }, [location.pathname])
+
+  // Keep voice ref in sync
+  useEffect(() => {
+    selectedVoiceRef.current = selectedVoice
+  }, [selectedVoice])
+
+  // iOS keepalive - prevents silent stall after ~15 seconds
+  useEffect(() => {
+    if (!isPlaying) return
+    
+    const keepalive = setInterval(() => {
+      if (isPlayingRef.current && window.speechSynthesis.paused) {
+        window.speechSynthesis.resume()
+      }
+    }, 10000)
+
+    return () => clearInterval(keepalive)
+  }, [isPlaying])
 
   // Initialize voices on mount
   useEffect(() => {
@@ -310,6 +350,14 @@ export default function AudioBible() {
         }
         const data = await response.json()
         setVerses(data.verses || [])
+        
+        // Reset position when passage changes
+        window.speechSynthesis.cancel()
+        isPlayingRef.current = false
+        setIsPlaying(false)
+        currentChunkRef.current = 0
+        chunksRef.current = []
+        setCurrentVerseIndex(null)
       } catch (err) {
         setError(err.message)
         setVerses([])
