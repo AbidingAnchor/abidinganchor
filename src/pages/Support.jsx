@@ -155,7 +155,7 @@ export default function Support() {
                 fontWeight:'bold' }}>{tier.amount}</div>
             </div>
             <div style={{ flex:1 }}>
-              <div style={{ color:'#fff', fontSize:'14px',
+              <div style={{ color:'var(--text-primary)', fontSize:'14px',
                 fontWeight:'600' }}>{tier.label}</div>
               <div style={{ color:'rgba(255,255,255,0.7)',
                 fontSize:'12px', marginTop:'2px' }}>{tier.desc}</div>

@@ -654,47 +654,6 @@ export default function Settings() {
           </p>
         </div>
 
-        {/* Privacy Policy and Terms of Service */}
-          <div className="glass-panel" style={{
-            borderRadius: '16px',
-            padding: '16px 20px',
-            display: 'flex',
-          flexDirection: 'column',
-          gap: '12px'
-        }}>
-          <button
-            type="button"
-            onClick={() => navigate('/privacy-policy')}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'rgba(255,255,255,0.85)',
-              fontSize: '15px',
-              cursor: 'pointer',
-              textAlign: 'left',
-              padding: 0
-            }}
-          >
-            Privacy Policy
-          </button>
-          <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)' }} />
-          <button
-            type="button"
-            onClick={() => navigate('/terms-of-service')}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'rgba(255,255,255,0.85)',
-              fontSize: '15px',
-              cursor: 'pointer',
-              textAlign: 'left',
-              padding: 0
-            }}
-          >
-            Terms of Service
-          </button>
-        </div>
-
         {/* Sign Out Button */}
         <button
           type="button"
@@ -710,8 +669,7 @@ export default function Settings() {
             color: 'var(--text-primary)',
             fontSize: '16px',
             fontWeight: 700,
-            cursor: 'pointer',
-            marginTop: '8px'
+            cursor: 'pointer'
           }}
         >
           Sign Out

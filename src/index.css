@@ -46,8 +46,8 @@
 [data-theme="day"] {
   --sat: env(safe-area-inset-top, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
-  --glass-bg: rgba(255, 248, 230, 0.82);
-  --glass-bg-hover: rgba(255, 252, 240, 0.92);
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-bg-hover: rgba(255, 255, 255, 0.65);
   --glass-border: rgba(212, 168, 67, 0.25);
   --glass-border-hover: rgba(212, 168, 67, 0.45);
   --glass-shadow: 0 8px 40px rgba(180, 130, 40, 0.18),
@@ -506,9 +506,9 @@ body {
   background: linear-gradient(
     180deg,
     #a8d8f0 0%,
-    #c5e8ff 25%,
-    #ddf1ff 55%,
-    #eef8ff 75%,
+    #c5e8ff 30%,
+    #ddf1ff 60%,
+    #eef8ff 80%,
     #fff8e8 100%
   );
 }
@@ -548,7 +548,7 @@ body {
     radial-gradient(circle at 70% 80%, rgba(255, 230, 180, 0.10), transparent 40%),
     linear-gradient(180deg, transparent 40%, rgba(255, 245, 220, 0.18) 100%);
   mix-blend-mode: screen;
-  opacity: 0.85;
+  opacity: 0.4;
 }
 .cloud-layer { position: absolute; inset: 0; }
 .cloud {

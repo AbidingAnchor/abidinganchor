@@ -150,7 +150,7 @@ export default function ShareCard() {
 
       {/* Loading State */}
       {generating && (
-        <div className="glass p-4 rounded-2xl text-center mb-4">
+        <div className="glass p-4 rounded-2xl text-center mb-2">
           <p className="text-gold-accent text-lg font-semibold mb-2">
             Preparing your card... 🙏
           </p>
@@ -159,7 +159,7 @@ export default function ShareCard() {
       )}
 
       {/* Card Style Options - 2x2 grid */}
-      <div className="mb-4">
+      <div className="mb-2">
         <p className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--section-title)' }}>
           Card Style
         </p>

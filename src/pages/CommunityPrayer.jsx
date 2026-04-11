@@ -196,7 +196,7 @@ export default function CommunityPrayer() {
   }
 
   return (
-    <div style={{ position: 'relative', minHeight: 'auto', overflow: 'hidden' }}>
+    <div style={{ position: 'relative', overflow: 'hidden' }}>
       <div
         className="content-scroll"
         style={{

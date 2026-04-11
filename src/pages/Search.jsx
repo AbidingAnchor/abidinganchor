@@ -719,7 +719,7 @@ function Search({ onOpenWorship }) {
             ) : (
               <>
               {/* AI Companion Section */}
-              <section className="space-y-3" style={{ marginTop: '24px' }}>
+              <section className="space-y-3">
                 <h2 className="text-section-header" style={{ color: '#D4A843', fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em' }}>
                   ✨ Ask the AI Companion
                 </h2>
