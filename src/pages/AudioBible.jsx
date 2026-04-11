@@ -14,6 +14,7 @@ export default function AudioBible() {
   const [speechSupported, setSpeechSupported] = useState(true)
   const [currentVerseIndex, setCurrentVerseIndex] = useState(null)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
+  const [voiceSettings, setVoiceSettings] = useState({})
 
   const handleBookChange = (e) => {
     const book = bibleBooks.find(b => b.name === e.target.value)
@@ -49,7 +50,14 @@ export default function AudioBible() {
         utterance.voice = voice
       }
       
-      utterance.rate = playbackSpeed
+      // Apply voice-specific pitch and rate settings
+      const settings = voiceSettings[selectedVoiceRef.current]
+      if (settings) {
+        utterance.pitch = settings.pitch
+        utterance.rate = settings.rate * playbackSpeed
+      } else {
+        utterance.rate = playbackSpeed
+      }
       
       // Track current verse being spoken
       utterance.onboundary = (event) => {
@@ -141,32 +149,61 @@ export default function AudioBible() {
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       const loadVoices = () => {
         const voices = window.speechSynthesis.getVoices()
+        console.log('Available voices:', voices.map(v => v.name))
+        
         if (voices.length > 0) {
-          // Map voice personalities to available voices
+          // Map voice personalities to available voices with flexible search
           const englishVoices = voices.filter(v => v.lang.startsWith('en'))
+          console.log('English voices:', englishVoices.map(v => v.name))
+
+          // More flexible male voice search
           const maleVoices = englishVoices.filter(v => 
             v.name.toLowerCase().includes('male') || 
             v.name.toLowerCase().includes('david') ||
             v.name.toLowerCase().includes('daniel') ||
             v.name.toLowerCase().includes('james') ||
+            v.name.toLowerCase().includes('google us english') ||
             !v.name.toLowerCase().includes('female')
           )
+          console.log('Male voices found:', maleVoices.map(v => v.name))
+
+          // More flexible female voice search
           const femaleVoices = englishVoices.filter(v => 
             v.name.toLowerCase().includes('female') ||
+            v.name.toLowerCase().includes('google uk english female') ||
             v.name.toLowerCase().includes('samantha') ||
             v.name.toLowerCase().includes('victoria') ||
             v.name.toLowerCase().includes('karen') ||
-            v.name.toLowerCase().includes('moira')
+            v.name.toLowerCase().includes('moira') ||
+            v.name.toLowerCase().includes('google us english') && v.name.toLowerCase().includes('female')
           )
+          console.log('Female voices found:', femaleVoices.map(v => v.name))
 
-          const mappings = {
+          // Voice mappings with fallback
+          const voiceMappings = {
             David: maleVoices[0] || englishVoices[0] || voices[0],
             Grace: femaleVoices[0] || englishVoices[1] || voices[1],
             Elijah: maleVoices[1] || maleVoices[0] || englishVoices[2] || voices[2],
             Miriam: femaleVoices[1] || femaleVoices[0] || englishVoices[3] || voices[3]
           }
 
-          setMappedVoices(mappings)
+          console.log('Voice mappings:', {
+            David: voiceMappings.David?.name,
+            Grace: voiceMappings.Grace?.name,
+            Elijah: voiceMappings.Elijah?.name,
+            Miriam: voiceMappings.Miriam?.name
+          })
+
+          setMappedVoices(voiceMappings)
+
+          // Set voice settings with pitch/rate for gender differentiation
+          const settings = {
+            David: { pitch: 0.75, rate: 0.9 },
+            Grace: { pitch: 1.4, rate: 0.95 },
+            Elijah: { pitch: 0.8, rate: 0.9 },
+            Miriam: { pitch: 1.35, rate: 0.95 }
+          }
+          setVoiceSettings(settings)
         }
       }
 
@@ -217,7 +254,14 @@ export default function AudioBible() {
         utterance.voice = voice
       }
       
-      utterance.rate = playbackSpeed
+      // Apply voice-specific pitch and rate settings
+      const settings = voiceSettings[selectedVoiceRef.current]
+      if (settings) {
+        utterance.pitch = settings.pitch
+        utterance.rate = settings.rate * playbackSpeed
+      } else {
+        utterance.rate = playbackSpeed
+      }
       
       utterance.onboundary = (event) => {
         if (event.name === 'word') {
@@ -249,7 +293,7 @@ export default function AudioBible() {
       
       window.speechSynthesis.speak(utterance)
     }
-  }, [isPlaying, verses, mappedVoices, playbackSpeed])
+  }, [isPlaying, verses, mappedVoices, playbackSpeed, voiceSettings])
 
   if (!speechSupported) {
     return (
@@ -362,7 +406,7 @@ export default function AudioBible() {
         className="glass"
         style={{
           position: 'fixed',
-          bottom: 'calc(72px + env(safe-area-inset-bottom, 0px))',
+          bottom: '65px',
           left: '16px',
           right: '16px',
           zIndex: 9997,
@@ -388,9 +432,10 @@ export default function AudioBible() {
                   selectedVoiceRef.current = voice.id
                   if (isPlaying) {
                     stopPlayback()
+                    // Immediate restart with new voice
                     setTimeout(() => {
                       setIsPlaying(true)
-                    }, 100)
+                    }, 50)
                   }
                 }}
                 className={`

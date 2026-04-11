@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import Footer from './Footer'
 
 const BOOKS = [
   {name:'Genesis',cdnName:'genesis',chapters:50},
@@ -70,7 +69,7 @@ const BOOKS = [
   {name:'Revelation',cdnName:'revelation',chapters:22},
 ]
 
-export default function BibleReader({ open, onClose }) {
+export default function BibleReader({ open, onClose, mode = 'read', onModeChange }) {
   const [bookIndex, setBookIndex] = useState(0)
   const [chapter, setChapter] = useState(1)
   const [verses, setVerses] = useState([])
@@ -162,52 +161,100 @@ export default function BibleReader({ open, onClose }) {
         left: 0,
         right: 0,
         zIndex: 100,
-        padding: '10px 20px',
+        padding: '12px 20px',
         borderBottom: '1px solid rgba(255,255,255,0.08)',
       }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', maxWidth: '680px', margin: '0 auto' }}>
-          <button
-            type="button"
-            onClick={() => setShowBookPicker(true)}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#D4A843',
-              fontSize: '18px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              padding: '4px 12px'
-            }}
-          >
-            {selectedBook?.name || 'Loading...'}
-          </button>
+        <div style={{ maxWidth: '680px', margin: '0 auto' }}>
+          {/* Row 1: Book selector | Chapter selector | Translation (KJV) */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginBottom: '12px' }}>
+            <button
+              type="button"
+              onClick={() => setShowBookPicker(true)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#D4A843',
+                fontSize: '18px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                padding: '4px 12px'
+              }}
+            >
+              {selectedBook?.name || 'Loading...'}
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setShowChapterPicker(true)}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#D4A843',
-              fontSize: '18px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              padding: '4px 12px'
-            }}
-          >
-            Chapter {chapter}
-          </button>
+            <button
+              type="button"
+              onClick={() => setShowChapterPicker(true)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#D4A843',
+                fontSize: '18px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                padding: '4px 12px'
+              }}
+            >
+              Chapter {chapter}
+            </button>
 
-          <div style={{
-            position: 'absolute',
-            right: '20px',
-            color: '#D4A843',
-            fontSize: '13px',
-            fontWeight: 600
-          }}>
-            KJV
+            <div style={{
+              color: '#D4A843',
+              fontSize: '13px',
+              fontWeight: 600
+            }}>
+              KJV
+            </div>
           </div>
+
+          {/* Row 2: 📖 Read | 🎧 Listen toggle centered below */}
+          {onModeChange && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '8px' }}>
+              <div className="glass" style={{
+                borderRadius: '50px',
+                padding: '4px',
+                display: 'flex',
+                gap: '4px'
+              }}>
+                <button
+                  type="button"
+                  onClick={() => onModeChange('read')}
+                  style={{
+                    background: mode === 'read' ? '#D4A843' : 'transparent',
+                    color: mode === 'read' ? '#0a1a3e' : 'rgba(255,255,255,0.7)',
+                    border: 'none',
+                    borderRadius: '50px',
+                    padding: '8px 24px',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  📖 Read
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onModeChange('listen')}
+                  style={{
+                    background: mode === 'listen' ? '#D4A843' : 'transparent',
+                    color: mode === 'listen' ? '#0a1a3e' : 'rgba(255,255,255,0.7)',
+                    border: 'none',
+                    borderRadius: '50px',
+                    padding: '8px 24px',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  🎧 Listen
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -215,8 +262,8 @@ export default function BibleReader({ open, onClose }) {
       <div style={{ 
         flex: 1,
         overflowY: 'auto',
-        paddingTop: '110px', 
-        paddingBottom: '120px', 
+        paddingTop: '140px', 
+        paddingBottom: mode === 'listen' ? '220px' : '120px', 
         padding: '24px 20px', 
         maxWidth: '680px', 
         margin: '0 auto'
@@ -248,7 +295,7 @@ export default function BibleReader({ open, onClose }) {
               fontSize: '1.1rem',
               lineHeight: '1.8',
               fontFamily: 'Lora, serif',
-              paddingBottom: '120px'
+              paddingBottom: mode === 'listen' ? '220px' : '120px'
             }}>
               {verses.map(v => (
                 <p key={v.verse} style={{
