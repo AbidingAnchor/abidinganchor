@@ -167,7 +167,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
       >
         <div style={{ maxWidth: '680px', margin: '0 auto' }}>
           {/* Row 1: Book selector | Chapter selector | Translation (KJV) */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginBottom: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
             <button
               type="button"
               onClick={() => setShowBookPicker(true)}
@@ -208,61 +208,64 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
               KJV
             </div>
           </div>
-
-          {/* Row 2: 📖 Read | 🎧 Listen toggle centered below */}
-          {onModeChange && (
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '12px' }}>
-              <div className="glass" style={{
-                borderRadius: '50px',
-                padding: '4px',
-                display: 'flex',
-                gap: '4px'
-              }}>
-                <button
-                  type="button"
-                  onClick={() => onModeChange('read')}
-                  style={{
-                    background: mode === 'read' ? 'var(--gold)' : 'transparent',
-                    color: mode === 'read' ? '#0a1a3e' : 'var(--text-primary)',
-                    border: 'none',
-                    borderRadius: '50px',
-                    padding: '8px 24px',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
-                  }}
-                >
-                  📖 Read
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onModeChange('listen')}
-                  style={{
-                    background: mode === 'listen' ? 'var(--gold)' : 'transparent',
-                    color: mode === 'listen' ? '#0a1a3e' : 'var(--text-primary)',
-                    border: 'none',
-                    borderRadius: '50px',
-                    padding: '8px 24px',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
-                  }}
-                >
-                  🎧 Listen
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Read | Listen toggle - in normal document flow */}
+      {onModeChange && (
+        <div style={{ 
+          maxWidth: '280px', 
+          margin: '12px auto 16px auto',
+          position: 'relative'
+        }}>
+          <div className="glass" style={{
+            borderRadius: '50px',
+            padding: '4px',
+            display: 'flex',
+            gap: '4px'
+          }}>
+            <button
+              type="button"
+              onClick={() => onModeChange('read')}
+              style={{
+                background: mode === 'read' ? 'var(--gold)' : 'transparent',
+                color: mode === 'read' ? '#0a1a3e' : 'var(--text-primary)',
+                border: 'none',
+                borderRadius: '50px',
+                padding: '8px 24px',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              📖 Read
+            </button>
+            <button
+              type="button"
+              onClick={() => onModeChange('listen')}
+              style={{
+                background: mode === 'listen' ? 'var(--gold)' : 'transparent',
+                color: mode === 'listen' ? '#0a1a3e' : 'var(--text-primary)',
+                border: 'none',
+                borderRadius: '50px',
+                padding: '8px 24px',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              🎧 Listen
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Verse Content - Scrollable */}
       <div style={{ 
         flex: 1,
         overflowY: 'auto',
-        paddingTop: '20px', 
         paddingBottom: mode === 'listen' ? '160px' : '120px', 
         padding: '24px 20px', 
         maxWidth: '680px', 

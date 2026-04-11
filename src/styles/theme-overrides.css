@@ -1,0 +1,188 @@
+/* ================================================
+   ABIDING ANCHOR — THEME OVERRIDE SYSTEM
+   These rules use !important to beat Tailwind 
+   hardcoded classes in all components
+   ================================================ */
+
+/* ── FORCE data-theme onto html element on mount ── */
+/* BackgroundManager must set this — see Step 2 */
+
+/* ── DAY THEME: All overrides ── */
+
+[data-theme="day"] * {
+  --tw-text-opacity: 1;
+}
+
+/* All text that is white in day mode must become dark */
+[data-theme="day"] .text-white,
+[data-theme="day"] [class*="text-white"],
+[data-theme="day"] [class*="text-slate"],
+[data-theme="day"] [class*="text-gray"] {
+  color: #0f1e3d !important;
+}
+
+/* Glass cards */
+[data-theme="day"] [class*="glass"],
+[data-theme="day"] [class*="card"],
+[data-theme="day"] [class*="Card"] {
+  background: rgba(255, 255, 255, 0.75) !important;
+  border-color: rgba(180, 210, 240, 0.60) !important;
+  color: #0f1e3d !important;
+}
+
+/* Any element with inline rgba dark background */
+[data-theme="day"] [style*="rgba(15, 23, 42"],
+[data-theme="day"] [style*="rgba(15,23,42"] {
+  background: rgba(255, 255, 255, 0.75) !important;
+  color: #0f1e3d !important;
+}
+
+/* Nav bar */
+[data-theme="day"] nav,
+[data-theme="day"] [class*="nav"],
+[data-theme="day"] [class*="Nav"],
+[data-theme="day"] [class*="bottom-bar"],
+[data-theme="day"] [class*="tab-bar"] {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-top-color: rgba(180, 210, 240, 0.40) !important;
+}
+
+/* Nav icons and labels */
+[data-theme="day"] nav *,
+[data-theme="day"] [class*="Nav"] * {
+  color: #4a5f8a !important;
+  stroke: #4a5f8a !important;
+  fill: currentColor !important;
+}
+
+/* Active nav item */
+[data-theme="day"] nav [class*="active"] *,
+[data-theme="day"] [class*="Nav"] [class*="active"] * {
+  color: #8B6200 !important;
+}
+
+/* Headings */
+[data-theme="day"] h1,
+[data-theme="day"] h2,
+[data-theme="day"] h3,
+[data-theme="day"] h4 {
+  color: #0f1e3d !important;
+}
+
+/* Paragraph and span text */
+[data-theme="day"] p,
+[data-theme="day"] span:not([class*="emoji"]) {
+  color: #0f1e3d !important;
+}
+
+/* Labels and small text */
+[data-theme="day"] label,
+[data-theme="day"] small,
+[data-theme="day"] [class*="label"],
+[data-theme="day"] [class*="muted"] {
+  color: #2a3f6f !important;
+}
+
+/* Section titles / gold accents stay gold but darker */
+[data-theme="day"] [class*="section-title"],
+[data-theme="day"] [class*="gold"],
+[data-theme="day"] [style*="#D4A843"],
+[data-theme="day"] [style*="D4A843"] {
+  color: #8B6200 !important;
+}
+
+/* Input fields */
+[data-theme="day"] input,
+[data-theme="day"] textarea,
+[data-theme="day"] select {
+  background: rgba(255, 255, 255, 0.85) !important;
+  color: #0f1e3d !important;
+  border-color: rgba(180, 210, 240, 0.50) !important;
+}
+
+[data-theme="day"] input::placeholder,
+[data-theme="day"] textarea::placeholder {
+  color: #6a7fa8 !important;
+}
+
+/* Buttons — primary stays gold, secondary gets light bg */
+[data-theme="day"] button[class*="primary"],
+[data-theme="day"] [class*="btn-primary"] {
+  background: #8B6200 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="day"] button[class*="secondary"],
+[data-theme="day"] [class*="btn-secondary"] {
+  background: rgba(255,255,255,0.80) !important;
+  color: #0f1e3d !important;
+}
+
+/* Read screen Bible text specifically */
+[data-theme="day"] [class*="verse"],
+[data-theme="day"] [class*="bible"],
+[data-theme="day"] [class*="Bible"],
+[data-theme="day"] [class*="scripture"] {
+  color: #0f1e3d !important;
+}
+
+/* More drawer */
+[data-theme="day"] [class*="drawer"] *,
+[data-theme="day"] [class*="Drawer"] *,
+[data-theme="day"] [class*="more"] *,
+[data-theme="day"] [class*="More"] * {
+  color: #0f1e3d !important;
+}
+
+/* Journey screen */
+[data-theme="day"] [class*="journey"] *,
+[data-theme="day"] [class*="Journey"] * {
+  color: #0f1e3d !important;
+}
+
+/* Share Your Faith / Create screen */
+[data-theme="day"] [class*="create"] *,
+[data-theme="day"] [class*="Create"] *,
+[data-theme="day"] [class*="faith"] *,
+[data-theme="day"] [class*="Faith"] * {
+  color: #0f1e3d !important;
+}
+
+/* Settings screen */
+[data-theme="day"] [class*="settings"] *,
+[data-theme="day"] [class*="Settings"] * {
+  color: #0f1e3d !important;
+}
+
+/* Footer links */
+[data-theme="day"] footer *,
+[data-theme="day"] [class*="footer"] * {
+  color: #2a3f6f !important;
+}
+
+/* ── PRESERVE: things that should NOT change in day mode ── */
+
+/* Keep colored buttons their own color */
+[data-theme="day"] button[style*="background"] {
+  color: inherit;
+}
+
+/* Keep emoji from being recolored */
+[data-theme="day"] [class*="emoji"] {
+  color: unset !important;
+}
+
+/* Keep Sign Out button red */
+[data-theme="day"] [class*="signout"],
+[data-theme="day"] [class*="sign-out"],
+[data-theme="day"] [class*="logout"] {
+  background: #ef4444 !important;
+  color: white !important;
+}
+
+/* Keep gold Share a Prayer button */
+[data-theme="day"] [class*="prayer-btn"],
+[data-theme="day"] [class*="share-prayer"] {
+  background: #8B6200 !important;
+  color: white !important;
+}
