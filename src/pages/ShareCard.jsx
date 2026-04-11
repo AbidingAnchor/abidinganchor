@@ -14,8 +14,7 @@ export default function ShareCard() {
   const [userReflection, setUserReflection] = useState('This verse reminds me that I am never alone in my journey.')
   const [cardStyle, setCardStyle] = useState('celestial')
   const [contentFont, setContentFont] = useState('serif')
-  const [textColorChoice, setTextColorChoice] = useState('white')
-  const [textColorChanged, setTextColorChanged] = useState(false)
+  const [textColorChoice, setTextColorChoice] = useState(null)
   const [generating, setGenerating] = useState(false)
   const [generatedImage, setGeneratedImage] = useState(null)
 
@@ -167,7 +166,6 @@ export default function ShareCard() {
             cardStyle={cardStyle}
             contentFont={contentFont}
             textColorChoice={textColorChoice}
-            textColorChanged={textColorChanged}
           />
         </div>
       </div>
@@ -251,10 +249,7 @@ export default function ShareCard() {
             <button
               key={c.id}
               type="button"
-              onClick={() => {
-                setTextColorChoice(c.id)
-                setTextColorChanged(true)
-              }}
+              onClick={() => setTextColorChoice(c.id)}
               className="flex flex-col items-center gap-2 min-w-[4.5rem]"
               aria-label={`Text color ${c.label}`}
               aria-pressed={textColorChoice === c.id}

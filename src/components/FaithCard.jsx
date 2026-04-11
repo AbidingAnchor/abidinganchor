@@ -12,6 +12,8 @@ const TEXT_COLOR_CHOICES = {
   dark: '#1a1a1a',
 }
 
+const DARK_CARD_STYLES = new Set(['celestial', 'midnight', 'scripture', 'forest'])
+
 export default function FaithCard({
   verseReference = '',
   verseText = '',
@@ -19,11 +21,9 @@ export default function FaithCard({
   scale = 0.25,
   cardStyle = 'celestial',
   contentFont = 'serif',
-  textColorChoice = 'white',
-  textColorChanged = false,
+  textColorChoice = null,
 }) {
   const bodyFont = CONTENT_FONTS[contentFont] ?? CONTENT_FONTS.serif
-  const userTextColor = TEXT_COLOR_CHOICES[textColorChoice] ?? TEXT_COLOR_CHOICES.white
 
   const getCardStyle = () => {
     switch (cardStyle) {
@@ -36,8 +36,6 @@ export default function FaithCard({
           textColor: '#FFFFFF',
           accentColor: '#D4A843',
           showStars: true,
-          mainFontScale: 1.1,
-          mainTextShadow: '0 0 20px rgba(255,255,255,0.3)',
         }
       case 'dawn':
         return {
@@ -55,11 +53,9 @@ export default function FaithCard({
           starOpacity: 0,
           borderColor: '#D4A843',
           borderWidth: '4px',
-          textColor: '#F5F5DC',
+          textColor: '#FFFFFF',
           accentColor: '#D4A843',
           showStars: false,
-          mainFontScale: 1.1,
-          mainTextShadow: '0 0 20px rgba(255,255,255,0.3)',
         }
       case 'midnight':
         return {
@@ -70,8 +66,6 @@ export default function FaithCard({
           textColor: '#FFFFFF',
           accentColor: '#D4A843',
           showStars: false,
-          mainFontScale: 1.1,
-          mainTextShadow: '0 0 20px rgba(255,255,255,0.3)',
         }
       case 'golden':
         return {
@@ -82,7 +76,6 @@ export default function FaithCard({
           textColor: '#1a1a1a',
           accentColor: '#8B6914',
           showStars: false,
-          mainTextShadow: '0 1px 4px rgba(0,0,0,0.15)',
         }
       case 'ocean':
         return {
@@ -103,7 +96,6 @@ export default function FaithCard({
           textColor: '#4a044e',
           accentColor: '#be185d',
           showStars: false,
-          mainTextShadow: '0 1px 4px rgba(0,0,0,0.15)',
         }
       case 'forest':
         return {
@@ -111,11 +103,9 @@ export default function FaithCard({
           starOpacity: 0,
           borderColor: '#a3b18a',
           borderWidth: '4px',
-          textColor: '#F5F5DC',
+          textColor: '#FFFFFF',
           accentColor: '#c9a227',
           showStars: false,
-          mainFontScale: 1.1,
-          mainTextShadow: '0 0 20px rgba(255,255,255,0.3)',
         }
       default:
         return {
@@ -126,24 +116,22 @@ export default function FaithCard({
           textColor: '#FFFFFF',
           accentColor: '#D4A843',
           showStars: true,
-          mainFontScale: 1.1,
-          mainTextShadow: '0 0 20px rgba(255,255,255,0.3)',
         }
     }
   }
 
   const baseStyle = getCardStyle()
-  const currentStyle = {
-    ...baseStyle,
-    textColor: textColorChanged ? userTextColor : baseStyle.textColor,
-  }
-  const fontMult = currentStyle.mainFontScale ?? 1
-  const refSizePx = 36 * fontMult
-  const verseSizePx = 42 * fontMult
-  const reflSizePx = 32 * fontMult
-  const refShadow = currentStyle.mainTextShadow ?? '0 2px 8px rgba(0, 0, 0, 0.35)'
-  const verseShadow = currentStyle.mainTextShadow ?? '0 2px 10px rgba(0, 0, 0, 0.5)'
-  const reflShadow = currentStyle.mainTextShadow ?? '0 2px 8px rgba(0, 0, 0, 0.4)'
+  const textColor = textColorChoice
+    ? TEXT_COLOR_CHOICES[textColorChoice] ?? baseStyle.textColor
+    : baseStyle.textColor
+  const currentStyle = { ...baseStyle, textColor }
+
+  const lightCard = cardStyle === 'golden' || cardStyle === 'rose'
+  const refShadow = lightCard ? '0 1px 4px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0, 0, 0, 0.35)'
+  const verseShadow = lightCard ? '0 1px 4px rgba(0,0,0,0.15)' : '0 2px 10px rgba(0, 0, 0, 0.5)'
+  const reflShadow = lightCard ? '0 1px 4px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0, 0, 0, 0.4)'
+
+  const showDarkVeil = DARK_CARD_STYLES.has(cardStyle)
 
   return (
     <div 
@@ -176,6 +164,19 @@ export default function FaithCard({
           opacity: currentStyle.starOpacity,
           pointerEvents: 'none',
         }} />
+      )}
+
+      {showDarkVeil && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'rgba(0,0,0,0.25)',
+            borderRadius: '24px',
+            zIndex: 0,
+            pointerEvents: 'none',
+          }}
+        />
       )}
 
       {/* Top watermark */}
@@ -216,7 +217,7 @@ export default function FaithCard({
         {verseReference && (
           <p style={{
             fontFamily: bodyFont,
-            fontSize: `${refSizePx}px`,
+            fontSize: '36px',
             fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
             color: currentStyle.textColor,
             marginBottom: '40px',
@@ -230,7 +231,7 @@ export default function FaithCard({
         {verseText && (
           <p style={{
             fontFamily: bodyFont,
-            fontSize: `${verseSizePx}px`,
+            fontSize: '42px',
             fontWeight: contentFont === 'modern' ? 600 : 500,
             color: currentStyle.textColor,
             lineHeight: '1.5',
@@ -254,7 +255,7 @@ export default function FaithCard({
         {userReflection && (
           <p style={{
             fontFamily: bodyFont,
-            fontSize: `${reflSizePx}px`,
+            fontSize: '32px',
             fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
             color: currentStyle.textColor,
             lineHeight: '1.6',
