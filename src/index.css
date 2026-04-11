@@ -46,8 +46,8 @@
 [data-theme="day"] {
   --sat: env(safe-area-inset-top, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
-  --glass-bg: rgba(255, 255, 255, 0.88);
-  --glass-bg-hover: rgba(255, 255, 255, 0.95);
+  --glass-bg: rgba(255, 255, 255, 0.92);
+  --glass-bg-hover: rgba(255, 255, 255, 0.97);
   --glass-border: rgba(180, 210, 240, 0.60);
   --glass-border-hover: rgba(180, 210, 240, 0.80);
   --glass-shadow: 0 8px 32px rgba(80, 120, 180, 0.14);
