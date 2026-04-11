@@ -16,7 +16,7 @@ function Home({ onOpenWorship, worshipStatus }) {
   const navigate = useNavigate()
   const { user, profile } = useAuth()
   const [todaysVerse, setTodaysVerse] = useState(() => getTodaysVerse())
-  const [streak, setStreak] = useState({ currentStreak: 1 })
+  const [streak, setStreak] = useState({ currentStreak: 0 })
   const [toastTrigger, setToastTrigger] = useState(0)
   const [journalCount, setJournalCount] = useState(0)
   const [suppressPersonalWelcome, setSuppressPersonalWelcome] = useState(false)
@@ -93,7 +93,7 @@ function Home({ onOpenWorship, worshipStatus }) {
         setStreak({ currentStreak: currentStreak })
       } catch {
         if (!cancelled && !profileRef.current) {
-          setStreak({ currentStreak: 1 })
+          setStreak({ currentStreak: 0 })
           setSuppressPersonalWelcome(true)
         }
       } finally {
@@ -283,7 +283,7 @@ function Home({ onOpenWorship, worshipStatus }) {
   ]
   const encouragement = encouragements[new Date().getDay()]
   
-  const currentStreak = Math.max(1, Number(streak?.currentStreak || 1))
+  const currentStreak = Number(streak?.currentStreak || 0)
   const firstName = suppressPersonalWelcome
     ? 'Friend'
     : (profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Friend')
@@ -472,7 +472,7 @@ function Home({ onOpenWorship, worshipStatus }) {
               <div className="flex items-center justify-between gap-2" style={{ overflowX: 'auto' }}>
                 {days.map((day, index) => {
                   const isToday = index === todayIndex
-                  const isPast = index < todayIndex
+                  const isPast = index < todayIndex && index >= todayIndex - (currentStreak - 1)
                   const flameStyle = isToday
                     ? { fontSize: '36px', color: '#D4A843', filter: 'drop-shadow(0 0 8px rgba(212,168,67,0.8))', animation: 'flamePulse 2s ease-in-out infinite' }
                     : isPast
