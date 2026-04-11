@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -10,7 +10,18 @@ export default function Settings() {
   const [selectedTranslation, setSelectedTranslation] = useState('KJV')
   const [uploadStatus, setUploadStatus] = useState('idle') // idle, uploading, success
   const [uploadError, setUploadError] = useState('')
+  const [pendingAvatarUrl, setPendingAvatarUrl] = useState(null)
   const fileInputRef = useRef(null)
+
+  useEffect(() => {
+    if (
+      pendingAvatarUrl &&
+      profile?.avatar_url &&
+      profile.avatar_url === pendingAvatarUrl
+    ) {
+      setPendingAvatarUrl(null)
+    }
+  }, [pendingAvatarUrl, profile?.avatar_url])
 
   const handleSignOut = async () => {
     await signOut()
@@ -76,24 +87,20 @@ export default function Settings() {
         .from('avatars')
         .getPublicUrl(filePath)
       const avatarUrl = data.publicUrl
+      setPendingAvatarUrl(avatarUrl)
 
-      try {
-        const { error: updateError } = await supabase.from('profiles')
-          .update({ avatar_url: avatarUrl })
-          .eq('id', user.id)
-        if (updateError) throw updateError
-        
-        // Refresh profile to get latest avatar_url from Supabase
-        await refreshProfile()
-      } catch (error) {
-        console.error('Profile update error:', error)
-        // Continue anyway - avatar is saved, profile update may fail gracefully
-      }
+      const { error: updateError } = await supabase.from('profiles')
+        .update({ avatar_url: avatarUrl })
+        .eq('id', user.id)
+      if (updateError) throw updateError
+
+      await refreshProfile()
 
       setUploadStatus('success')
       setTimeout(() => setUploadStatus('idle'), 2000)
     } catch (error) {
       console.error('Upload error:', error)
+      setPendingAvatarUrl(null)
       setUploadError('Failed to upload profile picture. Please try again.')
       setUploadStatus('idle')
     }
@@ -108,7 +115,7 @@ export default function Settings() {
 
   const displayName = profile?.full_name || user?.user_metadata?.full_name || 'User'
   const userEmail = user?.email || ''
-  const avatarUrl = profile?.avatar_url
+  const avatarUrl = pendingAvatarUrl ?? profile?.avatar_url
 
   return (
     <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '110px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>

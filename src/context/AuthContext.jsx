@@ -23,64 +23,74 @@ function isValidUUID(str) {
 async function fetchProfileWithTimeout(user) {
   if (!user?.id) return null
   try {
-    return await Promise.race([
+    await Promise.race([
       ensureProfile(user),
       new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('profile-fetch-timeout')), PROFILE_FETCH_TIMEOUT_MS)
+        setTimeout(
+          () => reject(new Error('profile-fetch-timeout')),
+          PROFILE_FETCH_TIMEOUT_MS,
+        )
       }),
     ])
   } catch {
+    // Timeout or ensureProfile failure — still try to load an existing row
+  }
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  if (error) {
+    console.error('Profile fetch error:', error)
     return null
   }
+  return data ?? null
 }
 
 async function ensureProfile(user) {
-  if (!user?.id) return;
-  if (!isValidUUID(user.id)) return;
-  if (profileSyncedUserIds.has(user.id)) return;
-  
+  if (!user?.id) return
+  if (!isValidUUID(user.id)) return
+  if (profileSyncedUserIds.has(user.id)) return
+
   // Add BEFORE the await to block any concurrent calls
-  profileSyncedUserIds.add(user.id);
+  profileSyncedUserIds.add(user.id)
 
   try {
-    // First check if profile exists
+    // maybeSingle: no error when row is missing (unlike .single())
     const { data: existingProfile } = await supabase
       .from('profiles')
       .select('avatar_url')
       .eq('id', user.id)
-      .single();
-    
-    // Build upsert payload - only include avatar_url if profile doesn't exist
+      .maybeSingle()
+
     const payload = {
       id: user.id,
       email: user.email ?? '',
-      full_name: user.user_metadata?.full_name 
-                 ?? user.user_metadata?.name 
-                 ?? '',
+      full_name:
+        user.user_metadata?.full_name ?? user.user_metadata?.name ?? '',
       bible_version: 'KJV',
       last_active_date: new Date().toISOString().split('T')[0],
-    };
-    
-    // Only set avatar_url from metadata if profile doesn't exist yet
-    if (!existingProfile) {
-      payload.avatar_url = user.user_metadata?.avatar_url ?? null;
+      // Always set avatar_url on upsert: PostgREST upsert maps omitted columns to
+      // NULL on conflict, which was wiping uploaded avatars on every login/sync.
+      avatar_url: existingProfile
+        ? existingProfile.avatar_url
+        : user.user_metadata?.avatar_url ?? null,
     }
-    
-    const { error } = await supabase
-      .from('profiles')
-      .upsert(payload, { 
-        onConflict: 'id',
-        ignoreDuplicates: false 
-      });
+
+    const { error } = await supabase.from('profiles').upsert(payload, {
+      onConflict: 'id',
+      ignoreDuplicates: false,
+    })
 
     if (error) {
-      console.error('Profile upsert error:', error);
-      // Remove from set so it can retry next session
-      profileSyncedUserIds.delete(user.id);
+      console.error('Profile upsert error:', error)
+      profileSyncedUserIds.delete(user.id)
     }
   } catch (err) {
-    console.error('Profile upsert exception:', err);
-    profileSyncedUserIds.delete(user.id);
+    console.error('Profile upsert exception:', err)
+    profileSyncedUserIds.delete(user.id)
   }
 }
 
@@ -180,16 +190,18 @@ export function AuthProvider({ children }) {
   const refreshProfile = async () => {
     if (!user?.id) return
     try {
-      const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle()
       if (error) {
         console.error('Profile refresh error:', error)
-        setProfile(null)
         return
       }
-      setProfile(data ?? null)
+      if (data) setProfile(data)
     } catch (error) {
       console.error('Profile refresh error:', error)
-      setProfile(null)
     }
   }
 

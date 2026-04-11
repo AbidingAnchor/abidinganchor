@@ -16,7 +16,10 @@ export default function Navbar() {
   const navigate = useNavigate()
   const { user, profile } = useAuth()
   const displayName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email || ''
-  const avatarUrl = profile?.avatar_url
+  const avatarUrl =
+    profile?.avatar_url ??
+    user?.user_metadata?.avatar_url ??
+    user?.user_metadata?.picture
 
   return (
     <>
