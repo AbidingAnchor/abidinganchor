@@ -21,8 +21,9 @@ function isValidUUID(str) {
 }
 
 /**
- * Loads profile after ensureProfile. No per-step timeout on the SELECT — the
- * outer fetchProfileWithTimeout race caps total wait time.
+ * After ensureProfile (which never writes avatar_url), loads the full profile
+ * row from the DB — including avatar_url — via SELECT only. No per-step
+ * timeout on this SELECT; fetchProfileWithTimeout still caps total wait time.
  */
 async function loadProfileRow(user) {
   const { data, error } = await supabase
@@ -60,6 +61,7 @@ async function fetchProfileWithTimeout(user) {
         } catch {
           // Timeout or ensureProfile failure — still try to load an existing row
         }
+        // Separate SELECT: full profile (avatar_url comes from DB only, never from upsert)
         return loadProfileRow(user)
       })(),
       new Promise((resolve) => {
@@ -81,10 +83,9 @@ async function ensureProfile(user) {
   profileSyncedUserIds.add(user.id)
 
   try {
-    // BEFORE building the upsert payload, ALWAYS fetch the current row first
     const { data: existingProfile, error: selectError } = await supabase
       .from('profiles')
-      .select('avatar_url')
+      .select('onboarding_complete')
       .eq('id', user.id)
       .maybeSingle()
 
@@ -94,13 +95,6 @@ async function ensureProfile(user) {
       return
     }
 
-    // NEVER overwrite avatar_url if it already has a value in the DB
-    const avatar_url = (existingProfile?.avatar_url && existingProfile.avatar_url.trim() !== '')
-      ? existingProfile.avatar_url
-      : (user.user_metadata?.avatar_url ?? user.user_metadata?.picture ?? null)
-
-    console.log('ensureProfile avatar_url:', avatar_url)
-
     const { error } = await supabase.from('profiles').upsert(
       {
         id: user.id,
@@ -109,7 +103,7 @@ async function ensureProfile(user) {
           user.user_metadata?.full_name ?? user.user_metadata?.name ?? '',
         bible_version: 'KJV',
         last_active_date: new Date().toISOString().split('T')[0],
-        avatar_url,
+        onboarding_complete: existingProfile?.onboarding_complete ?? false,
       },
       { onConflict: 'id' },
     )
