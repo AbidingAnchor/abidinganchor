@@ -17,6 +17,10 @@ export default function Settings() {
   const fileInputRef = useRef(null)
 
   useEffect(() => {
+    console.log('Settings avatar_url:', profile?.avatar_url)
+  }, [profile?.avatar_url])
+
+  useEffect(() => {
     if (
       pendingAvatarUrl &&
       profile?.avatar_url &&

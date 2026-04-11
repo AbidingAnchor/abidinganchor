@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -17,6 +17,9 @@ const tabs = [
 export default function Navbar() {
   const navigate = useNavigate()
   const { user, profile } = useAuth()
+  useEffect(() => {
+    console.log('Navbar avatar_url:', profile?.avatar_url)
+  }, [profile?.avatar_url])
   const displayName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email || ''
   const rawAvatarUrl =
     profile?.avatar_url ??
