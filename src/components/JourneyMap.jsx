@@ -228,19 +228,27 @@ function buildPathD(stops) {
 }
 
 const NODE_DOT_R = 10
-/** Extra canvas height below the original 400-tall map so figures fit under the bottom node (Bethlehem). */
 const MAP_VIEWBOX_W = 320
-/** Bethlehem dot bottom ~392; gap + figure + nudge — keep margin at bottom. */
-const MAP_VIEWBOX_H = 456
 /** Natural pixels of /jesus-and-person.png — used only for aspect ratio. */
 const PROGRESS_IMG_W = 1024
 const PROGRESS_IMG_H = 1536
-/** Height in SVG user units (~40px on screen when viewBox maps ~1:1). */
-const PROGRESS_MARKER_HEIGHT = 40
+/** Map marker height in SVG user units (~80px when viewBox maps ~1:1). Popup uses its own fixed size. */
+const PROGRESS_MARKER_HEIGHT = 80
 /** Padding between the bottom of the node dot and the top of the figure. */
 const PROGRESS_MARKER_GAP = 8
 /** Extra offset below the dot so figures clear the label and the path to the next stop. */
 const PROGRESS_MARKER_NUDGE_DOWN = 12
+/** Tight padding under the figure so the map doesn’t leave a large empty band at the card bottom. */
+const MAP_VIEWBOX_BOTTOM_PAD = 2
+/** Lowest point on the path (largest y); marker under that stop needs the most vertical room. */
+const MAP_LOWEST_Y = Math.max(...JOURNEY_MAP_STOPS.map((s) => s.y))
+const MAP_VIEWBOX_H =
+  MAP_LOWEST_Y +
+  NODE_DOT_R +
+  PROGRESS_MARKER_GAP +
+  PROGRESS_MARKER_NUDGE_DOWN +
+  PROGRESS_MARKER_HEIGHT +
+  MAP_VIEWBOX_BOTTOM_PAD
 
 /** Labels on the left of the dot when the node is on the right; avoids clipping long names. */
 function labelAnchor(stop) {
@@ -259,7 +267,7 @@ function progressMarkerLayout(stop) {
   let left = x - w / 2
   const margin = 4
   left = Math.max(margin, Math.min(left, MAP_VIEWBOX_W - w - margin))
-  const maxTop = MAP_VIEWBOX_H - margin - h
+  const maxTop = MAP_VIEWBOX_H - MAP_VIEWBOX_BOTTOM_PAD - h
   const yClamped = Math.min(top, maxTop)
   return { x: left, y: yClamped, w, h }
 }
