@@ -255,7 +255,11 @@ export default function Prayer() {
             <textarea
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              className="relative z-10 w-full min-h-[140px] rounded-xl bg-white/8 border border-white/15 p-4 text-white placeholder:text-white/35 mb-4 outline-none focus:border-[#D4A843]/40 pointer-events-auto"
+              className="relative z-10 w-full min-h-[140px] rounded-xl border border-white/15 p-4 mb-4 outline-none focus:border-[#D4A843]/40 pointer-events-auto caret-[#F5E6B8] placeholder:text-[rgba(255,255,255,0.55)]"
+              style={{
+                color: '#ffffff',
+                backgroundColor: 'rgba(255, 255, 255, 0.08)',
+              }}
               placeholder={t('prayer.personalPlaceholder')}
             />
             <button
