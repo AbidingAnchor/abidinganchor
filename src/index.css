@@ -171,7 +171,7 @@ body {
   background: transparent;
 }
 
-/* Worship Mode: clip bleed; main column; bottom pad clears app BottomNav (transport is in-flow above it) */
+/* Worship Mode: clip bleed; main column; content at top — fixed transport + nav handle bottom inset */
 .content-scroll.worship-mode-page {
   overflow: hidden;
   width: 100%;
@@ -179,7 +179,7 @@ body {
   margin-left: auto;
   margin-right: auto;
   box-sizing: border-box;
-  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
 }
 
 /* Worship Mode — night sky (behind UI: .worship-sky z-index 0, foreground z-index 1) */

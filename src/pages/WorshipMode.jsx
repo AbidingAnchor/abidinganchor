@@ -221,6 +221,8 @@ export default function WorshipMode() {
           alignItems: 'stretch',
           padding: '0 16px',
           paddingTop: '88px',
+          /* Scroll clearance above fixed transport + bottom nav */
+          paddingBottom: 'calc(96px + 72px + env(safe-area-inset-bottom, 0px))',
         }}
       >
       {audioError ? (
@@ -336,25 +338,32 @@ export default function WorshipMode() {
           })}
         </ul>
       </section>
+      </div>
 
-      {/* Glass transport — sky shows through; flush under playlist */}
+      {/* Fixed above app BottomNav; sky visible in open area above */}
       <div
+        role="toolbar"
+        aria-label="Playback controls"
         style={{
-          flex: '0 0 auto',
-          marginTop: 0,
-          marginLeft: '-16px',
-          marginRight: '-16px',
-          marginBottom: 0,
+          position: 'fixed',
+          left: '50%',
+          bottom: 'calc(72px + env(safe-area-inset-bottom, 0px))',
+          transform: 'translateX(-50%)',
+          width: 'min(680px, calc(100% - 32px))',
+          maxWidth: '100%',
+          zIndex: 100,
           padding: '12px 16px',
           boxSizing: 'border-box',
-          background: 'rgba(8, 10, 26, 0.42)',
-          backdropFilter: 'blur(14px)',
-          WebkitBackdropFilter: 'blur(14px)',
-          borderTop: `1px solid ${goldMuted}`,
+          background: 'rgba(8, 10, 26, 0.5)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          border: `1px solid ${goldMuted}`,
+          borderRadius: '18px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           gap: '28px',
+          boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.35)',
         }}
       >
         <button
@@ -366,7 +375,7 @@ export default function WorshipMode() {
             height: '52px',
             borderRadius: '50%',
             border: `1px solid ${goldMuted}`,
-            background: 'rgba(255,255,255,0.06)',
+            background: 'rgba(255,255,255,0.08)',
             color: gold,
             fontSize: '22px',
             cursor: 'pointer',
@@ -401,7 +410,7 @@ export default function WorshipMode() {
             height: '52px',
             borderRadius: '50%',
             border: `1px solid ${goldMuted}`,
-            background: 'rgba(255,255,255,0.06)',
+            background: 'rgba(255,255,255,0.08)',
             color: gold,
             fontSize: '22px',
             cursor: 'pointer',
@@ -409,7 +418,6 @@ export default function WorshipMode() {
         >
           ⏭
         </button>
-      </div>
       </div>
     </div>
   )
