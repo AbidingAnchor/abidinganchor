@@ -1,22 +1,12 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
-// Prayer prompts for daily rotation
-const PRAYER_PROMPTS = [
-  "Thank God for His unfailing love and mercy today.",
-  "Pray for wisdom and guidance in your daily decisions.",
-  "Ask God to give you strength to face today's challenges.",
-  "Pray for those who are hurting or in need around you.",
-  "Thank God for the blessings in your life, big and small.",
-  "Pray for patience and kindness in your interactions with others.",
-  "Ask God to help you trust Him more fully.",
-  "Pray for peace that surpasses understanding.",
-  "Thank God for His faithfulness throughout your life.",
-  "Pray for opportunities to be a light to others today."
-]
+const SPEECH_LANG = { en: 'en-US', es: 'es-ES', pt: 'pt-BR', fr: 'fr-FR', de: 'de-DE' }
 
 export default function Prayer() {
+  const { t, i18n } = useTranslation()
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('my-prayers')
   const [showModal, setShowModal] = useState(false)
@@ -29,6 +19,11 @@ export default function Prayer() {
   const [isListening, setIsListening] = useState(false)
   const [transcript, setTranscript] = useState('')
   const [recognition, setRecognition] = useState(null)
+
+  const prayerPrompts = useMemo(() => {
+    const list = t('prayer.prompts', { returnObjects: true })
+    return Array.isArray(list) ? list : []
+  }, [t, i18n.language])
 
   // Load stats from Supabase
   useEffect(() => {
@@ -66,8 +61,10 @@ export default function Prayer() {
   // Set prayer of the day based on date
   useEffect(() => {
     const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24))
-    setPrayerOfTheDay(PRAYER_PROMPTS[dayOfYear % PRAYER_PROMPTS.length])
-  }, [])
+    const list = prayerPrompts
+    if (!list.length) return
+    setPrayerOfTheDay(list[dayOfYear % list.length])
+  }, [prayerPrompts])
 
   // Initialize speech recognition
   useEffect(() => {
@@ -76,7 +73,8 @@ export default function Prayer() {
       const rec = new SpeechRecognition()
       rec.continuous = false
       rec.interimResults = true
-      rec.lang = 'en-US'
+      const base = (i18n.resolvedLanguage || i18n.language || 'en').toLowerCase().split(/[-_]/)[0]
+      rec.lang = SPEECH_LANG[base] || 'en-US'
       
       rec.onresult = (event) => {
         const current = event.resultIndex
@@ -94,7 +92,7 @@ export default function Prayer() {
       
       setRecognition(rec)
     }
-  }, [])
+  }, [i18n.language, i18n.resolvedLanguage])
 
   const loadPrayers = async () => {
     if (!user?.id) return
@@ -212,17 +210,17 @@ export default function Prayer() {
               textTransform: 'uppercase', 
               marginBottom: '8px' 
             }}>
-              PRAYER
+              {t('prayer.heroKicker')}
             </p>
             <h1 style={{ color: 'var(--text-primary)', fontSize: '26px', fontWeight: 700, marginBottom: '8px', lineHeight: 1.2 }}>
-              Draw near to <span style={{ color: '#D4A843' }}>God</span>
+              {t('prayer.heroTitleBefore')}<span style={{ color: '#D4A843' }}>{t('prayer.heroTitleAccent')}</span>
             </h1>
             <p style={{ 
               color: 'var(--text-muted)', 
               fontSize: '11px', 
               fontStyle: 'italic' 
             }}>
-              Draw near to God and He will draw near to you — James 4:8
+              {t('prayer.heroSubtitle')}
             </p>
           </div>
         </header>
@@ -249,7 +247,7 @@ export default function Prayer() {
             textAlign: 'center'
           }}>
             <p style={{ color: '#D4A843', fontSize: '18px', fontWeight: 700, marginBottom: '2px' }}>🔥 {stats.streak}</p>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Day Streak</p>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('prayer.statStreak')}</p>
           </div>
           <div style={{
             flex: 1,
@@ -260,7 +258,7 @@ export default function Prayer() {
             textAlign: 'center'
           }}>
             <p style={{ color: 'var(--text-primary)', fontSize: '18px', fontWeight: 700, marginBottom: '2px' }}>🙏 {stats.totalPrayers}</p>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Prayers</p>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('prayer.statTotal')}</p>
           </div>
           <div style={{
             flex: 1,
@@ -271,7 +269,7 @@ export default function Prayer() {
             textAlign: 'center'
           }}>
             <p style={{ color: '#2dd4bf', fontSize: '18px', fontWeight: 700, marginBottom: '2px' }}>✅ {stats.answeredPrayers}</p>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Answered</p>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('prayer.statAnswered')}</p>
           </div>
         </div>
 
@@ -301,7 +299,7 @@ export default function Prayer() {
             marginBottom: '12px',
             marginLeft: '12px'
           }}>
-            Prayer of the Day
+            {t('prayer.prayerOfDay')}
           </p>
           <p style={{ 
             color: 'var(--text-primary)', 
@@ -331,7 +329,7 @@ export default function Prayer() {
               boxShadow: '0 4px 15px rgba(212,168,67,0.3)'
             }}
           >
-            Pray this
+            {t('prayer.prayThis')}
           </button>
         </div>
 
@@ -364,7 +362,7 @@ export default function Prayer() {
             }}
           >
             <span style={{ fontSize: '24px' }}>🎙️</span>
-            <span>{isListening ? 'Listening...' : 'Speak your prayer'}</span>
+            <span>{isListening ? t('prayer.listening') : t('prayer.speakPrayer')}</span>
           </button>
           
           {transcript && (
@@ -372,7 +370,7 @@ export default function Prayer() {
               <textarea
                 value={transcript}
                 onChange={(e) => setTranscript(e.target.value)}
-                placeholder="Your prayer will appear here..."
+                placeholder={t('prayer.transcriptPlaceholder')}
                 style={{
                   background: 'var(--input-bg)',
                   border: '1px solid var(--gold-border)',
@@ -404,7 +402,7 @@ export default function Prayer() {
                   boxShadow: '0 4px 15px rgba(212,168,67,0.3)'
                 }}
               >
-                Save Prayer
+                {t('prayer.savePrayer')}
               </button>
             </>
           )}
@@ -431,7 +429,7 @@ export default function Prayer() {
               cursor: 'pointer'
             }}
           >
-            My Prayers
+            {t('prayer.tabMyPrayers')}
           </button>
           <button
             type="button"
@@ -448,14 +446,14 @@ export default function Prayer() {
               cursor: 'pointer'
             }}
           >
-            Answered
+            {t('prayer.tabAnswered')}
           </button>
         </div>
 
         {/* Prayer Cards */}
         {loading ? (
           <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
-            Loading...
+            {t('prayer.loading')}
           </div>
         ) : activeTab === 'my-prayers' ? (
           activePrayers.length > 0 ? (
@@ -474,7 +472,7 @@ export default function Prayer() {
                   }}
                 >
                   <p style={{ color: 'var(--text-primary)', fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>
-                    {entry.title || entry.text.split('\n')[0] || 'Untitled'}
+                    {entry.title || entry.text.split('\n')[0] || t('prayer.untitled')}
                   </p>
                   <p style={{
                     color: 'var(--text-secondary)',
@@ -490,7 +488,7 @@ export default function Prayer() {
                     alignItems: 'center'
                   }}>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
-                      {new Date(entry.date).toLocaleDateString()}
+                      {new Date(entry.date).toLocaleDateString(i18n.language)}
                     </p>
                     <div style={{ display: 'flex', gap: '12px' }}>
                       <button
@@ -507,7 +505,7 @@ export default function Prayer() {
                           cursor: 'pointer'
                         }}
                       >
-                        Mark as Answered
+                        {t('prayer.markAnswered')}
                       </button>
                       <button
                         type="button"
@@ -539,10 +537,10 @@ export default function Prayer() {
             }}>
               <p style={{ fontSize: '48px', marginBottom: '16px' }}>✝️</p>
               <p style={{ color: 'var(--text-primary)', fontSize: '16px', marginBottom: '8px' }}>
-                No prayers yet
+                {t('prayer.emptyMyTitle')}
               </p>
               <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '24px' }}>
-                Bring everything before God
+                {t('prayer.emptyMySub')}
               </p>
               <button
                 type="button"
@@ -558,7 +556,7 @@ export default function Prayer() {
                   fontSize: '16px'
                 }}
               >
-                Add First Prayer
+                {t('prayer.addFirst')}
               </button>
             </div>
           )
@@ -589,10 +587,10 @@ export default function Prayer() {
                     fontSize: '11px',
                     fontWeight: 600
                   }}>
-                    Answered ✓
+                    {t('prayer.answeredBadge')}
                   </span>
                   <p style={{ color: '#FFFFFF', fontSize: '16px', fontWeight: 600, marginBottom: '8px', paddingRight: '80px' }}>
-                    {entry.title || entry.text.split('\n')[0] || 'Untitled'}
+                    {entry.title || entry.text.split('\n')[0] || t('prayer.untitled')}
                   </p>
                   <p style={{
                     color: 'var(--text-secondary)',
@@ -608,7 +606,7 @@ export default function Prayer() {
                     alignItems: 'center'
                   }}>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
-                      {new Date(entry.date).toLocaleDateString()}
+                      {new Date(entry.date).toLocaleDateString(i18n.language)}
                     </p>
                     <div style={{ display: 'flex', gap: '12px' }}>
                       <button
@@ -625,7 +623,7 @@ export default function Prayer() {
                           cursor: 'pointer'
                         }}
                       >
-                        Unmark
+                        {t('prayer.unmark')}
                       </button>
                       <button
                         type="button"
@@ -657,10 +655,10 @@ export default function Prayer() {
             }}>
               <p style={{ fontSize: '48px', marginBottom: '16px' }}>✝️</p>
               <p style={{ color: 'var(--text-primary)', fontSize: '16px', marginBottom: '8px' }}>
-                No answered prayers yet
+                {t('prayer.emptyAnsweredTitle')}
               </p>
               <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
-                Keep praying and trust in God's timing
+                {t('prayer.emptyAnsweredSub')}
               </p>
             </div>
           )
@@ -701,14 +699,14 @@ export default function Prayer() {
               marginBottom: '20px',
               textAlign: 'center'
             }}>
-              New Prayer
+              {t('prayer.modalTitle')}
             </h2>
             
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Title (optional)"
+              placeholder={t('prayer.titlePlaceholder')}
               style={{
                 background: 'var(--glass-bg)',
                 border: '1px solid var(--glass-border)',
@@ -725,7 +723,7 @@ export default function Prayer() {
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Write your prayer to God..."
+              placeholder={t('prayer.bodyPlaceholder')}
               placeholderStyle={{ color: 'var(--text-secondary)' }}
               style={{
                 background: 'var(--glass-bg)',
@@ -758,7 +756,7 @@ export default function Prayer() {
                 marginBottom: '12px'
               }}
             >
-              Save Prayer
+              {t('prayer.savePrayer')}
             </button>
             
             <button
@@ -774,7 +772,7 @@ export default function Prayer() {
                 padding: '8px'
               }}
             >
-              Cancel
+              {t('common.cancel')}
             </button>
           </div>
         </div>

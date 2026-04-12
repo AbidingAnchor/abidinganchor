@@ -1,45 +1,24 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { deleteJournalEntry, getJournalEntries, saveToJournal, markPrayerAnswered } from '../utils/journal'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 
-const MOOD_TAGS = ['🙏 Prayer', '💭 Reflection', '🙌 Gratitude', '🔥 Breakthrough']
-
 const ACCENT_GOLD = '#c9922a'
 
-/** At least 10 scripture-based journaling prompts; rotates by day of month */
-const PROMPTS = [
-  { prompt: 'What blessing can you thank God for today?', verse: 'Psalm 107:1' },
-  { prompt: 'Where do you need God\'s peace right now?', verse: 'Philippians 4:6-7' },
-  { prompt: 'What burden can you cast on the Lord today?', verse: '1 Peter 5:7' },
-  { prompt: 'Where have you seen God\'s faithfulness lately?', verse: 'Lamentations 3:22-23' },
-  { prompt: 'How can you walk by the Spirit today?', verse: 'Galatians 5:16' },
-  { prompt: 'Who can you show the love of Jesus to today?', verse: 'John 13:34-35' },
-  { prompt: 'What are you asking God for in prayer?', verse: 'Psalm 86:7' },
-  { prompt: 'How can you trust God with what you cannot see?', verse: 'Hebrews 11:1' },
-  { prompt: 'What Scripture is anchoring you this week?', verse: 'Psalm 119:105' },
-  { prompt: 'Where is God inviting you to rest?', verse: 'Matthew 11:28' },
-  { prompt: 'What does it mean to love the Lord with all your heart today?', verse: 'Deuteronomy 6:5' },
-]
-
-function getDailyPrompt() {
-  const idx = new Date().getDate() % PROMPTS.length
-  return PROMPTS[idx]
+function getPromptForEntryDate(iso, prompts) {
+  if (!prompts?.length) return { prompt: '', verse: '' }
+  const d = iso ? new Date(iso) : new Date()
+  const idx = d.getDate() % prompts.length
+  return prompts[idx]
 }
 
-function getPromptForEntryDate(iso) {
-  if (!iso) return PROMPTS[0]
-  const idx = new Date(iso).getDate() % PROMPTS.length
-  return PROMPTS[idx]
-}
-
-function getDaysAgo(dateString) {
-  const entryDate = new Date(dateString)
+function getDaysAgo(iso) {
+  const entryDate = new Date(iso)
   const today = new Date()
   const diffTime = Math.abs(today - entryDate)
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  return diffDays
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 }
 
 /** Local calendar YYYY-MM-DD — uses getFullYear/Month/Date only (never toISOString slice). */
@@ -83,8 +62,6 @@ function computeWritingStreak(rows) {
   return streak
 }
 
-const WEEKDAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-
 /** Monday 00:00 local of this week; uses noon anchor to avoid DST edge cases. */
 function getMondayOfWeek(d) {
   const x = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0, 0)
@@ -93,25 +70,6 @@ function getMondayOfWeek(d) {
   x.setDate(x.getDate() + diff)
   x.setHours(0, 0, 0, 0)
   return x
-}
-
-function getWeekHeatmapDays(rows) {
-  const dateSet = new Set((rows || []).map((e) => entryLocalYmd(e)).filter(Boolean))
-  const monday = getMondayOfWeek(new Date())
-  const now = new Date()
-  const todayYmd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-  return Array.from({ length: 7 }, (_, i) => {
-    const dt = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i, 12, 0, 0, 0)
-    const ymd = toLocalYmd(dt)
-    const isToday = ymd === todayYmd
-    const weekdayIndex = (dt.getDay() + 6) % 7
-    return {
-      ymd,
-      filled: dateSet.has(ymd),
-      isToday,
-      label: isToday ? 'Today' : WEEKDAY_SHORT[weekdayIndex],
-    }
-  })
 }
 
 function isInCurrentCalendarWeek(ymd) {
@@ -133,45 +91,8 @@ function isInThisMonth(ymd) {
   return y === n.getFullYear() && m - 1 === n.getMonth()
 }
 
-function getEntryTitle(entry) {
-  const line = (entry.note || '').split('\n')[0]?.trim()
-  return line || 'Untitled'
-}
-
-function getEntryBodyPreview(entry) {
-  const full = (entry.note || '').trim()
-  if (!full) {
-    const p = getPromptForEntryDate(entry.created_at)
-    return `${p.prompt} — ${p.verse}`
-  }
-  if (full.length > 80) return `${full.slice(0, 80).trim()}...`
-  return full
-}
-
-function normalizeEntry(entry) {
-  const savedDate = entry.created_at ? new Date(entry.created_at).toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  }) : new Date().toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  })
-  return {
-    id: String(entry.id),
-    reference: entry.verse_reference || '',
-    note: entry.content || '',
-    date: savedDate,
-    created_at: entry.created_at || null,
-    local_date: entry.local_date || toLocalYmd(entry.created_at),
-    mood: entry.mood || '',
-    entry_type: entry.entry_type || 'reflection',
-    answered: entry.answered || false,
-  }
-}
-
 function Journal() {
+  const { t, i18n } = useTranslation()
   const { user } = useAuth()
   const navigate = useNavigate()
   const [entries, setEntries] = useState([])
@@ -196,6 +117,58 @@ function Journal() {
   const [searchQuery, setSearchQuery] = useState('')
   const [entryFilter, setEntryFilter] = useState('all')
   const [entriesExpanded, setEntriesExpanded] = useState(false)
+
+  const prompts = useMemo(() => {
+    const list = t('journal.prompts', { returnObjects: true })
+    return Array.isArray(list) ? list : []
+  }, [t, i18n.language])
+
+  const localeOpts = useMemo(
+    () => ({ month: 'long', day: 'numeric', year: 'numeric' }),
+    [],
+  )
+
+  const normalizeEntry = useCallback(
+    (entry) => {
+      const loc = i18n.resolvedLanguage || i18n.language || 'en'
+      const savedDate = entry.created_at
+        ? new Date(entry.created_at).toLocaleDateString(loc, localeOpts)
+        : new Date().toLocaleDateString(loc, localeOpts)
+      return {
+        id: String(entry.id),
+        reference: entry.verse_reference || '',
+        note: entry.content || '',
+        date: savedDate,
+        created_at: entry.created_at || null,
+        local_date: entry.local_date || toLocalYmd(entry.created_at),
+        mood: entry.mood || '',
+        entry_type: entry.entry_type || 'reflection',
+        answered: entry.answered || false,
+      }
+    },
+    [i18n.language, i18n.resolvedLanguage, localeOpts],
+  )
+
+  const getEntryTitle = useCallback(
+    (entry) => {
+      const line = (entry.note || '').split('\n')[0]?.trim()
+      return line || t('journal.untitled')
+    },
+    [t],
+  )
+
+  const getEntryBodyPreview = useCallback(
+    (entry) => {
+      const full = (entry.note || '').trim()
+      if (!full) {
+        const p = getPromptForEntryDate(entry.created_at, prompts)
+        return `${p.prompt} — ${p.verse}`
+      }
+      if (full.length > 80) return `${full.slice(0, 80).trim()}...`
+      return full
+    },
+    [prompts],
+  )
 
   useEffect(() => {
     setEntriesExpanded(false)
@@ -255,7 +228,7 @@ function Journal() {
     }
     load()
     return () => { active = false }
-  }, [user?.id])
+  }, [user?.id, normalizeEntry])
 
   const handleDeleteEntry = async (entry) => {
     await deleteJournalEntry(entry.id)
@@ -312,7 +285,7 @@ function Journal() {
       note: reflection.trim(),
       prayer: prayer.trim() || null,
       gratitude: gratitude.trim() || null,
-      tags: ['Reflection'],
+      tags: [t('journal.entryTagReflection')],
       userId: user?.id,
       mood: selectedMood || null,
       entry_type: 'guided',
@@ -407,11 +380,31 @@ function Journal() {
       })
     }
     return list
-  }, [entries, entryFilter, searchQuery])
+  }, [entries, entryFilter, searchQuery, getEntryTitle, t])
+
+  const weekHeatmapDays = useMemo(() => {
+    const dateSet = new Set((entries || []).map((e) => entryLocalYmd(e)).filter(Boolean))
+    const monday = getMondayOfWeek(new Date())
+    const now = new Date()
+    const todayYmd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+    const weekdayKeys = ['weekdayMon', 'weekdayTue', 'weekdayWed', 'weekdayThu', 'weekdayFri', 'weekdaySat', 'weekdaySun']
+    return Array.from({ length: 7 }, (_, i) => {
+      const dt = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i, 12, 0, 0, 0)
+      const ymd = toLocalYmd(dt)
+      const isToday = ymd === todayYmd
+      const weekdayIndex = (dt.getDay() + 6) % 7
+      return {
+        ymd,
+        filled: dateSet.has(ymd),
+        isToday,
+        label: isToday ? t('journal.today') : t(`journal.${weekdayKeys[weekdayIndex]}`),
+      }
+    })
+  }, [entries, t])
+
+  const dailyPrompt = useMemo(() => getPromptForEntryDate(null, prompts), [prompts])
 
   const visibleEntries = entriesExpanded ? filteredEntries : filteredEntries.slice(0, 5)
-  const weekHeatmapDays = useMemo(() => getWeekHeatmapDays(entries), [entries])
-  const dailyPrompt = getDailyPrompt()
 
   return (
     <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
@@ -436,7 +429,7 @@ function Journal() {
               {totalEntries}
             </p>
             <p className="m-0 text-sm text-white/60">
-              {totalEntries === 1 ? 'Entry' : 'Entries'}
+              {totalEntries === 1 ? t('journal.entrySingular') : t('journal.entryPlural')}
             </p>
           </div>
           <div
@@ -451,7 +444,7 @@ function Journal() {
               {writingStreak}
             </p>
             <p className="m-0 text-sm text-white/60">
-              Day streak
+              {t('journal.dayStreakLabel')}
             </p>
           </div>
           <div
@@ -466,7 +459,7 @@ function Journal() {
               {prayerCount}
             </p>
             <p className="m-0 text-sm text-white/60">
-              Prayers
+              {t('journal.prayersLabel')}
             </p>
           </div>
         </div>
@@ -490,10 +483,10 @@ function Journal() {
             marginBottom: '12px',
           }}>
             <span className="text-sm font-semibold text-white">
-              🔥 Writing streak
+              {t('journal.writingStreak')}
             </span>
             <span className="text-sm font-bold text-amber-400">
-              {writingStreak} {writingStreak === 1 ? 'day' : 'days'}
+              {writingStreak} {writingStreak === 1 ? t('journal.day') : t('journal.days')}
             </span>
           </div>
           <div style={{
@@ -550,7 +543,7 @@ function Journal() {
           textAlign: 'center',
           marginBottom: '24px',
         }}>
-          MY JOURNAL
+          {t('journal.myJournal')}
         </h1>
 
         <div
@@ -593,7 +586,7 @@ function Journal() {
               width: '100%',
             }}
           >
-            tap to write →
+            {t('journal.tapToWrite')}
           </button>
         </div>
 
@@ -619,12 +612,12 @@ function Journal() {
           }}
         >
           <span>✏️</span>
-          <span>New Entry</span>
+          <span>{t('journal.newEntry')}</span>
         </button>
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(255,255,255,0.6)' }}>
-            Loading...
+            {t('journal.loading')}
           </div>
         ) : entries.length > 0 ? (
           <div>
@@ -641,12 +634,12 @@ function Journal() {
                 letterSpacing: '0.12em',
                 color: 'var(--text-primary)',
               }}>
-                RECENT ENTRIES
+                {t('journal.recentEntries')}
               </p>
               <button
                 type="button"
                 onClick={() => setSearchOpen((o) => !o)}
-                aria-label="Search entries"
+                aria-label={t('journal.searchAria')}
                 style={{
                   background: 'rgba(255,255,255,0.15)',
                   border: 'none',
@@ -670,7 +663,7 @@ function Journal() {
                 type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search title or content…"
+                placeholder={t('journal.searchPlaceholder')}
                 style={{
                   width: '100%',
                   marginBottom: '12px',
@@ -692,7 +685,7 @@ function Journal() {
               marginBottom: '14px',
             }}>
               {(['all', 'week', 'month']).map((key) => {
-                const label = key === 'all' ? 'All' : key === 'week' ? 'This week' : 'This month'
+                const label = key === 'all' ? t('journal.filterAll') : key === 'week' ? t('journal.filterWeek') : t('journal.filterMonth')
                 const active = entryFilter === key
                 return (
                   <button
@@ -723,7 +716,7 @@ function Journal() {
                 padding: '24px 12px',
                 margin: 0,
               }}>
-                No entries match your search or filters.
+                {t('journal.noMatch')}
               </p>
             ) : (
               <>
@@ -781,7 +774,7 @@ function Journal() {
                           padding: '4px 10px',
                           fontWeight: 600
                         }}>
-                          🙌 Answered
+                          {t('journal.answered')}
                         </span>
                       ) : (
                         <button
@@ -798,7 +791,7 @@ function Journal() {
                             cursor: 'pointer'
                           }}
                         >
-                          ✅ God answered this
+                          {t('journal.godAnswered')}
                         </button>
                       )
                     )}
@@ -815,7 +808,7 @@ function Journal() {
                         color: '#fbbf24',
                         padding: 0
                       }}
-                      title="Share as faith card"
+                      title={t('journal.shareCardTitle')}
                     >
                       🕊️
                     </button>
@@ -854,7 +847,7 @@ function Journal() {
                   padding: '12px 0 4px',
                 }}
               >
-                {entriesExpanded ? 'Show fewer entries' : 'See all entries →'}
+                {entriesExpanded ? t('journal.showFewer') : t('journal.seeAll')}
               </button>
             )}
               </>
@@ -878,7 +871,7 @@ function Journal() {
                   letterSpacing: '0.08em',
                   textTransform: 'uppercase'
                 }}>
-                  From {getDaysAgo(randomPastEntry.date)} days ago…
+                  {t('journal.fromDaysAgo', { n: getDaysAgo(randomPastEntry.created_at) })}
                 </p>
                 <p style={{
                   color: 'var(--text-primary)',
@@ -921,10 +914,10 @@ function Journal() {
           }}>
             <p style={{ fontSize: '40px', margin: '0 0 12px 0' }} aria-hidden>📓</p>
             <p style={{ color: 'var(--text-primary)', fontSize: '16px', fontWeight: 600, margin: '0 0 8px 0' }}>
-              No entries yet
+              {t('journal.emptyTitle')}
             </p>
             <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: 0, lineHeight: 1.5 }}>
-              Write your first entry above to get started.
+              {t('journal.emptySub')}
             </p>
           </div>
         )}
@@ -990,7 +983,7 @@ function Journal() {
                 textAlign: 'center',
                 margin: 0
               }}>
-                {currentStep} of 4
+                {t('journal.stepProgress', { current: currentStep })}
               </p>
             </div>
 
@@ -1004,7 +997,7 @@ function Journal() {
                   marginBottom: '8px',
                   textAlign: 'center'
                 }}>
-                  📖 Verse
+                  {t('journal.stepVerse')}
                 </h2>
                 <p style={{
                   color: 'var(--text-secondary)',
@@ -1012,14 +1005,14 @@ function Journal() {
                   textAlign: 'center',
                   marginBottom: '20px'
                 }}>
-                  What Scripture is on your heart?
+                  {t('journal.stepVerseQ')}
                 </p>
                 
                 <input
                   type="text"
                   value={verseReference}
                   onChange={(e) => setVerseReference(e.target.value)}
-                  placeholder="Reference (e.g. John 3:16)"
+                  placeholder={t('journal.refPlaceholder')}
                   style={{
                     background: 'var(--input-bg)',
                     border: '1px solid var(--gold-border)',
@@ -1036,7 +1029,7 @@ function Journal() {
                 <textarea
                   value={verseText}
                   onChange={(e) => setVerseText(e.target.value)}
-                  placeholder="Paste the verse text here…"
+                  placeholder={t('journal.pasteVerse')}
                   style={{
                     background: 'var(--input-bg)',
                     border: '1px solid var(--gold-border)',
@@ -1063,7 +1056,7 @@ function Journal() {
                   marginBottom: '8px',
                   textAlign: 'center'
                 }}>
-                  💭 Reflection
+                  {t('journal.stepReflection')}
                 </h2>
                 <p style={{
                   color: 'var(--text-secondary)',
@@ -1071,13 +1064,13 @@ function Journal() {
                   textAlign: 'center',
                   marginBottom: '20px'
                 }}>
-                  What is God saying to you through this?
+                  {t('journal.stepReflectionQ')}
                 </p>
                 
                 <textarea
                   value={reflection}
                   onChange={(e) => setReflection(e.target.value)}
-                  placeholder="Write freely…"
+                  placeholder={t('journal.writeFreely')}
                   style={{
                     background: 'var(--input-bg)',
                     border: '1px solid var(--gold-border)',
@@ -1104,7 +1097,7 @@ function Journal() {
                   marginBottom: '8px',
                   textAlign: 'center'
                 }}>
-                  🙏 Prayer
+                  {t('journal.stepPrayer')}
                 </h2>
                 <p style={{
                   color: 'var(--text-secondary)',
@@ -1112,13 +1105,13 @@ function Journal() {
                   textAlign: 'center',
                   marginBottom: '20px'
                 }}>
-                  Talk to God about it
+                  {t('journal.stepPrayerQ')}
                 </p>
                 
                 <textarea
                   value={prayer}
                   onChange={(e) => setPrayer(e.target.value)}
-                  placeholder="Talk to God…"
+                  placeholder={t('journal.talkToGod')}
                   style={{
                     background: 'var(--input-bg)',
                     border: '1px solid var(--gold-border)',
@@ -1146,7 +1139,7 @@ function Journal() {
                   marginBottom: '8px',
                   textAlign: 'center'
                 }}>
-                  🙌 Gratitude
+                  {t('journal.stepGratitude')}
                 </h2>
                 <p style={{
                   color: 'var(--text-secondary)',
@@ -1154,13 +1147,13 @@ function Journal() {
                   textAlign: 'center',
                   marginBottom: '20px'
                 }}>
-                  What are you grateful for today?
+                  {t('journal.stepGratitudeQ')}
                 </p>
                 
                 <textarea
                   value={gratitude}
                   onChange={(e) => setGratitude(e.target.value)}
-                  placeholder="Even the small things…"
+                  placeholder={t('journal.gratitudePlaceholder')}
                   style={{
                     background: 'var(--input-bg)',
                     border: '1px solid var(--gold-border)',
@@ -1193,7 +1186,7 @@ function Journal() {
                     opacity: saving || !reflection.trim() ? 0.7 : 1
                   }}
                 >
-                  {saving ? 'Saving...' : 'Save Entry'}
+                  {saving ? t('journal.saving') : t('journal.saveEntry')}
                 </button>
               </div>
             )}
@@ -1220,7 +1213,7 @@ function Journal() {
                     cursor: 'pointer'
                   }}
                 >
-                  ← Back
+                  {t('journal.backStep')}
                 </button>
               )}
               
@@ -1268,7 +1261,7 @@ function Journal() {
                 marginTop: '12px'
               }}
             >
-              Cancel
+              {t('common.cancel')}
             </button>
           </div>
         </div>
@@ -1301,7 +1294,7 @@ function Journal() {
             textAlign: 'center',
             animation: 'fadeIn 0.4s ease 0.2s both'
           }}>
-            God moved. 🙌
+            {t('journal.celebrationTitle')}
           </h1>
           <p style={{
             fontSize: '18px',
@@ -1310,7 +1303,7 @@ function Journal() {
             textAlign: 'center',
             animation: 'fadeIn 0.4s ease 0.3s both'
           }}>
-            Your faith was not in vain.
+            {t('journal.celebrationSub')}
           </p>
           <p style={{
             fontFamily: 'Cinzel, serif',
@@ -1321,7 +1314,7 @@ function Journal() {
             textAlign: 'center',
             animation: 'fadeIn 0.4s ease 0.4s both'
           }}>
-            Romans 8:28
+            {t('journal.celebrationRef')}
           </p>
           {showCloseButton && (
             <button
@@ -1339,7 +1332,7 @@ function Journal() {
                 animation: 'fadeIn 0.4s ease'
               }}
             >
-              Close
+              {t('common.close')}
             </button>
           )}
         </div>
@@ -1379,7 +1372,7 @@ function Journal() {
                 fontWeight: 700,
                 marginBottom: '12px'
               }}>
-                Share with the body of Christ?
+                {t('journal.sharePromptTitle')}
               </h2>
               <p style={{
                 color: 'rgba(255,255,255,0.8)',
@@ -1387,14 +1380,14 @@ function Journal() {
                 lineHeight: '1.5',
                 marginBottom: '8px'
               }}>
-                Would you like to share this with the prayer wall anonymously?
+                {t('journal.sharePromptBody')}
               </p>
               <p style={{
                 color: 'var(--text-secondary)',
                 fontSize: '13px',
                 fontStyle: 'italic'
               }}>
-                The body of Christ can pray with you. 🙏
+                {t('journal.sharePromptNote')}
               </p>
             </div>
             <div style={{
@@ -1417,7 +1410,7 @@ function Journal() {
                   opacity: sharingToPrayerWall ? 0.7 : 1
                 }}
               >
-                {sharingToPrayerWall ? 'Sharing…' : 'Share Anonymously'}
+                {sharingToPrayerWall ? t('journal.sharing') : t('journal.shareAnon')}
               </button>
               <button
                 onClick={handleKeepPrivate}
@@ -1433,7 +1426,7 @@ function Journal() {
                   fontSize: '14px'
                 }}
               >
-                Keep Private
+                {t('journal.keepPrivate')}
               </button>
             </div>
           </div>
@@ -1456,7 +1449,7 @@ function Journal() {
               fontWeight: 600,
               margin: 0
             }}>
-              Your prayer has been lifted up 🕊️
+              {t('journal.toastPrayer')}
             </p>
           </div>
         </div>

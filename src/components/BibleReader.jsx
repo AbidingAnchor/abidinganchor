@@ -634,7 +634,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
               animation: 'slideUp 0.3s ease-out',
             }}
             role="listbox"
-            aria-label="Bible translation"
+            aria-label={t('bible.translation')}
           >
             <div style={{ maxWidth: '680px', margin: '0 auto' }}>
               <div

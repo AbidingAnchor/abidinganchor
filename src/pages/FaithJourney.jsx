@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import BibleTrivia from '../components/BibleTrivia'
 import VerseFlashcards from '../components/VerseFlashcards'
 import JourneyMap from '../components/JourneyMap'
@@ -120,6 +121,7 @@ const LearningPathCard = ({ icon, title, subtitle, accentColor, iconBg, progress
 )
 
 export default function FaithJourney() {
+  const { t } = useTranslation()
   const [view, setView] = useState('hub') // hub | trivia | flashcards | map | achievements
   const { user, profile } = useAuth()
   const [loading, setLoading] = useState(true)
@@ -168,7 +170,13 @@ export default function FaithJourney() {
 
   const streakCount = loading ? 0 : stats.streak
   const dayIndex = getDayIndexForWeek()
-  const days = ['M', 'T', 'W', 'T', 'F']
+  const days = [
+    t('faithJourney.dayLetterMon'),
+    t('faithJourney.dayLetterTue'),
+    t('faithJourney.dayLetterWed'),
+    t('faithJourney.dayLetterThu'),
+    t('faithJourney.dayLetterFri'),
+  ]
 
   const subShellStyle = {
     width: '100%',
@@ -210,17 +218,17 @@ export default function FaithJourney() {
                 textTransform: 'uppercase', 
                 marginBottom: '8px' 
               }}>
-                YOUR FAITH JOURNEY
+                {t('faithJourney.heroKicker')}
               </p>
               <h1 style={{ color: '#FFFFFF', fontSize: '26px', fontWeight: 700, marginBottom: '8px', lineHeight: 1.2 }}>
-                Walk in the <span style={{ color: '#D4A843' }}>Light</span> of His Word
+                {t('faithJourney.heroLine1')}<span style={{ color: '#D4A843' }}>{t('faithJourney.heroLine1Accent')}</span>{t('faithJourney.heroLine2')}
               </h1>
               <p style={{ 
                 color: 'rgba(255,255,255,0.38)', 
                 fontSize: '11px', 
                 fontStyle: 'italic' 
               }}>
-                Thy word is a lamp unto my feet — Psalm 119:105
+                {t('faithJourney.heroSubtitle')}
               </p>
             </div>
           </header>
@@ -246,10 +254,10 @@ export default function FaithJourney() {
             <span style={{ fontSize: '22px' }}>🔥</span>
             <div style={{ flex: 1 }}>
               <p style={{ color: '#FFFFFF', fontSize: '13px', fontWeight: 600, marginBottom: '2px' }}>
-                {loading ? '...' : `${streakCount} day streak`}
+                {loading ? t('faithJourney.streakLoading') : t('faithJourney.streakLine', { n: streakCount })}
               </p>
               <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px' }}>
-                {loading ? 'Loading...' : streakCount === 0 ? 'Complete an activity to start your streak' : 'Keep up the great work!'}
+                {loading ? t('faithJourney.streakSubLoading') : streakCount === 0 ? t('faithJourney.streakSubZero') : t('faithJourney.streakSubActive')}
               </p>
             </div>
             {/* Day of week dots */}
@@ -297,46 +305,46 @@ export default function FaithJourney() {
           <div style={{ marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <LearningPathCard
               icon="🎮"
-              title="Daily Trivia"
-              subtitle="Test your Bible knowledge"
+              title={t('faithJourney.cardTrivia')}
+              subtitle={t('faithJourney.cardTriviaSub')}
               accentColor="#D4A843"
               iconBg="rgba(212,168,67,0.15)"
               progress={0}
               featured={true}
-              badge="Today"
+              badge={t('faithJourney.badgeToday')}
               onStart={() => setView('trivia')}
             />
             <LearningPathCard
               icon="📖"
-              title="Verse Flashcards"
-              subtitle="Memorize God's Word"
+              title={t('faithJourney.cardFlash')}
+              subtitle={t('faithJourney.cardFlashSub')}
               accentColor="#7F77DD"
               iconBg="rgba(127,119,221,0.15)"
               progress={0}
               featured={false}
-              badge="Start"
+              badge={t('faithJourney.badgeStart')}
               onStart={() => setView('flashcards')}
             />
             <LearningPathCard
               icon="🗺️"
-              title="Journey Map"
-              subtitle="Track your progress"
+              title={t('faithJourney.cardMap')}
+              subtitle={t('faithJourney.cardMapSub')}
               accentColor="#1D9E75"
               iconBg="rgba(29,158,117,0.15)"
               progress={0}
               featured={false}
-              badge="Start"
+              badge={t('faithJourney.badgeStart')}
               onStart={() => setView('map')}
             />
             <LearningPathCard
               icon="🏆"
-              title="Achievements"
-              subtitle="Earn faith badges"
+              title={t('faithJourney.cardAchievements')}
+              subtitle={t('faithJourney.cardAchievementsSub')}
               accentColor="#378ADD"
               iconBg="rgba(55,138,221,0.15)"
               progress={0}
               featured={false}
-              badge="Start"
+              badge={t('faithJourney.badgeStart')}
               onStart={() => setView('achievements')}
             />
           </div>
@@ -356,7 +364,7 @@ export default function FaithJourney() {
               textAlign: 'center'
             }}>
               <p style={{ color: '#D4A843', fontSize: '22px', fontWeight: 700, marginBottom: '2px' }}>{stats.versesRead}</p>
-              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Verses</p>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('faithJourney.statVerses')}</p>
             </div>
             <div style={{
               flex: 1,
@@ -367,7 +375,7 @@ export default function FaithJourney() {
               textAlign: 'center'
             }}>
               <p style={{ color: '#D4A843', fontSize: '22px', fontWeight: 700, marginBottom: '2px' }}>{streakCount}</p>
-              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Streak</p>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('faithJourney.statStreak')}</p>
             </div>
             <div style={{
               flex: 1,
@@ -378,7 +386,7 @@ export default function FaithJourney() {
               textAlign: 'center'
             }}>
               <p style={{ color: '#D4A843', fontSize: '22px', fontWeight: 700, marginBottom: '2px' }}>{stats.badges}</p>
-              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Badges</p>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('faithJourney.statBadges')}</p>
             </div>
           </div>
 
@@ -411,7 +419,7 @@ export default function FaithJourney() {
               marginBottom: '10px',
               marginLeft: '8px'
             }}>
-              VERSE OF THE DAY
+              {t('faithJourney.vodLabel')}
             </p>
             <p style={{ 
               color: 'rgba(255,255,255,0.85)', 
@@ -421,7 +429,7 @@ export default function FaithJourney() {
               marginBottom: '8px',
               marginLeft: '8px'
             }}>
-              Let us run with perseverance the race that is set before us.
+              {t('faithJourney.vodQuote')}
             </p>
             <p style={{ 
               color: '#D4A843', 
@@ -429,7 +437,7 @@ export default function FaithJourney() {
               fontWeight: 600,
               textAlign: 'right'
             }}>
-              — Hebrews 12:1
+              {t('faithJourney.vodRef')}
             </p>
           </div>
 

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { getDailyVerse } from '../utils/dailyVerse'
@@ -13,6 +14,7 @@ function getTodaysVerse() {
 }
 
 function Home({ onOpenWorship, worshipStatus }) {
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { user, profile } = useAuth()
   const [todaysVerse, setTodaysVerse] = useState(() => getTodaysVerse())
@@ -156,19 +158,19 @@ function Home({ onOpenWorship, worshipStatus }) {
     await saveToJournal({
       verse: todaysVerse.text,
       reference: todaysVerse.reference,
-      tags: ['Daily Verse'],
+      tags: [t('home.journalTagDaily')],
     })
-    setToastTrigger((t) => t + 1)
-  }, [todaysVerse])
+    setToastTrigger((x) => x + 1)
+  }, [todaysVerse, t])
 
   const handleSaveVerseOfWeek = useCallback(async () => {
     await saveToJournal({
-      verse: 'The Lord is my shepherd; I shall not want.',
-      reference: 'Psalm 23:1',
-      tags: ['Daily Verse'],
+      verse: t('home.verseWeekText'),
+      reference: t('home.verseWeekRef'),
+      tags: [t('home.journalTagDaily')],
     })
-    setToastTrigger((t) => t + 1)
-  }, [])
+    setToastTrigger((x) => x + 1)
+  }, [t])
 
   const handleShareDailyVerse = useCallback(async () => {
     const verse = todaysVerse?.text ?? ''
@@ -178,9 +180,9 @@ function Home({ onOpenWorship, worshipStatus }) {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Daily Verse — AbidingAnchor',
+          title: t('home.shareTitle'),
           text: `${verse} — ${reference}`,
-          url: 'https://abidinganchor.netlify.app',
+          url: t('home.shareUrl'),
         })
         return
       } catch {
@@ -209,7 +211,7 @@ function Home({ onOpenWorship, worshipStatus }) {
     ctx.fillStyle = '#F7E7B5'
     ctx.font = '700 46px Georgia'
     ctx.textAlign = 'center'
-    ctx.fillText('AbidingAnchor', 540, 170)
+    ctx.fillText(t('home.canvasBrand'), 540, 170)
 
     const wrapText = (text, maxWidth) => {
       const words = text.split(' ')
@@ -238,23 +240,24 @@ function Home({ onOpenWorship, worshipStatus }) {
     ctx.fillText(reference, 540, startY + lines.length * 70 + 70)
     ctx.fillStyle = 'rgba(255,255,255,0.78)'
     ctx.font = '28px Arial'
-    ctx.fillText('abidinganchor.netlify.app', 540, 930)
+    ctx.fillText(t('home.canvasFooter'), 540, 930)
 
     const link = document.createElement('a')
     link.href = canvas.toDataURL('image/png')
-    link.download = 'abidinganchor-daily-verse.png'
+    link.download = t('home.pngDownloadName')
     link.click()
-  }, [todaysVerse])
+  }, [todaysVerse, t])
 
   const today = new Date()
-  const formattedDate = today.toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  })
-
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  const days = [
+    t('home.weekdayMon'),
+    t('home.weekdayTue'),
+    t('home.weekdayWed'),
+    t('home.weekdayThu'),
+    t('home.weekdayFri'),
+    t('home.weekdaySat'),
+    t('home.weekdaySun'),
+  ]
   const dayToMonFirstIndex = [6, 0, 1, 2, 3, 4, 5]
   const todayIndex = dayToMonFirstIndex[today.getDay()]
   
@@ -270,45 +273,32 @@ function Home({ onOpenWorship, worshipStatus }) {
     return () => { active = false }
   }, [user?.id, toastTrigger])
 
-  const streakMessages = {
-    1: 'Welcome! Your journey begins today. 🙏',
-    2: "You're building a habit! Keep going. 🔥",
-    3: "You're building a habit! Keep going. 🔥",
-    4: 'Halfway through the week! Stay strong. ✝️',
-    5: 'Halfway through the week! Stay strong. ✝️',
-  }
-  
   const hour = new Date().getHours()
   let timeGreeting = ''
   let timeEmoji = ''
   if (hour >= 5 && hour < 12) {
-    timeGreeting = 'Good morning'
+    timeGreeting = t('home.greetMorning')
     timeEmoji = '🌅'
   } else if (hour >= 12 && hour < 18) {
-    timeGreeting = 'Good afternoon'
+    timeGreeting = t('home.greetAfternoon')
     timeEmoji = '☀️'
   } else {
-    timeGreeting = 'Good evening'
+    timeGreeting = t('home.greetEvening')
     timeEmoji = '🌇'
   }
-  
-  const encouragements = [
-    'His mercies are new every morning.',
-    'Walk in faith today.',
-    'You are loved beyond measure.',
-    'Be still and know that He is God.',
-    'Cast all your anxiety on Him.',
-    'The Lord is your strength and shield.',
-    'Nothing can separate you from His love.'
-  ]
-  const encouragement = encouragements[new Date().getDay()]
-  
+
+  const encouragement = t(`home.enc${new Date().getDay()}`)
+
   const currentStreak = Number(streak?.currentStreak || 0)
+  const friendFallback = t('home.friendFallback')
   const firstName = suppressPersonalWelcome
-    ? 'Friend'
-    : (profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Friend')
-  
-  const streakMessage = streakMessages[currentStreak] || `Day ${currentStreak} — Keep seeking Him with all your heart. 🙏`
+    ? friendFallback
+    : (profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || friendFallback)
+
+  const streakMessage =
+    currentStreak >= 1 && currentStreak <= 5
+      ? t(`home.streak${currentStreak}`)
+      : t('home.streakDay', { n: currentStreak })
 
   return (
     <>
@@ -442,7 +432,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                     boxShadow: '0 0 14px rgba(212, 168, 67, 0.28)',
                   }}
                 >
-                  Save to Journal
+                  {t('home.saveToJournal')}
                 </button>
                 <button
                   type="button"
@@ -462,7 +452,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                     boxShadow: '0 0 14px rgba(212, 168, 67, 0.22)',
                   }}
                 >
-                  Share as Image
+                  {t('home.shareAsImage')}
                 </button>
               </div>
             </article>
@@ -485,8 +475,8 @@ function Home({ onOpenWorship, worshipStatus }) {
                   letterSpacing: '0.12em', 
                   fontWeight: 500,
                   textTransform: 'uppercase'
-                }}>Reading Streak</h2>
-                <p style={{ fontSize: '14px', color: 'var(--section-title)', fontWeight: 700 }}>🔥 {currentStreak} Day Streak</p>
+                }}>{t('home.readingStreak')}</h2>
+                <p style={{ fontSize: '14px', color: 'var(--section-title)', fontWeight: 700 }}>{t('home.dayStreak', { n: currentStreak })}</p>
               </div>
               <p style={{ marginBottom: '16px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{streakMessage}</p>
               <div className="flex items-center justify-between gap-2" style={{ overflowX: 'auto' }}>
@@ -530,7 +520,7 @@ function Home({ onOpenWorship, worshipStatus }) {
             </div>
 
             <div style={{ marginBottom: '28px', animation: 'fadeInUp 0.6s ease forwards', animationDelay: '0.3s' }}>
-              <h2 style={{ color: 'var(--section-title)', fontSize: '13px', letterSpacing: '0.12em', fontWeight: 500, textTransform: 'uppercase' }}>TOOLS</h2>
+              <h2 style={{ color: 'var(--section-title)', fontSize: '13px', letterSpacing: '0.12em', fontWeight: 500, textTransform: 'uppercase' }}>{t('home.toolsHeading')}</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
               <Link
                 to="/scripture-art"
@@ -560,8 +550,8 @@ function Home({ onOpenWorship, worshipStatus }) {
                 }}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>🎨</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>Scripture Art</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Create shareable verse images</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolScriptureArt')}</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('home.toolScriptureArtSub')}</p>
               </Link>
               <Link
                 to="/reading-plans"
@@ -591,8 +581,8 @@ function Home({ onOpenWorship, worshipStatus }) {
                 }}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>📅</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>Reading Plans</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Follow structured daily journeys</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolReadingPlans')}</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('home.toolReadingPlansSub')}</p>
               </Link>
               <Link
                 to="/fasting"
@@ -622,8 +612,8 @@ function Home({ onOpenWorship, worshipStatus }) {
                 }}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>🕐</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>Fasting Tracker</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Track fasts and prayer notes</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolFasting')}</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('home.toolFastingSub')}</p>
               </Link>
               <Link
                 to="/support"
@@ -653,8 +643,8 @@ function Home({ onOpenWorship, worshipStatus }) {
                 }}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>🤝</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>Support</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Help sustain the ministry</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolSupport')}</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('home.toolSupportSub')}</p>
               </Link>
               <div
                 className="glass-panel"
@@ -685,8 +675,8 @@ function Home({ onOpenWorship, worshipStatus }) {
                 onClick={() => window.open('https://discord.gg/nZcZRkUMJh', '_blank')}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>💬</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>Community</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Join our Discord</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolCommunity')}</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('home.toolCommunitySub')}</p>
               </div>
               <Link
                 to="/worship"
@@ -716,8 +706,8 @@ function Home({ onOpenWorship, worshipStatus }) {
                 }}
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>🎵</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>Worship Mode</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Music & meditation</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolWorship')}</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('home.toolWorshipSub')}</p>
               </Link>
             </div>
           </div>
@@ -747,7 +737,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                 color: 'var(--section-title)',
                 textTransform: 'uppercase',
                 marginBottom: '16px'
-              }}>Verse of the Week</p>
+              }}>{t('home.verseOfWeek')}</p>
               <p style={{ 
                 marginTop: '16px', 
                 fontSize: '16px', 
@@ -757,7 +747,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                 fontFamily: 'Georgia, serif',
                 paddingLeft: '24px'
               }}>
-                "The Lord is my shepherd; I shall not want."
+                "{t('home.verseWeekText')}"
               </p>
             </div>
             <p style={{ 
@@ -766,7 +756,7 @@ function Home({ onOpenWorship, worshipStatus }) {
               fontWeight: 500, 
               letterSpacing: '0.1em',
               color: 'var(--text-secondary)'
-            }}>Psalm 23:1</p>
+            }}>{t('home.verseWeekRef')}</p>
             <div className="mt-4 flex justify-end">
               <button
                 type="button"
@@ -785,7 +775,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                   boxShadow: '0 4px 15px rgba(212,168,67,0.3)'
                 }}
               >
-                Save to Journal
+                {t('home.saveToJournal')}
               </button>
             </div>
           </div>
