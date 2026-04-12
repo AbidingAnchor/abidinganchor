@@ -171,6 +171,11 @@ body {
   background: transparent;
 }
 
+/* Worship Mode: room for fixed transport bar; avoid stacking extra dead space below playlist */
+.content-scroll.worship-mode-page {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
 @keyframes page-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }

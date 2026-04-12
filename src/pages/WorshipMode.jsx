@@ -184,17 +184,19 @@ export default function WorshipMode() {
 
   return (
     <div
-      className="content-scroll"
+      className="content-scroll worship-mode-page"
       style={{
-        minHeight: '100vh',
+        minHeight: 'auto',
+        boxSizing: 'border-box',
         padding: '0 16px',
         paddingTop: '88px',
-        paddingBottom: 'calc(120px + env(safe-area-inset-bottom, 0px))',
         maxWidth: '680px',
         margin: '0 auto',
         width: '100%',
         display: 'flex',
         flexDirection: 'column',
+        justifyContent: 'flex-start',
+        alignItems: 'stretch',
         background: 'linear-gradient(180deg, rgba(10, 20, 50, 0.95) 0%, rgba(13, 31, 78, 0.88) 50%, rgba(10, 15, 30, 0.98) 100%)',
       }}
     >
@@ -224,8 +226,8 @@ export default function WorshipMode() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '24px 0 20px',
-          minHeight: 'min(42vh, 320px)',
+          padding: '24px 0 16px',
+          minHeight: 'min(32vh, 260px)',
         }}
       >
         <button
@@ -288,8 +290,8 @@ export default function WorshipMode() {
         </p>
       </div>
 
-      {/* Playlist — current track highlighted in gold */}
-      <section style={{ flex: '1 1 auto', minHeight: 0 }}>
+      {/* Playlist — size to content only (no flex-grow gap below last track) */}
+      <section style={{ flex: '0 0 auto', width: '100%' }}>
         <p
           style={{
             color: 'rgba(255,255,255,0.45)',

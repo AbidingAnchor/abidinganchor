@@ -94,7 +94,7 @@ export default function BottomNav() {
             <span
               style={{
                 fontSize: '24px',
-                filter: isActive(tab.path) ? 'drop-shadow(0 0 8px rgba(212, 168, 67, 0.6))' : 'none',
+                lineHeight: 1,
                 opacity: 1,
                 transition: 'opacity 0.2s ease',
               }}
@@ -122,7 +122,6 @@ export default function BottomNav() {
                   height: '3px',
                   background: '#D4A843',
                   borderRadius: '0 0 2px 2px',
-                  boxShadow: '0 2px 8px rgba(212, 168, 67, 0.4)',
                 }}
               />
             )}
