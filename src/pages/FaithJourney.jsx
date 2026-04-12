@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import BibleTrivia from '../components/BibleTrivia'
 import VerseFlashcards from '../components/VerseFlashcards'
@@ -122,10 +123,12 @@ const LearningPathCard = ({ icon, title, subtitle, accentColor, iconBg, progress
 
 export default function FaithJourney() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const [view, setView] = useState('hub') // hub | trivia | flashcards | map | achievements
   const { user, profile } = useAuth()
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({ versesRead: 0, streak: 0, badges: 0 })
+  const [answeredPrayersCount, setAnsweredPrayersCount] = useState(0)
 
   useEffect(() => {
     if (!user?.id) {
@@ -147,6 +150,12 @@ export default function FaithJourney() {
           streak: Number(data?.reading_streak) || 0,
           badges: Number(data?.lessons_completed) || 0
         })
+        const { count: answeredCt } = await supabase
+          .from('personal_prayers')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('answered', true)
+        if (!cancelled) setAnsweredPrayersCount(typeof answeredCt === 'number' ? answeredCt : 0)
       } catch {
         // Fallback to localStorage on error
         const verseProgress = readJson(VERSE_PROGRESS_KEY, {})
@@ -159,6 +168,7 @@ export default function FaithJourney() {
           streak: profile?.reading_streak || triviaStreak,
           badges: badges
         })
+        setAnsweredPrayersCount(0)
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -300,6 +310,57 @@ export default function FaithJourney() {
               })}
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={() => navigate('/prayer')}
+            style={{
+              width: '100%',
+              marginBottom: '24px',
+              padding: '14px 16px',
+              borderRadius: '14px',
+              border: '1px solid rgba(212,168,67,0.35)',
+              background:
+                answeredPrayersCount > 0
+                  ? 'linear-gradient(125deg, rgba(95,55,145,0.35) 0%, rgba(12,14,32,0.85) 45%, rgba(212,168,67,0.12) 100%)'
+                  : 'rgba(255,255,255,0.03)',
+              cursor: 'pointer',
+              textAlign: 'left',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              boxShadow: answeredPrayersCount > 0 ? '0 4px 20px rgba(45,28,90,0.35)' : 'none',
+            }}
+          >
+            <span
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '12px',
+                background: 'rgba(212,168,67,0.2)',
+                border: '1px solid rgba(212,168,67,0.45)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '20px',
+                flexShrink: 0,
+              }}
+              aria-hidden
+            >
+              ✓
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ color: '#D4A843', fontSize: '15px', fontWeight: 700, margin: '0 0 4px', lineHeight: 1.3 }}>
+                {t('faithJourney.prayersAnsweredBadge', { count: answeredPrayersCount })}
+              </p>
+              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '11px', margin: 0, lineHeight: 1.4 }}>
+                {t('faithJourney.prayersAnsweredHint')}
+              </p>
+            </div>
+            <span style={{ color: 'rgba(212,168,67,0.8)', fontSize: '18px', flexShrink: 0 }} aria-hidden>
+              →
+            </span>
+          </button>
 
           {/* Learning Paths */}
           <div style={{ marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>

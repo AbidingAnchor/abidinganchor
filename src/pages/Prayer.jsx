@@ -1,782 +1,271 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-
-const SPEECH_LANG = { en: 'en-US', es: 'es-ES', pt: 'pt-BR', fr: 'fr-FR', de: 'de-DE' }
+import PrayerWall from './PrayerWall'
 
 export default function Prayer() {
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
-  const [activeTab, setActiveTab] = useState('my-prayers')
-  const [showModal, setShowModal] = useState(false)
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [entries, setEntries] = useState([])
+  const [mainTab, setMainTab] = useState('mine')
+  const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState({ streak: 0, totalPrayers: 0, answeredPrayers: 0 })
-  const [prayerOfTheDay, setPrayerOfTheDay] = useState('')
-  const [isListening, setIsListening] = useState(false)
-  const [transcript, setTranscript] = useState('')
-  const [recognition, setRecognition] = useState(null)
+  const [answeredCount, setAnsweredCount] = useState(0)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [draft, setDraft] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [toast, setToast] = useState(null)
+  const toastTimerRef = useRef(null)
 
-  const prayerPrompts = useMemo(() => {
-    const list = t('prayer.prompts', { returnObjects: true })
-    return Array.isArray(list) ? list : []
-  }, [t, i18n.language])
-
-  // Load stats from Supabase
-  useEffect(() => {
+  const load = useCallback(async () => {
     if (!user?.id) return
-    let cancelled = false
-    ;(async () => {
-      try {
-        // Fetch streak from profiles
-        const { data: profileData, error: _profileError } = await supabase
-          .from('profiles')
-          .select('reading_streak')
-          .eq('id', user.id)
-          .single()
-        
-        // Fetch prayer counts
-        const { data: prayersData, error: _prayersError } = await supabase
-          .from('prayers')
-          .select('id,is_answered')
-          .eq('user_id', user.id)
-        
-        if (cancelled) return
-        
-        const streak = Number(profileData?.reading_streak) || 0
-        const totalPrayers = (prayersData || []).length
-        const answeredPrayers = (prayersData || []).filter((p) => p.is_answered).length
-        
-        setStats({ streak, totalPrayers, answeredPrayers })
-      } catch (err) {
-        console.error('Error loading stats:', err)
-      }
-    })()
-    return () => { cancelled = true }
-  }, [user?.id])
-
-  // Set prayer of the day based on date
-  useEffect(() => {
-    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24))
-    const list = prayerPrompts
-    if (!list.length) return
-    setPrayerOfTheDay(list[dayOfYear % list.length])
-  }, [prayerPrompts])
-
-  // Initialize speech recognition
-  useEffect(() => {
-    if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
-      const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition
-      const rec = new SpeechRecognition()
-      rec.continuous = false
-      rec.interimResults = true
-      const base = (i18n.resolvedLanguage || i18n.language || 'en').toLowerCase().split(/[-_]/)[0]
-      rec.lang = SPEECH_LANG[base] || 'en-US'
-      
-      rec.onresult = (event) => {
-        const current = event.resultIndex
-        const transcriptText = event.results[current][0].transcript
-        setTranscript(transcriptText)
-      }
-      
-      rec.onend = () => {
-        setIsListening(false)
-      }
-      
-      rec.onerror = () => {
-        setIsListening(false)
-      }
-      
-      setRecognition(rec)
-    }
-  }, [i18n.language, i18n.resolvedLanguage])
-
-  const loadPrayers = async () => {
-    if (!user?.id) return
+    setLoading(true)
     try {
       const { data, error } = await supabase
-        .from('prayers')
-        .select('id,user_id,content,is_answered,created_at')
+        .from('personal_prayers')
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
       if (error) throw error
-      setEntries((data || []).map((row) => {
-        const raw = row.content || ''
-        const parts = raw.split(/\n\n+/)
-        const titleFromBody = parts.length > 1 ? parts[0].trim() : ''
-        const textFromBody = parts.length > 1 ? parts.slice(1).join('\n\n').trim() : raw.trim()
-        return {
-          id: row.id,
-          title: titleFromBody,
-          text: textFromBody,
-          date: row.created_at,
-          answered: Boolean(row.is_answered),
-        }
-      }))
-    } catch (err) {
-      console.error('Error loading prayers:', err)
-      setEntries([])
+      const rows = data || []
+      setItems(rows)
+      setAnsweredCount(rows.filter((r) => r.answered).length)
+    } catch (e) {
+      console.error('Error loading personal prayers:', e)
+      setItems([])
+    } finally {
+      setLoading(false)
     }
-  }
-
-  const addPrayer = useCallback(async () => {
-    const prayerContent = transcript.trim() || content.trim()
-    if (!prayerContent) return
-    try {
-      const storedContent = title.trim()
-        ? `${title.trim()}\n\n${prayerContent}`
-        : prayerContent
-      const { error } = await supabase.from('prayers').insert({
-        user_id: user.id,
-        content: storedContent,
-        is_answered: false,
-      })
-      if (error) throw error
-      await loadPrayers()
-      setTitle('')
-      setContent('')
-      setTranscript('')
-      setShowModal(false)
-    } catch (err) {
-      console.error('Error adding prayer:', err)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, title, content, transcript])
-
-  const markAsAnswered = async (entry) => {
-    try {
-      const { error } = await supabase.from('prayers').update({ is_answered: !entry.answered }).eq('id', entry.id)
-      if (error) throw error
-      await loadPrayers()
-    } catch (err) {
-      console.error('Error marking prayer as answered:', err)
-    }
-  }
-
-  const deletePrayer = async (entry) => {
-    try {
-      const { error } = await supabase.from('prayers').delete().eq('id', entry.id)
-      if (error) throw error
-      await loadPrayers()
-    } catch (err) {
-      console.error('Error deleting prayer:', err)
-    }
-  }
-
-  const startListening = () => {
-    if (recognition) {
-      setTranscript('')
-      setIsListening(true)
-      recognition.start()
-    }
-  }
-
-  const stopListening = () => {
-    if (recognition && isListening) {
-      recognition.stop()
-    }
-  }
-
-  useEffect(() => {
-    let active = true
-    const boot = async () => {
-      setLoading(true)
-      await loadPrayers()
-      if (active) setLoading(false)
-    }
-    boot()
-    return () => { active = false }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id])
 
-  const activePrayers = (entries || []).filter((p) => !p.answered)
-  const answeredPrayers = (entries || []).filter((p) => p.answered)
+  useEffect(() => {
+    load()
+  }, [load])
+
+  useEffect(() => {
+    if (!toast) return
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+    toastTimerRef.current = setTimeout(() => setToast(null), 3800)
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+    }
+  }, [toast])
+
+  const addPrayer = async () => {
+    const text = draft.trim()
+    if (!text || !user?.id) return
+    setSaving(true)
+    try {
+      const { error } = await supabase.from('personal_prayers').insert({
+        user_id: user.id,
+        prayer_text: text,
+        answered: false,
+      })
+      if (error) throw error
+      setDraft('')
+      setShowAddModal(false)
+      await load()
+    } catch (e) {
+      console.error('Error saving prayer:', e)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const markAnswered = async (row) => {
+    if (row.answered) {
+      try {
+        const { error } = await supabase
+          .from('personal_prayers')
+          .update({ answered: false, answered_at: null })
+          .eq('id', row.id)
+        if (error) throw error
+        await load()
+      } catch (e) {
+        console.error(e)
+      }
+      return
+    }
+    try {
+      const { error } = await supabase
+        .from('personal_prayers')
+        .update({
+          answered: true,
+          answered_at: new Date().toISOString(),
+        })
+        .eq('id', row.id)
+      if (error) throw error
+      setToast(t('prayer.toastFaithful'))
+      await load()
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const onStillBelieving = () => {
+    setToast(t('prayer.stillBelievingToast'))
+  }
 
   return (
-    <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: 'transparent' }}>
-      <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '60px', paddingBottom: '120px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
-        
-        {/* Hero Section */}
-        <header className="glass-panel" style={{ marginBottom: '20px', position: 'relative', borderRadius: '16px', overflow: 'hidden', minHeight: '160px' }}>
-          <div style={{ position: 'relative', zIndex: 2, padding: '24px' }}>
-            <p style={{ 
-              color: '#D4A843', 
-              fontSize: '9px', 
-              fontWeight: 600, 
-              letterSpacing: '0.15em', 
-              textTransform: 'uppercase', 
-              marginBottom: '8px' 
-            }}>
-              {t('prayer.heroKicker')}
-            </p>
-            <h1 style={{ color: 'var(--text-primary)', fontSize: '26px', fontWeight: 700, marginBottom: '8px', lineHeight: 1.2 }}>
-              {t('prayer.heroTitleBefore')}<span style={{ color: '#D4A843' }}>{t('prayer.heroTitleAccent')}</span>
-            </h1>
-            <p style={{ 
-              color: 'var(--text-muted)', 
-              fontSize: '11px', 
-              fontStyle: 'italic' 
-            }}>
-              {t('prayer.heroSubtitle')}
-            </p>
-          </div>
-        </header>
-
-        {/* Gold Divider */}
-        <div style={{
-          height: '1px',
-          background: 'linear-gradient(90deg, transparent, rgba(212,168,67,0.3), transparent)',
-          marginBottom: '20px'
-        }} />
-
-        {/* Stat Pills Row */}
-        <div style={{
-          display: 'flex',
-          gap: '10px',
-          marginBottom: '24px'
-        }}>
-          <div style={{
-            flex: 1,
-            background: 'rgba(212,168,67,0.12)',
-            border: '1px solid rgba(212,168,67,0.3)',
-            borderRadius: '12px',
-            padding: '12px',
-            textAlign: 'center'
-          }}>
-            <p style={{ color: '#D4A843', fontSize: '18px', fontWeight: 700, marginBottom: '2px' }}>🔥 {stats.streak}</p>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('prayer.statStreak')}</p>
-          </div>
-          <div style={{
-            flex: 1,
-            background: 'var(--chip-bg)',
-            border: '1px solid var(--chip-border)',
-            borderRadius: '12px',
-            padding: '12px',
-            textAlign: 'center'
-          }}>
-            <p style={{ color: 'var(--text-primary)', fontSize: '18px', fontWeight: 700, marginBottom: '2px' }}>🙏 {stats.totalPrayers}</p>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('prayer.statTotal')}</p>
-          </div>
-          <div style={{
-            flex: 1,
-            background: 'rgba(45,212,191,0.12)',
-            border: '1px solid rgba(45,212,191,0.3)',
-            borderRadius: '12px',
-            padding: '12px',
-            textAlign: 'center'
-          }}>
-            <p style={{ color: '#2dd4bf', fontSize: '18px', fontWeight: 700, marginBottom: '2px' }}>✅ {stats.answeredPrayers}</p>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('prayer.statAnswered')}</p>
-          </div>
-        </div>
-
-        {/* Prayer of the Day Card */}
-        <div className="glass-panel" style={{
-          border: '1px solid rgba(212,168,67,0.2)',
-          borderRadius: '16px',
-          padding: '20px',
-          marginBottom: '24px',
-          position: 'relative'
-        }}>
-          <div style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            bottom: 0,
-            width: '3px',
-            background: '#D4A843',
-            borderRadius: '16px 0 0 16px'
-          }} />
-          <p style={{ 
-            color: '#D4A843', 
-            fontSize: '9px', 
-            fontWeight: 600, 
-            letterSpacing: '0.15em', 
-            textTransform: 'uppercase', 
-            marginBottom: '12px',
-            marginLeft: '12px'
-          }}>
-            {t('prayer.prayerOfDay')}
-          </p>
-          <p style={{ 
-            color: 'var(--text-primary)', 
-            fontSize: '15px', 
-            lineHeight: 1.6,
-            marginBottom: '16px',
-            marginLeft: '12px'
-          }}>
-            {prayerOfTheDay}
-          </p>
+    <div className="min-h-screen bg-transparent">
+      <div className="content-scroll px-4 pt-4 pb-32 max-w-[680px] mx-auto w-full">
+        <div className="flex gap-1 p-1 rounded-xl bg-[#0a1028]/90 border border-white/10 mb-6 backdrop-blur-md">
           <button
             type="button"
-            onClick={() => {
-              setContent(prayerOfTheDay)
-              setShowModal(true)
-            }}
-            style={{
-              background: 'linear-gradient(135deg, #D4A843 0%, #F4D03F 100%)',
-              color: '#0a1a3e',
-              border: 'none',
-              borderRadius: '50px',
-              padding: '10px 20px',
-              fontWeight: 600,
-              fontSize: '13px',
-              cursor: 'pointer',
-              marginLeft: '12px',
-              boxShadow: '0 4px 15px rgba(212,168,67,0.3)'
-            }}
-          >
-            {t('prayer.prayThis')}
-          </button>
-        </div>
-
-        {/* Voice to Text Section */}
-        <div className="glass-panel" style={{
-          border: '1px solid rgba(212,168,67,0.2)',
-          borderRadius: '16px',
-          padding: '20px',
-          marginBottom: '24px'
-        }}>
-          <button
-            type="button"
-            onClick={isListening ? stopListening : startListening}
-            style={{
-              width: '100%',
-              background: isListening ? 'rgba(212,168,67,0.3)' : 'linear-gradient(135deg, #D4A843 0%, #F4D03F 100%)',
-              color: isListening ? '#D4A843' : '#0a1a3e',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '16px',
-              fontWeight: 700,
-              fontSize: '16px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '10px',
-              marginBottom: '16px',
-              transition: 'all 0.3s ease'
-            }}
-          >
-            <span style={{ fontSize: '24px' }}>🎙️</span>
-            <span>{isListening ? t('prayer.listening') : t('prayer.speakPrayer')}</span>
-          </button>
-          
-          {transcript && (
-            <>
-              <textarea
-                value={transcript}
-                onChange={(e) => setTranscript(e.target.value)}
-                placeholder={t('prayer.transcriptPlaceholder')}
-                style={{
-                  background: 'var(--input-bg)',
-                  border: '1px solid var(--gold-border)',
-                  borderRadius: '12px',
-                  color: 'var(--text-primary)',
-                  padding: '16px',
-                  width: '100%',
-                  minHeight: '120px',
-                  marginBottom: '12px',
-                  fontSize: '15px',
-                  outline: 'none',
-                  resize: 'none',
-                  fontFamily: 'inherit'
-                }}
-              />
-              <button
-                type="button"
-                onClick={addPrayer}
-                style={{
-                  background: 'linear-gradient(135deg, #D4A843 0%, #F4D03F 100%)',
-                  color: '#0a1a3e',
-                  fontWeight: 700,
-                  borderRadius: '50px',
-                  padding: '12px 24px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  width: '100%',
-                  boxShadow: '0 4px 15px rgba(212,168,67,0.3)'
-                }}
-              >
-                {t('prayer.savePrayer')}
-              </button>
-            </>
-          )}
-        </div>
-
-        {/* Tabs */}
-        <div style={{
-          display: 'flex',
-          borderBottom: '1px solid var(--glass-border)',
-          marginBottom: '20px'
-        }}>
-          <button
-            type="button"
-            onClick={() => setActiveTab('my-prayers')}
-            style={{
-              flex: 1,
-              padding: '12px',
-              background: 'none',
-              border: 'none',
-              color: activeTab === 'my-prayers' ? '#D4A843' : 'var(--text-secondary)',
-              borderBottom: activeTab === 'my-prayers' ? '2px solid #D4A843' : 'none',
-              fontWeight: 600,
-              fontSize: '14px',
-              cursor: 'pointer'
-            }}
+            onClick={() => setMainTab('mine')}
+            className={`flex-1 py-3 rounded-lg text-sm font-semibold transition-colors ${
+              mainTab === 'mine'
+                ? 'bg-[#1e1b3a] text-[#D4A843] border border-[#D4A843]/35 shadow-[0_0_20px_rgba(212,168,67,0.12)]'
+                : 'text-white/55 hover:text-white/85'
+            }`}
           >
             {t('prayer.tabMyPrayers')}
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab('answered')}
-            style={{
-              flex: 1,
-              padding: '12px',
-              background: 'none',
-              border: 'none',
-              color: activeTab === 'answered' ? '#D4A843' : 'var(--text-secondary)',
-              borderBottom: activeTab === 'answered' ? '2px solid #D4A843' : 'none',
-              fontWeight: 600,
-              fontSize: '14px',
-              cursor: 'pointer'
-            }}
+            onClick={() => setMainTab('wall')}
+            className={`flex-1 py-3 rounded-lg text-sm font-semibold transition-colors ${
+              mainTab === 'wall'
+                ? 'bg-[#1e1b3a] text-[#D4A843] border border-[#D4A843]/35 shadow-[0_0_20px_rgba(212,168,67,0.12)]'
+                : 'text-white/55 hover:text-white/85'
+            }`}
           >
-            {t('prayer.tabAnswered')}
+            {t('prayer.tabPrayerWall')}
           </button>
         </div>
 
-        {/* Prayer Cards */}
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
-            {t('prayer.loading')}
-          </div>
-        ) : activeTab === 'my-prayers' ? (
-          activePrayers.length > 0 ? (
-            <div>
-              {activePrayers.map((entry) => (
-                <article
-                  key={entry.id}
-                  className="glass-panel"
-                  style={{
-                    border: '1px solid var(--glass-border)',
-                    borderLeft: '3px solid var(--glass-border)',
-                    borderRadius: '16px',
-                    padding: '16px',
-                    marginBottom: '12px',
-                    position: 'relative'
-                  }}
-                >
-                  <p style={{ color: 'var(--text-primary)', fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>
-                    {entry.title || entry.text.split('\n')[0] || t('prayer.untitled')}
-                  </p>
-                  <p style={{
-                    color: 'var(--text-secondary)',
-                    fontSize: '14px',
-                    marginBottom: '12px',
-                    lineHeight: 1.5
-                  }}>
-                    {entry.text}
-                  </p>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
-                      {new Date(entry.date).toLocaleDateString(i18n.language)}
+        {mainTab === 'mine' ? (
+          <>
+            <p className="text-[10px] uppercase tracking-[0.18em] text-center text-[#D4A843]/75 mb-1">
+              {t('prayer.personalPrivateKicker')}
+            </p>
+            <p className="text-center text-[#D4A843] text-lg font-bold mb-6 drop-shadow-[0_0_12px_rgba(212,168,67,0.25)]">
+              {t('prayer.statAnsweredCount', { count: answeredCount })}
+            </p>
+
+            <button type="button" onClick={() => setShowAddModal(true)} className="btn-primary w-full mb-6">
+              {t('prayer.addPersonalPrayer')}
+            </button>
+
+            {loading ? (
+              <p className="text-center text-white/50 py-12">{t('prayer.loading')}</p>
+            ) : items.length === 0 ? (
+              <div className="rounded-2xl border border-white/10 bg-[#1e1b3a]/60 p-8 text-center text-white/50 text-sm">
+                {t('prayer.personalEmpty')}
+              </div>
+            ) : (
+              <ul className="space-y-4 list-none p-0 m-0">
+                {items.map((row) => (
+                  <li
+                    key={row.id}
+                    className={[
+                      'rounded-2xl border border-white/10 border-l-4 pl-4 pr-4 py-4 bg-[#1e1b3a]',
+                      row.answered
+                        ? 'border-l-green-400 personal-prayer-card--answered'
+                        : 'border-l-amber-500',
+                    ].join(' ')}
+                  >
+                    {row.answered ? (
+                      <div className="flex items-start gap-2 mb-3">
+                        <span className="text-emerald-400 text-xl leading-none font-bold" aria-hidden>
+                          ✓
+                        </span>
+                        <p className="text-xs font-semibold text-[#D4A843] leading-snug">
+                          {t('prayer.answeredOnLine', {
+                            date: row.answered_at
+                              ? new Date(row.answered_at).toLocaleDateString(i18n.language, {
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric',
+                                })
+                              : '—',
+                          })}
+                        </p>
+                      </div>
+                    ) : null}
+                    <p className="text-white text-[15px] leading-relaxed mb-3 whitespace-pre-wrap">{row.prayer_text}</p>
+                    <p className="text-white/40 text-xs mb-4">
+                      {t('prayer.addedOn')}{' '}
+                      {new Date(row.created_at).toLocaleDateString(i18n.language)}
                     </p>
-                    <div style={{ display: 'flex', gap: '12px' }}>
+                    {!row.answered ? (
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={onStillBelieving}
+                          className="flex-1 min-w-[140px] py-2.5 rounded-xl bg-white/5 border border-white/15 text-white text-sm font-semibold hover:bg-white/10 active:scale-[0.99]"
+                        >
+                          {t('prayer.stillBelievingBtn')}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => markAnswered(row)}
+                          className="flex-1 min-w-[140px] py-2.5 rounded-xl bg-[#D4A843]/15 border border-[#D4A843]/45 text-[#F5E6B8] text-sm font-bold hover:bg-[#D4A843]/25 active:scale-[0.99]"
+                        >
+                          {t('prayer.godAnsweredButton')}
+                        </button>
+                      </div>
+                    ) : (
                       <button
                         type="button"
-                        onClick={() => markAsAnswered(entry)}
-                        style={{
-                          background: 'var(--glass-bg)',
-                          border: '1px solid var(--glass-border)',
-                          color: '#D4A843',
-                          borderRadius: '8px',
-                          padding: '6px 12px',
-                          fontSize: '12px',
-                          fontWeight: 600,
-                          cursor: 'pointer'
-                        }}
+                        onClick={() => markAnswered(row)}
+                        className="text-xs text-white/45 hover:text-white/70 underline underline-offset-2"
                       >
-                        {t('prayer.markAnswered')}
+                        {t('prayer.unmarkAnswered')}
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => deletePrayer(entry)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          fontSize: '16px',
-                          color: 'var(--text-secondary)',
-                          padding: 0
-                        }}
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          ) : (
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '60px 20px',
-              textAlign: 'center'
-            }}>
-              <p style={{ fontSize: '48px', marginBottom: '16px' }}>✝️</p>
-              <p style={{ color: 'var(--text-primary)', fontSize: '16px', marginBottom: '8px' }}>
-                {t('prayer.emptyMyTitle')}
-              </p>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '24px' }}>
-                {t('prayer.emptyMySub')}
-              </p>
-              <button
-                type="button"
-                onClick={() => setShowModal(true)}
-                style={{
-                  background: '#D4A843',
-                  color: '#0a1a3e',
-                  fontWeight: 700,
-                  borderRadius: '50px',
-                  padding: '14px 32px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '16px'
-                }}
-              >
-                {t('prayer.addFirst')}
-              </button>
-            </div>
-          )
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
         ) : (
-          answeredPrayers.length > 0 ? (
-            <div>
-              {answeredPrayers.map((entry) => (
-                <article
-                  key={entry.id}
-                  className="glass-panel"
-                  style={{
-                    border: '1px solid var(--glass-border)',
-                    borderLeft: '3px solid var(--glass-border)',
-                    borderRadius: '16px',
-                    padding: '16px',
-                    marginBottom: '12px',
-                    position: 'relative'
-                  }}
-                >
-                  <span style={{
-                    position: 'absolute',
-                    top: '12px',
-                    right: '12px',
-                    background: 'var(--glass-bg)',
-                    borderRadius: '20px',
-                    padding: '2px 8px',
-                    color: '#D4A843',
-                    fontSize: '11px',
-                    fontWeight: 600
-                  }}>
-                    {t('prayer.answeredBadge')}
-                  </span>
-                  <p style={{ color: '#FFFFFF', fontSize: '16px', fontWeight: 600, marginBottom: '8px', paddingRight: '80px' }}>
-                    {entry.title || entry.text.split('\n')[0] || t('prayer.untitled')}
-                  </p>
-                  <p style={{
-                    color: 'var(--text-secondary)',
-                    fontSize: '14px',
-                    marginBottom: '12px',
-                    lineHeight: 1.5
-                  }}>
-                    {entry.text}
-                  </p>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
-                      {new Date(entry.date).toLocaleDateString(i18n.language)}
-                    </p>
-                    <div style={{ display: 'flex', gap: '12px' }}>
-                      <button
-                        type="button"
-                        onClick={() => markAsAnswered(entry)}
-                        style={{
-                          background: 'var(--glass-bg)',
-                          border: '1px solid var(--glass-border)',
-                          color: '#D4A843',
-                          borderRadius: '8px',
-                          padding: '6px 12px',
-                          fontSize: '12px',
-                          fontWeight: 600,
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {t('prayer.unmark')}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => deletePrayer(entry)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          fontSize: '16px',
-                          color: 'var(--text-secondary)',
-                          padding: 0
-                        }}
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          ) : (
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '60px 20px',
-              textAlign: 'center'
-            }}>
-              <p style={{ fontSize: '48px', marginBottom: '16px' }}>✝️</p>
-              <p style={{ color: 'var(--text-primary)', fontSize: '16px', marginBottom: '8px' }}>
-                {t('prayer.emptyAnsweredTitle')}
-              </p>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
-                {t('prayer.emptyAnsweredSub')}
-              </p>
-            </div>
-          )
+          <PrayerWall />
         )}
       </div>
 
-      {/* Add Prayer Modal */}
-      {showModal && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 1000,
-          display: 'flex',
-          alignItems: 'flex-end',
-          justifyContent: 'center'
-        }}>
+      {showAddModal ? (
+        <div className="fixed inset-0 z-[100] flex items-end justify-center">
           <div
-            className="glass-scrim"
-            style={{
-              position: 'fixed',
-              inset: 0,
-            }}
-            onClick={() => setShowModal(false)}
+            className="glass-scrim fixed inset-0"
+            onClick={() => setShowAddModal(false)}
+            aria-hidden
           />
-          <div className="glass-panel" style={{
-            width: '100%',
-            maxWidth: '680px',
-            borderRadius: '24px 24px 0 0',
-            padding: '24px 20px 40px',
-            position: 'relative',
-            zIndex: 1001,
-            borderTop: '1px solid var(--glass-border)',
-          }}>
-            <h2 style={{
-              color: '#D4A843',
-              fontSize: '18px',
-              fontWeight: 700,
-              marginBottom: '20px',
-              textAlign: 'center'
-            }}>
-              {t('prayer.modalTitle')}
-            </h2>
-            
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={t('prayer.titlePlaceholder')}
-              style={{
-                background: 'var(--glass-bg)',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '12px',
-                color: 'var(--text-secondary)',
-                padding: '12px 16px',
-                width: '100%',
-                marginBottom: '16px',
-                fontSize: '16px',
-                outline: 'none'
-              }}
-            />
-            
+          <div className="glass relative z-10 w-full max-w-md rounded-t-3xl p-6 border-t border-white/10">
+            <h2 className="text-[#D4A843] font-bold text-center mb-4">{t('prayer.addPersonalPrayer')}</h2>
             <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder={t('prayer.bodyPlaceholder')}
-              placeholderStyle={{ color: 'var(--text-secondary)' }}
-              style={{
-                background: 'var(--glass-bg)',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '12px',
-                color: 'var(--text-secondary)',
-                padding: '12px 16px',
-                width: '100%',
-                minHeight: '180px',
-                marginBottom: '20px',
-                fontSize: '16px',
-                outline: 'none',
-                resize: 'none'
-              }}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              className="w-full min-h-[140px] rounded-xl bg-white/8 border border-white/15 p-4 text-white placeholder:text-white/35 mb-4 outline-none focus:border-[#D4A843]/40"
+              placeholder={t('prayer.personalPlaceholder')}
             />
-            
             <button
               type="button"
+              className="btn-primary w-full mb-2 disabled:opacity-50"
+              disabled={saving || !draft.trim()}
               onClick={addPrayer}
-              style={{
-                background: '#D4A843',
-                color: '#0a1a3e',
-                fontWeight: 700,
-                borderRadius: '50px',
-                padding: '14px',
-                width: '100%',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '16px',
-                marginBottom: '12px'
-              }}
             >
-              {t('prayer.savePrayer')}
+              {saving ? '…' : t('prayer.savePrayer')}
             </button>
-            
             <button
               type="button"
-              onClick={() => setShowModal(false)}
-              style={{
-                background: 'none',
-                color: 'var(--text-muted)',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '14px',
-                width: '100%',
-                padding: '8px'
-              }}
+              className="w-full py-2 text-white/50 text-sm hover:text-white/75"
+              onClick={() => setShowAddModal(false)}
             >
               {t('common.cancel')}
             </button>
           </div>
         </div>
-      )}
+      ) : null}
+
+      {toast ? (
+        <div className="prayer-faithful-toast" role="status" aria-live="polite">
+          <span className="prayer-faithful-toast__sparkle" aria-hidden>
+            ✨
+          </span>
+          <span>{toast}</span>
+        </div>
+      ) : null}
     </div>
   )
 }

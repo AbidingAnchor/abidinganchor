@@ -15,4 +15,6 @@ CREATE INDEX IF NOT EXISTS prayers_user_id_created_at_idx
 -- Legacy tables: add any missing columns
 ALTER TABLE public.prayers ADD COLUMN IF NOT EXISTS content text NOT NULL DEFAULT '';
 ALTER TABLE public.prayers ADD COLUMN IF NOT EXISTS answered boolean NOT NULL DEFAULT false;
+ALTER TABLE public.prayers ADD COLUMN IF NOT EXISTS is_answered boolean NOT NULL DEFAULT false;
+ALTER TABLE public.prayers ADD COLUMN IF NOT EXISTS answered_at timestamptz;
 ALTER TABLE public.prayers ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now();
