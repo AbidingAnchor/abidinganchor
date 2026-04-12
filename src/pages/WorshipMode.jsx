@@ -187,12 +187,10 @@ export default function WorshipMode() {
       className="content-scroll worship-mode-page"
       style={{
         minHeight: 'auto',
-        boxSizing: 'border-box',
+        position: 'relative',
+        isolation: 'isolate',
         padding: '0 16px',
         paddingTop: '88px',
-        maxWidth: '680px',
-        margin: '0 auto',
-        width: '100%',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'flex-start',
@@ -244,7 +242,7 @@ export default function WorshipMode() {
             background: isPlaying
               ? 'linear-gradient(145deg, rgba(212, 168, 67, 0.35) 0%, rgba(212, 168, 67, 0.12) 100%)'
               : 'linear-gradient(145deg, rgba(212, 168, 67, 0.55) 0%, rgba(201, 160, 53, 0.35) 100%)',
-            boxShadow: `0 8px 40px rgba(212, 168, 67, 0.35), inset 0 0 60px rgba(255, 255, 255, 0.06)`,
+            boxShadow: '0 4px 24px rgba(212, 168, 67, 0.28), inset 0 0 48px rgba(255, 255, 255, 0.05)',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -335,21 +333,25 @@ export default function WorshipMode() {
         </ul>
       </section>
 
-      {/* Bottom transport: prev / play-pause / next */}
+      {/* Bottom transport: above app BottomNav, width matches main column (no full-bleed under nav) */}
       <div
         style={{
           position: 'fixed',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          padding: '12px 16px calc(12px + env(safe-area-inset-bottom, 0px))',
+          left: '50%',
+          bottom: 'calc(72px + env(safe-area-inset-bottom, 0px))',
+          transform: 'translateX(-50%)',
+          width: 'min(680px, calc(100% - 32px))',
+          maxWidth: '100%',
+          padding: '12px 16px',
+          boxSizing: 'border-box',
           background: 'linear-gradient(180deg, transparent 0%, rgba(10, 15, 30, 0.96) 35%)',
           borderTop: '1px solid rgba(212, 168, 67, 0.2)',
+          borderRadius: '16px 16px 0 0',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           gap: '28px',
-          zIndex: 10,
+          zIndex: 100,
         }}
       >
         <button

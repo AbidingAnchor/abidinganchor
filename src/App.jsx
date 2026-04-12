@@ -47,7 +47,12 @@ function AppShell() {
   const [worshipAutoPlayToken, setWorshipAutoPlayToken] = useState(0)
   const [worshipStatus, setWorshipStatus] = useState({ isPlaying: false, currentTrack: 'Harmony of Heaven', isVisible: false })
   const showNav = location.pathname !== '/auth' && location.pathname !== '/onboarding'
-  const showFooter = location.pathname !== '/auth' && location.pathname !== '/onboarding' && location.pathname !== '/read' && location.pathname !== '/reading-plan'
+  const showFooter =
+    location.pathname !== '/auth' &&
+    location.pathname !== '/onboarding' &&
+    location.pathname !== '/read' &&
+    location.pathname !== '/reading-plan' &&
+    location.pathname !== '/worship'
   const showHeader = location.pathname !== '/auth' && location.pathname !== '/onboarding'
 
   const openWorship = (startPlaying = false) => {
