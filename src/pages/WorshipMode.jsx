@@ -214,7 +214,8 @@ export default function WorshipMode() {
         style={{
           position: 'relative',
           zIndex: 1,
-          flex: '1 1 auto',
+          flex: '0 0 auto',
+          width: '100%',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'stretch',
@@ -240,54 +241,49 @@ export default function WorshipMode() {
         </div>
       ) : null}
 
-      {/* Title: icon + track + Worship Mode — no duplicate play control */}
       <header
         style={{
           flex: '0 0 auto',
           textAlign: 'center',
-          paddingBottom: '16px',
+          paddingBottom: '14px',
+          marginBottom: '12px',
           borderBottom: '1px solid rgba(255,255,255,0.08)',
-          marginBottom: '16px',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '8px' }}>
-          <span style={{ fontSize: '28px', lineHeight: 1 }} aria-hidden>
-            🎵
-          </span>
-          <p
-            style={{
-              margin: 0,
-              color: '#FFFFFF',
-              fontSize: '18px',
-              fontWeight: 600,
-              lineHeight: 1.3,
-            }}
-          >
-            {current.name}
-          </p>
+        <div style={{ fontSize: '36px', lineHeight: 1 }} aria-hidden>
+          🎵
         </div>
         <p
           style={{
-            margin: 0,
-            fontSize: '15px',
-            fontWeight: 600,
-            color: 'rgba(255,255,255,0.72)',
+            margin: '12px 0 0',
+            color: gold,
+            fontSize: 'clamp(1.25rem, 4.5vw, 1.5rem)',
+            fontWeight: 700,
+            lineHeight: 1.25,
             letterSpacing: '0.02em',
+          }}
+        >
+          {current.name}
+        </p>
+        <p
+          style={{
+            margin: '8px 0 0',
+            fontSize: '14px',
+            fontWeight: 500,
+            color: 'rgba(255,255,255,0.5)',
+            letterSpacing: '0.04em',
           }}
         >
           Worship Mode
         </p>
         {isLoading ? (
-          <p style={{ margin: '8px 0 0', color: gold, fontSize: '13px', fontWeight: 600 }} aria-live="polite">
+          <p style={{ margin: '8px 0 0', color: gold, fontSize: '12px', fontWeight: 600 }} aria-live="polite">
             Loading…
           </p>
         ) : null}
-        <p style={{ margin: '8px 0 0', color: 'rgba(255,255,255,0.45)', fontSize: '12px', lineHeight: 1.4 }}>
-          Use the controls below to play — tap Play for audio.
-        </p>
       </header>
 
-      <section style={{ flex: '0 0 auto', width: '100%', marginBottom: 0 }}>
+      <section style={{ flex: '0 0 auto', width: '100%', margin: 0, padding: 0 }}>
         <p
           style={{
             color: 'rgba(255,255,255,0.45)',
@@ -341,16 +337,19 @@ export default function WorshipMode() {
         </ul>
       </section>
 
-      {/* In-flow transport — sits flush under playlist (no fixed gap / dead zone) */}
+      {/* Glass transport — sky shows through; flush under playlist */}
       <div
         style={{
           flex: '0 0 auto',
           marginTop: 0,
           marginLeft: '-16px',
           marginRight: '-16px',
+          marginBottom: 0,
           padding: '12px 16px',
           boxSizing: 'border-box',
-          background: 'linear-gradient(180deg, rgba(10, 15, 30, 0.92) 0%, rgba(10, 15, 30, 0.98) 100%)',
+          background: 'rgba(8, 10, 26, 0.42)',
+          backdropFilter: 'blur(14px)',
+          WebkitBackdropFilter: 'blur(14px)',
           borderTop: `1px solid ${goldMuted}`,
           display: 'flex',
           alignItems: 'center',
