@@ -15,6 +15,21 @@ const UI_LANG_OPTIONS = [
   { code: 'de', flag: '🇩🇪', abbr: 'DE', labelKey: 'langDe' },
 ]
 
+/** U+FE0F helps flag sequences render as emoji (avoids “US”/“ES” text + code looking like “US EN” / “ES ES”). */
+function langButtonLabel(flag, abbr) {
+  return `${flag}\uFE0F ${abbr}`
+}
+
+const BIBLE_TRANSLATION_OPTIONS = [
+  { value: 'KJV', labelKey: 'bible.kjv' },
+  { value: 'WEB', labelKey: 'bible.web' },
+  { value: 'ASV', labelKey: 'bible.asv' },
+  { value: 'OEB', labelKey: 'bible.oeb' },
+  { value: 'WEBBE', labelKey: 'bible.webbe' },
+  { value: 'BBE', labelKey: 'bible.bbe' },
+  { value: 'Darby', labelKey: 'bible.darby' },
+]
+
 export default function Settings() {
   const { t, i18n: i18nHook } = useTranslation()
   const navigate = useNavigate()
@@ -523,20 +538,21 @@ export default function Settings() {
           <select
             value={selectedTranslation}
             onChange={(e) => setSelectedTranslation(e.target.value)}
-            className="glass-input-field"
+            className="glass-input-field settings-bible-translation-select"
             style={{
               width: '100%',
               borderRadius: '12px',
               padding: '12px',
-              color: 'var(--text-primary)',
               fontSize: '16px',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              colorScheme: 'dark',
             }}
           >
-            <option value="KJV">{t('settings.bibleVersionKjv')}</option>
-            <option value="ESV">{t('settings.bibleVersionEsv')}</option>
-            <option value="NIV">{t('settings.bibleVersionNiv')}</option>
-            <option value="NLT">{t('settings.bibleVersionNlt')}</option>
+            {BIBLE_TRANSLATION_OPTIONS.map(({ value, labelKey }) => (
+              <option key={value} value={value}>
+                {t(labelKey)}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -586,7 +602,6 @@ export default function Settings() {
                     flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '8px',
                     minWidth: '88px',
                     padding: '12px 14px',
                     borderRadius: '12px',
@@ -595,18 +610,21 @@ export default function Settings() {
                     cursor: 'pointer',
                   }}
                 >
-                  <span style={{ fontSize: '22px', lineHeight: 1 }} aria-hidden>
-                    {flag}
-                  </span>
                   <span
+                    aria-hidden
                     style={{
-                      fontSize: '14px',
+                      fontSize: '15px',
                       fontWeight: 700,
-                      letterSpacing: '0.04em',
+                      letterSpacing: '0.06em',
                       color: 'var(--text-primary)',
+                      whiteSpace: 'nowrap',
+                      lineHeight: 1.15,
+                      fontVariantEmoji: 'emoji',
+                      fontFamily:
+                        '"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", "Twemoji Mozilla", system-ui, sans-serif',
                     }}
                   >
-                    {abbr}
+                    {langButtonLabel(flag, abbr)}
                   </span>
                 </button>
               )
