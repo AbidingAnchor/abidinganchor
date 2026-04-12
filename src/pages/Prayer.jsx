@@ -237,18 +237,25 @@ export default function Prayer() {
       </div>
 
       {showAddModal ? (
-        <div className="fixed inset-0 z-[100] flex items-end justify-center">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+        >
           <div
-            className="glass-scrim fixed inset-0"
+            className="absolute inset-0 bg-black/50"
             onClick={() => setShowAddModal(false)}
             aria-hidden
           />
-          <div className="glass relative z-10 w-full max-w-md rounded-t-3xl p-6 border-t border-white/10">
+          <div
+            className="glass relative z-10 w-full max-w-md rounded-3xl p-6 border border-white/10 pointer-events-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h2 className="text-[#D4A843] font-bold text-center mb-4">{t('prayer.addPersonalPrayer')}</h2>
             <textarea
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              className="w-full min-h-[140px] rounded-xl bg-white/8 border border-white/15 p-4 text-white placeholder:text-white/35 mb-4 outline-none focus:border-[#D4A843]/40"
+              className="relative z-10 w-full min-h-[140px] rounded-xl bg-white/8 border border-white/15 p-4 text-white placeholder:text-white/35 mb-4 outline-none focus:border-[#D4A843]/40 pointer-events-auto"
               placeholder={t('prayer.personalPlaceholder')}
             />
             <button
