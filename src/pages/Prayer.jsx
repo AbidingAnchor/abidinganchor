@@ -20,9 +20,10 @@ export default function Prayer() {
   const [toast, setToast] = useState(null)
   const toastTimerRef = useRef(null)
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (opts = {}) => {
+    const silent = opts.silent === true
     if (!user?.id) return
-    setLoading(true)
+    if (!silent) setLoading(true)
     try {
       const { data, error } = await supabase
         .from('personal_prayers')
@@ -35,9 +36,9 @@ export default function Prayer() {
       setAnsweredCount(rows.filter((r) => r.answered).length)
     } catch (e) {
       console.error('Error loading personal prayers:', e)
-      setItems([])
+      if (!silent) setItems([])
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }, [user?.id])
 
@@ -68,15 +69,25 @@ export default function Prayer() {
     if (!text || !user?.id) return
     setSaving(true)
     try {
-      const { error } = await supabase.from('personal_prayers').insert({
-        user_id: user.id,
-        prayer_text: text,
-        answered: false,
-      })
+      const { data: row, error } = await supabase
+        .from('personal_prayers')
+        .insert({
+          user_id: user.id,
+          prayer_text: text,
+          answered: false,
+        })
+        .select()
+        .single()
       if (error) throw error
       setDraft('')
       setShowAddModal(false)
-      await load()
+      if (row) {
+        setItems((prev) => {
+          const next = [row, ...prev.filter((p) => p.id !== row.id)]
+          return next
+        })
+      }
+      await load({ silent: true })
     } catch (e) {
       console.error('Error saving prayer:', e)
     } finally {
