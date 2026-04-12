@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { deleteJournalEntry, getJournalEntries, saveToJournal, markPrayerAnswered } from '../utils/journal'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -95,6 +95,7 @@ function Journal() {
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -173,6 +174,17 @@ function Journal() {
   useEffect(() => {
     setEntriesExpanded(false)
   }, [entryFilter, searchQuery])
+
+  useEffect(() => {
+    const de = location.state?.dailyEncounter
+    if (!de) return
+    setVerseReference(de.reference || '')
+    setVerseText(de.verseText || '')
+    setReflection([de.reflection, de.prompt].filter(Boolean).join('\n\n'))
+    setCurrentStep(2)
+    setShowModal(true)
+    navigate(location.pathname, { replace: true, state: {} })
+  }, [location.state, location.pathname, navigate])
 
   // Guided entry flow state
   const [currentStep, setCurrentStep] = useState(1)

@@ -2,22 +2,19 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { getDailyVerse } from '../utils/dailyVerse'
+import { getDailyEncounter } from '../utils/dailyEncounter'
+import DailyEncounterCard from '../components/DailyEncounterCard'
 import { getJournalEntries, saveToJournal } from '../utils/journal'
 import SaveToast from '../components/SaveToast'
 import { useAuth } from '../context/AuthContext'
 
 const PROFILE_STREAK_FETCH_MS = 5000
 
-function getTodaysVerse() {
-  return getDailyVerse()
-}
-
 function Home({ onOpenWorship, worshipStatus }) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { user, profile } = useAuth()
-  const [todaysVerse, setTodaysVerse] = useState(() => getTodaysVerse())
+  const [dailyEncounter, setDailyEncounter] = useState(() => getDailyEncounter())
   const [streak, setStreak] = useState({ currentStreak: 0 })
   const [toastTrigger, setToastTrigger] = useState(0)
   const [journalCount, setJournalCount] = useState(0)
@@ -143,7 +140,7 @@ function Home({ onOpenWorship, worshipStatus }) {
   useEffect(() => {
     let timeoutId
     const scheduleNextMidnight = () => {
-      setTodaysVerse(getTodaysVerse())
+      setDailyEncounter(getDailyEncounter())
       setStreak({ currentStreak: Number(profile?.reading_streak ?? 0) })
       const now = new Date()
       const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0)
@@ -156,12 +153,12 @@ function Home({ onOpenWorship, worshipStatus }) {
 
   const handleSaveDailyVerse = useCallback(async () => {
     await saveToJournal({
-      verse: todaysVerse.text,
-      reference: todaysVerse.reference,
+      verse: dailyEncounter.text,
+      reference: dailyEncounter.reference,
       tags: [t('home.journalTagDaily')],
     })
     setToastTrigger((x) => x + 1)
-  }, [todaysVerse, t])
+  }, [dailyEncounter, t])
 
   const handleSaveVerseOfWeek = useCallback(async () => {
     await saveToJournal({
@@ -173,8 +170,8 @@ function Home({ onOpenWorship, worshipStatus }) {
   }, [t])
 
   const handleShareDailyVerse = useCallback(async () => {
-    const verse = todaysVerse?.text ?? ''
-    const reference = todaysVerse?.reference ?? ''
+    const verse = dailyEncounter?.text ?? ''
+    const reference = dailyEncounter?.reference ?? ''
     if (!verse || !reference) return
 
     if (navigator.share) {
@@ -246,7 +243,50 @@ function Home({ onOpenWorship, worshipStatus }) {
     link.href = canvas.toDataURL('image/png')
     link.download = t('home.pngDownloadName')
     link.click()
-  }, [todaysVerse, t])
+  }, [dailyEncounter, t])
+
+  const handleEncounterWrite = useCallback(() => {
+    navigate('/journal', {
+      state: {
+        dailyEncounter: {
+          verseText: dailyEncounter.text,
+          reference: dailyEncounter.reference,
+          reflection: dailyEncounter.reflection,
+          prompt: dailyEncounter.prompt,
+        },
+      },
+    })
+  }, [navigate, dailyEncounter])
+
+  const handleEncounterPray = useCallback(() => {
+    const seed = [
+      `${dailyEncounter.reference}`,
+      '',
+      dailyEncounter.text,
+      '',
+      dailyEncounter.reflection,
+      '',
+      dailyEncounter.prompt,
+    ].join('\n')
+    navigate('/prayer', {
+      state: {
+        dailyPrayerSeed: { text: seed },
+      },
+    })
+  }, [navigate, dailyEncounter])
+
+  const handleEncounterAskAi = useCallback(() => {
+    navigate('/ai-companion', {
+      state: {
+        aiCompanionContext: {
+          verse: dailyEncounter.text,
+          reference: dailyEncounter.reference,
+          reflection: dailyEncounter.reflection,
+          prompt: dailyEncounter.prompt,
+        },
+      },
+    })
+  }, [navigate, dailyEncounter])
 
   const today = new Date()
   const days = [
@@ -343,119 +383,33 @@ function Home({ onOpenWorship, worshipStatus }) {
                 {encouragement}
               </p>
             </div>
-            <article
-              className="text-white"
-              style={{
-                background: 'var(--glass-bg)',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '16px',
-                padding: '20px',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                boxShadow: 'var(--glass-shadow)',
-                position: 'relative',
-                animation: 'fadeInUp 0.6s ease forwards',
-                animationDelay: '0.1s',
-              }}
-            >
-              <p
+            <DailyEncounterCard
+              encounter={dailyEncounter}
+              onWrite={handleEncounterWrite}
+              onPray={handleEncounterPray}
+              onAskAi={handleEncounterAskAi}
+              onShareImage={handleShareDailyVerse}
+            />
+
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', marginBottom: '8px' }}>
+              <button
+                type="button"
+                onClick={handleSaveDailyVerse}
                 style={{
-                  margin: '0 0 24px',
-                  textAlign: 'center',
-                  fontSize: '18px',
-                  lineHeight: 1.8,
-                  color: 'var(--verse-text)',
-                  fontStyle: 'italic',
-                  fontFamily: 'Georgia, serif',
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'rgba(212, 168, 67, 0.75)',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  padding: '6px 12px',
+                  textDecoration: 'underline',
+                  textUnderlineOffset: '3px',
                 }}
               >
-                {todaysVerse.text}
-              </p>
-
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '16px',
-                  justifyContent: 'center',
-                  marginBottom: '24px',
-                }}
-              >
-                <div
-                  style={{
-                    flex: 1,
-                    height: '1px',
-                    maxWidth: '120px',
-                    background: 'var(--glass-border)',
-                  }}
-                />
-                <p
-                  style={{
-                    margin: 0,
-                    color: 'var(--text-secondary)',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    fontFamily: 'Georgia, serif',
-                    letterSpacing: '0.06em',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {todaysVerse.reference}
-                </p>
-                <div
-                  style={{
-                    flex: 1,
-                    height: '1px',
-                    maxWidth: '120px',
-                    background: 'var(--glass-border)',
-                  }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-                <button
-                  type="button"
-                  onClick={handleSaveDailyVerse}
-                  style={{
-                    minWidth: '120px',
-                    flex: 1,
-                    background: 'var(--btn-primary-bg)',
-                    color: 'var(--btn-primary-text)',
-                    border: '1px solid var(--gold-border)',
-                    borderRadius: '50px',
-                    padding: '10px 16px',
-                    fontWeight: 600,
-                    fontSize: '13px',
-                    whiteSpace: 'nowrap',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 0 14px rgba(212, 168, 67, 0.28)',
-                  }}
-                >
-                  {t('home.saveToJournal')}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleShareDailyVerse}
-                  style={{
-                    minWidth: '140px',
-                    flex: 1,
-                    background: 'var(--btn-secondary-bg)',
-                    color: 'var(--btn-secondary-text)',
-                    border: '1px solid var(--glass-border)',
-                    borderRadius: '50px',
-                    padding: '12px 24px',
-                    fontWeight: 600,
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 0 14px rgba(212, 168, 67, 0.22)',
-                  }}
-                >
-                  {t('home.shareAsImage')}
-                </button>
-              </div>
-            </article>
+                {t('home.encounterQuickSave')}
+              </button>
+            </div>
 
             <div style={{ marginBottom: '28px' }}>
               <div

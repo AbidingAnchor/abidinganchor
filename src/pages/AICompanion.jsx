@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 const quickPrompts = [
   'Explain this verse',
@@ -14,6 +15,8 @@ const welcomeMessage =
 const HISTORY_KEY = 'abidinganchor-ai-chats'
 
 export default function AICompanion() {
+  const location = useLocation()
+  const navigate = useNavigate()
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -35,6 +38,20 @@ export default function AICompanion() {
   useEffect(() => {
     containerRef.current?.scrollTo({ top: containerRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages, loading])
+
+  useEffect(() => {
+    const ctx = location.state?.aiCompanionContext
+    if (!ctx?.verse) return
+    const block = [
+      `Today's verse (${ctx.reference}): "${ctx.verse}"`,
+      '',
+      ctx.reflection,
+      '',
+      `Help me reflect on this: ${ctx.prompt}`,
+    ].join('\n')
+    setInput(block)
+    navigate(location.pathname, { replace: true, state: {} })
+  }, [location.state, location.pathname, navigate])
 
   useEffect(() => {
     const nonWelcome = (messages || []).filter((m) => m.id !== 'welcome')

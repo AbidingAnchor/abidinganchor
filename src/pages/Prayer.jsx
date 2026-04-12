@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
@@ -6,6 +7,8 @@ import PrayerWall from './PrayerWall'
 
 export default function Prayer() {
   const { t, i18n } = useTranslation()
+  const location = useLocation()
+  const navigate = useNavigate()
   const { user } = useAuth()
   const [mainTab, setMainTab] = useState('mine')
   const [items, setItems] = useState([])
@@ -41,6 +44,15 @@ export default function Prayer() {
   useEffect(() => {
     load()
   }, [load])
+
+  useEffect(() => {
+    const seed = location.state?.dailyPrayerSeed
+    if (!seed?.text?.trim()) return
+    setDraft(seed.text.trim())
+    setShowAddModal(true)
+    setMainTab('mine')
+    navigate(location.pathname, { replace: true, state: {} })
+  }, [location.state, location.pathname, navigate])
 
   useEffect(() => {
     if (!toast) return
