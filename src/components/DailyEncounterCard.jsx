@@ -8,8 +8,19 @@ import { useTranslation } from 'react-i18next'
  * @param {() => void} props.onAskAi
  * @param {() => void} props.onShareImage
  * @param {() => void} props.onQuickSave
+ * @param {{ completedToday: boolean, currentStreak: number, justCompleted?: boolean }} props.presence
+ * @param {() => void} props.onPresenceComplete
  */
-export default function DailyEncounterCard({ encounter, onWrite, onPray, onAskAi, onShareImage, onQuickSave }) {
+export default function DailyEncounterCard({
+  encounter,
+  onWrite,
+  onPray,
+  onAskAi,
+  onShareImage,
+  onQuickSave,
+  presence = { completedToday: false, currentStreak: 0, justCompleted: false },
+  onPresenceComplete = () => {},
+}) {
   const { t } = useTranslation()
   const { text, reference, reflection, prompt } = encounter
 
@@ -111,6 +122,15 @@ export default function DailyEncounterCard({ encounter, onWrite, onPray, onAskAi
           {prompt}
         </p>
 
+        <p
+          className="text-center text-[11px] font-medium tracking-wide text-[#D4A843]/75 mb-3"
+          style={{ textShadow: '0 0 20px rgba(212, 168, 67, 0.12)' }}
+        >
+          {presence.currentStreak > 0
+            ? t('home.presenceStreakLine', { n: presence.currentStreak })
+            : t('home.presenceStreakHint')}
+        </p>
+
         <div
           style={{
             display: 'grid',
@@ -137,6 +157,40 @@ export default function DailyEncounterCard({ encounter, onWrite, onPray, onAskAi
             </span>
             <span className="daily-encounter-action-label">{t('home.encounterAskAi')}</span>
           </button>
+        </div>
+
+        <div
+          className={[
+            'rounded-xl border px-3 py-3 mb-2 transition-all duration-500',
+            presence.justCompleted
+              ? 'border-[#D4A843]/55 bg-[rgba(212,168,67,0.07)] shadow-[0_0_24px_rgba(212,168,67,0.18)]'
+              : 'border-white/[0.08] bg-white/[0.03]',
+          ].join(' ')}
+          style={
+            presence.justCompleted
+              ? { animation: 'presenceCompleteGlow 1.4s ease-out' }
+              : undefined
+          }
+        >
+          {presence.completedToday ? (
+            <div className="text-center">
+              <p className="text-sm font-semibold text-[#F5E6B8] mb-1">{t('home.presenceDoneLine')}</p>
+              <p className="text-xs text-white/50 mb-0">
+                {presence.justCompleted ? t('home.presenceEncourage') : t('home.presenceComeBack')}
+              </p>
+            </div>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={onPresenceComplete}
+                className="w-full rounded-lg border border-[#D4A843]/35 bg-[#0f1729]/80 py-2.5 px-3 text-sm font-semibold text-[#F5E6B8] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition hover:border-[#D4A843]/55 hover:bg-[#D4A843]/[0.08] hover:shadow-[0_0_18px_rgba(212,168,67,0.15)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D4A843]/40"
+              >
+                {t('home.presenceCta')}
+              </button>
+              <p className="text-[10px] text-center text-white/40 mt-2 mb-0 leading-snug">{t('home.presenceSubtleHint')}</p>
+            </>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 pt-1">
@@ -194,6 +248,11 @@ export default function DailyEncounterCard({ encounter, onWrite, onPray, onAskAi
         .daily-encounter-action-label {
           font-size: 11px;
           letter-spacing: 0.02em;
+        }
+        @keyframes presenceCompleteGlow {
+          0% { box-shadow: 0 0 0 rgba(212, 168, 67, 0); }
+          40% { box-shadow: 0 0 28px rgba(212, 168, 67, 0.35); }
+          100% { box-shadow: 0 0 16px rgba(212, 168, 67, 0.15); }
         }
       `}</style>
     </div>

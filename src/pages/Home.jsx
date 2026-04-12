@@ -3,6 +3,12 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { getDailyEncounter } from '../utils/dailyEncounter'
+import {
+  getPresenceViewModel,
+  markPresenceComplete,
+  syncPresenceState,
+  isCompletedToday,
+} from '../lib/presenceStreak'
 import DailyEncounterCard from '../components/DailyEncounterCard'
 import { getJournalEntries, saveToJournal } from '../utils/journal'
 import SaveToast from '../components/SaveToast'
@@ -20,8 +26,35 @@ function Home({ onOpenWorship, worshipStatus }) {
   const [journalCount, setJournalCount] = useState(0)
   const [suppressPersonalWelcome, setSuppressPersonalWelcome] = useState(false)
   const [profileFetchLoading, setProfileFetchLoading] = useState(false)
+  const [presenceVm, setPresenceVm] = useState(() => getPresenceViewModel(syncPresenceState()))
+  const [presenceJustCompleted, setPresenceJustCompleted] = useState(false)
+  const presenceGlowTimerRef = useRef(null)
   const profileRef = useRef(profile)
   profileRef.current = profile
+
+  const refreshPresence = useCallback(() => {
+    setPresenceVm(getPresenceViewModel(syncPresenceState()))
+  }, [])
+
+  const finishPresenceGlow = useCallback(() => {
+    if (presenceGlowTimerRef.current) clearTimeout(presenceGlowTimerRef.current)
+    presenceGlowTimerRef.current = setTimeout(() => setPresenceJustCompleted(false), 4200)
+  }, [])
+
+  const handlePresenceComplete = useCallback(() => {
+    markPresenceComplete()
+    refreshPresence()
+    setPresenceJustCompleted(true)
+    finishPresenceGlow()
+  }, [refreshPresence, finishPresenceGlow])
+
+  const markPresenceFromEngagement = useCallback(() => {
+    if (isCompletedToday(syncPresenceState())) return
+    markPresenceComplete()
+    refreshPresence()
+    setPresenceJustCompleted(true)
+    finishPresenceGlow()
+  }, [refreshPresence, finishPresenceGlow])
 
   useEffect(() => {
     if (!user?.id) {
@@ -142,6 +175,7 @@ function Home({ onOpenWorship, worshipStatus }) {
     const scheduleNextMidnight = () => {
       setDailyEncounter(getDailyEncounter())
       setStreak({ currentStreak: Number(profile?.reading_streak ?? 0) })
+      refreshPresence()
       const now = new Date()
       const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0)
       const ms = Math.max(1000, nextMidnight - now)
@@ -149,7 +183,13 @@ function Home({ onOpenWorship, worshipStatus }) {
     }
     scheduleNextMidnight()
     return () => clearTimeout(timeoutId)
-  }, [profile?.reading_streak])
+  }, [profile?.reading_streak, refreshPresence])
+
+  useEffect(() => {
+    return () => {
+      if (presenceGlowTimerRef.current) clearTimeout(presenceGlowTimerRef.current)
+    }
+  }, [])
 
   const handleSaveDailyVerse = useCallback(async () => {
     await saveToJournal({
@@ -246,6 +286,7 @@ function Home({ onOpenWorship, worshipStatus }) {
   }, [dailyEncounter, t])
 
   const handleEncounterWrite = useCallback(() => {
+    markPresenceFromEngagement()
     navigate('/journal', {
       state: {
         dailyEncounter: {
@@ -256,9 +297,10 @@ function Home({ onOpenWorship, worshipStatus }) {
         },
       },
     })
-  }, [navigate, dailyEncounter])
+  }, [markPresenceFromEngagement, navigate, dailyEncounter])
 
   const handleEncounterPray = useCallback(() => {
+    markPresenceFromEngagement()
     const seed = [
       `${dailyEncounter.reference}`,
       '',
@@ -273,9 +315,10 @@ function Home({ onOpenWorship, worshipStatus }) {
         dailyPrayerSeed: { text: seed },
       },
     })
-  }, [navigate, dailyEncounter])
+  }, [markPresenceFromEngagement, navigate, dailyEncounter])
 
   const handleEncounterAskAi = useCallback(() => {
+    markPresenceFromEngagement()
     navigate('/ai-companion', {
       state: {
         aiCompanionContext: {
@@ -286,7 +329,7 @@ function Home({ onOpenWorship, worshipStatus }) {
         },
       },
     })
-  }, [navigate, dailyEncounter])
+  }, [markPresenceFromEngagement, navigate, dailyEncounter])
 
   const today = new Date()
   const days = [
@@ -390,6 +433,12 @@ function Home({ onOpenWorship, worshipStatus }) {
               onAskAi={handleEncounterAskAi}
               onShareImage={handleShareDailyVerse}
               onQuickSave={handleSaveDailyVerse}
+              presence={{
+                completedToday: presenceVm.completedToday,
+                currentStreak: presenceVm.currentStreak,
+                justCompleted: presenceJustCompleted,
+              }}
+              onPresenceComplete={handlePresenceComplete}
             />
 
             <div style={{ marginBottom: '28px' }}>

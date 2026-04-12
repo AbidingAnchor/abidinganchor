@@ -129,7 +129,7 @@ export default function PrayerWall() {
   }
 
   return (
-    <div className="content-scroll px-4 pt-6 pb-32" style={{ minHeight: 'auto' }}>
+    <div className="w-full pt-4">
       {/* Screen Title */}
       <div className="flex items-center gap-3 mb-4">
         <span className="text-3xl">🙏</span>
