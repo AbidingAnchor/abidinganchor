@@ -389,27 +389,8 @@ function Home({ onOpenWorship, worshipStatus }) {
               onPray={handleEncounterPray}
               onAskAi={handleEncounterAskAi}
               onShareImage={handleShareDailyVerse}
+              onQuickSave={handleSaveDailyVerse}
             />
-
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', marginBottom: '8px' }}>
-              <button
-                type="button"
-                onClick={handleSaveDailyVerse}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: 'rgba(212, 168, 67, 0.75)',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  padding: '6px 12px',
-                  textDecoration: 'underline',
-                  textUnderlineOffset: '3px',
-                }}
-              >
-                {t('home.encounterQuickSave')}
-              </button>
-            </div>
 
             <div style={{ marginBottom: '28px' }}>
               <div

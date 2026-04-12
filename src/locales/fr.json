@@ -233,6 +233,8 @@
     "encounterPray": "Prier",
     "encounterAskAi": "Demander à l’IA",
     "encounterQuickSave": "Enregistrer le verset",
+    "encounterShareLink": "Partager",
+    "encounterSaveLink": "Enregistrer",
     "shareAsImage": "Partager en image",
     "readingStreak": "Série de lecture",
     "dayStreak": "🔥 Série de {{n}} jours",

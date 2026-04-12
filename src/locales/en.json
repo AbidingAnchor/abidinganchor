@@ -335,6 +335,8 @@
     "encounterPray": "Pray",
     "encounterAskAi": "Ask AI",
     "encounterQuickSave": "Save verse to journal",
+    "encounterShareLink": "Share",
+    "encounterSaveLink": "Save",
     "shareAsImage": "Share as Image",
     "readingStreak": "Reading Streak",
     "dayStreak": "🔥 {{n}} Day Streak",

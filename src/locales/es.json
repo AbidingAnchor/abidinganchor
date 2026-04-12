@@ -233,6 +233,8 @@
     "encounterPray": "Orar",
     "encounterAskAi": "Preguntar IA",
     "encounterQuickSave": "Guardar versículo en el diario",
+    "encounterShareLink": "Compartir",
+    "encounterSaveLink": "Guardar",
     "shareAsImage": "Compartir como imagen",
     "readingStreak": "Racha de lectura",
     "dayStreak": "🔥 Racha de {{n}} días",

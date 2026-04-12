@@ -7,8 +7,9 @@ import { useTranslation } from 'react-i18next'
  * @param {() => void} props.onPray
  * @param {() => void} props.onAskAi
  * @param {() => void} props.onShareImage
+ * @param {() => void} props.onQuickSave
  */
-export default function DailyEncounterCard({ encounter, onWrite, onPray, onAskAi, onShareImage }) {
+export default function DailyEncounterCard({ encounter, onWrite, onPray, onAskAi, onShareImage, onQuickSave }) {
   const { t } = useTranslation()
   const { text, reference, reflection, prompt } = encounter
 
@@ -115,7 +116,7 @@ export default function DailyEncounterCard({ encounter, onWrite, onPray, onAskAi
             display: 'grid',
             gridTemplateColumns: 'repeat(3, 1fr)',
             gap: '8px',
-            marginBottom: '14px',
+            marginBottom: '10px',
           }}
         >
           <button type="button" onClick={onWrite} className="daily-encounter-action-btn">
@@ -138,25 +139,27 @@ export default function DailyEncounterCard({ encounter, onWrite, onPray, onAskAi
           </button>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
+        <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 pt-1">
           <button
             type="button"
             onClick={onShareImage}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'rgba(255, 255, 255, 0.45)',
-              fontSize: '12px',
-              fontWeight: 500,
-              cursor: 'pointer',
-              padding: '6px 10px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
+            className="inline-flex items-center gap-1 border-0 bg-transparent p-0 text-xs font-medium text-white/50 hover:text-white/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D4A843]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded"
+            aria-label={t('home.shareAsImage')}
           >
-            <span aria-hidden>🖼️</span>
-            {t('home.shareAsImage')}
+            <span aria-hidden>📤</span>
+            {t('home.encounterShareLink')}
+          </button>
+          <span className="text-white/35 select-none" aria-hidden>
+            •
+          </span>
+          <button
+            type="button"
+            onClick={onQuickSave}
+            className="inline-flex items-center gap-1 border-0 bg-transparent p-0 text-xs font-medium text-white/50 hover:text-white/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D4A843]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded"
+            aria-label={t('home.encounterQuickSave')}
+          >
+            <span aria-hidden>🔖</span>
+            {t('home.encounterSaveLink')}
           </button>
         </div>
       </article>

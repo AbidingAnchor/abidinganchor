@@ -229,6 +229,8 @@
     "encounterPray": "Beten",
     "encounterAskAi": "KI fragen",
     "encounterQuickSave": "Vers im Tagebuch speichern",
+    "encounterShareLink": "Teilen",
+    "encounterSaveLink": "Speichern",
     "shareAsImage": "Als Bild teilen",
     "readingStreak": "Leseserie",
     "dayStreak": "🔥 {{n}}-Tage-Serie",
