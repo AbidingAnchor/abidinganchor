@@ -1,14 +1,5 @@
 import { LocalNotifications } from '@capacitor/local-notifications'
-
-const dailyMessages = {
-  0: 'A new week begins. What is God speaking to you today? 🙏', // Sunday
-  1: 'Start your week anchored. Open your journal and meet with God. ✝️', // Monday
-  2: 'God is faithful. Take 5 minutes to reflect and pray today. 🕊️', // Tuesday
-  3: 'Midweek check-in — where have you seen God move this week? 🔥', // Wednesday
-  4: 'You are not alone. Bring your burdens to God in prayer today. 🙌', // Thursday
-  5: 'End your week with gratitude. What has God done for you? 💛', // Friday
-  6: 'Rest in His presence today. Open your Bible and be still. 📖', // Saturday
-}
+import i18n from '../i18n.js'
 
 export async function scheduleDaily() {
   try {
@@ -36,8 +27,8 @@ export async function scheduleDaily() {
       
       notifications.push({
         id: day + 1, // Unique ID for each day (1-7)
-        title: 'AbidingAnchor 🕊️',
-        body: dailyMessages[day],
+        title: i18n.t('settings.notificationTitle'),
+        body: i18n.t(`settings.notify${day}`),
         schedule: {
           at: scheduledDate,
           repeats: true,

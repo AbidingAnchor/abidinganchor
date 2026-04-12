@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) {
+  const { t } = useTranslation()
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
@@ -78,7 +80,7 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
               letterSpacing: '0.05em',
             }}
           >
-            More
+            {t('nav.more')}
           </h2>
           <button
             onClick={onClose}
@@ -146,7 +148,7 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
                     textAlign: 'left',
                   }}
                 >
-                  {option.label}
+                  {option.labelKey ? t(option.labelKey) : option.label}
                 </span>
                 <span
                   style={{

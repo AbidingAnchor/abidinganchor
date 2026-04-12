@@ -1,34 +1,44 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 
-const screenTitles = {
-  '/': 'ABIDING ANCHOR',
-  '/read': '📖 Read',
-  '/search': '🔍 Search',
-  '/faith-journey': '✨ Journey',
-  '/prayer': '🙏 Prayer Wall',
-  '/community-prayer': '🤝 Community',
-  '/journal': '📓 Journal',
-  '/share-card': '🕊️ Share Your Faith',
-  '/memorize': '📖 Memorize',
-  '/devotional': '📖 Devotional',
-  '/scripture-art': '🎨 Scripture Art',
-  '/reading-plans': '📚 Reading Plans',
-  '/fasting': '🍃 Fasting Tracker',
-  '/ai-companion': '🤖 AI Companion',
-  '/friends': '👥 Friends',
-  '/settings': '⚙️ Settings',
+const HEADER_PATH_TO_KEY = {
+  '/': 'brand',
+  '/read': 'read',
+  '/reading-plan': 'readingPlans',
+  '/search': 'search',
+  '/faith-journey': 'journey',
+  '/prayer': 'prayer',
+  '/community-prayer': 'community',
+  '/journal': 'journal',
+  '/share-card': 'shareCard',
+  '/memorize': 'memorize',
+  '/devotional': 'devotional',
+  '/scripture-art': 'scriptureArt',
+  '/reading-plans': 'readingPlans',
+  '/fasting': 'fasting',
+  '/ai-companion': 'aiCompanion',
+  '/friends': 'friends',
+  '/support': 'support',
+  '/settings': 'settings',
+  '/privacy': 'privacyPolicy',
+  '/privacy-policy': 'privacyPolicy',
+  '/terms': 'termsOfService',
+  '/terms-of-service': 'termsOfService',
+  '/legal': 'legalPage',
 }
 
 export default function Header() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const { user, profile, refreshProfile } = useAuth()
   const [localAvatarUrl, setLocalAvatarUrl] = useState(null)
 
-  const currentTitle = screenTitles[location.pathname] || 'ABIDING ANCHOR'
+  const headerKey = HEADER_PATH_TO_KEY[location.pathname] ?? 'brand'
+  const currentTitle = t(`header.${headerKey}`)
 
   useEffect(() => {
     if (!user?.id) return
@@ -112,7 +122,7 @@ export default function Header() {
           {rawAvatarUrl ? (
             <img
               src={localAvatarUrl || profile?.avatar_url}
-              alt="Profile"
+              alt={t('common.profile')}
               onError={(e) => {
                 e.target.style.display = 'none'
               }}

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { JOURNEY_MAP_STOPS } from './JourneyMap'
+import { JOURNEY_MAP_GEOMETRY } from '../data/journeyMapGeometry'
 
 const KEY = 'abidinganchor-achievements'
 const TRIVIA_STATS_KEY = 'abidinganchor-trivia-stats'
@@ -74,7 +74,7 @@ function computeSnapshot(profile) {
   const journalEntries = parseInt(localStorage.getItem('abidinganchor-journal-entry-count') || '0', 10)
   const communityPrayers = parseInt(localStorage.getItem('abidinganchor-community-prayer-submissions') || '0', 10)
   const verseCardShared = localStorage.getItem('abidinganchor-verse-card-shared') === '1'
-  const mapFullyVisited = JOURNEY_MAP_STOPS.every((stop) => mapState.seenFacts?.[stop.id])
+  const mapFullyVisited = JOURNEY_MAP_GEOMETRY.every((stop) => mapState.seenFacts?.[stop.id])
   const profileComplete = profile?.onboarding_complete === true
   const readingStreak = Number(profile?.reading_streak) || 0
 

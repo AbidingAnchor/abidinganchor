@@ -1,4 +1,33 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { dedupeVersesByNumber, prepareBibleReaderVerseText } from '../utils/kjvVerseText'
+import { BOOK_CDN_TO_OSIS } from '../utils/bookOsisMap'
+import { fetchApiBibleChapterVerses, resolveBibleIdForLanguage } from '../services/apiBible'
+
+/** Free JSON API — see https://bible-api.com/ and GET /data for supported translations (public domain). */
+const BIBLE_API_COM = 'https://bible-api.com'
+
+const BIBLE_READER_TRANSLATION_KEY = 'abidinganchor-bible-reader-translation'
+
+const HAS_API_BIBLE = Boolean(import.meta.env.VITE_API_BIBLE_KEY)
+
+/** bible-api.com `translation` ids — labels match the actual public-domain texts. */
+const BIBLE_READER_TRANSLATIONS = [
+  { id: 'kjv', labelKey: 'bible.kjv', subtitleKey: 'bible.subtitleKjv' },
+  { id: 'web', labelKey: 'bible.web', subtitleKey: 'bible.subtitleWeb' },
+  { id: 'asv', labelKey: 'bible.asv', subtitleKey: 'bible.subtitleAsv' },
+  { id: 'oeb-us', labelKey: 'bible.oeb', subtitleKey: 'bible.subtitleOeb' },
+  { id: 'webbe', labelKey: 'bible.webbe', subtitleKey: 'bible.subtitleWebbe' },
+  { id: 'bbe', labelKey: 'bible.bbe', subtitleKey: 'bible.subtitleBbe' },
+  { id: 'darby', labelKey: 'bible.darby', subtitleKey: 'bible.subtitleDarby' },
+]
+
+function getStoredTranslationId() {
+  if (typeof window === 'undefined') return 'kjv'
+  const raw = localStorage.getItem(BIBLE_READER_TRANSLATION_KEY)
+  if (raw && BIBLE_READER_TRANSLATIONS.some((t) => t.id === raw)) return raw
+  return 'kjv'
+}
 
 const BOOKS = [
   {name:'Genesis',cdnName:'genesis',chapters:50},
@@ -70,12 +99,17 @@ const BOOKS = [
 ]
 
 export default function BibleReader({ open, onClose, mode = 'read', onModeChange }) {
+  const { t, i18n } = useTranslation()
+  const uiLang = (i18n.resolvedLanguage || i18n.language || 'en').toLowerCase().split(/[-_]/)[0]
+
   const [bookIndex, setBookIndex] = useState(0)
   const [chapter, setChapter] = useState(1)
   const [verses, setVerses] = useState([])
   const [loading, setLoading] = useState(true)
   const [showBookPicker, setShowBookPicker] = useState(false)
   const [showChapterPicker, setShowChapterPicker] = useState(false)
+  const [showTranslationPicker, setShowTranslationPicker] = useState(false)
+  const [translationId, setTranslationId] = useState(getStoredTranslationId)
   const [fontSize, setFontSize] = useState(() => {
     if (typeof window !== 'undefined') {
       return parseInt(localStorage.getItem('bibleFontSize')) || 18
@@ -85,6 +119,20 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
 
   const selectedBook = BOOKS[bookIndex]
   const maxChapter = selectedBook?.chapters || 1
+
+  const translationOptions = useMemo(
+    () =>
+      BIBLE_READER_TRANSLATIONS.map((tr) => ({
+        id: tr.id,
+        label: t(tr.labelKey),
+        subtitle: t(tr.subtitleKey),
+      })),
+    [t, i18n.language],
+  )
+  const selectedTranslation = translationOptions.find((x) => x.id === translationId) ?? translationOptions[0]
+
+  const bookDisplayName = (book) =>
+    book ? t(`bible.books.${book.cdnName}`, { defaultValue: book.name }) : ''
 
   useEffect(() => {
     if (!open) return
@@ -103,19 +151,70 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
 
   useEffect(() => {
     if (!open || !selectedBook) return
-    
+
+    let cancelled = false
     setLoading(true)
-    fetch(`https://cdn.jsdelivr.net/gh/wldeh/bible-api/bibles/en-kjv/books/${selectedBook.cdnName}/chapters/${chapter}.json`)
-      .then(r => r.json())
-      .then(json => {
-        setVerses(json.data)
-        setLoading(false)
-      })
-      .catch(err => {
+
+    const loadFromBibleApiCom = () => {
+      const url = `${BIBLE_API_COM}/${encodeURIComponent(selectedBook.cdnName)}+${chapter}?translation=${encodeURIComponent(translationId)}`
+      return fetch(url)
+        .then((r) => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`)
+          return r.json()
+        })
+        .then((data) => {
+          if (selectedBook.cdnName === 'genesis' && chapter === 3) {
+            console.log('[BibleReader] Raw API response (Genesis 3):', data)
+            const rawV6 = (data.verses || []).find((v) => Number(v.verse) === 6)
+            console.log('[BibleReader] Genesis 3:6 raw verse text from API:', rawV6?.text)
+          }
+
+          const rows = dedupeVersesByNumber(data.verses || [])
+          return rows.map((v) => ({
+            verse: v.verse,
+            text: prepareBibleReaderVerseText(v.text),
+          }))
+        })
+    }
+
+    ;(async () => {
+      try {
+        if (HAS_API_BIBLE) {
+          const bibleId = await resolveBibleIdForLanguage(uiLang)
+          const osis = BOOK_CDN_TO_OSIS[selectedBook.cdnName]
+          if (bibleId && osis) {
+            const raw = await fetchApiBibleChapterVerses(bibleId, osis, chapter)
+            if (!cancelled && raw?.length) {
+              const normalized = dedupeVersesByNumber(
+                raw.map((v) => ({
+                  verse: v.verse,
+                  text: prepareBibleReaderVerseText(v.text),
+                })),
+              )
+              setVerses(normalized)
+              setLoading(false)
+              return
+            }
+          }
+        }
+        const rows = await loadFromBibleApiCom()
+        if (!cancelled) {
+          setVerses(rows || [])
+          setLoading(false)
+        }
+      } catch (err) {
         console.error('Error loading verses:', err)
-        setLoading(false)
-      })
-  }, [open, selectedBook, chapter])
+        if (!cancelled) {
+          setVerses([])
+          setLoading(false)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [open, selectedBook, chapter, translationId, uiLang])
 
   useEffect(() => {
     if (selectedBook) {
@@ -123,6 +222,10 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
       localStorage.setItem('bibleChapter', chapter.toString())
     }
   }, [bookIndex, chapter, selectedBook])
+
+  useEffect(() => {
+    localStorage.setItem(BIBLE_READER_TRANSLATION_KEY, translationId)
+  }, [translationId])
 
   const handleBookSelect = (index) => {
     setBookIndex(index)
@@ -166,7 +269,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
       }}
       >
         <div style={{ maxWidth: '680px', margin: '0 auto' }}>
-          {/* Row 1: Book selector | Chapter selector | Translation (KJV) */}
+          {/* Row 1: Book selector | Chapter selector | Translation */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
             <button
               type="button"
@@ -181,7 +284,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                 padding: '4px 12px'
               }}
             >
-              {selectedBook?.name || 'Loading...'}
+              {selectedBook ? bookDisplayName(selectedBook) : t('bible.loading')}
             </button>
 
             <button
@@ -197,16 +300,28 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                 padding: '4px 12px'
               }}
             >
-              Chapter {chapter}
+              {t('bible.chapter', { n: chapter })}
             </button>
 
-            <div style={{
-              color: 'var(--text-primary)',
-              fontSize: '13px',
-              fontWeight: 600
-            }}>
-              KJV
-            </div>
+            <button
+              type="button"
+              onClick={() => setShowTranslationPicker(true)}
+              style={{
+                background: 'rgba(212,168,67,0.12)',
+                border: '1px solid rgba(212,168,67,0.35)',
+                borderRadius: '999px',
+                color: '#D4A843',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                padding: '6px 12px',
+                letterSpacing: '0.04em',
+              }}
+              aria-expanded={showTranslationPicker}
+              aria-haspopup="listbox"
+            >
+              {HAS_API_BIBLE ? uiLang.toUpperCase() : selectedTranslation.label} ▾
+            </button>
           </div>
         </div>
       </div>
@@ -244,7 +359,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                 transition: 'all 0.3s ease'
               }}
             >
-              📖 Read
+              {t('bible.read')}
             </button>
             <button
               type="button"
@@ -261,7 +376,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                 transition: 'all 0.3s ease'
               }}
             >
-              🎧 Listen
+              {t('bible.listen')}
             </button>
           </div>
         </div>
@@ -279,7 +394,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
         {loading ? (
           <div style={{ textAlign: 'center', padding: '40px' }}>
             <div style={{ fontSize: '32px', marginBottom: '16px' }}>✝</div>
-            <p style={{ color: 'var(--text-secondary)' }}>Loading scripture...</p>
+            <p style={{ color: 'var(--text-secondary)' }}>{t('bible.loading')}</p>
           </div>
         ) : (
           <div>
@@ -306,7 +421,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                   }}>
                     {v.verse}
                   </sup>
-                  {v.text.replace(/¶/g, '').replace(/\d+\.\d+[^:]*: [A-Za-z]+\.?/g, '').trim()}
+                  {v.text}
                 </p>
               ))}
             </div>
@@ -393,7 +508,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                   opacity: chapter === 1 ? 0.3 : 1
                 }}
               >
-                ← Previous
+                {t('bible.previous')}
               </button>
               <button
                 type="button"
@@ -411,7 +526,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                   opacity: chapter === maxChapter ? 0.3 : 1
                 }}
               >
-                Next →
+                {t('bible.next')}
               </button>
             </div>
           </div>
@@ -433,7 +548,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
               marginBottom: '24px',
               textAlign: 'center'
             }}>
-              Select Book
+              {t('bible.selectBook')}
             </h2>
 
             {/* Book List */}
@@ -465,7 +580,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                     e.currentTarget.style.color = '#F5E6C8'
                   }}
                 >
-                  {book.name}
+                  {bookDisplayName(book)}
                 </button>
               ))}
             </div>
@@ -484,10 +599,128 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                 width: '100%'
               }}
             >
-              Cancel
+              {t('common.cancel')}
             </button>
           </div>
         </div>
+      )}
+
+      {/* Translation Picker — bottom sheet */}
+      {showTranslationPicker && (
+        <>
+          <div
+            onClick={() => setShowTranslationPicker(false)}
+            className="glass-scrim"
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 200,
+            }}
+            aria-hidden
+          />
+          <div
+            className="glass-panel"
+            style={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 201,
+              borderRadius: '24px 24px 0 0',
+              borderTop: '1px solid rgba(255,255,255,0.08)',
+              padding: '24px 20px 32px',
+              maxHeight: '72vh',
+              overflowY: 'auto',
+              animation: 'slideUp 0.3s ease-out',
+            }}
+            role="listbox"
+            aria-label="Bible translation"
+          >
+            <div style={{ maxWidth: '680px', margin: '0 auto' }}>
+              <div
+                style={{
+                  width: '40px',
+                  height: '4px',
+                  background: 'rgba(255,255,255,0.2)',
+                  borderRadius: '2px',
+                  margin: '0 auto 20px',
+                }}
+              />
+              <h2
+                style={{
+                  color: '#D4A843',
+                  fontSize: '20px',
+                  fontWeight: 700,
+                  marginBottom: '8px',
+                  textAlign: 'center',
+                }}
+              >
+                {t('bible.translation')}
+              </h2>
+              <p style={{ color: 'rgba(245,230,200,0.65)', fontSize: '12px', textAlign: 'center', marginBottom: '20px', lineHeight: 1.45 }}>
+                {HAS_API_BIBLE ? t('bible.apiFollowsAppLanguage') : t('bible.publicDomainNote')}
+              </p>
+              {!HAS_API_BIBLE ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {translationOptions.map((opt) => {
+                  const active = opt.id === translationId
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      role="option"
+                      aria-selected={active}
+                      onClick={() => {
+                        setTranslationId(opt.id)
+                        setShowTranslationPicker(false)
+                      }}
+                      style={{
+                        background: active ? 'rgba(212,168,67,0.18)' : 'transparent',
+                        border: '1px solid ' + (active ? 'rgba(212,168,67,0.45)' : 'rgba(255,255,255,0.06)'),
+                        borderRadius: '14px',
+                        color: '#F5E6C8',
+                        cursor: 'pointer',
+                        padding: '14px 16px',
+                        textAlign: 'left',
+                        width: '100%',
+                        transition: 'background 0.2s ease',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '12px' }}>
+                        <span style={{ fontSize: '16px', fontWeight: 700, color: active ? '#D4A843' : '#F5E6C8' }}>{opt.label}</span>
+                        {active ? <span style={{ fontSize: '12px', color: '#D4A843' }}>✓</span> : null}
+                      </div>
+                      <div style={{ fontSize: '14px', fontWeight: 600, marginTop: '4px', color: 'rgba(245,230,200,0.95)' }}>{opt.subtitle}</div>
+                    </button>
+                  )
+                })}
+              </div>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => setShowTranslationPicker(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'rgba(245,230,200,0.7)',
+                  fontSize: '15px',
+                  cursor: 'pointer',
+                  marginTop: '20px',
+                  padding: '12px',
+                  width: '100%',
+                }}
+              >
+                {t('common.close')}
+              </button>
+            </div>
+          </div>
+          <style>{`
+            @keyframes slideUp {
+              from { transform: translateY(100%); }
+              to { transform: translateY(0); }
+            }
+          `}</style>
+        </>
       )}
 
       {/* Chapter Picker Modal */}
@@ -530,7 +763,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                 marginBottom: '24px',
                 textAlign: 'center'
               }}>
-                {selectedBook?.name}
+                {selectedBook ? bookDisplayName(selectedBook) : ''}
               </h2>
               <div style={{ 
                 display: 'grid', 

@@ -1,24 +1,30 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import MoreDrawer from './MoreDrawer'
 
-const mainTabs = [
-  { label: 'Home', path: '/', icon: '🏠' },
-  { label: 'Read', path: '/read', icon: '📖' },
-  { label: 'Prayer', path: '/prayer', icon: '🙏' },
-  { label: 'Journal', path: '/journal', icon: '📓' },
-  { label: 'More', path: '#more', icon: '☰' },
-]
-
-const moreOptions = [
-  { label: 'Search', path: '/search', icon: '🔍' },
-  { label: 'Journey', path: '/faith-journey', icon: '✨' },
-  { label: 'Community', path: '/community-prayer', icon: '🤝' },
-  { label: 'Create', path: '/share-card', icon: '🕊️' },
-  { label: 'Settings', path: '/settings', icon: '⚙️' },
-]
-
 export default function BottomNav() {
+  const { t } = useTranslation()
+  const mainTabs = useMemo(
+    () => [
+      { labelKey: 'nav.home', path: '/', icon: '🏠' },
+      { labelKey: 'nav.read', path: '/read', icon: '📖' },
+      { labelKey: 'nav.prayer', path: '/prayer', icon: '🙏' },
+      { labelKey: 'nav.journal', path: '/journal', icon: '📓' },
+      { labelKey: 'nav.more', path: '#more', icon: '☰' },
+    ],
+    [],
+  )
+  const moreOptions = useMemo(
+    () => [
+      { labelKey: 'nav.search', path: '/search', icon: '🔍' },
+      { labelKey: 'nav.journey', path: '/faith-journey', icon: '✨' },
+      { labelKey: 'nav.community', path: '/community-prayer', icon: '🤝' },
+      { labelKey: 'nav.create', path: '/share-card', icon: '🕊️' },
+      { labelKey: 'nav.settings', path: '/settings', icon: '⚙️' },
+    ],
+    [],
+  )
   const navigate = useNavigate()
   const location = useLocation()
   const [moreOpen, setMoreOpen] = useState(false)
@@ -102,7 +108,7 @@ export default function BottomNav() {
                 transition: 'color 0.2s ease',
               }}
             >
-              {tab.label}
+              {t(tab.labelKey)}
             </span>
             {isActive(tab.path) && (
               <div

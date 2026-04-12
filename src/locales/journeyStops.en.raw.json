@@ -1,0 +1,106 @@
+{
+  "journeyMap": {
+    "stops": {
+      "bethlehem": {
+        "label": "Bethlehem",
+        "description": "Here the Savior was born, the promise of God made flesh.",
+        "jesusVoice": "I came to you small and humble, laid in a manger, so you would never doubt how near I am to the lowly place. I did not begin in power the world recognizes—I began in love you could draw near to. You can come to Me just as you are; My arms were open before you ever asked."
+      },
+      "nazareth": {
+        "label": "Nazareth",
+        "description": "Jesus grew in wisdom and stature in this quiet Galilean town.",
+        "jesusVoice": "I grew up in the ordinary days—learning, working, obeying—so you would know I understand the rhythm of your life. Holiness is not only for mountaintops; I sanctify your kitchen table and your quiet errands too. Walk with Me in the simple places; I am forming your heart there."
+      },
+      "jordan": {
+        "label": "Jordan River",
+        "description": "Jesus was baptized and the Father spoke joy over His Son.",
+        "jesusVoice": "When I entered those waters, I joined you in repentance’s path so you would never walk alone. The Father’s voice over Me is the same love He speaks over you when you turn toward home. You are beloved; let that settle deeper than your shame."
+      },
+      "wilderness": {
+        "label": "Wilderness",
+        "description": "After baptism He was led into the wilderness and overcame the tempter.",
+        "jesusVoice": "I faced hunger and noise in the wild so I could meet you in yours with mercy that has already won. The enemy’s whispers lose their power when you cling to My Father’s words as I did. I am with you in the empty stretch; I will not leave you to fight alone."
+      },
+      "capernaum": {
+        "label": "Capernaum",
+        "description": "A home base for His teaching and miracles beside the sea.",
+        "jesusVoice": "Beside restless waters I made a home among neighbors, teaching and healing hands outstretched. I still draw near to the places where your life feels crowded yet lonely. Bring Me your burdens at the shoreline of your worry; My rest is real."
+      },
+      "galilee": {
+        "label": "Galilee",
+        "description": "He preached the kingdom and called disciples to follow Him.",
+        "jesusVoice": "I walked those hills calling ordinary people to follow—not because they were finished, but because I would finish the work in them. The kingdom is near you still; say yes again today. I will teach your feet the next step and give your heart courage."
+      },
+      "beatitudes": {
+        "label": "Mount of Beatitudes",
+        "description": "On these slopes He opened the kingdom to the humble and merciful.",
+        "jesusVoice": "On the slope I blessed the gentle, the grieving, the merciful—blessings this world often overlooks. If you feel small, you are not invisible to Me; My kingdom is shaped for souls like yours. Let My comfort be the strength you lean on when life feels upside down."
+      },
+      "caesarea-philippi": {
+        "label": "Caesarea Philippi",
+        "description": "Peter confessed Jesus as the Christ, the Son of the living God.",
+        "jesusVoice": "I asked what people said about Me—and I still listen for what you say in your heart. When you confess Me as Lord, I build something eternal on that honest stone. Do not fear your doubts; bring them to Me, and I will meet you with truth that holds."
+      },
+      "jerusalem": {
+        "label": "Jerusalem",
+        "description": "He wept over the city and entered as King, humble on a donkey.",
+        "jesusVoice": "I wept over Jerusalem because I love her—and I weep with you over the places you love that still hurt. I entered gently, on a donkey, because My kingdom comes in humility before it comes in glory. Trust My pace; I am working peace deeper than you see."
+      },
+      "gethsemane": {
+        "label": "Garden of Gethsemane",
+        "description": "He prayed in deep sorrow, yielding fully to the Father’s cup.",
+        "jesusVoice": "In the garden I asked if the cup could pass—then I surrendered to love that chose you. When your soul is overwhelmed, you are not failing Me; you are in the very place I understand. Pour out your heart to the Father; I am praying for you still."
+      },
+      "golgotha": {
+        "label": "Golgotha",
+        "description": "The cross stood here, where love bore the sin of the world.",
+        "jesusVoice": "I stretched out My arms between heaven and earth to carry what would crush you—so you would never have to carry it alone. My love is stronger than your worst moment. Look to Me here whenever guilt whispers; it is finished, and you are held."
+      },
+      "empty-tomb": {
+        "label": "Empty Tomb",
+        "description": "The stone was rolled away—He is not here; He has risen indeed.",
+        "jesusVoice": "The grave could not hold Me—and what I began that morning I continue in you. Death does not get the last word over your story in Me. Rise today in hope; I am alive, and My life is a quiet strength waking in your spirit."
+      },
+      "damascus": {
+        "label": "Damascus",
+        "description": "On the road, Saul met the risen Lord and was forever changed.",
+        "jesusVoice": "On the road to Damascus I stopped a violent heart with light—because no one is too far for mercy to reach. If you fear you have wandered too long, know I still intercept with grace. Surrender is not defeat; it is the moment I remake you."
+      },
+      "antioch": {
+        "label": "Antioch",
+        "description": "The church sent Paul and Barnabas to carry the gospel to the nations.",
+        "jesusVoice": "My Spirit set apart workers and sent them—My church was never meant to stay small or silent. You too are called and gifted for such a time as this, wherever your road leads. Step forward when I prompt you; I go with the ones I send."
+      },
+      "philippi": {
+        "label": "Philippi",
+        "description": "A jailer’s family believed after prayer and praise broke prison doors.",
+        "jesusVoice": "When My people prayed and sang in chains, I shook the prison—because worship in the dark moves My heart. Your praise does not depend on ease; it invites My presence into the cell. I can open doors no enemy locks forever."
+      },
+      "thessalonica": {
+        "label": "Thessalonica",
+        "description": "The Word sounded forth from here with faith, hope, and endurance.",
+        "jesusVoice": "I love when My word echoes from humble homes into streets and regions beyond. Your faithful endurance in ordinary days becomes a sound of hope others overhear. Keep sounding forth love and truth; I am glorified in your steady witness."
+      },
+      "athens": {
+        "label": "Athens",
+        "description": "He proclaimed the unknown God to seekers on Mars Hill.",
+        "jesusVoice": "I am the God your searching pointed toward—the one your altars to “the unknown” were reaching for. I am not far from any who seek; I give life and breath and purpose. Keep seeking honestly, and you will find Me nearer than your next breath."
+      },
+      "corinth": {
+        "label": "Corinth",
+        "description": "Paul planted a church and taught Christ crucified in power.",
+        "jesusVoice": "In messy, gifted, struggling communities I build My body—because My power rests on the humble, not the polished. You do not need to pretend you have it all together; bring your fractures to Me. I am enough, and My grace is sufficient for you."
+      },
+      "ephesus": {
+        "label": "Ephesus",
+        "description": "The word of the Lord grew mightily as truth overcame darkness.",
+        "jesusVoice": "Where truth is spoken in My name, darkness must yield—slowly sometimes, surely always. Let My word grow mightily in you: not as pride, but as healing light. I am building My church, and you are part of its strength."
+      },
+      "rome": {
+        "label": "Rome",
+        "description": "Paul preached the gospel openly, unashamed, to the heart of the empire.",
+        "jesusVoice": "Even bound, My gospel went forth boldly—because no chain can silence what I have spoken. Where you feel small or confined, I can still speak through you. I am not ashamed of the good news, and I am not ashamed of you. Preach with your life; I am with you to the ends of the earth."
+      }
+    }
+  }
+}

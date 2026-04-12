@@ -1,0 +1,305 @@
+{
+  "nav": {
+    "home": "Home",
+    "read": "Read",
+    "prayer": "Prayer",
+    "journal": "Journal",
+    "more": "More",
+    "search": "Search",
+    "journey": "Journey",
+    "community": "Community",
+    "create": "Create",
+    "settings": "Settings"
+  },
+  "header": {
+    "brand": "ABIDING ANCHOR",
+    "read": "📖 Read",
+    "search": "🔍 Search",
+    "journey": "✨ Journey",
+    "prayer": "🙏 Prayer Wall",
+    "community": "🤝 Community",
+    "journal": "📓 Journal",
+    "shareCard": "🕊️ Share Your Faith",
+    "memorize": "📖 Memorize",
+    "devotional": "📖 Devotional",
+    "scriptureArt": "🎨 Scripture Art",
+    "readingPlans": "📚 Reading Plans",
+    "fasting": "🍃 Fasting Tracker",
+    "aiCompanion": "🤖 AI Companion",
+    "friends": "👥 Friends",
+    "settings": "⚙️ Settings",
+    "support": "💬 Support",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "legalPage": "Legal"
+  },
+  "footer": {
+    "copyright": "© 2026 AbidingAnchor Ministry",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "legal": "Legal"
+  },
+  "loading": {
+    "message": "Loading..."
+  },
+  "common": {
+    "back": "Back",
+    "close": "Close",
+    "cancel": "Cancel",
+    "save": "Save",
+    "profile": "Profile",
+    "user": "User"
+  },
+  "settings": {
+    "sectionLabel": "Settings",
+    "pageTitle": "Account Settings",
+    "profilePhotoSaved": "Profile photo saved!",
+    "savePhoto": "Save Photo",
+    "editProfile": "Edit Profile",
+    "bibleTranslation": "Bible Translation",
+    "bibleTranslationHint": "Preferred version for reading plans and tools (where supported).",
+    "dailyReminder": "Daily Reminder",
+    "dailyReminderDesc": "Receive daily Scripture notifications",
+    "reminderTime": "Reminder Time",
+    "replayTutorial": "Replay Tutorial",
+    "aboutTitle": "About AbidingAnchor",
+    "aboutBody": "AbidingAnchor is a faith-based application designed to help you grow in your spiritual journey through Bible reading, prayer, journaling, and community.",
+    "aboutVersion": "Version 1.0.0 • Built with ❤️ as a ministry",
+    "signOut": "Sign Out",
+    "guidelines": "By uploading a photo you agree to our community guidelines. Inappropriate images will result in account removal.",
+    "uploadErrorGeneric": "Failed to upload profile picture. Please try again.",
+    "imageTypeError": "Please choose a JPG, PNG, WebP, or GIF image",
+    "imageSizeError": "Image must be less than 5MB",
+    "uiLanguage": "App language",
+    "uiLanguageNote": "Reader text follows your app language when API.Bible is configured (VITE_API_BIBLE_KEY).",
+    "bibleVersionKjv": "King James Version (KJV)",
+    "bibleVersionEsv": "English Standard Version (ESV)",
+    "bibleVersionNiv": "New International Version (NIV)",
+    "bibleVersionNlt": "New Living Translation (NLT)",
+    "langEn": "English",
+    "langEs": "Spanish",
+    "langPt": "Portuguese",
+    "langFr": "French",
+    "langDe": "German",
+    "notificationTitle": "AbidingAnchor 🕊️",
+    "notify0": "A new week begins. What is God speaking to you today? 🙏",
+    "notify1": "Start your week anchored. Open your journal and meet with God. ✝️",
+    "notify2": "God is faithful. Take 5 minutes to reflect and pray today. 🕊️",
+    "notify3": "Midweek check-in — where have you seen God move this week? 🔥",
+    "notify4": "You are not alone. Bring your burdens to God in prayer today. 🙌",
+    "notify5": "End your week with gratitude. What has God done for you? 💛",
+    "notify6": "Rest in His presence today. Open your Bible and be still. 📖"
+  },
+  "bible": {
+    "selectBook": "Select Book",
+    "chapter": "Chapter {{n}}",
+    "chapterPlain": "Chapter",
+    "translation": "Translation",
+    "loading": "Loading scripture...",
+    "previous": "← Previous",
+    "next": "Next →",
+    "read": "📖 Read",
+    "listen": "🎧 Listen",
+    "publicDomainNote": "Showing public domain translations. More versions coming soon.",
+    "noApiKey": "Add a Bible API key in your environment (VITE_API_BIBLE_KEY) for scripture in your language.",
+    "apiFollowsAppLanguage": "Scripture follows your app language (API.Bible).",
+    "kjv": "KJV",
+    "web": "WEB",
+    "asv": "ASV",
+    "oeb": "OEB",
+    "webbe": "WEBBE",
+    "bbe": "BBE",
+    "darby": "Darby",
+    "subtitleKjv": "King James Version",
+    "subtitleWeb": "World English Bible",
+    "subtitleAsv": "American Standard Version",
+    "subtitleOeb": "Open English Bible",
+    "subtitleWebbe": "World English Bible (British)",
+    "subtitleBbe": "Bible in Basic English",
+    "subtitleDarby": "Darby Translation",
+    "books": {
+      "genesis": "Genesis",
+      "exodus": "Exodus",
+      "leviticus": "Leviticus",
+      "numbers": "Numbers",
+      "deuteronomy": "Deuteronomy",
+      "joshua": "Joshua",
+      "judges": "Judges",
+      "ruth": "Ruth",
+      "1samuel": "1 Samuel",
+      "2samuel": "2 Samuel",
+      "1kings": "1 Kings",
+      "2kings": "2 Kings",
+      "1chronicles": "1 Chronicles",
+      "2chronicles": "2 Chronicles",
+      "ezra": "Ezra",
+      "nehemiah": "Nehemiah",
+      "esther": "Esther",
+      "job": "Job",
+      "psalms": "Psalms",
+      "proverbs": "Proverbs",
+      "ecclesiastes": "Ecclesiastes",
+      "songofsolomon": "Song of Solomon",
+      "isaiah": "Isaiah",
+      "jeremiah": "Jeremiah",
+      "lamentations": "Lamentations",
+      "ezekiel": "Ezekiel",
+      "daniel": "Daniel",
+      "hosea": "Hosea",
+      "joel": "Joel",
+      "amos": "Amos",
+      "obadiah": "Obadiah",
+      "jonah": "Jonah",
+      "micah": "Micah",
+      "nahum": "Nahum",
+      "habakkuk": "Habakkuk",
+      "zephaniah": "Zephaniah",
+      "haggai": "Haggai",
+      "zechariah": "Zechariah",
+      "malachi": "Malachi",
+      "matthew": "Matthew",
+      "mark": "Mark",
+      "luke": "Luke",
+      "john": "John",
+      "acts": "Acts",
+      "romans": "Romans",
+      "1corinthians": "1 Corinthians",
+      "2corinthians": "2 Corinthians",
+      "galatians": "Galatians",
+      "ephesians": "Ephesians",
+      "philippians": "Philippians",
+      "colossians": "Colossians",
+      "1thessalonians": "1 Thessalonians",
+      "2thessalonians": "2 Thessalonians",
+      "1timothy": "1 Timothy",
+      "2timothy": "2 Timothy",
+      "titus": "Titus",
+      "philemon": "Philemon",
+      "hebrews": "Hebrews",
+      "james": "James",
+      "1peter": "1 Peter",
+      "2peter": "2 Peter",
+      "1john": "1 John",
+      "2john": "2 John",
+      "3john": "3 John",
+      "jude": "Jude",
+      "revelation": "Revelation"
+    }
+  },
+  "journeyMap": {
+    "ui": {
+      "mapTitle": "🗺️ Journey Map",
+      "back": "← Back",
+      "unlocksHelp": "Unlocks scale with trivia games and memorized verses (each activity moves you forward).",
+      "unlockedLabel": "Unlocked: {{current}}/{{total}}",
+      "lockedPrefix": "🔒 ",
+      "ariaClose": "Close",
+      "completionTitle": "Well done, my good and faithful servant.",
+      "completionBody": "You have walked the full journey. Your faith has carried you from Bethlehem to Rome.",
+      "completionVerse": "Matthew 25:23",
+      "close": "Close"
+    },
+    "stops": {
+      "bethlehem": {
+        "label": "Bethlehem",
+        "description": "Here the Savior was born, the promise of God made flesh.",
+        "jesusVoice": "I came to you small and humble, laid in a manger, so you would never doubt how near I am to the lowly place. I did not begin in power the world recognizes—I began in love you could draw near to. You can come to Me just as you are; My arms were open before you ever asked."
+      },
+      "nazareth": {
+        "label": "Nazareth",
+        "description": "Jesus grew in wisdom and stature in this quiet Galilean town.",
+        "jesusVoice": "I grew up in the ordinary days—learning, working, obeying—so you would know I understand the rhythm of your life. Holiness is not only for mountaintops; I sanctify your kitchen table and your quiet errands too. Walk with Me in the simple places; I am forming your heart there."
+      },
+      "jordan": {
+        "label": "Jordan River",
+        "description": "Jesus was baptized and the Father spoke joy over His Son.",
+        "jesusVoice": "When I entered those waters, I joined you in repentance’s path so you would never walk alone. The Father’s voice over Me is the same love He speaks over you when you turn toward home. You are beloved; let that settle deeper than your shame."
+      },
+      "wilderness": {
+        "label": "Wilderness",
+        "description": "After baptism He was led into the wilderness and overcame the tempter.",
+        "jesusVoice": "I faced hunger and noise in the wild so I could meet you in yours with mercy that has already won. The enemy’s whispers lose their power when you cling to My Father’s words as I did. I am with you in the empty stretch; I will not leave you to fight alone."
+      },
+      "capernaum": {
+        "label": "Capernaum",
+        "description": "A home base for His teaching and miracles beside the sea.",
+        "jesusVoice": "Beside restless waters I made a home among neighbors, teaching and healing hands outstretched. I still draw near to the places where your life feels crowded yet lonely. Bring Me your burdens at the shoreline of your worry; My rest is real."
+      },
+      "galilee": {
+        "label": "Galilee",
+        "description": "He preached the kingdom and called disciples to follow Him.",
+        "jesusVoice": "I walked those hills calling ordinary people to follow—not because they were finished, but because I would finish the work in them. The kingdom is near you still; say yes again today. I will teach your feet the next step and give your heart courage."
+      },
+      "beatitudes": {
+        "label": "Mount of Beatitudes",
+        "description": "On these slopes He opened the kingdom to the humble and merciful.",
+        "jesusVoice": "On the slope I blessed the gentle, the grieving, the merciful—blessings this world often overlooks. If you feel small, you are not invisible to Me; My kingdom is shaped for souls like yours. Let My comfort be the strength you lean on when life feels upside down."
+      },
+      "caesarea-philippi": {
+        "label": "Caesarea Philippi",
+        "description": "Peter confessed Jesus as the Christ, the Son of the living God.",
+        "jesusVoice": "I asked what people said about Me—and I still listen for what you say in your heart. When you confess Me as Lord, I build something eternal on that honest stone. Do not fear your doubts; bring them to Me, and I will meet you with truth that holds."
+      },
+      "jerusalem": {
+        "label": "Jerusalem",
+        "description": "He wept over the city and entered as King, humble on a donkey.",
+        "jesusVoice": "I wept over Jerusalem because I love her—and I weep with you over the places you love that still hurt. I entered gently, on a donkey, because My kingdom comes in humility before it comes in glory. Trust My pace; I am working peace deeper than you see."
+      },
+      "gethsemane": {
+        "label": "Garden of Gethsemane",
+        "description": "He prayed in deep sorrow, yielding fully to the Father’s cup.",
+        "jesusVoice": "In the garden I asked if the cup could pass—then I surrendered to love that chose you. When your soul is overwhelmed, you are not failing Me; you are in the very place I understand. Pour out your heart to the Father; I am praying for you still."
+      },
+      "golgotha": {
+        "label": "Golgotha",
+        "description": "The cross stood here, where love bore the sin of the world.",
+        "jesusVoice": "I stretched out My arms between heaven and earth to carry what would crush you—so you would never have to carry it alone. My love is stronger than your worst moment. Look to Me here whenever guilt whispers; it is finished, and you are held."
+      },
+      "empty-tomb": {
+        "label": "Empty Tomb",
+        "description": "The stone was rolled away—He is not here; He has risen indeed.",
+        "jesusVoice": "The grave could not hold Me—and what I began that morning I continue in you. Death does not get the last word over your story in Me. Rise today in hope; I am alive, and My life is a quiet strength waking in your spirit."
+      },
+      "damascus": {
+        "label": "Damascus",
+        "description": "On the road, Saul met the risen Lord and was forever changed.",
+        "jesusVoice": "On the road to Damascus I stopped a violent heart with light—because no one is too far for mercy to reach. If you fear you have wandered too long, know I still intercept with grace. Surrender is not defeat; it is the moment I remake you."
+      },
+      "antioch": {
+        "label": "Antioch",
+        "description": "The church sent Paul and Barnabas to carry the gospel to the nations.",
+        "jesusVoice": "My Spirit set apart workers and sent them—My church was never meant to stay small or silent. You too are called and gifted for such a time as this, wherever your road leads. Step forward when I prompt you; I go with the ones I send."
+      },
+      "philippi": {
+        "label": "Philippi",
+        "description": "A jailer’s family believed after prayer and praise broke prison doors.",
+        "jesusVoice": "When My people prayed and sang in chains, I shook the prison—because worship in the dark moves My heart. Your praise does not depend on ease; it invites My presence into the cell. I can open doors no enemy locks forever."
+      },
+      "thessalonica": {
+        "label": "Thessalonica",
+        "description": "The Word sounded forth from here with faith, hope, and endurance.",
+        "jesusVoice": "I love when My word echoes from humble homes into streets and regions beyond. Your faithful endurance in ordinary days becomes a sound of hope others overhear. Keep sounding forth love and truth; I am glorified in your steady witness."
+      },
+      "athens": {
+        "label": "Athens",
+        "description": "He proclaimed the unknown God to seekers on Mars Hill.",
+        "jesusVoice": "I am the God your searching pointed toward—the one your altars to “the unknown” were reaching for. I am not far from any who seek; I give life and breath and purpose. Keep seeking honestly, and you will find Me nearer than your next breath."
+      },
+      "corinth": {
+        "label": "Corinth",
+        "description": "Paul planted a church and taught Christ crucified in power.",
+        "jesusVoice": "In messy, gifted, struggling communities I build My body—because My power rests on the humble, not the polished. You do not need to pretend you have it all together; bring your fractures to Me. I am enough, and My grace is sufficient for you."
+      },
+      "ephesus": {
+        "label": "Ephesus",
+        "description": "The word of the Lord grew mightily as truth overcame darkness.",
+        "jesusVoice": "Where truth is spoken in My name, darkness must yield—slowly sometimes, surely always. Let My word grow mightily in you: not as pride, but as healing light. I am building My church, and you are part of its strength."
+      },
+      "rome": {
+        "label": "Rome",
+        "description": "Paul preached the gospel openly, unashamed, to the heart of the empire.",
+        "jesusVoice": "Even bound, My gospel went forth boldly—because no chain can silence what I have spoken. Where you feel small or confined, I can still speak through you. I am not ashamed of the good news, and I am not ashamed of you. Preach with your life; I am with you to the ends of the earth."
+      }
+    }
+  }
+}

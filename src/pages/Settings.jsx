@@ -1,11 +1,22 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { getAvatarUploadExtension } from '../utils/avatarUrl'
 import { LocalNotifications } from '@capacitor/local-notifications'
+import i18n from '../i18n.js'
+
+const UI_LANG_OPTIONS = [
+  { code: 'en', flag: '🇺🇸', labelKey: 'langEn' },
+  { code: 'es', flag: '🇪🇸', labelKey: 'langEs' },
+  { code: 'pt', flag: '🇧🇷', labelKey: 'langPt' },
+  { code: 'fr', flag: '🇫🇷', labelKey: 'langFr' },
+  { code: 'de', flag: '🇩🇪', labelKey: 'langDe' },
+]
 
 export default function Settings() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { user, profile, signOut, refreshProfile } = useAuth()
   const [selectedTranslation, setSelectedTranslation] = useState('KJV')
@@ -61,49 +72,10 @@ export default function Settings() {
     }
   }, [])
 
-  // Handle daily reminder toggle
-  const handleDailyReminderToggle = async () => {
-    const newValue = !dailyReminderEnabled
-    setDailyReminderEnabled(newValue)
-    localStorage.setItem('dailyReminderEnabled', newValue.toString())
-    
-    if (newValue) {
-      // Schedule notifications
-      await scheduleNotifications()
-    } else {
-      // Cancel all notifications
-      await LocalNotifications.cancel()
-    }
-  }
-
-  // Handle time change
-  const handleTimeChange = async (e) => {
-    const newTime = e.target.value
-    setReminderTime(newTime)
-    localStorage.setItem('reminderTime', newTime)
-    
-    // Reschedule if enabled
-    if (dailyReminderEnabled) {
-      await scheduleNotifications()
-    }
-  }
-
-  // Schedule notifications with current time
-  const scheduleNotifications = async () => {
+  const scheduleNotifications = useCallback(async () => {
     try {
-      // Cancel existing notifications first
       await LocalNotifications.cancel()
-      
-      const dailyMessages = {
-        0: 'A new week begins. What is God speaking to you today? 🙏',
-        1: 'Start your week anchored. Open your journal and meet with God. ✝️',
-        2: 'God is faithful. Take 5 minutes to reflect and pray today. 🕊️',
-        3: 'Midweek check-in — where have you seen God move this week? 🔥',
-        4: 'You are not alone. Bring your burdens to God in prayer today. 🙌',
-        5: 'End your week with gratitude. What has God done for you? 💛',
-        6: 'Rest in His presence today. Open your Bible and be still. 📖',
-      }
-      
+
       const [hours, minutes] = reminderTime.split(':').map(Number)
       const notifications = []
       
@@ -124,8 +96,8 @@ export default function Settings() {
         
         notifications.push({
           id: day + 1,
-          title: 'AbidingAnchor 🕊️',
-          body: dailyMessages[day],
+          title: i18n.t('settings.notificationTitle'),
+          body: i18n.t(`settings.notify${day}`),
           schedule: {
             at: scheduledDate,
             repeats: true,
@@ -144,6 +116,28 @@ export default function Settings() {
       console.log('Daily notifications scheduled at', reminderTime)
     } catch (error) {
       console.error('Error scheduling notifications:', error)
+    }
+  }, [reminderTime])
+
+  const handleDailyReminderToggle = async () => {
+    const newValue = !dailyReminderEnabled
+    setDailyReminderEnabled(newValue)
+    localStorage.setItem('dailyReminderEnabled', newValue.toString())
+    
+    if (newValue) {
+      await scheduleNotifications()
+    } else {
+      await LocalNotifications.cancel()
+    }
+  }
+
+  const handleTimeChange = async (e) => {
+    const newTime = e.target.value
+    setReminderTime(newTime)
+    localStorage.setItem('reminderTime', newTime)
+    
+    if (dailyReminderEnabled) {
+      await scheduleNotifications()
     }
   }
 
@@ -183,11 +177,11 @@ export default function Settings() {
     const extAllowed = ['jpg', 'png', 'webp', 'gif'].includes(ext)
     const mimeOk = file.type ? allowedTypes.includes(file.type) : false
     if (!mimeOk && !extAllowed) {
-      return 'Please choose a JPG, PNG, WebP, or GIF image'
+      return t('settings.imageTypeError')
     }
     const maxSize = 5 * 1024 * 1024
     if (file.size > maxSize) {
-      return 'Image must be less than 5MB'
+      return t('settings.imageSizeError')
     }
     return null
   }
@@ -254,7 +248,7 @@ export default function Settings() {
     } catch (error) {
       console.error('Upload error:', error)
       setPendingAvatarUrl(null)
-      setUploadError('Failed to upload profile picture. Please try again.')
+      setUploadError(t('settings.uploadErrorGeneric'))
       setUploadStatus('idle')
     }
   }
@@ -280,7 +274,7 @@ export default function Settings() {
     setAvatarPreviewUrl(URL.createObjectURL(file))
   }
 
-  const displayName = profile?.full_name || user?.user_metadata?.full_name || 'User'
+  const displayName = profile?.full_name || user?.user_metadata?.full_name || t('common.user')
   const userEmail = user?.email || ''
   const avatarUrl = avatarPreviewUrl || localAvatarUrl || profile?.avatar_url
   const hasAvatarImage = Boolean(avatarPreviewUrl || localAvatarUrl || profile?.avatar_url)
@@ -294,8 +288,8 @@ export default function Settings() {
       `}</style>
       <section className="space-y-4">
         <header className="space-y-2">
-          <p className="text-section-header">Settings</p>
-          <h1 className="text-page-title">Account Settings</h1>
+          <p className="text-section-header">{t('settings.sectionLabel')}</p>
+          <h1 className="text-page-title">{t('settings.pageTitle')}</h1>
         </header>
 
         {/* User Profile Card */}
@@ -340,7 +334,7 @@ export default function Settings() {
                 {avatarUrl ? (
                   <img
                     src={avatarUrl}
-                    alt="Profile"
+                    alt={t('common.profile')}
                     onError={(e) => {
                       e.target.style.display = 'none'
                     }}
@@ -393,7 +387,7 @@ export default function Settings() {
               </p>
               {uploadStatus === 'success' && (
                 <p style={{ color: '#4ade80', fontSize: '12px', marginTop: '4px' }}>
-                  Profile photo saved!
+                  {t('settings.profilePhotoSaved')}
                 </p>
               )}
             </div>
@@ -429,7 +423,7 @@ export default function Settings() {
                   opacity: uploadStatus === 'uploading' ? 0.5 : 1,
                 }}
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 type="button"
@@ -465,7 +459,7 @@ export default function Settings() {
                     }}
                   />
                 )}
-                Save Photo
+                {t('settings.savePhoto')}
               </button>
             </div>
           )}
@@ -488,7 +482,7 @@ export default function Settings() {
             fontSize: '12px',
             lineHeight: '1.4'
           }}>
-            By uploading a photo you agree to our community guidelines. Inappropriate images will result in account removal.
+            {t('settings.guidelines')}
           </p>
         </div>
 
@@ -511,7 +505,7 @@ export default function Settings() {
             justifyContent: 'space-between'
           }}
         >
-          <span>Edit Profile</span>
+          <span>{t('settings.editProfile')}</span>
           <span style={{ color: 'rgba(255,255,255,0.4)' }}>›</span>
         </button>
 
@@ -520,8 +514,11 @@ export default function Settings() {
           borderRadius: '16px',
           padding: '16px 20px'
         }}>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', marginBottom: '12px' }}>
-            Bible Translation
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', marginBottom: '8px' }}>
+            {t('settings.bibleTranslation')}
+          </p>
+          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '12px', marginBottom: '12px', lineHeight: 1.45 }}>
+            {t('settings.bibleTranslationHint')}
           </p>
           <select
             value={selectedTranslation}
@@ -536,11 +533,64 @@ export default function Settings() {
               cursor: 'pointer'
             }}
           >
-            <option value="KJV">King James Version (KJV)</option>
-            <option value="ESV">English Standard Version (ESV)</option>
-            <option value="NIV">New International Version (NIV)</option>
-            <option value="NLT">New Living Translation (NLT)</option>
+            <option value="KJV">{t('settings.bibleVersionKjv')}</option>
+            <option value="ESV">{t('settings.bibleVersionEsv')}</option>
+            <option value="NIV">{t('settings.bibleVersionNiv')}</option>
+            <option value="NLT">{t('settings.bibleVersionNlt')}</option>
           </select>
+        </div>
+
+        {/* App language */}
+        <div
+          className="glass-panel"
+          style={{
+            borderRadius: '16px',
+            padding: '16px 20px',
+          }}
+        >
+          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '14px', marginBottom: '8px', fontWeight: 600 }}>
+            {t('settings.uiLanguage')}
+          </p>
+          <p
+            style={{
+              color: 'rgba(255,255,255,0.55)',
+              fontSize: '12px',
+              marginBottom: '14px',
+              lineHeight: 1.45,
+            }}
+          >
+            {t('settings.uiLanguageNote')}
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'flex-start' }}>
+            {UI_LANG_OPTIONS.map(({ code, flag, labelKey }) => {
+              const active = (i18n.resolvedLanguage || i18n.language || 'en')
+                .toLowerCase()
+                .startsWith(code)
+              return (
+                <button
+                  type="button"
+                  key={code}
+                  aria-label={t(`settings.${labelKey}`)}
+                  title={t(`settings.${labelKey}`)}
+                  onClick={async () => {
+                    await i18n.changeLanguage(code)
+                    if (dailyReminderEnabled) await scheduleNotifications()
+                  }}
+                  style={{
+                    fontSize: '28px',
+                    lineHeight: 1,
+                    padding: '10px 14px',
+                    borderRadius: '12px',
+                    border: active ? '2px solid #D4A843' : '1px solid rgba(255,255,255,0.15)',
+                    background: active ? 'rgba(212,168,67,0.15)' : 'rgba(255,255,255,0.06)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {flag}
+                </button>
+              )
+            })}
+          </div>
         </div>
 
         {/* Daily Reminder */}
@@ -556,10 +606,10 @@ export default function Settings() {
           }}>
             <div>
               <p style={{ color: '#FFFFFF', fontSize: '16px', fontWeight: 500, marginBottom: '4px' }}>
-                Daily Reminder
+                {t('settings.dailyReminder')}
               </p>
               <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>
-                Receive daily Scripture notifications
+                {t('settings.dailyReminderDesc')}
               </p>
             </div>
             <button
@@ -592,7 +642,7 @@ export default function Settings() {
           {dailyReminderEnabled && (
             <div>
               <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', marginBottom: '8px' }}>
-                Reminder Time
+                {t('settings.reminderTime')}
               </p>
               <input
                 type="time"
@@ -634,7 +684,7 @@ export default function Settings() {
             justifyContent: 'space-between'
           }}
         >
-          <span>Replay Tutorial</span>
+          <span>{t('settings.replayTutorial')}</span>
           <span style={{ color: 'rgba(255,255,255,0.4)' }}>↺</span>
         </button>
 
@@ -644,13 +694,13 @@ export default function Settings() {
           padding: '20px'
         }}>
           <p style={{ color: '#D4A843', fontSize: '18px', fontWeight: 700, marginBottom: '12px' }}>
-            About AbidingAnchor
+            {t('settings.aboutTitle')}
           </p>
           <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '14px', lineHeight: '1.6', marginBottom: '8px' }}>
-            AbidingAnchor is a faith-based application designed to help you grow in your spiritual journey through Bible reading, prayer, journaling, and community.
+            {t('settings.aboutBody')}
           </p>
           <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '14px', lineHeight: '1.6' }}>
-            Version 1.0.0 • Built with ❤️ as a ministry
+            {t('settings.aboutVersion')}
           </p>
         </div>
 
@@ -672,7 +722,7 @@ export default function Settings() {
             cursor: 'pointer'
           }}
         >
-          Sign Out
+          {t('settings.signOut')}
         </button>
       </section>
     </div>
