@@ -1,3 +1,18 @@
+// ============================================
+// STREAK SYSTEM — DO NOT MODIFY THIS LOGIC
+// ============================================
+// Columns used (profiles table):
+//   - weekly_active_days: text[]  — short day names e.g. ['Mon', 'Sun']
+//   - last_active_date: date      — prevents double-counting same day
+// Rules:
+//   - Resets every Saturday midnight
+//   - Count = activeDays.length (0–7)
+//   - Dots = Mon Tue Wed Thu Fri Sat Sun
+//   - Lit if day name is in weekly_active_days
+//   - Fallback: if last_active_date = today, treat today as active
+// DO NOT REWRITE THIS HOOK WITHOUT EXPLICIT INSTRUCTION
+// ============================================
+
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
