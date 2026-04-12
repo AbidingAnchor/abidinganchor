@@ -41,15 +41,10 @@ export default function DailyEncounterCard({
       </p>
 
       <article
-        className="text-white"
+        className="home-gold-glass text-white"
         style={{
-          background: 'var(--glass-bg)',
-          border: '1px solid var(--glass-border)',
           borderRadius: '16px',
           padding: '20px 18px 18px',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          boxShadow: '0 4px 28px rgba(5, 12, 40, 0.45), 0 0 1px rgba(212, 168, 67, 0.35)',
           position: 'relative',
           animation: 'fadeInUp 0.6s ease forwards',
           animationDelay: '0.1s',

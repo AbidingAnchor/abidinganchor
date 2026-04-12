@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
 
-const SKY_TOP = "#6BB8E8";
-const SKY_MID = "#A8D4F0";
-const SKY_BOTTOM = "#F5E6C8";
+/** Muted, darker daytime sky — avoids washing out foreground UI */
+const SKY_TOP = "#1a3550";
+const SKY_MID = "#243d52";
+const SKY_BOTTOM = "#2c3844";
 
 function drawSkyGradient(ctx, w, h) {
   const g = ctx.createLinearGradient(0, 0, 0, h);
@@ -16,7 +17,7 @@ function drawSkyGradient(ctx, w, h) {
 /** Conic god-rays: bright wedges radiating from the sun (angle 0 = right; -π/2 = up). */
 function drawGodRays(ctx, w, h, sunX, sunY) {
   ctx.save();
-  ctx.globalAlpha = 0.14;
+  ctx.globalAlpha = 0.055;
   const g = ctx.createConicGradient(-Math.PI / 2, sunX, sunY);
   const stops = [
     [0, "rgba(255,255,255,0.33)"],
@@ -54,11 +55,11 @@ function drawSun(ctx, sunX, sunY, t) {
   ctx.save();
   ctx.filter = "blur(10px)";
   const outer = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 420 * pulse);
-  outer.addColorStop(0, "rgba(255, 255, 255, 0.95)");
-  outer.addColorStop(0.08, "rgba(255, 252, 235, 0.75)");
-  outer.addColorStop(0.22, "rgba(255, 230, 160, 0.45)");
-  outer.addColorStop(0.45, "rgba(255, 210, 120, 0.15)");
-  outer.addColorStop(0.7, "rgba(255, 220, 150, 0)");
+  outer.addColorStop(0, "rgba(255, 248, 230, 0.35)");
+  outer.addColorStop(0.08, "rgba(255, 235, 200, 0.22)");
+  outer.addColorStop(0.22, "rgba(255, 210, 150, 0.12)");
+  outer.addColorStop(0.45, "rgba(255, 200, 130, 0.06)");
+  outer.addColorStop(0.7, "rgba(255, 210, 140, 0)");
   ctx.fillStyle = outer;
   ctx.beginPath();
   ctx.arc(sunX, sunY, 420 * pulse, 0, Math.PI * 2);
@@ -68,11 +69,11 @@ function drawSun(ctx, sunX, sunY, t) {
   ctx.save();
   ctx.filter = "blur(4px)";
   const corona = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 120 * pulse);
-  corona.addColorStop(0, "rgba(255, 255, 255, 1)");
-  corona.addColorStop(0.25, "rgba(255, 250, 230, 0.95)");
-  corona.addColorStop(0.55, "rgba(255, 215, 130, 0.55)");
-  corona.addColorStop(0.85, "rgba(255, 200, 100, 0.12)");
-  corona.addColorStop(1, "rgba(255, 200, 100, 0)");
+  corona.addColorStop(0, "rgba(255, 245, 220, 0.55)");
+  corona.addColorStop(0.25, "rgba(255, 230, 190, 0.4)");
+  corona.addColorStop(0.55, "rgba(255, 200, 130, 0.22)");
+  corona.addColorStop(0.85, "rgba(255, 190, 110, 0.06)");
+  corona.addColorStop(1, "rgba(255, 190, 110, 0)");
   ctx.fillStyle = corona;
   ctx.beginPath();
   ctx.arc(sunX, sunY, 120 * pulse, 0, Math.PI * 2);
@@ -80,9 +81,9 @@ function drawSun(ctx, sunX, sunY, t) {
   ctx.restore();
 
   const core = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 28 * pulse);
-  core.addColorStop(0, "rgba(255, 255, 255, 1)");
-  core.addColorStop(0.7, "rgba(255, 255, 255, 0.98)");
-  core.addColorStop(1, "rgba(255, 248, 220, 0.35)");
+  core.addColorStop(0, "rgba(255, 250, 235, 0.85)");
+  core.addColorStop(0.7, "rgba(255, 240, 210, 0.45)");
+  core.addColorStop(1, "rgba(255, 220, 170, 0.12)");
   ctx.fillStyle = core;
   ctx.beginPath();
   ctx.arc(sunX, sunY, 28 * pulse, 0, Math.PI * 2);
@@ -105,7 +106,7 @@ function cloudPath(ctx, cx, cy, scale) {
 
 function drawCloud(ctx, cx, cy, scale, blurPx, shadowOff) {
   cloudPath(ctx, cx, cy, scale);
-  ctx.fillStyle = "rgba(255, 190, 198, 0.38)";
+  ctx.fillStyle = "rgba(120, 130, 145, 0.22)";
   ctx.save();
   ctx.translate(0, shadowOff);
   ctx.fill();
@@ -114,7 +115,7 @@ function drawCloud(ctx, cx, cy, scale, blurPx, shadowOff) {
   ctx.save();
   ctx.filter = `blur(${blurPx}px)`;
   cloudPath(ctx, cx, cy, scale);
-  ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
+  ctx.fillStyle = "rgba(210, 215, 225, 0.35)";
   ctx.fill();
   ctx.restore();
 }
@@ -122,10 +123,10 @@ function drawCloud(ctx, cx, cy, scale, blurPx, shadowOff) {
 function drawGroundHaze(ctx, w, h) {
   const y0 = h * 0.85;
   const g = ctx.createLinearGradient(0, y0, 0, h);
-  g.addColorStop(0, "rgba(255, 220, 170, 0)");
-  g.addColorStop(0.35, "rgba(255, 210, 150, 0.09)");
-  g.addColorStop(0.7, "rgba(245, 190, 120, 0.16)");
-  g.addColorStop(1, "rgba(235, 175, 95, 0.21)");
+  g.addColorStop(0, "rgba(40, 45, 55, 0)");
+  g.addColorStop(0.35, "rgba(35, 40, 50, 0.12)");
+  g.addColorStop(0.7, "rgba(28, 32, 42, 0.2)");
+  g.addColorStop(1, "rgba(22, 26, 34, 0.28)");
   ctx.fillStyle = g;
   ctx.fillRect(0, y0, w, h - y0);
 }
@@ -229,11 +230,15 @@ export default function DayBackground() {
         const x = s.nx * width;
         const y = s.ny * height;
         const twinkle =
-          0.22 + Math.sin(t * s.twSpeed + s.tw) * 0.18 + Math.sin(t * s.twSpeed * 1.7) * 0.06;
+          0.1 + Math.sin(t * s.twSpeed + s.tw) * 0.08 + Math.sin(t * s.twSpeed * 1.7) * 0.04;
         drawStar4(ctx, x, y, s.arm, s.rot, twinkle, s.warm);
       }
 
       drawGroundHaze(ctx, width, height);
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
+      ctx.fillRect(0, 0, width, height);
 
       animationFrameId = requestAnimationFrame(draw);
     };

@@ -335,11 +335,8 @@ function Home({ onOpenWorship, worshipStatus }) {
 
             <div style={{ marginBottom: '28px' }}>
               <div
-                className="glass-panel"
+                className={`home-gold-glass rounded-[20px] p-5 ${currentStreak >= 7 ? 'home-gold-glass--streak-hot' : ''}`}
                 style={{
-                borderRadius: '20px',
-                padding: '20px',
-                boxShadow: currentStreak >= 7 ? '0 0 0 1px rgba(212,168,67,0.45), 0 0 20px rgba(212,168,67,0.2)' : undefined,
                 animation: 'fadeInUp 0.6s ease forwards',
                 animationDelay: '0.2s'
               }}
@@ -400,30 +397,7 @@ function Home({ onOpenWorship, worshipStatus }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
               <Link
                 to="/scripture-art"
-                className="glass-panel"
-                style={{
-                  minWidth: '140px',
-                  minHeight: '100px',
-                  textDecoration: 'none',
-                  border: '1px solid #D4A843',
-                  borderRadius: '16px',
-                  padding: '20px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  textAlign: 'center',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.border = '1px solid #D4A843'
-                  e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
-                  e.currentTarget.style.boxShadow = '0 0 8px rgba(212,168,67,0.2)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.removeProperty('background')
-                  e.currentTarget.style.border = '1px solid #D4A843'
-                  e.currentTarget.style.boxShadow = 'none'
-                }}
+                className="home-gold-glass home-tool-tile"
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>🎨</p>
                 <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolScriptureArt')}</p>
@@ -431,30 +405,7 @@ function Home({ onOpenWorship, worshipStatus }) {
               </Link>
               <Link
                 to="/reading-plans"
-                className="glass-panel"
-                style={{
-                  minWidth: '140px',
-                  minHeight: '100px',
-                  textDecoration: 'none',
-                  border: '1px solid #D4A843',
-                  borderRadius: '16px',
-                  padding: '20px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  textAlign: 'center',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.border = '1px solid #D4A843'
-                  e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
-                  e.currentTarget.style.boxShadow = '0 0 8px rgba(212,168,67,0.2)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.removeProperty('background')
-                  e.currentTarget.style.border = '1px solid #D4A843'
-                  e.currentTarget.style.boxShadow = 'none'
-                }}
+                className="home-gold-glass home-tool-tile"
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>📅</p>
                 <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolReadingPlans')}</p>
@@ -462,30 +413,7 @@ function Home({ onOpenWorship, worshipStatus }) {
               </Link>
               <Link
                 to="/fasting"
-                className="glass-panel"
-                style={{
-                  minWidth: '140px',
-                  minHeight: '100px',
-                  textDecoration: 'none',
-                  border: '1px solid #D4A843',
-                  borderRadius: '16px',
-                  padding: '20px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  textAlign: 'center',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.border = '1px solid #D4A843'
-                  e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
-                  e.currentTarget.style.boxShadow = '0 0 8px rgba(212,168,67,0.2)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.removeProperty('background')
-                  e.currentTarget.style.border = '1px solid #D4A843'
-                  e.currentTarget.style.boxShadow = 'none'
-                }}
+                className="home-gold-glass home-tool-tile"
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>🕐</p>
                 <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolFasting')}</p>
@@ -493,60 +421,21 @@ function Home({ onOpenWorship, worshipStatus }) {
               </Link>
               <Link
                 to="/support"
-                className="glass-panel"
-                style={{
-                  minWidth: '140px',
-                  minHeight: '100px',
-                  textDecoration: 'none',
-                  border: '1px solid #D4A843',
-                  borderRadius: '16px',
-                  padding: '20px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  textAlign: 'center',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.border = '1px solid #D4A843'
-                  e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
-                  e.currentTarget.style.boxShadow = '0 0 8px rgba(212,168,67,0.2)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.removeProperty('background')
-                  e.currentTarget.style.border = '1px solid #D4A843'
-                  e.currentTarget.style.boxShadow = 'none'
-                }}
+                className="home-gold-glass home-tool-tile"
               >
                 <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>🤝</p>
                 <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolSupport')}</p>
                 <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('home.toolSupportSub')}</p>
               </Link>
               <div
-                className="glass-panel"
-                style={{
-                  minWidth: '140px',
-                  minHeight: '100px',
-                  border: '1px solid #D4A843',
-                  borderRadius: '16px',
-                  padding: '20px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.border = '1px solid #D4A843'
-                  e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
-                  e.currentTarget.style.boxShadow = '0 0 8px rgba(212,168,67,0.2)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.removeProperty('background')
-                  e.currentTarget.style.border = '1px solid #D4A843'
-                  e.currentTarget.style.boxShadow = 'none'
+                role="button"
+                tabIndex={0}
+                className="home-gold-glass home-tool-tile"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    window.open('https://discord.gg/nZcZRkUMJh', '_blank')
+                  }
                 }}
                 onClick={() => window.open('https://discord.gg/nZcZRkUMJh', '_blank')}
               >
@@ -555,41 +444,18 @@ function Home({ onOpenWorship, worshipStatus }) {
                 <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('home.toolCommunitySub')}</p>
               </div>
               <Link
-                to="/worship"
-                className="glass-panel"
-                style={{
-                  minWidth: '140px',
-                  minHeight: '100px',
-                  textDecoration: 'none',
-                  border: '1px solid #D4A843',
-                  borderRadius: '16px',
-                  padding: '20px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  textAlign: 'center',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.border = '1px solid #D4A843'
-                  e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
-                  e.currentTarget.style.boxShadow = '0 0 8px rgba(212,168,67,0.2)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.removeProperty('background')
-                  e.currentTarget.style.border = '1px solid #D4A843'
-                  e.currentTarget.style.boxShadow = 'none'
-                }}
+                to="/prayer"
+                className="home-gold-glass home-tool-tile"
               >
-                <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>🎵</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolWorship')}</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('home.toolWorshipSub')}</p>
+                <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>🙏</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolMyPrayers')}</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('home.toolMyPrayersSub')}</p>
               </Link>
             </div>
           </div>
 
           <div
-            className="glass-panel rounded-2xl p-6"
+            className="home-gold-glass rounded-2xl p-6"
             style={{
               borderRadius: '16px',
               animation: 'fadeInUp 0.6s ease forwards',
