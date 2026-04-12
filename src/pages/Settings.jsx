@@ -8,17 +8,12 @@ import { LocalNotifications } from '@capacitor/local-notifications'
 import i18n, { LANGUAGE_STORAGE_KEY } from '../i18n.js'
 
 const UI_LANG_OPTIONS = [
-  { code: 'en', flag: '🇺🇸', abbr: 'EN', labelKey: 'langEn' },
-  { code: 'es', flag: '🇪🇸', abbr: 'ES', labelKey: 'langEs' },
-  { code: 'pt', flag: '🇧🇷', abbr: 'PT', labelKey: 'langPt' },
-  { code: 'fr', flag: '🇫🇷', abbr: 'FR', labelKey: 'langFr' },
-  { code: 'de', flag: '🇩🇪', abbr: 'DE', labelKey: 'langDe' },
+  { code: 'en', flagIso: 'us', abbr: 'EN', labelKey: 'langEn' },
+  { code: 'es', flagIso: 'es', abbr: 'ES', labelKey: 'langEs' },
+  { code: 'pt', flagIso: 'br', abbr: 'PT', labelKey: 'langPt' },
+  { code: 'fr', flagIso: 'fr', abbr: 'FR', labelKey: 'langFr' },
+  { code: 'de', flagIso: 'de', abbr: 'DE', labelKey: 'langDe' },
 ]
-
-/** U+FE0F helps flag sequences render as emoji (avoids “US”/“ES” text + code looking like “US EN” / “ES ES”). */
-function langButtonLabel(flag, abbr) {
-  return `${flag}\uFE0F ${abbr}`
-}
 
 const BIBLE_TRANSLATION_OPTIONS = [
   { value: 'KJV', labelKey: 'bible.kjv' },
@@ -578,7 +573,7 @@ export default function Settings() {
             {t('settings.uiLanguageNote')}
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'flex-start' }}>
-            {UI_LANG_OPTIONS.map(({ code, flag, abbr, labelKey }) => {
+            {UI_LANG_OPTIONS.map(({ code, flagIso, abbr, labelKey }) => {
               const active = (i18nHook.resolvedLanguage || i18nHook.language || 'en')
                 .toLowerCase()
                 .startsWith(code)
@@ -602,6 +597,7 @@ export default function Settings() {
                     flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    gap: '8px',
                     minWidth: '88px',
                     padding: '12px 14px',
                     borderRadius: '12px',
@@ -611,20 +607,30 @@ export default function Settings() {
                   }}
                 >
                   <span
+                    className="inline-flex h-[22px] w-[22px] shrink-0 items-center justify-center overflow-hidden rounded-full ring-1 ring-white/25"
                     aria-hidden
+                  >
+                    <img
+                      src={`https://flagcdn.com/24x18/${flagIso}.png`}
+                      alt=""
+                      width={24}
+                      height={18}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </span>
+                  <span
                     style={{
-                      fontSize: '15px',
+                      fontSize: '14px',
                       fontWeight: 700,
                       letterSpacing: '0.06em',
                       color: 'var(--text-primary)',
                       whiteSpace: 'nowrap',
                       lineHeight: 1.15,
-                      fontVariantEmoji: 'emoji',
-                      fontFamily:
-                        '"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", "Twemoji Mozilla", system-ui, sans-serif',
                     }}
                   >
-                    {langButtonLabel(flag, abbr)}
+                    {abbr}
                   </span>
                 </button>
               )
