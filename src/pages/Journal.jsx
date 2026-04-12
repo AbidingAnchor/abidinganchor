@@ -410,7 +410,7 @@ function Journal() {
     <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
       <div
         className="content-scroll"
-        style={{ padding: '0 16px', paddingTop: '200px', paddingBottom: '120px', maxWidth: '390px', margin: '0 auto', width: '100%' }}
+        style={{ padding: '0 16px', paddingTop: '20px', paddingBottom: '120px', maxWidth: '390px', margin: '0 auto', width: '100%' }}
       >
         <div style={{
           display: 'flex',

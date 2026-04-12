@@ -107,8 +107,8 @@ export default function Prayer() {
   }
 
   return (
-    <div className="min-h-screen bg-transparent">
-      <div className="content-scroll px-4 pt-4 pb-32 max-w-[680px] mx-auto w-full">
+    <div className="bg-transparent">
+      <div className="content-scroll px-4 pt-3 max-w-[680px] mx-auto w-full">
         <div className="flex gap-1 p-1 rounded-xl bg-[#0a1028]/90 border border-white/10 mb-6 backdrop-blur-md">
           <button
             type="button"
