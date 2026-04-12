@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { WORSHIP_TRACKS } from '../data/worshipTracks'
 
 const INITIAL_AUDIO_URL = '/music/soaking-worship.mp3'
+const SKY_STAR_COUNT = 92
 
 function formatAudioError(audio) {
   const err = audio?.error
@@ -17,7 +18,6 @@ function formatAudioError(audio) {
 
 export default function WorshipMode() {
   const tracks = WORSHIP_TRACKS
-  /** Matches INITIAL_AUDIO_URL (Soaking Worship = index 4) */
   const [currentIndex, setCurrentIndex] = useState(() => {
     const i = tracks.findIndex((t) => t.file === INITIAL_AUDIO_URL)
     return i >= 0 ? i : 0
@@ -104,7 +104,7 @@ export default function WorshipMode() {
     }
   }, [applySrc, tracks])
 
-  /** User gesture: load URL and play (playlist / next / prev). */
+  /** Sets src + play() in one call — use from UI so mobile gets user gesture + correct URL (e.g. soaking-worship.mp3). */
   const loadAndPlay = useCallback(
     async (index) => {
       const audio = audioRef.current
@@ -131,37 +131,15 @@ export default function WorshipMode() {
     [applySrc, tracks],
   )
 
-  /** Hero control: pause in same gesture, or audio.play() on tap (required on mobile). */
-  const handleCenterPlay = async () => {
+  /** Play / pause from transport — play() runs in same tap handler; load current track URL if needed. */
+  const handleTransportPlayPause = async () => {
     const audio = audioRef.current
     if (!audio) return
     if (!audio.paused) {
       audio.pause()
       return
     }
-    try {
-      setAudioError(null)
-      setIsLoading(true)
-      await audio.play()
-    } catch (e) {
-      const msg =
-        e?.name === 'NotAllowedError'
-          ? 'Tap Play again — audio must start from a tap on mobile.'
-          : e?.message || 'Playback failed'
-      setAudioError(msg)
-      setIsPlaying(false)
-      setIsLoading(false)
-    }
-  }
-
-  const handleBottomPlayPause = async () => {
-    const audio = audioRef.current
-    if (!audio) return
-    if (!audio.paused) {
-      audio.pause()
-      return
-    }
-    await handleCenterPlay()
+    await loadAndPlay(currentIndex)
   }
 
   const handlePrev = () => {
@@ -182,22 +160,68 @@ export default function WorshipMode() {
   const gold = '#D4A843'
   const goldMuted = 'rgba(212, 168, 67, 0.35)'
 
+  const skyStars = useMemo(
+    () =>
+      Array.from({ length: SKY_STAR_COUNT }, (_, i) => ({
+        id: i,
+        left: Math.random() * 100,
+        top: Math.random() * 100,
+        size: 1 + Math.random() * 2.2,
+        duration: 5 + Math.random() * 7,
+        delay: Math.random() * 14,
+      })),
+    [],
+  )
+
   return (
     <div
       className="content-scroll worship-mode-page"
       style={{
-        minHeight: 'auto',
         position: 'relative',
-        isolation: 'isolate',
-        padding: '0 16px',
-        paddingTop: '88px',
+        minHeight: '100dvh',
+        padding: 0,
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'flex-start',
         alignItems: 'stretch',
-        background: 'linear-gradient(180deg, rgba(10, 20, 50, 0.95) 0%, rgba(13, 31, 78, 0.88) 50%, rgba(10, 15, 30, 0.98) 100%)',
       }}
     >
+      <div className="worship-sky" aria-hidden>
+        <div className="worship-sky-gradient" />
+        <div className="worship-nebula worship-nebula--a" />
+        <div className="worship-nebula worship-nebula--b" />
+        <div className="worship-nebula worship-nebula--c" />
+        {skyStars.map((s) => (
+          <span
+            key={s.id}
+            className="worship-star"
+            style={{
+              '--star-left': `${s.left}%`,
+              '--star-top': `${s.top}%`,
+              '--star-size': `${s.size}px`,
+              '--tw-dur': `${s.duration}s`,
+              '--tw-delay': `${s.delay}s`,
+            }}
+          />
+        ))}
+        <span className="worship-shooting worship-shooting--1" />
+        <span className="worship-shooting worship-shooting--2" />
+        <span className="worship-shooting worship-shooting--3" />
+        <span className="worship-shooting worship-shooting--4" />
+        <span className="worship-shooting worship-shooting--5" />
+      </div>
+
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          flex: '1 1 auto',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'stretch',
+          padding: '0 16px',
+          paddingTop: '88px',
+        }}
+      >
       {audioError ? (
         <div
           role="alert"
@@ -216,80 +240,54 @@ export default function WorshipMode() {
         </div>
       ) : null}
 
-      {/* First focal: large Play — explicit audio.play() on tap */}
-      <div
+      {/* Title: icon + track + Worship Mode — no duplicate play control */}
+      <header
         style={{
           flex: '0 0 auto',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '24px 0 16px',
-          minHeight: 'min(32vh, 260px)',
+          textAlign: 'center',
+          paddingBottom: '16px',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          marginBottom: '16px',
         }}
       >
-        <button
-          type="button"
-          onClick={handleCenterPlay}
-          aria-label={isPlaying ? 'Pause worship audio' : 'Play worship audio'}
-          style={{
-            width: 'min(88vw, 280px)',
-            height: 'min(88vw, 280px)',
-            maxWidth: '280px',
-            maxHeight: '280px',
-            borderRadius: '50%',
-            border: `4px solid ${gold}`,
-            background: isPlaying
-              ? 'linear-gradient(145deg, rgba(212, 168, 67, 0.35) 0%, rgba(212, 168, 67, 0.12) 100%)'
-              : 'linear-gradient(145deg, rgba(212, 168, 67, 0.55) 0%, rgba(201, 160, 53, 0.35) 100%)',
-            boxShadow: '0 4px 24px rgba(212, 168, 67, 0.28), inset 0 0 48px rgba(255, 255, 255, 0.05)',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 0,
-          }}
-        >
-          <span
-            aria-hidden
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '8px' }}>
+          <span style={{ fontSize: '28px', lineHeight: 1 }} aria-hidden>
+            🎵
+          </span>
+          <p
             style={{
-              fontSize: 'min(22vw, 72px)',
-              lineHeight: 1,
-              color: '#0a1a3e',
-              marginLeft: isPlaying ? 0 : '8px',
+              margin: 0,
+              color: '#FFFFFF',
+              fontSize: '18px',
+              fontWeight: 600,
+              lineHeight: 1.3,
             }}
           >
-            {isPlaying ? '⏸' : '▶'}
-          </span>
-        </button>
-        <p style={{ marginTop: '20px', color: '#FFFFFF', fontSize: '17px', fontWeight: 600, textAlign: 'center' }}>
-          {current.name}
-        </p>
-        {isLoading ? (
-          <p style={{ marginTop: '8px', color: gold, fontSize: '14px', fontWeight: 600 }} aria-live="polite">
-            Loading…
+            {current.name}
           </p>
-        ) : null}
-        <h1
+        </div>
+        <p
           style={{
-            marginTop: '16px',
-            marginBottom: 0,
-            fontSize: '18px',
+            margin: 0,
+            fontSize: '15px',
             fontWeight: 600,
-            color: 'rgba(255,255,255,0.75)',
+            color: 'rgba(255,255,255,0.72)',
             letterSpacing: '0.02em',
-            textAlign: 'center',
           }}
         >
           Worship Mode
-        </h1>
-        <p style={{ margin: '8px 0 0', color: 'rgba(255,255,255,0.45)', fontSize: '12px', lineHeight: 1.4, textAlign: 'center', maxWidth: '320px' }}>
-          Tap Play above to start — no autoplay on this page.
         </p>
-      </div>
+        {isLoading ? (
+          <p style={{ margin: '8px 0 0', color: gold, fontSize: '13px', fontWeight: 600 }} aria-live="polite">
+            Loading…
+          </p>
+        ) : null}
+        <p style={{ margin: '8px 0 0', color: 'rgba(255,255,255,0.45)', fontSize: '12px', lineHeight: 1.4 }}>
+          Use the controls below to play — tap Play for audio.
+        </p>
+      </header>
 
-      {/* Playlist — size to content only (no flex-grow gap below last track) */}
-      <section style={{ flex: '0 0 auto', width: '100%' }}>
+      <section style={{ flex: '0 0 auto', width: '100%', marginBottom: 0 }}>
         <p
           style={{
             color: 'rgba(255,255,255,0.45)',
@@ -302,7 +300,17 @@ export default function WorshipMode() {
         >
           Playlist
         </p>
-        <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <ul
+          style={{
+            listStyle: 'none',
+            margin: 0,
+            padding: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+            marginBottom: 0,
+          }}
+        >
           {tracks.map((track, index) => {
             const active = index === currentIndex
             return (
@@ -333,25 +341,21 @@ export default function WorshipMode() {
         </ul>
       </section>
 
-      {/* Bottom transport: above app BottomNav, width matches main column (no full-bleed under nav) */}
+      {/* In-flow transport — sits flush under playlist (no fixed gap / dead zone) */}
       <div
         style={{
-          position: 'fixed',
-          left: '50%',
-          bottom: 'calc(72px + env(safe-area-inset-bottom, 0px))',
-          transform: 'translateX(-50%)',
-          width: 'min(680px, calc(100% - 32px))',
-          maxWidth: '100%',
+          flex: '0 0 auto',
+          marginTop: 0,
+          marginLeft: '-16px',
+          marginRight: '-16px',
           padding: '12px 16px',
           boxSizing: 'border-box',
-          background: 'linear-gradient(180deg, transparent 0%, rgba(10, 15, 30, 0.96) 35%)',
-          borderTop: '1px solid rgba(212, 168, 67, 0.2)',
-          borderRadius: '16px 16px 0 0',
+          background: 'linear-gradient(180deg, rgba(10, 15, 30, 0.92) 0%, rgba(10, 15, 30, 0.98) 100%)',
+          borderTop: `1px solid ${goldMuted}`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           gap: '28px',
-          zIndex: 100,
         }}
       >
         <button
@@ -373,7 +377,7 @@ export default function WorshipMode() {
         </button>
         <button
           type="button"
-          onClick={handleBottomPlayPause}
+          onClick={handleTransportPlayPause}
           aria-label={isPlaying ? 'Pause' : 'Play'}
           style={{
             width: '64px',
@@ -406,6 +410,7 @@ export default function WorshipMode() {
         >
           ⏭
         </button>
+      </div>
       </div>
     </div>
   )

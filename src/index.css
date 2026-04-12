@@ -171,7 +171,7 @@ body {
   background: transparent;
 }
 
-/* Worship Mode: clip bleed (incl. hero glow); stay in main column; bottom pad clears fixed transport */
+/* Worship Mode: clip bleed; main column; bottom pad clears app BottomNav (transport is in-flow above it) */
 .content-scroll.worship-mode-page {
   overflow: hidden;
   width: 100%;
@@ -179,7 +179,238 @@ body {
   margin-left: auto;
   margin-right: auto;
   box-sizing: border-box;
-  padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)) !important;
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+/* Worship Mode — night sky (behind UI: .worship-sky z-index 0, foreground z-index 1) */
+.worship-sky {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.worship-sky-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(165deg, #0a0a1a 0%, #0e0a24 42%, #1a0a2e 100%);
+}
+
+.worship-nebula {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(56px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.worship-nebula--a {
+  width: 88vmin;
+  height: 88vmin;
+  left: -28%;
+  top: -12%;
+  opacity: 0.48;
+  background: radial-gradient(
+    ellipse 58% 62% at 42% 46%,
+    rgba(95, 55, 145, 0.4) 0%,
+    rgba(45, 28, 95, 0.14) 48%,
+    transparent 72%
+  );
+  animation: worship-nebula-a 155s ease-in-out infinite alternate,
+    worship-nebula-pulse 105s ease-in-out infinite;
+}
+
+.worship-nebula--b {
+  width: 95vmin;
+  height: 72vmin;
+  right: -38%;
+  bottom: 0%;
+  opacity: 0.42;
+  background: radial-gradient(
+    ellipse 62% 58% at 38% 52%,
+    rgba(45, 75, 155, 0.34) 0%,
+    rgba(28, 35, 88, 0.12) 52%,
+    transparent 72%
+  );
+  animation: worship-nebula-b 175s ease-in-out infinite alternate,
+    worship-nebula-pulse 125s ease-in-out infinite reverse;
+}
+
+.worship-nebula--c {
+  width: 72vmin;
+  height: 92vmin;
+  left: 8%;
+  bottom: -36%;
+  opacity: 0.4;
+  background: radial-gradient(
+    ellipse 54% 60% at 52% 38%,
+    rgba(115, 72, 155, 0.3) 0%,
+    rgba(42, 28, 78, 0.1) 56%,
+    transparent 74%
+  );
+  animation: worship-nebula-c 168s ease-in-out infinite alternate,
+    worship-nebula-pulse 118s ease-in-out infinite 18s;
+}
+
+@keyframes worship-nebula-a {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(5%, 5%) scale(1.04);
+  }
+}
+
+@keyframes worship-nebula-b {
+  0% {
+    transform: translate(0, 0) scale(1.02);
+  }
+  100% {
+    transform: translate(-4%, -3%) scale(0.97);
+  }
+}
+
+@keyframes worship-nebula-c {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(-3%, 6%);
+  }
+}
+
+@keyframes worship-nebula-pulse {
+  0%,
+  100% {
+    opacity: 0.34;
+  }
+  50% {
+    opacity: 0.52;
+  }
+}
+
+.worship-star {
+  position: absolute;
+  left: var(--star-left);
+  top: var(--star-top);
+  width: var(--star-size);
+  height: var(--star-size);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 0 3px rgba(255, 255, 255, 0.35),
+    0 0 12px rgba(190, 200, 255, 0.12);
+  animation: worship-twinkle var(--tw-dur, 6s) ease-in-out infinite;
+  animation-delay: var(--tw-delay, 0s);
+}
+
+@keyframes worship-twinkle {
+  0%,
+  100% {
+    opacity: 0.1;
+    transform: scale(0.72);
+  }
+  40% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  68% {
+    opacity: 0.88;
+    transform: scale(1.06);
+  }
+}
+
+.worship-shooting {
+  position: absolute;
+  width: 150px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 15%,
+    rgba(255, 255, 255, 0.42) 48%,
+    rgba(255, 255, 255, 0.12) 78%,
+    transparent 100%
+  );
+  opacity: 0;
+  filter: blur(0.35px);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
+  transform: rotate(-36deg);
+  transform-origin: 20% 50%;
+}
+
+.worship-shooting--1 {
+  top: 10%;
+  right: 6%;
+  animation: worship-shoot 24s linear infinite;
+  animation-delay: 0s;
+}
+
+.worship-shooting--2 {
+  top: 18%;
+  right: 22%;
+  animation: worship-shoot 28s linear infinite;
+  animation-delay: 6.5s;
+}
+
+.worship-shooting--3 {
+  top: 32%;
+  right: 4%;
+  animation: worship-shoot 26s linear infinite;
+  animation-delay: 13s;
+}
+
+.worship-shooting--4 {
+  top: 6%;
+  right: 35%;
+  animation: worship-shoot 30s linear infinite;
+  animation-delay: 19s;
+}
+
+.worship-shooting--5 {
+  top: 45%;
+  right: 14%;
+  animation: worship-shoot 27s linear infinite;
+  animation-delay: 4s;
+}
+
+@keyframes worship-shoot {
+  0%,
+  72% {
+    opacity: 0;
+    transform: translate3d(38vw, -12vh, 0) rotate(-36deg) scaleX(0.35);
+  }
+  74% {
+    opacity: 0.38;
+  }
+  80% {
+    opacity: 0.08;
+  }
+  87%,
+  100% {
+    opacity: 0;
+    transform: translate3d(-58vw, 92vh, 0) rotate(-36deg) scaleX(1.05);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .worship-star,
+  .worship-nebula,
+  .worship-shooting {
+    animation: none !important;
+  }
+
+  .worship-star {
+    opacity: 0.55;
+  }
+
+  .worship-nebula--a,
+  .worship-nebula--b,
+  .worship-nebula--c {
+    opacity: 0.38;
+  }
 }
 
 @keyframes page-fade-in {
