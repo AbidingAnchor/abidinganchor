@@ -33,6 +33,7 @@ import LoadingScreen from './components/LoadingScreen'
 import BackgroundManager from './components/BackgroundManager'
 import { useWorshipPlaybackState } from './lib/worshipGlobalAudio'
 import { applyDailyStreakOnAppOpen } from './lib/dailyAppStreak'
+import { syncWeeklyActiveDays } from './hooks/useStreakTracker'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -81,6 +82,7 @@ function AppShell() {
     let cancelled = false
     let timeoutId
     const run = async () => {
+      await syncWeeklyActiveDays(user.id)
       await applyDailyStreakOnAppOpen(user.id)
       if (!cancelled) await refreshProfile()
     }

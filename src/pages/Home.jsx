@@ -9,6 +9,8 @@ import {
   isCompletedToday,
 } from '../lib/presenceStreak'
 import DailyEncounterCard from '../components/DailyEncounterCard'
+import DailyStreakCard from '../components/DailyStreakCard'
+import { useStreakTracker } from '../hooks/useStreakTracker'
 import { getJournalEntries, saveToJournal } from '../utils/journal'
 import SaveToast from '../components/SaveToast'
 import { useAuth } from '../context/AuthContext'
@@ -17,6 +19,7 @@ function Home({ onOpenWorship, worshipStatus }) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { user, profile, loading, refreshProfile } = useAuth()
+  const { activeDays } = useStreakTracker(user?.id)
   const [dailyEncounter, setDailyEncounter] = useState(() => getDailyEncounter())
   const [toastTrigger, setToastTrigger] = useState(0)
   const [journalCount, setJournalCount] = useState(0)
@@ -223,19 +226,6 @@ function Home({ onOpenWorship, worshipStatus }) {
     })
   }, [markPresenceFromEngagement, navigate, dailyEncounter])
 
-  const today = new Date()
-  const days = [
-    t('home.weekdayMon'),
-    t('home.weekdayTue'),
-    t('home.weekdayWed'),
-    t('home.weekdayThu'),
-    t('home.weekdayFri'),
-    t('home.weekdaySat'),
-    t('home.weekdaySun'),
-  ]
-  const dayToMonFirstIndex = [6, 0, 1, 2, 3, 4, 5]
-  const todayIndex = dayToMonFirstIndex[today.getDay()]
-  
   useEffect(() => {
     let active = true
     const loadCount = async () => {
@@ -264,31 +254,13 @@ function Home({ onOpenWorship, worshipStatus }) {
 
   const encouragement = t(`home.enc${new Date().getDay()}`)
 
-  const currentStreak = Number(profile?.reading_streak ?? 0)
   const friendFallback = t('home.friendFallback')
   const firstName = suppressPersonalWelcome
     ? friendFallback
     : (profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || friendFallback)
 
-  const streakMessage =
-    currentStreak >= 1 && currentStreak <= 5
-      ? t(`home.streak${currentStreak}`)
-      : t('home.streakDay', { n: currentStreak })
-
   return (
     <>
-      <style>{`
-        @keyframes flamePulse {
-          0%, 100% {
-            filter: drop-shadow(0 0 8px rgba(212,168,67,0.8));
-            transform: scale(1);
-          }
-          50% {
-            filter: drop-shadow(0 0 20px rgba(212,168,67,1.0));
-            transform: scale(1.15);
-          }
-        }
-      `}</style>
       <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: 'transparent', paddingBottom: '120px', paddingTop: '60px' }}>
         <div
           className="content-scroll"
@@ -333,64 +305,7 @@ function Home({ onOpenWorship, worshipStatus }) {
               onPresenceComplete={handlePresenceComplete}
             />
 
-            <div style={{ marginBottom: '28px' }}>
-              <div
-                className={`home-gold-glass rounded-[20px] p-5 ${currentStreak >= 7 ? 'home-gold-glass--streak-hot' : ''}`}
-                style={{
-                animation: 'fadeInUp 0.6s ease forwards',
-                animationDelay: '0.2s'
-              }}
-            >
-              <div className="mb-4 flex items-center justify-between">
-                <h2 style={{ 
-                  color: 'var(--section-title)', 
-                  fontSize: '13px', 
-                  letterSpacing: '0.12em', 
-                  fontWeight: 500,
-                  textTransform: 'uppercase'
-                }}>{t('home.dailyStreak')}</h2>
-                <p style={{ fontSize: '14px', color: 'var(--section-title)', fontWeight: 700 }}>{t('home.dayStreak', { n: currentStreak })}</p>
-              </div>
-              <p style={{ marginBottom: '16px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{streakMessage}</p>
-              <div className="flex items-center justify-between gap-2" style={{ overflowX: 'auto' }}>
-                {days.map((day, index) => {
-                  const isToday = index === todayIndex
-                  const isPast = index < todayIndex && index >= todayIndex - (currentStreak - 1)
-                  const hasStreak = currentStreak >= 1
-                  const flameStyle = isToday && hasStreak
-                    ? { fontSize: '36px', color: '#D4A843', filter: 'drop-shadow(0 0 8px rgba(212,168,67,0.8))', animation: 'flamePulse 2s ease-in-out infinite' }
-                    : isPast && hasStreak
-                      ? { fontSize: '28px', color: '#D4A843', filter: 'drop-shadow(0 0 8px rgba(212,168,67,0.8))' }
-                      : { width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(150,150,150,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }
-                  const isLit = (isToday && hasStreak) || (isPast && hasStreak)
-                  return (
-                    <div
-                      key={day}
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '6px'
-                      }}
-                    >
-                      <span style={{
-                        color: 'var(--label-text)',
-                        fontSize: '11px',
-                        fontWeight: 600
-                      }}>
-                        {day}
-                      </span>
-                      <div
-                        style={flameStyle}
-                      >
-                        {isLit ? '🔥' : null}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-            </div>
+            <DailyStreakCard activeDays={activeDays} />
 
             <div style={{ marginBottom: '28px', animation: 'fadeInUp 0.6s ease forwards', animationDelay: '0.3s' }}>
               <h2 style={{ color: 'var(--section-title)', fontSize: '13px', letterSpacing: '0.12em', fontWeight: 500, textTransform: 'uppercase' }}>{t('home.toolsHeading')}</h2>
