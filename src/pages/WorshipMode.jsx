@@ -205,6 +205,7 @@ export default function WorshipMode() {
   )
 
   return (
+    <>
     <div
       className="content-scroll worship-mode-page"
       style={{
@@ -370,120 +371,133 @@ export default function WorshipMode() {
         </ul>
       </section>
       </div>
+    </div>
 
-      {/* Volume + transport fixed above BottomNav */}
+    {/* Outside worship-mode-page so overflow:hidden does not clip fixed descendants */}
+    <div
+      style={{
+        position: 'fixed',
+        left: '50%',
+        bottom: 'calc(72px + env(safe-area-inset-bottom, 0px))',
+        transform: 'translateX(-50%)',
+        width: 'min(680px, calc(100% - 32px))',
+        maxWidth: '100%',
+        zIndex: 9500,
+        padding: '10px 14px 12px',
+        boxSizing: 'border-box',
+        background: 'rgba(8, 10, 26, 0.55)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        border: `1px solid ${goldMuted}`,
+        borderRadius: '18px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.35)',
+        pointerEvents: 'auto',
+      }}
+    >
       <div
         style={{
-          position: 'fixed',
-          left: '50%',
-          bottom: 'calc(72px + env(safe-area-inset-bottom, 0px))',
-          transform: 'translateX(-50%)',
-          width: 'min(680px, calc(100% - 32px))',
-          maxWidth: '100%',
-          zIndex: 100,
-          padding: '10px 14px 12px',
-          boxSizing: 'border-box',
-          background: 'rgba(8, 10, 26, 0.5)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          border: `1px solid ${goldMuted}`,
-          borderRadius: '18px',
           display: 'flex',
-          flexDirection: 'column',
-          gap: '12px',
-          boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.35)',
+          alignItems: 'center',
+          gap: '10px',
+          width: '100%',
+          minHeight: 32,
+          padding: '0 2px',
+          boxSizing: 'border-box',
         }}
       >
-        <div
+        <span style={{ fontSize: '16px', lineHeight: 1, opacity: 0.9, flexShrink: 0 }} aria-hidden>
+          🔈
+        </span>
+        <input
+          type="range"
+          className="worship-volume-slider"
+          min={0}
+          max={1}
+          step={0.01}
+          value={volume}
+          onInput={handleVolumeInput}
+          onChange={handleVolumeInput}
+          aria-label="Volume"
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            padding: '0 2px',
+            flex: 1,
+            minWidth: 120,
+            width: '100%',
+            height: 4,
+            minHeight: 28,
+            accentColor: '#D4A843',
+          }}
+        />
+        <span style={{ fontSize: '16px', lineHeight: 1, opacity: 0.9, flexShrink: 0 }} aria-hidden>
+          🔊
+        </span>
+      </div>
+      <div
+        role="toolbar"
+        aria-label="Playback controls"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '28px',
+        }}
+      >
+        <button
+          type="button"
+          onClick={handlePrev}
+          aria-label="Previous track"
+          style={{
+            width: '52px',
+            height: '52px',
+            borderRadius: '50%',
+            border: `1px solid ${goldMuted}`,
+            background: 'rgba(255,255,255,0.08)',
+            color: gold,
+            fontSize: '22px',
+            cursor: 'pointer',
           }}
         >
-          <span style={{ fontSize: '15px', lineHeight: 1, opacity: 0.85 }} aria-hidden>
-            🔈
-          </span>
-          <input
-            type="range"
-            className="worship-volume-slider"
-            min={0}
-            max={1}
-            step={0.01}
-            value={volume}
-            onInput={handleVolumeInput}
-            onChange={handleVolumeInput}
-            aria-label="Volume"
-          />
-          <span style={{ fontSize: '15px', lineHeight: 1, opacity: 0.85 }} aria-hidden>
-            🔊
-          </span>
-        </div>
-        <div
-          role="toolbar"
-          aria-label="Playback controls"
+          ⏮
+        </button>
+        <button
+          type="button"
+          onClick={handleTransportPlayPause}
+          aria-label={isPlaying ? 'Pause' : 'Play'}
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '28px',
+            width: '64px',
+            height: '64px',
+            borderRadius: '50%',
+            border: 'none',
+            background: `linear-gradient(135deg, ${gold} 0%, #c9a035 100%)`,
+            color: '#0a1a3e',
+            fontSize: '28px',
+            cursor: 'pointer',
+            boxShadow: '0 4px 20px rgba(212, 168, 67, 0.4)',
           }}
         >
-          <button
-            type="button"
-            onClick={handlePrev}
-            aria-label="Previous track"
-            style={{
-              width: '52px',
-              height: '52px',
-              borderRadius: '50%',
-              border: `1px solid ${goldMuted}`,
-              background: 'rgba(255,255,255,0.08)',
-              color: gold,
-              fontSize: '22px',
-              cursor: 'pointer',
-            }}
-          >
-            ⏮
-          </button>
-          <button
-            type="button"
-            onClick={handleTransportPlayPause}
-            aria-label={isPlaying ? 'Pause' : 'Play'}
-            style={{
-              width: '64px',
-              height: '64px',
-              borderRadius: '50%',
-              border: 'none',
-              background: `linear-gradient(135deg, ${gold} 0%, #c9a035 100%)`,
-              color: '#0a1a3e',
-              fontSize: '28px',
-              cursor: 'pointer',
-              boxShadow: '0 4px 20px rgba(212, 168, 67, 0.4)',
-            }}
-          >
-            {isPlaying ? '⏸' : '▶'}
-          </button>
-          <button
-            type="button"
-            onClick={handleNext}
-            aria-label="Next track"
-            style={{
-              width: '52px',
-              height: '52px',
-              borderRadius: '50%',
-              border: `1px solid ${goldMuted}`,
-              background: 'rgba(255,255,255,0.08)',
-              color: gold,
-              fontSize: '22px',
-              cursor: 'pointer',
-            }}
-          >
-            ⏭
-          </button>
-        </div>
+          {isPlaying ? '⏸' : '▶'}
+        </button>
+        <button
+          type="button"
+          onClick={handleNext}
+          aria-label="Next track"
+          style={{
+            width: '52px',
+            height: '52px',
+            borderRadius: '50%',
+            border: `1px solid ${goldMuted}`,
+            background: 'rgba(255,255,255,0.08)',
+            color: gold,
+            fontSize: '22px',
+            cursor: 'pointer',
+          }}
+        >
+          ⏭
+        </button>
       </div>
     </div>
+    </>
   )
 }
