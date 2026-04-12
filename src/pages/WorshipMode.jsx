@@ -3,6 +3,20 @@ import { WORSHIP_TRACKS } from '../data/worshipTracks'
 
 const INITIAL_AUDIO_URL = '/music/soaking-worship.mp3'
 const SKY_STAR_COUNT = 92
+const WORSHIP_VOLUME_KEY = 'abidinganchor-worship-volume'
+const DEFAULT_WORSHIP_VOLUME = 0.7
+
+function readStoredVolume() {
+  try {
+    const raw = localStorage.getItem(WORSHIP_VOLUME_KEY)
+    if (raw == null) return DEFAULT_WORSHIP_VOLUME
+    const n = parseFloat(raw)
+    if (!Number.isFinite(n)) return DEFAULT_WORSHIP_VOLUME
+    return Math.min(1, Math.max(0, n))
+  } catch {
+    return DEFAULT_WORSHIP_VOLUME
+  }
+}
 
 function formatAudioError(audio) {
   const err = audio?.error
@@ -25,6 +39,7 @@ export default function WorshipMode() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [audioError, setAudioError] = useState(null)
+  const [volume, setVolume] = useState(readStoredVolume)
 
   const audioRef = useRef(null)
   const currentIndexRef = useRef(currentIndex)
@@ -50,6 +65,7 @@ export default function WorshipMode() {
       }
     }
     audioRef.current = audio
+    audio.volume = readStoredVolume()
 
     const onPlay = () => setIsPlaying(true)
     const onPause = () => setIsPlaying(false)
@@ -103,6 +119,21 @@ export default function WorshipMode() {
       audioRef.current = null
     }
   }, [applySrc, tracks])
+
+  useEffect(() => {
+    const el = audioRef.current
+    if (el) el.volume = volume
+    try {
+      localStorage.setItem(WORSHIP_VOLUME_KEY, String(volume))
+    } catch {
+      /* ignore */
+    }
+  }, [volume])
+
+  const handleVolumeInput = (e) => {
+    const v = parseFloat(e.target.value)
+    if (Number.isFinite(v)) setVolume(Math.min(1, Math.max(0, v)))
+  }
 
   /** Sets src + play() in one call — use from UI so mobile gets user gesture + correct URL (e.g. soaking-worship.mp3). */
   const loadAndPlay = useCallback(
@@ -222,7 +253,7 @@ export default function WorshipMode() {
           padding: '0 16px',
           paddingTop: '88px',
           /* Scroll clearance above fixed transport + bottom nav */
-          paddingBottom: 'calc(96px + 72px + env(safe-area-inset-bottom, 0px))',
+          paddingBottom: 'calc(150px + 72px + env(safe-area-inset-bottom, 0px))',
         }}
       >
       {audioError ? (
@@ -340,10 +371,8 @@ export default function WorshipMode() {
       </section>
       </div>
 
-      {/* Fixed above app BottomNav; sky visible in open area above */}
+      {/* Volume + transport fixed above BottomNav */}
       <div
-        role="toolbar"
-        aria-label="Playback controls"
         style={{
           position: 'fixed',
           left: '50%',
@@ -352,7 +381,7 @@ export default function WorshipMode() {
           width: 'min(680px, calc(100% - 32px))',
           maxWidth: '100%',
           zIndex: 100,
-          padding: '12px 16px',
+          padding: '10px 14px 12px',
           boxSizing: 'border-box',
           background: 'rgba(8, 10, 26, 0.5)',
           backdropFilter: 'blur(16px)',
@@ -360,64 +389,100 @@ export default function WorshipMode() {
           border: `1px solid ${goldMuted}`,
           borderRadius: '18px',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '28px',
+          flexDirection: 'column',
+          gap: '12px',
           boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.35)',
         }}
       >
-        <button
-          type="button"
-          onClick={handlePrev}
-          aria-label="Previous track"
+        <div
           style={{
-            width: '52px',
-            height: '52px',
-            borderRadius: '50%',
-            border: `1px solid ${goldMuted}`,
-            background: 'rgba(255,255,255,0.08)',
-            color: gold,
-            fontSize: '22px',
-            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '0 2px',
           }}
         >
-          ⏮
-        </button>
-        <button
-          type="button"
-          onClick={handleTransportPlayPause}
-          aria-label={isPlaying ? 'Pause' : 'Play'}
+          <span style={{ fontSize: '15px', lineHeight: 1, opacity: 0.85 }} aria-hidden>
+            🔈
+          </span>
+          <input
+            type="range"
+            className="worship-volume-slider"
+            min={0}
+            max={1}
+            step={0.01}
+            value={volume}
+            onInput={handleVolumeInput}
+            onChange={handleVolumeInput}
+            aria-label="Volume"
+          />
+          <span style={{ fontSize: '15px', lineHeight: 1, opacity: 0.85 }} aria-hidden>
+            🔊
+          </span>
+        </div>
+        <div
+          role="toolbar"
+          aria-label="Playback controls"
           style={{
-            width: '64px',
-            height: '64px',
-            borderRadius: '50%',
-            border: 'none',
-            background: `linear-gradient(135deg, ${gold} 0%, #c9a035 100%)`,
-            color: '#0a1a3e',
-            fontSize: '28px',
-            cursor: 'pointer',
-            boxShadow: '0 4px 20px rgba(212, 168, 67, 0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '28px',
           }}
         >
-          {isPlaying ? '⏸' : '▶'}
-        </button>
-        <button
-          type="button"
-          onClick={handleNext}
-          aria-label="Next track"
-          style={{
-            width: '52px',
-            height: '52px',
-            borderRadius: '50%',
-            border: `1px solid ${goldMuted}`,
-            background: 'rgba(255,255,255,0.08)',
-            color: gold,
-            fontSize: '22px',
-            cursor: 'pointer',
-          }}
-        >
-          ⏭
-        </button>
+          <button
+            type="button"
+            onClick={handlePrev}
+            aria-label="Previous track"
+            style={{
+              width: '52px',
+              height: '52px',
+              borderRadius: '50%',
+              border: `1px solid ${goldMuted}`,
+              background: 'rgba(255,255,255,0.08)',
+              color: gold,
+              fontSize: '22px',
+              cursor: 'pointer',
+            }}
+          >
+            ⏮
+          </button>
+          <button
+            type="button"
+            onClick={handleTransportPlayPause}
+            aria-label={isPlaying ? 'Pause' : 'Play'}
+            style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              border: 'none',
+              background: `linear-gradient(135deg, ${gold} 0%, #c9a035 100%)`,
+              color: '#0a1a3e',
+              fontSize: '28px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 20px rgba(212, 168, 67, 0.4)',
+            }}
+          >
+            {isPlaying ? '⏸' : '▶'}
+          </button>
+          <button
+            type="button"
+            onClick={handleNext}
+            aria-label="Next track"
+            style={{
+              width: '52px',
+              height: '52px',
+              borderRadius: '50%',
+              border: `1px solid ${goldMuted}`,
+              background: 'rgba(255,255,255,0.08)',
+              color: gold,
+              fontSize: '22px',
+              cursor: 'pointer',
+            }}
+          >
+            ⏭
+          </button>
+        </div>
       </div>
     </div>
   )
