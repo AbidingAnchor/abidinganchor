@@ -32,6 +32,7 @@ import { useAuth } from './context/AuthContext'
 import LoadingScreen from './components/LoadingScreen'
 import BackgroundManager from './components/BackgroundManager'
 import { useWorshipPlaybackState } from './lib/worshipGlobalAudio'
+import { applyDailyStreakOnAppOpen } from './lib/dailyAppStreak'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -41,7 +42,7 @@ function ProtectedRoute({ children }) {
 }
 
 function AppShell() {
-  const { user } = useAuth()
+  const { user, refreshProfile } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
   const [worshipVisible, setWorshipVisible] = useState(false)
@@ -74,6 +75,36 @@ function AppShell() {
       localStorage.setItem('abidinganchor-start-date', new Date().toISOString())
     }
   }, [])
+
+  useEffect(() => {
+    if (!user?.id) return
+    let cancelled = false
+    let timeoutId
+    const run = async () => {
+      await applyDailyStreakOnAppOpen(user.id)
+      if (!cancelled) await refreshProfile()
+    }
+    run()
+    const onVis = () => {
+      if (document.visibilityState === 'visible') run()
+    }
+    document.addEventListener('visibilitychange', onVis)
+    const scheduleMidnight = () => {
+      const now = new Date()
+      const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1, 0)
+      const ms = Math.max(1000, nextMidnight - now)
+      timeoutId = setTimeout(() => {
+        run()
+        scheduleMidnight()
+      }, ms)
+    }
+    scheduleMidnight()
+    return () => {
+      cancelled = true
+      document.removeEventListener('visibilitychange', onVis)
+      if (timeoutId) clearTimeout(timeoutId)
+    }
+  }, [user?.id, refreshProfile])
 
   return (
     <div className="relative text-white" style={{ background: 'transparent' }}>

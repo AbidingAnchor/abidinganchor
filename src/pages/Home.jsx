@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
 import { getDailyEncounter } from '../utils/dailyEncounter'
 import {
   getPresenceViewModel,
@@ -14,23 +13,17 @@ import { getJournalEntries, saveToJournal } from '../utils/journal'
 import SaveToast from '../components/SaveToast'
 import { useAuth } from '../context/AuthContext'
 
-const PROFILE_STREAK_FETCH_MS = 5000
-
 function Home({ onOpenWorship, worshipStatus }) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
-  const { user, profile } = useAuth()
+  const { user, profile, loading, refreshProfile } = useAuth()
   const [dailyEncounter, setDailyEncounter] = useState(() => getDailyEncounter())
-  const [streak, setStreak] = useState({ currentStreak: 0 })
   const [toastTrigger, setToastTrigger] = useState(0)
   const [journalCount, setJournalCount] = useState(0)
   const [suppressPersonalWelcome, setSuppressPersonalWelcome] = useState(false)
-  const [profileFetchLoading, setProfileFetchLoading] = useState(false)
   const [presenceVm, setPresenceVm] = useState(() => getPresenceViewModel(syncPresenceState()))
   const [presenceJustCompleted, setPresenceJustCompleted] = useState(false)
   const presenceGlowTimerRef = useRef(null)
-  const profileRef = useRef(profile)
-  profileRef.current = profile
 
   const refreshPresence = useCallback(() => {
     setPresenceVm(getPresenceViewModel(syncPresenceState()))
@@ -57,125 +50,24 @@ function Home({ onOpenWorship, worshipStatus }) {
   }, [refreshPresence, finishPresenceGlow])
 
   useEffect(() => {
-    if (!user?.id) {
-      setProfileFetchLoading(false)
-      return
-    }
-    setProfileFetchLoading(true)
-    let cancelled = false
-    ;(async () => {
-      try {
-        let data, error
-        try {
-          const result = await Promise.race([
-            supabase.from('profiles').select('reading_streak, streak_start_date, last_active_date, longest_streak').eq('id', user.id).single(),
-            new Promise((_, reject) => {
-              setTimeout(() => reject(new Error('profile-streak-timeout')), PROFILE_STREAK_FETCH_MS)
-            }),
-          ])
-          data = result.data
-          error = result.error
-          if (error) {
-            console.error('Profile query error:', error)
-            data = null
-            error = null
-          }
-        } catch (err) {
-          console.log('Profile fetch skipped:', err)
-          data = null
-          error = null
-        }
-        if (cancelled) return
-        if (error) throw error
-
-        console.log('Streak data:', data)
-
-        const today = new Date()
-        const todayStr = today.toISOString().slice(0, 10)
-        let streakStartDate = data?.streak_start_date
-        let lastActiveDate = data?.last_active_date
-        let currentStreak = Number(data?.reading_streak) || 0
-        let longestStreak = Number(data?.longest_streak) || 0
-        let needsDbUpdate = false
-
-        // Initialize streak for new users
-        if (!streakStartDate) {
-          streakStartDate = todayStr
-          currentStreak = 0
-          longestStreak = 0
-          needsDbUpdate = true
-        } else if (lastActiveDate !== todayStr) {
-          // Update streak data if last active date is different from today
-          // Check if streak should continue (consecutive days)
-          if (lastActiveDate) {
-            const lastActive = new Date(lastActiveDate)
-            const daysDiff = Math.floor((today - lastActive) / (1000 * 60 * 60 * 24))
-            if (daysDiff === 1) {
-              currentStreak += 1
-              needsDbUpdate = true
-            } else if (daysDiff > 1) {
-              currentStreak = 0
-              streakStartDate = todayStr
-              needsDbUpdate = true
-            }
-          } else {
-            currentStreak = 0
-            streakStartDate = todayStr
-            needsDbUpdate = true
-          }
-
-          // Update longest streak
-          if (currentStreak > longestStreak) {
-            longestStreak = currentStreak
-          }
-
-        }
-
-        // Write streak updates to database if needed
-        if (needsDbUpdate) {
-          await supabase.from('profiles').update({
-            reading_streak: currentStreak,
-            streak_start_date: streakStartDate,
-            longest_streak: longestStreak,
-          }).eq('id', user.id)
-        }
-
-        console.log('Final streak:', currentStreak)
-        setStreak({ currentStreak: currentStreak })
-      } catch {
-        console.log('Catch block hit')
-        if (!cancelled && !profileRef.current) {
-          setStreak({ currentStreak: 0 })
-          setSuppressPersonalWelcome(true)
-        }
-      } finally {
-        if (!cancelled) setProfileFetchLoading(false)
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [user?.id])
-
-  useEffect(() => {
     if (profile) setSuppressPersonalWelcome(false)
   }, [profile])
 
   useEffect(() => {
-    if (user?.id && profile && !profileFetchLoading) {
+    if (user?.id && profile && !loading) {
       const isComplete = profile.onboarding_complete === true || localStorage.getItem('onboarding_complete') === 'true'
       if (!isComplete) {
         navigate('/onboarding')
       }
     }
-  }, [user?.id, profile, profileFetchLoading, navigate])
+  }, [user?.id, profile, loading, navigate])
 
   useEffect(() => {
     let timeoutId
     const scheduleNextMidnight = () => {
       setDailyEncounter(getDailyEncounter())
-      setStreak({ currentStreak: Number(profile?.reading_streak ?? 0) })
       refreshPresence()
+      refreshProfile()
       const now = new Date()
       const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0)
       const ms = Math.max(1000, nextMidnight - now)
@@ -183,7 +75,7 @@ function Home({ onOpenWorship, worshipStatus }) {
     }
     scheduleNextMidnight()
     return () => clearTimeout(timeoutId)
-  }, [profile?.reading_streak, refreshPresence])
+  }, [refreshPresence, refreshProfile])
 
   useEffect(() => {
     return () => {
@@ -372,7 +264,7 @@ function Home({ onOpenWorship, worshipStatus }) {
 
   const encouragement = t(`home.enc${new Date().getDay()}`)
 
-  const currentStreak = Number(streak?.currentStreak || 0)
+  const currentStreak = Number(profile?.reading_streak ?? 0)
   const friendFallback = t('home.friendFallback')
   const firstName = suppressPersonalWelcome
     ? friendFallback
@@ -459,7 +351,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                   letterSpacing: '0.12em', 
                   fontWeight: 500,
                   textTransform: 'uppercase'
-                }}>{t('home.readingStreak')}</h2>
+                }}>{t('home.dailyStreak')}</h2>
                 <p style={{ fontSize: '14px', color: 'var(--section-title)', fontWeight: 700 }}>{t('home.dayStreak', { n: currentStreak })}</p>
               </div>
               <p style={{ marginBottom: '16px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{streakMessage}</p>

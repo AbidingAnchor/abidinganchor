@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
@@ -16,6 +17,7 @@ function otherUserId(row, me) {
 }
 
 export default function Friends() {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const uid = user?.id
   const [tab, setTab] = useState('friends')
@@ -427,7 +429,7 @@ export default function Friends() {
                     <div>
                       <p className="font-semibold text-white">{displayName(p)}</p>
                       <p className="text-sm text-[#D4A843]">
-                        🔥 {Math.max(0, Number(p.reading_streak) || 0)} day reading streak
+                        {t('home.dayStreak', { n: Math.max(0, Number(p.reading_streak) || 0) })}
                       </p>
                     </div>
                   </div>
