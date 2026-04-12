@@ -358,14 +358,6 @@ function Home({ onOpenWorship, worshipStatus }) {
                 <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolCommunity')}</p>
                 <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('home.toolCommunitySub')}</p>
               </div>
-              <Link
-                to="/prayer"
-                className="home-gold-glass home-tool-tile"
-              >
-                <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>🙏</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolMyPrayers')}</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('home.toolMyPrayersSub')}</p>
-              </Link>
             </div>
           </div>
 
