@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 
@@ -39,6 +39,50 @@ export function getShortDayName(d = new Date()) {
 
 function normalizedKey(arr) {
   return [...new Set(arr)].filter((x) => WEEK_DAY_SHORT.includes(x)).sort().join('|')
+}
+
+/**
+ * Build the list of lit weekday short names for the Daily Streak card.
+ *
+ * Primary: `profiles.weekly_active_days` (text[] of 'Mon'…'Sun') when present and non-empty.
+ * Fallback (no migration / empty array): if `last_active_date` is **today** (local), show today only
+ * so the card matches “active today” when daily streak already set `last_active_date`.
+ *
+ * If your project does not have `weekly_active_days`, only `last_active_date` (and related streak
+ * columns like `reading_streak`) exist — the UI can only infer **today** until `weekly_active_days`
+ * is populated by `syncWeeklyActiveDays`.
+ *
+ * @param {object|null|undefined} row profiles row subset or full row
+ * @returns {string[]}
+ */
+export function parseWeeklyActiveDaysRow(row) {
+  if (!row || typeof row !== 'object') return []
+
+  const raw = row.weekly_active_days
+  let arr = []
+
+  if (Array.isArray(raw)) {
+    arr = raw.filter((x) => typeof x === 'string' && WEEK_DAY_SHORT.includes(x))
+  } else if (typeof raw === 'string') {
+    const s = raw.trim()
+    if (s.startsWith('{') && s.endsWith('}')) {
+      const inner = s.slice(1, -1)
+      if (inner)
+        arr = inner
+          .split(',')
+          .map((x) => x.replace(/^"|"$/g, '').trim())
+          .filter((x) => WEEK_DAY_SHORT.includes(x))
+    }
+  }
+
+  if (arr.length > 0) return arr
+
+  const last = row.last_active_date != null ? String(row.last_active_date).slice(0, 10) : null
+  if (last && last === getLocalDateKey()) {
+    return [getShortDayName()]
+  }
+
+  return []
 }
 
 /**
@@ -100,18 +144,51 @@ export async function syncWeeklyActiveDays(userId) {
 }
 
 /**
+ * Loads `weekly_active_days` + `last_active_date` from Supabase on mount and when profile streak
+ * fields change (after refresh), so the Home card is not stuck at 0 when Auth context omits arrays.
+ *
  * @param {string | undefined} userId
  * @returns {{ activeDays: string[] }}
  */
 export function useStreakTracker(userId) {
   const { profile } = useAuth()
+  const [activeDays, setActiveDays] = useState([])
 
-  const activeDays = useMemo(() => {
-    if (!userId) return []
-    const raw = profile?.weekly_active_days
-    if (!Array.isArray(raw)) return []
-    return raw.filter((d) => typeof d === 'string' && WEEK_DAY_SHORT.includes(d))
-  }, [userId, profile?.weekly_active_days])
+  useEffect(() => {
+    if (!userId) {
+      setActiveDays([])
+      return
+    }
+
+    let cancelled = false
+
+    const apply = (row) => {
+      if (!cancelled && row) setActiveDays(parseWeeklyActiveDaysRow(row))
+    }
+
+    if (profile?.id === userId) {
+      apply(profile)
+    }
+
+    ;(async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('weekly_active_days, last_active_date')
+        .eq('id', userId)
+        .maybeSingle()
+
+      if (cancelled) return
+      if (error) {
+        console.warn('useStreakTracker fetch:', error)
+        return
+      }
+      if (data) apply(data)
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [userId, profile?.id, profile?.weekly_active_days, profile?.last_active_date])
 
   return { activeDays }
 }
