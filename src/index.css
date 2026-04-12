@@ -183,6 +183,76 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0px) !important;
 }
 
+/* Bottom nav: compact “now playing” chip when worship audio continues off the Worship page */
+.worship-nav-playing-indicator {
+  position: absolute;
+  top: -6px;
+  right: max(8px, env(safe-area-inset-right, 0px));
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 168, 67, 0.45);
+  background: rgba(12, 14, 32, 0.92);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  z-index: 2;
+}
+
+.worship-nav-playing-indicator:focus-visible {
+  outline: 2px solid #d4a843;
+  outline-offset: 2px;
+}
+
+.worship-eq-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 14px;
+}
+
+.worship-eq-bars span {
+  display: block;
+  width: 3px;
+  border-radius: 1px;
+  background: #d4a843;
+  transform-origin: bottom;
+  animation: worship-eq-bar 0.55s ease-in-out infinite;
+}
+
+.worship-eq-bars span:nth-child(1) {
+  height: 6px;
+  animation-delay: 0s;
+}
+
+.worship-eq-bars span:nth-child(2) {
+  height: 12px;
+  animation-delay: 0.12s;
+}
+
+.worship-eq-bars span:nth-child(3) {
+  height: 8px;
+  animation-delay: 0.24s;
+}
+
+@keyframes worship-eq-bar {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.worship-nav-playing-emoji {
+  font-size: 14px;
+  line-height: 1;
+}
+
 /* Worship Mode — night sky (behind UI: .worship-sky z-index 0, foreground z-index 1) */
 .worship-sky {
   position: absolute;

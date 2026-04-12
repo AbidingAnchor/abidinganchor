@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import MoreDrawer from './MoreDrawer'
+import { useWorshipPlaybackState } from '../lib/worshipGlobalAudio'
 
 export default function BottomNav() {
   const { t } = useTranslation()
@@ -29,6 +30,9 @@ export default function BottomNav() {
   const navigate = useNavigate()
   const location = useLocation()
   const [moreOpen, setMoreOpen] = useState(false)
+  const worshipPlayback = useWorshipPlaybackState()
+  const showWorshipPlaying =
+    worshipPlayback.isPlaying && location.pathname !== '/worship'
 
   const handleTabPress = (tab) => {
     if (tab.path === '#more') {
@@ -71,6 +75,24 @@ export default function BottomNav() {
           paddingRight: 'env(safe-area-inset-right, 0px)',
         }}
       >
+        {showWorshipPlaying ? (
+          <button
+            type="button"
+            className="worship-nav-playing-indicator"
+            onClick={() => navigate('/worship')}
+            aria-label={t('nav.worship')}
+            title={t('nav.worship')}
+          >
+            <span className="worship-eq-bars" aria-hidden>
+              <span />
+              <span />
+              <span />
+            </span>
+            <span className="worship-nav-playing-emoji" aria-hidden>
+              🎵
+            </span>
+          </button>
+        ) : null}
         {mainTabs.map((tab) => (
           <button
             key={tab.path}

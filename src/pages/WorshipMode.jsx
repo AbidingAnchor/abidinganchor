@@ -1,12 +1,30 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { WORSHIP_TRACKS } from '../data/worshipTracks'
 
-const INITIAL_AUDIO_URL = '/music/soaking-worship.mp3'
-const SKY_STAR_COUNT = 92
-const WORSHIP_VOLUME_KEY = 'abidinganchor-worship-volume'
+export const INITIAL_AUDIO_URL = '/music/soaking-worship.mp3'
+export const WORSHIP_VOLUME_KEY = 'abidinganchor-worship-volume'
 const DEFAULT_WORSHIP_VOLUME = 0.7
 
-function readStoredVolume() {
+/** Single HTMLAudioElement — module scope; persists across route changes and remounts */
+export const globalAudio = new Audio()
+/** Back-compat alias used elsewhere */
+export const globalWorshipAudio = globalAudio
+
+if ('playsInline' in globalAudio) {
+  try {
+    globalAudio.playsInline = true
+  } catch {
+    /* ignore */
+  }
+}
+globalAudio.preload = 'metadata'
+
+function defaultIndex() {
+  const i = WORSHIP_TRACKS.findIndex((t) => t.file === INITIAL_AUDIO_URL)
+  return i >= 0 ? i : 0
+}
+
+export function readStoredVolume() {
   try {
     const raw = localStorage.getItem(WORSHIP_VOLUME_KEY)
     if (raw == null) return DEFAULT_WORSHIP_VOLUME
@@ -30,164 +48,296 @@ function formatAudioError(audio) {
   return `${codes[err.code] || 'Error'} (${err.code}): ${err.message || 'unknown'}`
 }
 
-export default function WorshipMode() {
-  const tracks = WORSHIP_TRACKS
-  const [currentIndex, setCurrentIndex] = useState(() => {
-    const i = tracks.findIndex((t) => t.file === INITIAL_AUDIO_URL)
-    return i >= 0 ? i : 0
+function formatPlayError(e) {
+  if (e?.name === 'NotAllowedError') {
+    return 'Tap Play to start — your browser requires a tap to play audio.'
+  }
+  return e?.message || 'Playback failed'
+}
+
+const defaultIdx = defaultIndex()
+
+let worshipState = {
+  currentIndex: defaultIdx,
+  volume: readStoredVolume(),
+  isPlaying: false,
+  isLoading: false,
+  audioError: null,
+}
+
+const listeners = new Set()
+let listenersAttached = false
+
+export function getWorshipState() {
+  const track = WORSHIP_TRACKS[worshipState.currentIndex]
+  return {
+    ...worshipState,
+    trackName: track?.name ?? '',
+    currentFile: track?.file ?? '',
+  }
+}
+
+function notify() {
+  const snapshot = getWorshipState()
+  listeners.forEach((cb) => {
+    try {
+      cb(snapshot)
+    } catch {
+      /* ignore subscriber errors */
+    }
   })
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [audioError, setAudioError] = useState(null)
-  const [volume, setVolume] = useState(readStoredVolume)
+}
 
-  const audioRef = useRef(null)
-  const currentIndexRef = useRef(currentIndex)
+export function subscribeWorshipPlayback(cb) {
+  ensureAudioListeners()
+  listeners.add(cb)
+  cb(getWorshipState())
+  return () => {
+    listeners.delete(cb)
+  }
+}
 
-  useEffect(() => {
-    currentIndexRef.current = currentIndex
-  }, [currentIndex])
+export function useWorshipPlaybackState() {
+  const [state, setState] = useState(getWorshipState)
+  useEffect(() => subscribeWorshipPlayback(setState), [])
+  return state
+}
 
-  const applySrc = useCallback((audio, url) => {
-    audio.pause()
+function applySrc(url) {
+  const audio = globalAudio
+  audio.pause()
+  audio.src = url
+  audio.load()
+}
+
+function ensureInitialSrc() {
+  const audio = globalAudio
+  const url = WORSHIP_TRACKS[worshipState.currentIndex]?.file
+  if (!url) return
+  const needsSet = !audio.src || audio.src === '' || !audio.currentSrc
+  if (needsSet) {
     audio.src = url
     audio.load()
-  }, [])
+  }
+}
 
-  useEffect(() => {
-    const audio = new Audio(INITIAL_AUDIO_URL)
-    audio.preload = 'metadata'
-    if ('playsInline' in audio) {
-      try {
-        audio.playsInline = true
-      } catch {
-        /* ignore */
-      }
+function pathnameFromAudioSrc(audio) {
+  const u = audio.currentSrc || audio.src
+  if (!u) return null
+  try {
+    return new URL(u, window.location.href).pathname
+  } catch {
+    return null
+  }
+}
+
+function indexForTrackPathname(pathname) {
+  if (!pathname) return null
+  const idx = WORSHIP_TRACKS.findIndex((t) => t.file === pathname)
+  return idx >= 0 ? idx : null
+}
+
+function audioSourceMatchesCurrentTrack(audio, index) {
+  const file = WORSHIP_TRACKS[index]?.file
+  if (!file || !audio.src) return false
+  try {
+    const expected = new URL(file, window.location.href).href
+    return audio.currentSrc === expected || audio.src === expected
+  } catch {
+    return audio.src.includes(file)
+  }
+}
+
+function ensureAudioListeners() {
+  if (listenersAttached) return
+  listenersAttached = true
+
+  const audio = globalAudio
+  ensureInitialSrc()
+  audio.volume = worshipState.volume
+
+  audio.addEventListener('play', () => {
+    worshipState = { ...worshipState, isPlaying: true, audioError: null }
+    notify()
+  })
+  audio.addEventListener('pause', () => {
+    worshipState = { ...worshipState, isPlaying: false }
+    notify()
+  })
+  audio.addEventListener('loadstart', () => {
+    worshipState = { ...worshipState, isLoading: true }
+    notify()
+  })
+  audio.addEventListener('canplay', () => {
+    worshipState = { ...worshipState, isLoading: false }
+    notify()
+  })
+  audio.addEventListener('playing', () => {
+    worshipState = { ...worshipState, isLoading: false }
+    notify()
+  })
+  audio.addEventListener('error', () => {
+    worshipState = {
+      ...worshipState,
+      audioError: formatAudioError(audio),
+      isPlaying: false,
+      isLoading: false,
     }
-    audioRef.current = audio
-    audio.volume = readStoredVolume()
+    notify()
+  })
 
-    const onPlay = () => setIsPlaying(true)
-    const onPause = () => setIsPlaying(false)
-    const onLoadStart = () => setIsLoading(true)
-    const onCanPlay = () => setIsLoading(false)
-    const onPlaying = () => setIsLoading(false)
-    const onError = () => {
-      setAudioError(formatAudioError(audio))
-      setIsPlaying(false)
-      setIsLoading(false)
-    }
-
-    const onEnded = () => {
-      const i = currentIndexRef.current
-      const next = (i + 1) % tracks.length
-      currentIndexRef.current = next
-      setCurrentIndex(next)
-      const url = tracks[next].file
-      applySrc(audio, url)
-      setIsLoading(true)
-      audio.play().catch((e) => {
-        setAudioError(
+  audio.addEventListener('ended', () => {
+    const next = (worshipState.currentIndex + 1) % WORSHIP_TRACKS.length
+    worshipState = { ...worshipState, currentIndex: next, isLoading: true, audioError: null }
+    notify()
+    const url = WORSHIP_TRACKS[next]?.file
+    if (!url) return
+    applySrc(url)
+    audio.play().catch((e) => {
+      worshipState = {
+        ...worshipState,
+        audioError:
           e?.name === 'NotAllowedError'
             ? 'Tap Play to continue — playback after a track ends may need a tap on some devices.'
             : e?.message || 'Could not play next track',
-        )
-        setIsPlaying(false)
-        setIsLoading(false)
-      })
-    }
+        isPlaying: false,
+        isLoading: false,
+      }
+      notify()
+    })
+  })
+}
 
-    audio.addEventListener('play', onPlay)
-    audio.addEventListener('pause', onPause)
-    audio.addEventListener('loadstart', onLoadStart)
-    audio.addEventListener('canplay', onCanPlay)
-    audio.addEventListener('playing', onPlaying)
-    audio.addEventListener('error', onError)
-    audio.addEventListener('ended', onEnded)
+/** Align module state with the real element when returning to Worship Mode */
+export function resyncWorshipStateFromAudio() {
+  ensureAudioListeners()
+  const audio = globalAudio
+  const pathname = pathnameFromAudioSrc(audio)
+  const idx = indexForTrackPathname(pathname) ?? worshipState.currentIndex
+  worshipState = {
+    ...worshipState,
+    currentIndex: idx,
+    isPlaying: !audio.paused,
+    volume: audio.volume,
+  }
+  notify()
+}
 
-    return () => {
-      audio.removeEventListener('play', onPlay)
-      audio.removeEventListener('pause', onPause)
-      audio.removeEventListener('loadstart', onLoadStart)
-      audio.removeEventListener('canplay', onCanPlay)
-      audio.removeEventListener('playing', onPlaying)
-      audio.removeEventListener('error', onError)
-      audio.removeEventListener('ended', onEnded)
-      audio.pause()
-      audio.removeAttribute('src')
-      audio.load()
-      audioRef.current = null
+export async function worshipLoadAndPlay(index) {
+  ensureAudioListeners()
+  const url = WORSHIP_TRACKS[index]?.file
+  if (!url) return
+  worshipState = {
+    ...worshipState,
+    currentIndex: index,
+    audioError: null,
+    isLoading: true,
+  }
+  notify()
+  applySrc(url)
+  try {
+    await globalAudio.play()
+  } catch (e) {
+    worshipState = {
+      ...worshipState,
+      audioError: formatPlayError(e),
+      isPlaying: false,
+      isLoading: false,
     }
-  }, [applySrc, tracks])
+    notify()
+  }
+}
+
+export function worshipTransportToggle() {
+  ensureAudioListeners()
+  const audio = globalAudio
+  if (!audio.paused) {
+    audio.pause()
+    return
+  }
+  const index = worshipState.currentIndex
+  if (audioSourceMatchesCurrentTrack(audio, index)) {
+    audio.play().catch((e) => {
+      worshipState = {
+        ...worshipState,
+        audioError: formatPlayError(e),
+        isPlaying: false,
+        isLoading: false,
+      }
+      notify()
+    })
+    return
+  }
+  void worshipLoadAndPlay(index)
+}
+
+export function worshipPause() {
+  ensureAudioListeners()
+  globalAudio.pause()
+}
+
+export function worshipSetVolume(v) {
+  ensureAudioListeners()
+  const vol = Math.min(1, Math.max(0, v))
+  worshipState = { ...worshipState, volume: vol }
+  globalAudio.volume = vol
+  try {
+    localStorage.setItem(WORSHIP_VOLUME_KEY, String(vol))
+  } catch {
+    /* ignore */
+  }
+  notify()
+}
+
+export function worshipPrev() {
+  const next = (worshipState.currentIndex - 1 + WORSHIP_TRACKS.length) % WORSHIP_TRACKS.length
+  void worshipLoadAndPlay(next)
+}
+
+export function worshipNext() {
+  const next = (worshipState.currentIndex + 1) % WORSHIP_TRACKS.length
+  void worshipLoadAndPlay(next)
+}
+
+/** Used when opening the floating player from Home with “start playing” */
+export function worshipStartPlaybackFromOverlay() {
+  ensureAudioListeners()
+  void worshipLoadAndPlay(worshipState.currentIndex)
+}
+
+const SKY_STAR_COUNT = 92
+
+export default function WorshipMode() {
+  const tracks = WORSHIP_TRACKS
+  const wp = useWorshipPlaybackState()
+  const { currentIndex, isPlaying, isLoading, audioError, volume } = wp
 
   useEffect(() => {
-    const el = audioRef.current
-    if (el) el.volume = volume
-    try {
-      localStorage.setItem(WORSHIP_VOLUME_KEY, String(volume))
-    } catch {
-      /* ignore */
-    }
-  }, [volume])
+    resyncWorshipStateFromAudio()
+  }, [])
 
   const handleVolumeInput = (e) => {
     const v = parseFloat(e.target.value)
-    if (Number.isFinite(v)) setVolume(Math.min(1, Math.max(0, v)))
+    if (Number.isFinite(v)) worshipSetVolume(Math.min(1, Math.max(0, v)))
   }
 
-  /** Sets src + play() in one call — use from UI so mobile gets user gesture + correct URL (e.g. soaking-worship.mp3). */
-  const loadAndPlay = useCallback(
-    async (index) => {
-      const audio = audioRef.current
-      if (!audio) return
-      const url = tracks[index]?.file
-      if (!url) return
-      try {
-        setAudioError(null)
-        currentIndexRef.current = index
-        setCurrentIndex(index)
-        setIsLoading(true)
-        applySrc(audio, url)
-        await audio.play()
-      } catch (e) {
-        const msg =
-          e?.name === 'NotAllowedError'
-            ? 'Tap Play to start — your browser requires a tap to play audio.'
-            : e?.message || 'Playback failed'
-        setAudioError(msg)
-        setIsPlaying(false)
-        setIsLoading(false)
-      }
-    },
-    [applySrc, tracks],
-  )
-
-  /** Play / pause from transport — play() runs in same tap handler; load current track URL if needed. */
-  const handleTransportPlayPause = async () => {
-    const audio = audioRef.current
-    if (!audio) return
-    if (!audio.paused) {
-      audio.pause()
-      return
-    }
-    await loadAndPlay(currentIndex)
+  const handleTransportPlayPause = () => {
+    worshipTransportToggle()
   }
 
   const handlePrev = () => {
-    const next = (currentIndex - 1 + tracks.length) % tracks.length
-    void loadAndPlay(next)
+    worshipPrev()
   }
 
   const handleNext = () => {
-    const next = (currentIndex + 1) % tracks.length
-    void loadAndPlay(next)
+    worshipNext()
   }
 
   const handleSelectTrack = (index) => {
-    void loadAndPlay(index)
+    void worshipLoadAndPlay(index)
   }
 
-  const current = tracks[currentIndex]
+  const current = tracks[currentIndex] ?? tracks[0]
   const gold = '#D4A843'
   const goldMuted = 'rgba(212, 168, 67, 0.35)'
 

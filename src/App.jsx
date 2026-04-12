@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Routes, Route, useLocation, useNavigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Home from './pages/Home'
 import ReadingPlan from './pages/ReadingPlan'
 import Search from './pages/Search'
@@ -31,6 +31,7 @@ import Auth from './pages/Auth'
 import { useAuth } from './context/AuthContext'
 import LoadingScreen from './components/LoadingScreen'
 import BackgroundManager from './components/BackgroundManager'
+import { useWorshipPlaybackState } from './lib/worshipGlobalAudio'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -45,7 +46,15 @@ function AppShell() {
   const navigate = useNavigate()
   const [worshipVisible, setWorshipVisible] = useState(false)
   const [worshipAutoPlayToken, setWorshipAutoPlayToken] = useState(0)
-  const [worshipStatus, setWorshipStatus] = useState({ isPlaying: false, currentTrack: 'Harmony of Heaven', isVisible: false })
+  const worshipPlayback = useWorshipPlaybackState()
+  const worshipStatus = useMemo(
+    () => ({
+      isPlaying: worshipPlayback.isPlaying,
+      currentTrack: worshipPlayback.trackName,
+      isVisible: worshipVisible,
+    }),
+    [worshipPlayback.isPlaying, worshipPlayback.trackName, worshipVisible],
+  )
   const showNav = location.pathname !== '/auth' && location.pathname !== '/onboarding'
   const showFooter =
     location.pathname !== '/auth' &&
@@ -130,7 +139,6 @@ function AppShell() {
         visible={worshipVisible}
         onClose={() => setWorshipVisible(false)}
         autoPlayToken={worshipAutoPlayToken}
-        onStatusChange={setWorshipStatus}
       />
       {showHeader ? <Header /> : null}
       {showNav ? <BottomNav /> : null}
