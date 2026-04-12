@@ -1,11 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { WORSHIP_TRACKS } from '../data/worshipTracks'
 
-const tracks = [
-  { name: 'Soaking Worship', file: '/music/soaking-worship.mp3' },
-  { name: 'Hymns Instrumental', file: '/music/hyms-instrumental.mp3' },
-  { name: 'Nature & Worship', file: '/music/nature-worship.mp3' },
-  { name: 'Harmony of Heaven', file: '/music/harmony-of-heaven.mp3' },
-]
+const tracks = WORSHIP_TRACKS
 
 export default function WorshipPlayer({ visible, onClose, autoPlayToken = 0, onStatusChange }) {
   const [isPlaying, setIsPlaying] = useState(false)

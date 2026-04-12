@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 
 export default function PrayerWall() {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const [prayers, setPrayers] = useState([])
   const [loading, setLoading] = useState(true)
@@ -131,12 +133,12 @@ export default function PrayerWall() {
       {/* Screen Title */}
       <div className="flex items-center gap-3 mb-4">
         <span className="text-3xl">🙏</span>
-        <h1 className="text-page-title text-gold-accent">Prayer Wall</h1>
+        <h1 className="text-page-title text-gold-accent">{t('prayerWall.title')}</h1>
       </div>
 
       {/* Subtitle */}
       <p className="text-white/80 italic text-center mb-6 text-sm">
-        You are not alone. The body of Christ is praying with you.
+        {t('prayerWall.subtitle')}
       </p>
 
       {/* Share a Prayer Request Button */}
@@ -144,7 +146,7 @@ export default function PrayerWall() {
         onClick={() => setShowShareModal(true)}
         className="btn-primary w-full mb-6"
       >
-        🙏 Share a Prayer Request
+        🙏 {t('prayerWall.shareRequest')}
       </button>
 
       {/* Prayer Cards List */}
@@ -193,7 +195,7 @@ export default function PrayerWall() {
       ) : (
         <div className="glass p-8 rounded-2xl text-center">
           <p className="text-white/60 text-sm">
-            No prayer requests yet. Be the first to share!
+            {t('prayerWall.empty')}
           </p>
         </div>
       )}

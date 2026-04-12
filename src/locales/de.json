@@ -9,7 +9,8 @@
     "journey": "Reise",
     "community": "Gemeinschaft",
     "create": "Erstellen",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "worship": "Anbetungsmodus"
   },
   "header": {
     "brand": "ABIDING ANCHOR",
@@ -289,6 +290,12 @@
     "titlePlaceholder": "Titel (optional)",
     "bodyPlaceholder": "Schreiben Sie Ihr Gebet zu Gott...",
     "loading": "Wird geladen..."
+  },
+  "prayerWall": {
+    "title": "Gebetswand",
+    "subtitle": "Sie sind nicht allein. Der Leib Christi betet mit Ihnen.",
+    "shareRequest": "Gebetsanliegen teilen",
+    "empty": "Noch keine Gebetsanliegen. Seien Sie der Erste, der teilt!"
   },
   "faithJourney": {
     "heroKicker": "IHR GLAUBENSWEG",

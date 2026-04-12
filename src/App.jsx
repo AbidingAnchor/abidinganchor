@@ -20,6 +20,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsOfService from './pages/TermsOfService'
 import Legal from './pages/Legal'
 import Settings from './pages/Settings'
+import WorshipMode from './pages/WorshipMode'
 import BottomNav from './components/BottomNav'
 import Header from './components/Header'
 import LegalModal from './components/LegalModal'
@@ -44,7 +45,7 @@ function AppShell() {
   const navigate = useNavigate()
   const [worshipVisible, setWorshipVisible] = useState(false)
   const [worshipAutoPlayToken, setWorshipAutoPlayToken] = useState(0)
-  const [worshipStatus, setWorshipStatus] = useState({ isPlaying: false, currentTrack: 'Soaking Worship', isVisible: false })
+  const [worshipStatus, setWorshipStatus] = useState({ isPlaying: false, currentTrack: 'Harmony of Heaven', isVisible: false })
   const showNav = location.pathname !== '/auth' && location.pathname !== '/onboarding'
   const showFooter = location.pathname !== '/auth' && location.pathname !== '/onboarding' && location.pathname !== '/read' && location.pathname !== '/reading-plan'
   const showHeader = location.pathname !== '/auth' && location.pathname !== '/onboarding'
@@ -106,6 +107,7 @@ function AppShell() {
               <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
               <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              <Route path="/worship" element={<ProtectedRoute><WorshipMode /></ProtectedRoute>} />
               <Route path="/onboarding" element={<ProtectedRoute><Onboarding onComplete={() => navigate('/')} /></ProtectedRoute>} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />

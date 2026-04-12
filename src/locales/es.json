@@ -9,7 +9,8 @@
     "journey": "Camino",
     "community": "Comunidad",
     "create": "Crear",
-    "settings": "Ajustes"
+    "settings": "Ajustes",
+    "worship": "Modo adoración"
   },
   "header": {
     "brand": "ABIDING ANCHOR",
@@ -293,6 +294,12 @@
     "titlePlaceholder": "Título (opcional)",
     "bodyPlaceholder": "Escribe tu oración a Dios...",
     "loading": "Cargando..."
+  },
+  "prayerWall": {
+    "title": "Muro de oración",
+    "subtitle": "No estás solo. El cuerpo de Cristo ora contigo.",
+    "shareRequest": "Compartir una petición de oración",
+    "empty": "Aún no hay peticiones de oración. ¡Sé el primero en compartir!"
   },
   "faithJourney": {
     "heroKicker": "TU CAMINO DE FE",

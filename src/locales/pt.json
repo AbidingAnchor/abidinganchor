@@ -9,7 +9,8 @@
     "journey": "Jornada",
     "community": "Comunidade",
     "create": "Criar",
-    "settings": "Configurações"
+    "settings": "Configurações",
+    "worship": "Modo adoração"
   },
   "header": {
     "brand": "ABIDING ANCHOR",
@@ -293,6 +294,12 @@
     "titlePlaceholder": "Título (opcional)",
     "bodyPlaceholder": "Escreva sua oração a Deus...",
     "loading": "Carregando..."
+  },
+  "prayerWall": {
+    "title": "Mural de oração",
+    "subtitle": "Você não está sozinho. O corpo de Cristo está orando com você.",
+    "shareRequest": "Compartilhar um pedido de oração",
+    "empty": "Ainda não há pedidos de oração. Seja o primeiro a compartilhar!"
   },
   "faithJourney": {
     "heroKicker": "SUA JORNADA DE FÉ",

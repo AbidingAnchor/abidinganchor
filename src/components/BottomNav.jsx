@@ -18,6 +18,7 @@ export default function BottomNav() {
   const moreOptions = useMemo(
     () => [
       { labelKey: 'nav.search', path: '/search', icon: '🔍' },
+      { labelKey: 'nav.worship', path: '/worship', icon: '🎵' },
       { labelKey: 'nav.journey', path: '/faith-journey', icon: '✨' },
       { labelKey: 'nav.community', path: '/community-prayer', icon: '🤝' },
       { labelKey: 'nav.create', path: '/share-card', icon: '🕊️' },

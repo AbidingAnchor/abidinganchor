@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { dedupeVersesByNumber, prepareBibleReaderVerseText } from '../utils/kjvVerseText'
 import { BOOK_CDN_TO_OSIS } from '../utils/bookOsisMap'
 import { fetchApiBibleChapterVerses, resolveBibleIdForLanguage } from '../services/apiBible'
+import { fetchGetBibleChapter, resolveGetBibleTranslationId } from '../services/getBibleApi'
 
 /** Free JSON API — see https://bible-api.com/ and GET /data for supported translations (public domain). */
 const BIBLE_API_COM = 'https://bible-api.com'
@@ -119,6 +120,9 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
 
   const selectedBook = BOOKS[bookIndex]
   const maxChapter = selectedBook?.chapters || 1
+  const bookNumber = bookIndex + 1
+  const getBibleSlug = resolveGetBibleTranslationId(uiLang, translationId)
+  const showEnglishBibleVersions = uiLang === 'en'
 
   const translationOptions = useMemo(
     () =>
@@ -133,6 +137,10 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
 
   const bookDisplayName = (book) =>
     book ? t(`bible.books.${book.cdnName}`, { defaultValue: book.name }) : ''
+
+  useEffect(() => {
+    if (!showEnglishBibleVersions) setShowTranslationPicker(false)
+  }, [showEnglishBibleVersions])
 
   useEffect(() => {
     if (!open) return
@@ -179,7 +187,25 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
 
     ;(async () => {
       try {
-        if (HAS_API_BIBLE) {
+        if (getBibleSlug) {
+          const { verses: rawGb } = await fetchGetBibleChapter(getBibleSlug, bookNumber, chapter)
+          if (!cancelled) {
+            if (rawGb?.length) {
+              const normalized = dedupeVersesByNumber(
+                rawGb.map((v) => ({
+                  verse: v.verse,
+                  text: prepareBibleReaderVerseText(v.text),
+                })),
+              )
+              setVerses(normalized)
+            } else {
+              setVerses([])
+            }
+            setLoading(false)
+            return
+          }
+        }
+        if (HAS_API_BIBLE && showEnglishBibleVersions) {
           const bibleId = await resolveBibleIdForLanguage(uiLang)
           const osis = BOOK_CDN_TO_OSIS[selectedBook.cdnName]
           if (bibleId && osis) {
@@ -214,7 +240,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
     return () => {
       cancelled = true
     }
-  }, [open, selectedBook, chapter, translationId, uiLang])
+  }, [open, selectedBook, chapter, translationId, uiLang, getBibleSlug, bookNumber, showEnglishBibleVersions])
 
   useEffect(() => {
     if (selectedBook) {
@@ -303,6 +329,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
               {t('bible.chapter', { n: chapter })}
             </button>
 
+            {showEnglishBibleVersions ? (
             <button
               type="button"
               onClick={() => setShowTranslationPicker(true)}
@@ -322,6 +349,11 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
             >
               {HAS_API_BIBLE ? uiLang.toUpperCase() : selectedTranslation.label} ▾
             </button>
+            ) : (
+              <span style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(212,168,67,0.85)', padding: '6px 8px' }}>
+                {getBibleSlug ? String(getBibleSlug).toUpperCase() : ''}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -606,7 +638,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
       )}
 
       {/* Translation Picker — bottom sheet */}
-      {showTranslationPicker && (
+      {showTranslationPicker && showEnglishBibleVersions && (
         <>
           <div
             onClick={() => setShowTranslationPicker(false)}

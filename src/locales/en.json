@@ -9,7 +9,8 @@
     "journey": "Journey",
     "community": "Community",
     "create": "Create",
-    "settings": "Settings"
+    "settings": "Settings",
+    "worship": "Worship Mode"
   },
   "header": {
     "brand": "ABIDING ANCHOR",
@@ -71,7 +72,7 @@
     "imageTypeError": "Please choose a JPG, PNG, WebP, or GIF image",
     "imageSizeError": "Image must be less than 5MB",
     "uiLanguage": "App language",
-    "uiLanguageNote": "Reader text follows your app language when API.Bible is configured (VITE_API_BIBLE_KEY).",
+    "uiLanguageNote": "The app and Bible reader follow your selection. English offers multiple public-domain versions; other languages use the primary text from getBible (api.getbible.net).",
     "bibleVersionKjv": "King James Version (KJV)",
     "bibleVersionEsv": "English Standard Version (ESV)",
     "bibleVersionNiv": "New International Version (NIV)",
@@ -395,6 +396,12 @@
     "titlePlaceholder": "Title (optional)",
     "bodyPlaceholder": "Write your prayer to God...",
     "loading": "Loading..."
+  },
+  "prayerWall": {
+    "title": "Prayer Wall",
+    "subtitle": "You are not alone. The body of Christ is praying with you.",
+    "shareRequest": "Share a Prayer Request",
+    "empty": "No prayer requests yet. Be the first to share!"
   },
   "faithJourney": {
     "heroKicker": "YOUR FAITH JOURNEY",

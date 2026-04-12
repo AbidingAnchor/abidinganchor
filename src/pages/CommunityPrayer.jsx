@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
@@ -19,6 +20,7 @@ function timeAgo(iso) {
 }
 
 export default function CommunityPrayer() {
+  const { t } = useTranslation()
   const { user, profile } = useAuth()
   const [tab, setTab] = useState('wall')
   const [filterCat, setFilterCat] = useState('All')
@@ -239,7 +241,7 @@ export default function CommunityPrayer() {
               onClick={() => setTab(key)}
               className={`flex-1 rounded-xl py-2.5 text-sm font-semibold transition ${tab === key ? 'bg-gold text-primary-purple' : 'text-gold'}`}
             >
-              {key === 'wall' ? 'Prayer Wall' : 'My Submissions'}
+              {key === 'wall' ? t('prayerWall.title') : 'My Submissions'}
             </button>
           ))}
         </div>

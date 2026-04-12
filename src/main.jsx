@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+/** i18next + react-i18next: language from localStorage `abidinganchor-language`, then browser, then English. */
 import './i18n.js'
 import './index.css'
 import './styles/theme-overrides.css'

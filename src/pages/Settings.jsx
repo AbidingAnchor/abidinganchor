@@ -5,18 +5,18 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { getAvatarUploadExtension } from '../utils/avatarUrl'
 import { LocalNotifications } from '@capacitor/local-notifications'
-import i18n from '../i18n.js'
+import i18n, { LANGUAGE_STORAGE_KEY } from '../i18n.js'
 
 const UI_LANG_OPTIONS = [
-  { code: 'en', flag: '🇺🇸', labelKey: 'langEn' },
-  { code: 'es', flag: '🇪🇸', labelKey: 'langEs' },
-  { code: 'pt', flag: '🇧🇷', labelKey: 'langPt' },
-  { code: 'fr', flag: '🇫🇷', labelKey: 'langFr' },
-  { code: 'de', flag: '🇩🇪', labelKey: 'langDe' },
+  { code: 'en', flag: '🇺🇸', abbr: 'EN', labelKey: 'langEn' },
+  { code: 'es', flag: '🇪🇸', abbr: 'ES', labelKey: 'langEs' },
+  { code: 'pt', flag: '🇧🇷', abbr: 'PT', labelKey: 'langPt' },
+  { code: 'fr', flag: '🇫🇷', abbr: 'FR', labelKey: 'langFr' },
+  { code: 'de', flag: '🇩🇪', abbr: 'DE', labelKey: 'langDe' },
 ]
 
 export default function Settings() {
-  const { t } = useTranslation()
+  const { t, i18n: i18nHook } = useTranslation()
   const navigate = useNavigate()
   const { user, profile, signOut, refreshProfile } = useAuth()
   const [selectedTranslation, setSelectedTranslation] = useState('KJV')
@@ -562,8 +562,8 @@ export default function Settings() {
             {t('settings.uiLanguageNote')}
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'flex-start' }}>
-            {UI_LANG_OPTIONS.map(({ code, flag, labelKey }) => {
-              const active = (i18n.resolvedLanguage || i18n.language || 'en')
+            {UI_LANG_OPTIONS.map(({ code, flag, abbr, labelKey }) => {
+              const active = (i18nHook.resolvedLanguage || i18nHook.language || 'en')
                 .toLowerCase()
                 .startsWith(code)
               return (
@@ -573,20 +573,41 @@ export default function Settings() {
                   aria-label={t(`settings.${labelKey}`)}
                   title={t(`settings.${labelKey}`)}
                   onClick={async () => {
+                    try {
+                      localStorage.setItem(LANGUAGE_STORAGE_KEY, code)
+                    } catch {
+                      /* ignore */
+                    }
                     await i18n.changeLanguage(code)
                     if (dailyReminderEnabled) await scheduleNotifications()
                   }}
                   style={{
-                    fontSize: '28px',
-                    lineHeight: 1,
-                    padding: '10px 14px',
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    minWidth: '88px',
+                    padding: '12px 14px',
                     borderRadius: '12px',
                     border: active ? '2px solid #D4A843' : '1px solid rgba(255,255,255,0.15)',
                     background: active ? 'rgba(212,168,67,0.15)' : 'rgba(255,255,255,0.06)',
                     cursor: 'pointer',
                   }}
                 >
-                  {flag}
+                  <span style={{ fontSize: '22px', lineHeight: 1 }} aria-hidden>
+                    {flag}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: '14px',
+                      fontWeight: 700,
+                      letterSpacing: '0.04em',
+                      color: 'var(--text-primary)',
+                    }}
+                  >
+                    {abbr}
+                  </span>
                 </button>
               )
             })}

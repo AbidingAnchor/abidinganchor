@@ -9,7 +9,8 @@
     "journey": "Parcours",
     "community": "Communauté",
     "create": "Créer",
-    "settings": "Réglages"
+    "settings": "Réglages",
+    "worship": "Mode adoration"
   },
   "header": {
     "brand": "ABIDING ANCHOR",
@@ -293,6 +294,12 @@
     "titlePlaceholder": "Titre (facultatif)",
     "bodyPlaceholder": "Écrivez votre prière à Dieu...",
     "loading": "Chargement..."
+  },
+  "prayerWall": {
+    "title": "Mur de prière",
+    "subtitle": "Vous n'êtes pas seul. Le corps de Christ prie avec vous.",
+    "shareRequest": "Partager une demande de prière",
+    "empty": "Aucune demande de prière pour l'instant. Soyez le premier à partager !"
   },
   "faithJourney": {
     "heroKicker": "VOTRE PARCOURS DE FOI",

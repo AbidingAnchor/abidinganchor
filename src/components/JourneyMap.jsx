@@ -104,7 +104,7 @@ function JourneyProgressMarker({ stop, viewBoxH }) {
 }
 
 export default function JourneyMap({ onExit, fillVertical = false }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const stops = useMemo(
     () =>
       JOURNEY_MAP_GEOMETRY.map((g) => ({
@@ -116,7 +116,7 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
         description: t(`journeyMap.stops.${g.id}.description`),
         jesusVoice: t(`journeyMap.stops.${g.id}.jesusVoice`),
       })),
-    [t],
+    [t, i18n.language],
   )
 
   const [state, setState] = useState(() => readJson(KEY, { seenFacts: {}, updatedAt: '' }))
