@@ -5,6 +5,28 @@ import { supabase } from '../lib/supabase'
 import { getAvatarUploadExtension } from '../utils/avatarUrl'
 
 const BIO_MAX = 150
+const USERNAME_CHANGE_LIMIT = 3
+const USERNAME_RESET_WINDOW_DAYS = 90
+const USERNAME_RESET_WINDOW_MS = USERNAME_RESET_WINDOW_DAYS * 24 * 60 * 60 * 1000
+
+function startOfResetWindow(dateLike) {
+  const dt = dateLike ? new Date(dateLike) : new Date()
+  if (Number.isNaN(dt.getTime())) return new Date()
+  return dt
+}
+
+function isResetExpired(resetAt) {
+  const start = startOfResetWindow(resetAt)
+  return Date.now() - start.getTime() >= USERNAME_RESET_WINDOW_MS
+}
+
+function daysUntilReset(resetAt) {
+  const start = startOfResetWindow(resetAt)
+  const resetMs = start.getTime() + USERNAME_RESET_WINDOW_MS
+  const diffMs = resetMs - Date.now()
+  if (diffMs <= 0) return 0
+  return Math.ceil(diffMs / (24 * 60 * 60 * 1000))
+}
 
 export default function EditProfile() {
   const { t } = useTranslation()
@@ -20,6 +42,7 @@ export default function EditProfile() {
   const [username, setUsername] = useState('')
   const [initialUsername, setInitialUsername] = useState('')
   const [usernameChanges, setUsernameChanges] = useState(0)
+  const [usernameChangesResetAt, setUsernameChangesResetAt] = useState(null)
   const [bio, setBio] = useState('')
   const [favoriteVerse, setFavoriteVerse] = useState('')
   const [saving, setSaving] = useState(false)
@@ -28,18 +51,34 @@ export default function EditProfile() {
   useEffect(() => {
     if (!user?.id) return
     const loadProfile = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
-        .select('avatar_url, username, username_changes, bio, favorite_verse')
+        .select('avatar_url, username, username_changes, username_changes_reset_at, bio, favorite_verse')
         .eq('id', user.id)
         .maybeSingle()
-      if (!data) return
-      setLocalAvatarUrl(data.avatar_url || null)
-      setUsername(data.username || '')
-      setInitialUsername(data.username || '')
-      setUsernameChanges(Number(data.username_changes) || 0)
-      setBio(data.bio || '')
-      setFavoriteVerse(data.favorite_verse || '')
+      if (error || !data) return
+
+      let nextData = data
+      const rawResetAt = data.username_changes_reset_at
+      const resetAtDate = startOfResetWindow(rawResetAt)
+      const shouldReset = isResetExpired(resetAtDate)
+      if (shouldReset) {
+        const nowIso = new Date().toISOString()
+        const { data: updatedRow, error: resetError } = await supabase
+          .from('profiles')
+          .update({ username_changes: 0, username_changes_reset_at: nowIso })
+          .eq('id', user.id)
+          .select('avatar_url, username, username_changes, username_changes_reset_at, bio, favorite_verse')
+          .single()
+        if (!resetError && updatedRow) nextData = updatedRow
+      }
+      setLocalAvatarUrl(nextData.avatar_url || null)
+      setUsername(nextData.username || '')
+      setInitialUsername(nextData.username || '')
+      setUsernameChanges(Number(nextData.username_changes) || 0)
+      setUsernameChangesResetAt(startOfResetWindow(nextData.username_changes_reset_at || new Date()).toISOString())
+      setBio(nextData.bio || '')
+      setFavoriteVerse(nextData.favorite_verse || '')
     }
     loadProfile()
   }, [user?.id])
@@ -132,18 +171,48 @@ export default function EditProfile() {
 
   const handleSaveProfile = async () => {
     if (!user?.id || saving) return
-    const nextUsername = username.trim()
-    const didUsernameChange = nextUsername !== initialUsername
-    const reachedUsernameLimit = usernameChanges >= 3
-    if (didUsernameChange && reachedUsernameLimit) return
     try {
       setSaving(true)
+      const nextUsername = username.trim()
+      const { data: latestProfile, error: latestProfileError } = await supabase
+        .from('profiles')
+        .select('username, username_changes, username_changes_reset_at')
+        .eq('id', user.id)
+        .maybeSingle()
+      if (latestProfileError) throw latestProfileError
+
+      const dbUsername = latestProfile?.username || ''
+      let dbUsernameChanges = Number(latestProfile?.username_changes) || 0
+      let dbResetAt = startOfResetWindow(latestProfile?.username_changes_reset_at || new Date())
+
+      if (isResetExpired(dbResetAt)) {
+        const nowIso = new Date().toISOString()
+        const { data: resetRow, error: resetError } = await supabase
+          .from('profiles')
+          .update({ username_changes: 0, username_changes_reset_at: nowIso })
+          .eq('id', user.id)
+          .select('username_changes, username_changes_reset_at')
+          .single()
+        if (resetError) throw resetError
+        dbUsernameChanges = Number(resetRow?.username_changes) || 0
+        dbResetAt = startOfResetWindow(resetRow?.username_changes_reset_at || nowIso)
+      }
+
+      const didUsernameChange = nextUsername !== dbUsername
+      const reachedUsernameLimit = dbUsernameChanges >= USERNAME_CHANGE_LIMIT
+
+      setInitialUsername(dbUsername)
+      setUsernameChanges(dbUsernameChanges)
+      setUsernameChangesResetAt(dbResetAt.toISOString())
+      if (didUsernameChange && reachedUsernameLimit) return
+
       const payload = {
         username: nextUsername || null,
         bio: bio.trim() || null,
         favorite_verse: favoriteVerse.trim() || null,
       }
-      if (didUsernameChange) payload.username_changes = usernameChanges + 1
+      if (didUsernameChange) payload.username_changes = dbUsernameChanges + 1
+      if (!latestProfile?.username_changes_reset_at) payload.username_changes_reset_at = dbResetAt.toISOString()
       const { data, error } = await supabase
         .from('profiles')
         .update(payload)
@@ -154,6 +223,7 @@ export default function EditProfile() {
       await refreshProfile(data)
       setInitialUsername(data?.username || '')
       setUsernameChanges(Number(data?.username_changes) || 0)
+      setUsernameChangesResetAt(startOfResetWindow(data?.username_changes_reset_at || dbResetAt).toISOString())
       setSaveNoticeVisible(true)
     } catch (error) {
       console.error('Profile save error:', error)
@@ -171,7 +241,10 @@ export default function EditProfile() {
   const userEmail = user?.email || ''
   const avatarUrl = avatarPreviewUrl || localAvatarUrl || profile?.avatar_url
   const hasAvatarImage = Boolean(avatarUrl)
-  const reachedUsernameLimit = usernameChanges >= 3
+  const reachedUsernameLimit = usernameChanges >= USERNAME_CHANGE_LIMIT
+  const daysRemainingForUsernameReset = reachedUsernameLimit
+    ? daysUntilReset(usernameChangesResetAt || new Date())
+    : 0
 
   return (
     <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '120px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
@@ -284,7 +357,7 @@ export default function EditProfile() {
           />
           {reachedUsernameLimit ? (
             <p style={{ color: '#D4A843', fontSize: '12px', marginBottom: '12px' }}>
-              You've reached the maximum username changes (3).
+              {`You've reached the maximum username changes (${USERNAME_CHANGE_LIMIT}). Your changes will reset in ${daysRemainingForUsernameReset} days.`}
             </p>
           ) : null}
 
