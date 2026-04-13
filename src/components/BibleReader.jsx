@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { dedupeVersesByNumber, prepareBibleReaderVerseText } from '../utils/kjvVerseText'
 import { BOOK_CDN_TO_OSIS } from '../utils/bookOsisMap'
@@ -152,6 +153,15 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
   useEffect(() => {
     if (!showEnglishBibleVersions) setShowTranslationPicker(false)
   }, [showEnglishBibleVersions])
+
+  useEffect(() => {
+    if (!showTranslationPicker || !showEnglishBibleVersions) return undefined
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') setShowTranslationPicker(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [showTranslationPicker, showEnglishBibleVersions])
 
   useEffect(() => {
     if (!open) return
@@ -648,123 +658,129 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
         </div>
       )}
 
-      {/* Translation Picker — bottom sheet */}
-      {showTranslationPicker && showEnglishBibleVersions && (
-        <>
-          <div
-            onClick={() => setShowTranslationPicker(false)}
-            className="glass-scrim"
-            style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 200,
-            }}
-            aria-hidden
-          />
-          <div
-            className="glass-panel"
-            style={{
-              position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              zIndex: 201,
-              borderRadius: '24px 24px 0 0',
-              borderTop: '1px solid rgba(255,255,255,0.08)',
-              padding: '24px 20px 32px',
-              maxHeight: '72vh',
-              overflowY: 'auto',
-              animation: 'slideUp 0.3s ease-out',
-            }}
-            role="listbox"
-            aria-label={t('bible.translation')}
-          >
-            <div style={{ maxWidth: '680px', margin: '0 auto' }}>
-              <div
-                style={{
-                  width: '40px',
-                  height: '4px',
-                  background: 'rgba(255,255,255,0.2)',
-                  borderRadius: '2px',
-                  margin: '0 auto 20px',
-                }}
-              />
-              <h2
-                style={{
-                  color: '#D4A843',
-                  fontSize: '20px',
-                  fontWeight: 700,
-                  marginBottom: '8px',
-                  textAlign: 'center',
-                }}
-              >
-                {t('bible.translation')}
-              </h2>
-              <p style={{ color: 'rgba(245,230,200,0.65)', fontSize: '12px', textAlign: 'center', marginBottom: '20px', lineHeight: 1.45 }}>
-                {HAS_API_BIBLE ? t('bible.apiFollowsAppLanguage') : t('bible.publicDomainNote')}
-              </p>
-              {!HAS_API_BIBLE ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                {translationOptions.map((opt) => {
-                  const active = opt.id === translationId
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      role="option"
-                      aria-selected={active}
-                      onClick={() => {
-                        setTranslationId(opt.id)
-                        setShowTranslationPicker(false)
-                      }}
-                      style={{
-                        background: active ? 'rgba(212,168,67,0.18)' : 'transparent',
-                        border: '1px solid ' + (active ? 'rgba(212,168,67,0.45)' : 'rgba(255,255,255,0.06)'),
-                        borderRadius: '14px',
-                        color: '#F5E6C8',
-                        cursor: 'pointer',
-                        padding: '14px 16px',
-                        textAlign: 'left',
-                        width: '100%',
-                        transition: 'background 0.2s ease',
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '12px' }}>
-                        <span style={{ fontSize: '16px', fontWeight: 700, color: active ? '#D4A843' : '#F5E6C8' }}>{opt.label}</span>
-                        {active ? <span style={{ fontSize: '12px', color: '#D4A843' }}>✓</span> : null}
-                      </div>
-                      <div style={{ fontSize: '14px', fontWeight: 600, marginTop: '4px', color: 'rgba(245,230,200,0.95)' }}>{opt.subtitle}</div>
-                    </button>
-                  )
-                })}
+      {/* Translation Picker — portaled so fixed layer is not clipped/stacked under scroll parents */}
+      {showTranslationPicker &&
+        showEnglishBibleVersions &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <>
+            <div
+              onClick={() => setShowTranslationPicker(false)}
+              className="glass-scrim"
+              style={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 9000,
+              }}
+              aria-hidden
+            />
+            <div
+              className="glass-panel"
+              style={{
+                position: 'fixed',
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 9001,
+                borderRadius: '24px 24px 0 0',
+                borderTop: '1px solid rgba(255,255,255,0.08)',
+                padding: '24px 20px 32px',
+                maxHeight: '72vh',
+                overflowY: 'auto',
+                animation: 'bibleTranslationSheetUp 0.3s ease-out',
+                pointerEvents: 'auto',
+              }}
+              role="listbox"
+              aria-label={t('bible.translation')}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ maxWidth: '680px', margin: '0 auto' }}>
+                <div
+                  style={{
+                    width: '40px',
+                    height: '4px',
+                    background: 'rgba(255,255,255,0.2)',
+                    borderRadius: '2px',
+                    margin: '0 auto 20px',
+                  }}
+                />
+                <h2
+                  style={{
+                    color: '#D4A843',
+                    fontSize: '20px',
+                    fontWeight: 700,
+                    marginBottom: '8px',
+                    textAlign: 'center',
+                  }}
+                >
+                  {t('bible.translation')}
+                </h2>
+                <p style={{ color: 'rgba(245,230,200,0.65)', fontSize: '12px', textAlign: 'center', marginBottom: '20px', lineHeight: 1.45 }}>
+                  {HAS_API_BIBLE ? t('bible.apiFollowsAppLanguage') : t('bible.publicDomainNote')}
+                </p>
+                {!HAS_API_BIBLE ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    {translationOptions.map((opt) => {
+                      const active = opt.id === translationId
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          role="option"
+                          aria-selected={active}
+                          onClick={() => {
+                            setTranslationId(opt.id)
+                            setShowTranslationPicker(false)
+                          }}
+                          style={{
+                            background: active ? 'rgba(212,168,67,0.18)' : 'transparent',
+                            border: '1px solid ' + (active ? 'rgba(212,168,67,0.45)' : 'rgba(255,255,255,0.06)'),
+                            borderRadius: '14px',
+                            color: '#F5E6C8',
+                            cursor: 'pointer',
+                            padding: '14px 16px',
+                            textAlign: 'left',
+                            width: '100%',
+                            transition: 'background 0.2s ease',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '12px' }}>
+                            <span style={{ fontSize: '16px', fontWeight: 700, color: active ? '#D4A843' : '#F5E6C8' }}>{opt.label}</span>
+                            {active ? <span style={{ fontSize: '12px', color: '#D4A843' }}>✓</span> : null}
+                          </div>
+                          <div style={{ fontSize: '14px', fontWeight: 600, marginTop: '4px', color: 'rgba(245,230,200,0.95)' }}>{opt.subtitle}</div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => setShowTranslationPicker(false)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'rgba(245,230,200,0.7)',
+                    fontSize: '15px',
+                    cursor: 'pointer',
+                    marginTop: '20px',
+                    padding: '12px',
+                    width: '100%',
+                  }}
+                >
+                  {t('common.close')}
+                </button>
               </div>
-              ) : null}
-              <button
-                type="button"
-                onClick={() => setShowTranslationPicker(false)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'rgba(245,230,200,0.7)',
-                  fontSize: '15px',
-                  cursor: 'pointer',
-                  marginTop: '20px',
-                  padding: '12px',
-                  width: '100%',
-                }}
-              >
-                {t('common.close')}
-              </button>
             </div>
-          </div>
-          <style>{`
-            @keyframes slideUp {
-              from { transform: translateY(100%); }
-              to { transform: translateY(0); }
-            }
-          `}</style>
-        </>
-      )}
+            <style>{`
+              @keyframes bibleTranslationSheetUp {
+                from { transform: translateY(100%); }
+                to { transform: translateY(0); }
+              }
+            `}</style>
+          </>,
+          document.body,
+        )}
 
       {/* Chapter Picker Modal */}
       {showChapterPicker && (
