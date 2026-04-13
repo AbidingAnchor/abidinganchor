@@ -996,7 +996,6 @@ function Journal() {
               role="dialog"
               aria-modal="true"
               aria-labelledby="journal-guided-flow-title"
-              className="glass-panel"
               onClick={(e) => e.stopPropagation()}
               style={{
                 position: 'fixed',
@@ -1012,7 +1011,9 @@ function Journal() {
                 boxSizing: 'border-box',
                 borderRadius: '20px',
                 padding: '24px 20px max(20px, env(safe-area-inset-bottom))',
-                border: '1px solid rgba(255,255,255,0.1)',
+                background: 'rgba(10, 15, 40, 0.97)',
+                border: '1px solid rgba(212, 168, 67, 0.22)',
+                boxShadow: '0 20px 56px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.2)',
               }}
             >
             {/* Progress Bar */}
