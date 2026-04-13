@@ -972,51 +972,49 @@ function Journal() {
 
       {showModal &&
         createPortal(
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="journal-guided-flow-title"
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              minHeight: '100dvh',
-              zIndex: 10000,
-              display: 'flex',
-              alignItems: 'flex-end',
-              justifyContent: 'center',
-              background: 'rgba(0, 0, 0, 0.7)',
-              backdropFilter: 'blur(4px)',
-              WebkitBackdropFilter: 'blur(4px)',
-            }}
-            onClick={() => {
-              setShowModal(false)
-              setCurrentStep(1)
-              setVerseReference('')
-              setVerseText('')
-              setReflection('')
-              setPrayer('')
-              setGratitude('')
-              setSelectedMood('')
-            }}
-          >
-          <div
-            className="glass-panel"
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              width: '100%',
-              maxWidth: '390px',
-              maxHeight: 'min(92vh, 100dvh)',
-              overflow: 'auto',
-              borderRadius: '24px 24px 0 0',
-              padding: '24px 20px max(40px, env(safe-area-inset-bottom))',
-              position: 'relative',
-              zIndex: 1,
-              borderTop: '1px solid rgba(255,255,255,0.1)',
-            }}
-          >
+          <>
+            <div
+              aria-hidden="true"
+              style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 10050,
+              }}
+              onClick={() => {
+                setShowModal(false)
+                setCurrentStep(1)
+                setVerseReference('')
+                setVerseText('')
+                setReflection('')
+                setPrayer('')
+                setGratitude('')
+                setSelectedMood('')
+              }}
+            />
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="journal-guided-flow-title"
+              className="glass-panel"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                zIndex: 10051,
+                width: 'min(90vw, 390px)',
+                maxWidth: '100%',
+                maxHeight: '85vh',
+                overflowY: 'auto',
+                WebkitOverflowScrolling: 'touch',
+                boxSizing: 'border-box',
+                borderRadius: '20px',
+                padding: '24px 20px max(20px, env(safe-area-inset-bottom))',
+                border: '1px solid rgba(255,255,255,0.1)',
+              }}
+            >
             {/* Progress Bar */}
             <div style={{
               marginBottom: '24px'
@@ -1325,8 +1323,8 @@ function Journal() {
             >
               {t('common.cancel')}
             </button>
-          </div>
-          </div>,
+            </div>
+          </>,
           document.body,
         )}
 
