@@ -498,7 +498,7 @@ export default function Settings() {
         {/* Edit Profile Option */}
         <button
           type="button"
-          onClick={() => {}}
+          onClick={() => navigate('/edit-profile')}
           className="glass-panel"
           style={{
             width: '100%',

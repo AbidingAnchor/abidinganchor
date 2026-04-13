@@ -20,6 +20,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsOfService from './pages/TermsOfService'
 import Legal from './pages/Legal'
 import Settings from './pages/Settings'
+import EditProfile from './pages/EditProfile'
 import WorshipMode from './pages/WorshipMode'
 import BibleVideos from './pages/BibleVideos'
 import BottomNav from './components/BottomNav'
@@ -156,6 +157,7 @@ function AppShell() {
               <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
               <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
               <Route path="/worship" element={<ProtectedRoute><WorshipMode /></ProtectedRoute>} />
               <Route path="/bible-videos" element={<ProtectedRoute><BibleVideos /></ProtectedRoute>} />
               <Route path="/onboarding" element={<ProtectedRoute><Onboarding onComplete={() => navigate('/')} /></ProtectedRoute>} />

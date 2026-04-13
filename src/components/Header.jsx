@@ -24,6 +24,7 @@ const HEADER_PATH_TO_KEY = {
   '/friends': 'friends',
   '/support': 'support',
   '/settings': 'settings',
+  '/edit-profile': 'settings',
   '/privacy': 'privacyPolicy',
   '/privacy-policy': 'privacyPolicy',
   '/terms': 'termsOfService',
