@@ -18,8 +18,10 @@ const TEXT_COLOR_CHOICES = {
   orange: '#F97316',
 }
 
-/** Dark backgrounds: bold body copy + filter glow wrapper */
+/** Dark card styles — crisp type, no glow; verse/reflection white, citation gold */
 const DARK_THEME = new Set(['celestial', 'midnight', 'scripture', 'forest', 'ocean'])
+const DARK_VERSE_REFLECTION_COLOR = '#FFFFFF'
+const DARK_REFERENCE_GOLD = '#C9A84C'
 
 const BASE_TEXT_SHADOW = '0 2px 4px rgba(0,0,0,0.9)'
 
@@ -161,10 +163,13 @@ export default function FaithCard({
   const currentStyle = { ...baseStyle, textColor }
 
   const isDarkTheme = DARK_THEME.has(cardStyle)
-  const previewTextShadow = textShadowForColorChoice(textColorChoice)
-  const darkFontWeight = isDarkTheme ? 900 : undefined
+  const previewTextShadow = isDarkTheme ? 'none' : textShadowForColorChoice(textColorChoice)
+  const darkFontWeight = isDarkTheme ? 700 : undefined
 
-  const darkTextGlow = { filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.8))' }
+  const verseReflectionColor = isDarkTheme
+    ? (textColorChoice ? TEXT_COLOR_CHOICES[textColorChoice] : DARK_VERSE_REFLECTION_COLOR)
+    : currentStyle.textColor
+  const referenceColor = isDarkTheme ? DARK_REFERENCE_GOLD : currentStyle.textColor
 
   return (
     <div 
@@ -227,7 +232,6 @@ export default function FaithCard({
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'space-between',
-          ...(isDarkTheme ? darkTextGlow : {}),
         }}
       >
         {/* Top watermark */}
@@ -238,7 +242,7 @@ export default function FaithCard({
           <p style={{
             fontFamily: CONTENT_FONTS.elegant,
             fontSize: '28px',
-            fontWeight: isDarkTheme ? 900 : 700,
+            fontWeight: 700,
             color: currentStyle.accentColor,
             letterSpacing: '0.15em',
             textTransform: 'uppercase',
@@ -267,7 +271,7 @@ export default function FaithCard({
               fontSize: '48px',
               fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
               fontWeight: darkFontWeight,
-              color: currentStyle.textColor,
+              color: referenceColor,
               marginBottom: '40px',
               textShadow: previewTextShadow,
             }}>
@@ -280,8 +284,8 @@ export default function FaithCard({
             <p style={{
               fontFamily: bodyFont,
               fontSize: '54px',
-              fontWeight: isDarkTheme ? 900 : (contentFont === 'modern' ? 600 : 500),
-              color: currentStyle.textColor,
+              fontWeight: isDarkTheme ? 700 : (contentFont === 'modern' ? 600 : 500),
+              color: verseReflectionColor,
               lineHeight: '1.5',
               marginBottom: '50px',
               textShadow: previewTextShadow,
@@ -296,7 +300,7 @@ export default function FaithCard({
             height: '2px',
             background: `linear-gradient(90deg, transparent, ${currentStyle.accentColor}, transparent)`,
             margin: '20px 0',
-            boxShadow: '0 0 10px rgba(212, 168, 67, 0.5)',
+            boxShadow: isDarkTheme ? 'none' : '0 0 10px rgba(212, 168, 67, 0.5)',
           }} />
 
           {/* User reflection/prayer */}
@@ -306,7 +310,7 @@ export default function FaithCard({
               fontSize: '40px',
               fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
               fontWeight: darkFontWeight,
-              color: currentStyle.textColor,
+              color: verseReflectionColor,
               lineHeight: '1.6',
               maxWidth: '800px',
               textShadow: previewTextShadow,
@@ -324,7 +328,7 @@ export default function FaithCard({
           <p style={{
             fontFamily: 'Inter, sans-serif',
             fontSize: '28px',
-            fontWeight: isDarkTheme ? 900 : 500,
+            fontWeight: isDarkTheme ? 600 : 500,
             color: currentStyle.accentColor,
             letterSpacing: '0.05em',
             margin: 0,
