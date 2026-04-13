@@ -23,7 +23,8 @@ function YouTubeEmbed({ videoId, title }) {
       style={{
         position: 'relative',
         width: '100%',
-        paddingBottom: '56.25%',
+        /* 16:9 from width; on narrow screens ensure at least 300px tall */
+        paddingBottom: 'max(56.25%, 300px)',
         height: 0,
         overflow: 'hidden',
         borderRadius: '14px',
@@ -287,10 +288,10 @@ export default function BibleVideos() {
             inset: 0,
             zIndex: 10050,
             display: 'flex',
-            alignItems: 'flex-end',
+            alignItems: 'center',
             justifyContent: 'center',
-            padding: '16px',
-            paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
+            padding:
+              'max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left))',
             background: 'rgba(5,10,28,0.82)',
             backdropFilter: 'blur(6px)',
           }}
@@ -299,12 +300,13 @@ export default function BibleVideos() {
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              width: '100%',
-              maxWidth: '420px',
-              maxHeight: '90vh',
+              boxSizing: 'border-box',
+              width: 'min(90vw, 560px)',
+              maxWidth: '100%',
+              maxHeight: 'min(92vh, calc(100vh - 24px))',
               overflow: 'auto',
               borderRadius: '18px',
-              padding: '16px',
+              padding: '12px 14px 16px',
               border: '1px solid rgba(212,168,67,0.25)',
               background: 'linear-gradient(180deg, #0a1a3e 0%, #0d1f4e 100%)',
               boxShadow: '0 16px 48px rgba(0,0,0,0.5)',
