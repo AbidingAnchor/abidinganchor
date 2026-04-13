@@ -157,22 +157,33 @@ export default function FaithCard({
   }
 
   const baseStyle = getCardStyle()
-  const textColor = (textColorChoice && TEXT_COLOR_CHOICES[textColorChoice])
-    ? TEXT_COLOR_CHOICES[textColorChoice]
-    : baseStyle.textColor
-  const currentStyle = { ...baseStyle, textColor }
+  const pickedTextColor =
+    textColorChoice && TEXT_COLOR_CHOICES[textColorChoice]
+      ? TEXT_COLOR_CHOICES[textColorChoice]
+      : null
 
   const isDarkTheme = DARK_THEME.has(cardStyle)
   const previewTextShadow = isDarkTheme ? 'none' : textShadowForColorChoice(textColorChoice)
   const darkFontWeight = isDarkTheme ? 700 : undefined
 
-  const verseReflectionColor = isDarkTheme
-    ? (textColorChoice ? TEXT_COLOR_CHOICES[textColorChoice] : DARK_VERSE_REFLECTION_COLOR)
-    : currentStyle.textColor
-  const referenceColor = isDarkTheme ? DARK_REFERENCE_GOLD : currentStyle.textColor
+  /** When user picks a color, verse, reference, and reflection all use it; otherwise theme defaults. */
+  const verseReflectionColor = pickedTextColor
+    ?? (isDarkTheme ? DARK_VERSE_REFLECTION_COLOR : baseStyle.textColor)
+  const referenceColor = pickedTextColor
+    ?? (isDarkTheme ? DARK_REFERENCE_GOLD : baseStyle.textColor)
+
+  const currentStyle = { ...baseStyle, textColor: pickedTextColor ?? baseStyle.textColor }
+
+  /** Custom properties so [data-theme="day"] p { color !important } cannot override preview text */
+  const faithCardCssVars = {
+    '--faith-reference': referenceColor,
+    '--faith-body': verseReflectionColor,
+    '--faith-accent': currentStyle.accentColor,
+  }
 
   return (
     <div 
+      data-faith-card
       style={{
         width: '1080px',
         height: '1080px',
@@ -187,6 +198,7 @@ export default function FaithCard({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'space-between',
+        ...faithCardCssVars,
       }}
     >
       {/* Star texture overlay - only for Celestial theme */}
@@ -239,16 +251,19 @@ export default function FaithCard({
           textAlign: 'center',
           marginTop: '20px',
         }}>
-          <p style={{
-            fontFamily: CONTENT_FONTS.elegant,
-            fontSize: '28px',
-            fontWeight: 700,
-            color: currentStyle.accentColor,
-            letterSpacing: '0.15em',
-            textTransform: 'uppercase',
-            margin: 0,
-            textShadow: previewTextShadow,
-          }}>
+          <p
+            className="faith-preview-text-accent"
+            style={{
+              fontFamily: CONTENT_FONTS.elegant,
+              fontSize: '28px',
+              fontWeight: 700,
+              color: currentStyle.accentColor,
+              letterSpacing: '0.15em',
+              textTransform: 'uppercase',
+              margin: 0,
+              textShadow: previewTextShadow,
+            }}
+          >
             🕊️ AbidingAnchor
           </p>
         </div>
@@ -266,30 +281,36 @@ export default function FaithCard({
         }}>
           {/* Verse reference */}
           {verseReference && (
-            <p style={{
-              fontFamily: bodyFont,
-              fontSize: '48px',
-              fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
-              fontWeight: darkFontWeight,
-              color: referenceColor,
-              marginBottom: '40px',
-              textShadow: previewTextShadow,
-            }}>
+            <p
+              className="faith-preview-text-ref"
+              style={{
+                fontFamily: bodyFont,
+                fontSize: '48px',
+                fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
+                fontWeight: darkFontWeight,
+                color: referenceColor,
+                marginBottom: '40px',
+                textShadow: previewTextShadow,
+              }}
+            >
               {verseReference}
             </p>
           )}
 
           {/* Verse text */}
           {verseText && (
-            <p style={{
-              fontFamily: bodyFont,
-              fontSize: '54px',
-              fontWeight: isDarkTheme ? 700 : (contentFont === 'modern' ? 600 : 500),
-              color: verseReflectionColor,
-              lineHeight: '1.5',
-              marginBottom: '50px',
-              textShadow: previewTextShadow,
-            }}>
+            <p
+              className="faith-preview-text-body"
+              style={{
+                fontFamily: bodyFont,
+                fontSize: '54px',
+                fontWeight: isDarkTheme ? 700 : (contentFont === 'modern' ? 600 : 500),
+                color: verseReflectionColor,
+                lineHeight: '1.5',
+                marginBottom: '50px',
+                textShadow: previewTextShadow,
+              }}
+            >
               {verseText}
             </p>
           )}
@@ -305,16 +326,19 @@ export default function FaithCard({
 
           {/* User reflection/prayer */}
           {userReflection && (
-            <p style={{
-              fontFamily: bodyFont,
-              fontSize: '40px',
-              fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
-              fontWeight: darkFontWeight,
-              color: verseReflectionColor,
-              lineHeight: '1.6',
-              maxWidth: '800px',
-              textShadow: previewTextShadow,
-            }}>
+            <p
+              className="faith-preview-text-body"
+              style={{
+                fontFamily: bodyFont,
+                fontSize: '40px',
+                fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
+                fontWeight: darkFontWeight,
+                color: verseReflectionColor,
+                lineHeight: '1.6',
+                maxWidth: '800px',
+                textShadow: previewTextShadow,
+              }}
+            >
               {userReflection}
             </p>
           )}
@@ -325,16 +349,19 @@ export default function FaithCard({
           textAlign: 'center',
           marginBottom: '20px',
         }}>
-          <p style={{
-            fontFamily: 'Inter, sans-serif',
-            fontSize: '28px',
-            fontWeight: isDarkTheme ? 600 : 500,
-            color: currentStyle.accentColor,
-            letterSpacing: '0.05em',
-            margin: 0,
-            opacity: 0.7,
-            textShadow: previewTextShadow,
-          }}>
+          <p
+            className="faith-preview-text-accent"
+            style={{
+              fontFamily: 'Inter, sans-serif',
+              fontSize: '28px',
+              fontWeight: isDarkTheme ? 600 : 500,
+              color: currentStyle.accentColor,
+              letterSpacing: '0.05em',
+              margin: 0,
+              opacity: 0.7,
+              textShadow: previewTextShadow,
+            }}
+          >
             abidinganchor.vercel.app
           </p>
         </div>

@@ -30,6 +30,7 @@ import WorshipPlayer from './components/WorshipPlayer'
 import Footer from './components/Footer'
 import Onboarding from './components/Onboarding'
 import Auth from './pages/Auth'
+import ResetPassword from './pages/ResetPassword'
 import { useAuth } from './context/AuthContext'
 import LoadingScreen from './components/LoadingScreen'
 import BackgroundManager from './components/BackgroundManager'
@@ -104,14 +105,17 @@ function AppShell() {
     }),
     [worshipPlayback.isPlaying, worshipPlayback.trackName, worshipVisible],
   )
-  const showNav = location.pathname !== '/auth' && location.pathname !== '/onboarding'
+  const showNav =
+    location.pathname !== '/auth' && location.pathname !== '/reset-password' && location.pathname !== '/onboarding'
   const showFooter =
     location.pathname !== '/auth' &&
+    location.pathname !== '/reset-password' &&
     location.pathname !== '/onboarding' &&
     location.pathname !== '/read' &&
     location.pathname !== '/reading-plan' &&
     location.pathname !== '/worship'
-  const showHeader = location.pathname !== '/auth' && location.pathname !== '/onboarding'
+  const showHeader =
+    location.pathname !== '/auth' && location.pathname !== '/reset-password' && location.pathname !== '/onboarding'
 
   const openWorship = (startPlaying = false) => {
     setWorshipVisible(true)
@@ -187,6 +191,7 @@ function AppShell() {
           >
             <Routes>
               <Route path="/auth" element={<Auth />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/" element={<ProtectedRoute><Home onOpenWorship={(startPlaying) => openWorship(startPlaying)} worshipStatus={worshipStatus} /></ProtectedRoute>} />
               <Route path="/read" element={<ProtectedRoute><ReadingPlan onOpenWorship={(startPlaying) => openWorship(startPlaying)} /></ProtectedRoute>} />
               <Route path="/reading-plan" element={<ProtectedRoute><ReadingPlan onOpenWorship={(startPlaying) => openWorship(startPlaying)} /></ProtectedRoute>} />

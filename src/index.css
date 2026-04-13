@@ -41,6 +41,11 @@
   --heading-text: rgba(255,255,255,0.95);
   --label-text: rgba(255,255,255,0.70);
   --section-title: #D4A843;
+  /* Warm parchment for card surfaces (see .app-card, .glass-panel, .home-gold-glass) */
+  --card-parchment: #f5edd6;
+  --card-parchment-hover: #ebe3cf;
+  --card-parchment-ink: #1c1812;
+  --card-parchment-ink-muted: rgba(28, 24, 18, 0.72);
 }
 
 [data-theme="day"] {
@@ -87,6 +92,11 @@
   --label-text: #2a3f6f;
   --section-title: #8B6200;
 
+  --card-parchment: #f5edd6;
+  --card-parchment-hover: #ebe3cf;
+  --card-parchment-ink: #1c1812;
+  --card-parchment-ink-muted: rgba(28, 24, 18, 0.72);
+
   --glass-nav-blur: 20px;
   --glass-scrim: rgba(200, 220, 240, 0.45);
 }
@@ -127,6 +137,11 @@
   --heading-text: rgba(255,245,230,0.95);
   --label-text: rgba(255,225,195,0.75);
   --section-title: #F4C060;
+
+  --card-parchment: #f5edd6;
+  --card-parchment-hover: #ebe3cf;
+  --card-parchment-ink: #1c1812;
+  --card-parchment-ink-muted: rgba(28, 24, 18, 0.72);
 }
 
 * {
@@ -171,11 +186,18 @@ body {
   background: transparent;
 }
 
-/* Home: dark glass panels — readable on bright day sky; contrast from panel only, not full-screen dim */
+/* Home: warm parchment panels — readable on bright day sky */
 .home-gold-glass {
-  background: rgba(10, 10, 30, 0.6);
+  background: var(--card-parchment);
+  color: var(--card-parchment-ink);
   border: 1px solid rgba(212, 168, 67, 0.3);
   box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35);
+  --text-primary: var(--card-parchment-ink);
+  --text-secondary: var(--card-parchment-ink-muted);
+  --verse-text: #252018;
+  --heading-text: var(--card-parchment-ink);
+  --label-text: rgba(28, 24, 18, 0.68);
+  --streak-text: var(--card-parchment-ink);
 }
 
 .home-gold-glass--streak-hot {
@@ -205,7 +227,7 @@ body {
 }
 
 .home-tool-tile:hover {
-  background: rgba(10, 10, 30, 0.72);
+  background: var(--card-parchment-hover);
   border-color: rgba(212, 168, 67, 0.45);
   box-shadow: 0 0 18px rgba(212, 168, 67, 0.15);
 }
@@ -679,21 +701,58 @@ body {
   to { opacity: 1; }
 }
 .app-card {
-  background: var(--glass-bg);
+  background: var(--card-parchment);
+  color: var(--card-parchment-ink);
   border: 1px solid var(--glass-border);
   border-radius: 18px;
-  box-shadow: var(--card-shadow);
+  box-shadow: var(--card-shadow, 0 4px 20px rgba(0, 0, 0, 0.08));
   padding: 20px;
   transition: border-color 0.3s ease;
+  --text-primary: var(--card-parchment-ink);
+  --text-secondary: var(--card-parchment-ink-muted);
+  --verse-text: #252018;
+  --heading-text: var(--card-parchment-ink);
+  --label-text: rgba(28, 24, 18, 0.68);
+  --streak-text: var(--card-parchment-ink);
+}
+
+.app-card .app-input {
+  background: rgba(255, 255, 255, 0.75);
+  border-color: rgba(180, 150, 100, 0.45);
+  color: var(--card-parchment-ink);
+}
+
+.app-card .app-input::placeholder {
+  color: rgba(28, 24, 18, 0.45);
+}
+
+/* Tailwind `text-white` on parchment surfaces — use ink for contrast */
+.app-card.text-white,
+.glass.text-white,
+.glass-panel.text-white,
+.glass-card.text-white {
+  color: var(--card-parchment-ink) !important;
 }
 
 /* Literal blur() — some engines mishandle var() inside filter/backdrop-filter */
 .glass-panel {
-  background: var(--glass-bg);
+  background: var(--card-parchment);
+  color: var(--card-parchment-ink);
   border: 1px solid var(--glass-border);
   border-radius: 18px;
   box-shadow: var(--glass-shadow);
   transition: background 0.4s ease, border-color 0.4s ease;
+  --text-primary: var(--card-parchment-ink);
+  --text-secondary: var(--card-parchment-ink-muted);
+  --verse-text: #252018;
+  --heading-text: var(--card-parchment-ink);
+  --label-text: rgba(28, 24, 18, 0.68);
+  --streak-text: var(--card-parchment-ink);
+}
+
+.glass-panel:hover {
+  background: var(--card-parchment-hover);
+  border-color: var(--glass-border-hover);
 }
 
 .glass-nav-bar {
@@ -987,24 +1046,38 @@ body {
   pointer-events: none;
 }
 .glass {
-  background: var(--glass-bg);
+  background: var(--card-parchment);
+  color: var(--card-parchment-ink);
   border: 1px solid var(--glass-border);
   border-radius: 18px;
-  box-shadow: var(--card-shadow);
+  box-shadow: var(--card-shadow, 0 4px 20px rgba(0, 0, 0, 0.08));
+  --text-primary: var(--card-parchment-ink);
+  --text-secondary: var(--card-parchment-ink-muted);
+  --verse-text: #252018;
+  --heading-text: var(--card-parchment-ink);
+  --label-text: rgba(28, 24, 18, 0.68);
+  --streak-text: var(--card-parchment-ink);
 }
 .glass-strong {
-  background: var(--glass-bg);
+  background: var(--card-parchment);
 }
 
 .glass-card {
-  background: var(--glass-bg);
+  background: var(--card-parchment);
+  color: var(--card-parchment-ink);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
   transition: background 0.4s ease, border-color 0.4s ease;
+  --text-primary: var(--card-parchment-ink);
+  --text-secondary: var(--card-parchment-ink-muted);
+  --verse-text: #252018;
+  --heading-text: var(--card-parchment-ink);
+  --label-text: rgba(28, 24, 18, 0.68);
+  --streak-text: var(--card-parchment-ink);
 }
 
 .glass-card:hover {
-  background: var(--glass-bg-hover);
+  background: var(--card-parchment-hover);
   border-color: var(--glass-border-hover);
 }
 
@@ -1190,7 +1263,7 @@ body {
 [data-theme="day"] .glass-panel,
 [data-theme="day"] .glass-card,
 [data-theme="day"] .glass {
-  background: rgba(255, 255, 255, 0.55) !important;
+  background: var(--card-parchment) !important;
   border: 1px solid rgba(212, 168, 67, 0.25) !important;
   box-shadow: 
     0 8px 40px rgba(180, 130, 40, 0.18),
@@ -1200,7 +1273,7 @@ body {
 
 [data-theme="day"] .glass-panel:hover,
 [data-theme="day"] .glass-card:hover {
-  background: rgba(255, 255, 255, 0.65) !important;
+  background: var(--card-parchment-hover) !important;
   border-color: rgba(212, 168, 67, 0.45) !important;
   box-shadow:
     0 12px 48px rgba(180, 130, 40, 0.22),

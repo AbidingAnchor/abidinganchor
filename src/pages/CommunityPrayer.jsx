@@ -402,7 +402,7 @@ export default function CommunityPrayer() {
           onClick={() => !submitting && setModalOpen(false)}
         >
           <div
-            className="w-full max-w-md rounded-2xl p-5 text-white shadow-xl app-card"
+            className="w-full max-w-md rounded-2xl p-5 text-stone-900 shadow-xl app-card"
             style={{ maxHeight: '90vh', overflow: 'auto' }}
             role="dialog"
             aria-modal="true"

@@ -21,11 +21,11 @@
   color: #0f1e3d !important;
 }
 
-/* Glass cards */
+/* Glass / card surfaces — warm parchment */
 [data-theme="day"] [class*="glass"],
 [data-theme="day"] [class*="card"],
 [data-theme="day"] [class*="Card"] {
-  background: rgba(255, 255, 255, 0.75) !important;
+  background: #f5edd6 !important;
   border-color: rgba(180, 210, 240, 0.60) !important;
   color: #0f1e3d !important;
 }
@@ -33,7 +33,7 @@
 /* Any element with inline rgba dark background */
 [data-theme="day"] [style*="rgba(15, 23, 42"],
 [data-theme="day"] [style*="rgba(15,23,42"] {
-  background: rgba(255, 255, 255, 0.75) !important;
+  background: #f5edd6 !important;
   color: #0f1e3d !important;
 }
 
@@ -73,6 +73,17 @@
 [data-theme="day"] p,
 [data-theme="day"] span:not([class*="emoji"]) {
   color: #0f1e3d !important;
+}
+
+/* Share Your Faith card: day theme forces all p to navy; re-apply chosen colors with higher specificity */
+[data-theme="day"] [data-faith-card] p.faith-preview-text-ref {
+  color: var(--faith-reference) !important;
+}
+[data-theme="day"] [data-faith-card] p.faith-preview-text-body {
+  color: var(--faith-body) !important;
+}
+[data-theme="day"] [data-faith-card] p.faith-preview-text-accent {
+  color: var(--faith-accent) !important;
 }
 
 /* Labels and small text */

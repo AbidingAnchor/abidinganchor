@@ -27,15 +27,82 @@ export default function ShareCard() {
     }
   }, [location.state])
 
+  /** Preview tiles mirror FaithCard backgrounds so choices read at a glance */
   const cardStyles = [
-    { id: 'celestial', name: 'Celestial', description: 'Dark navy + stars' },
-    { id: 'dawn', name: 'Dawn', description: 'Purple to gold gradient' },
-    { id: 'scripture', name: 'Scripture', description: 'Dark green, earthy' },
-    { id: 'midnight', name: 'Midnight', description: 'Pure black, minimal' },
-    { id: 'golden', name: 'Golden Hour', description: 'Warm gold gradient' },
-    { id: 'ocean', name: 'Ocean', description: 'Deep blue & teal' },
-    { id: 'rose', name: 'Rose Garden', description: 'Soft pink & cream' },
-    { id: 'forest', name: 'Forest', description: 'Deep green & earth' },
+    {
+      id: 'celestial',
+      name: 'Celestial',
+      description: 'Dark navy + stars',
+      previewBg:
+        'radial-gradient(ellipse at top, #1e3a6e 0%, #162955 50%, #0d1f3c 100%)',
+      previewStars: true,
+      labelColor: '#FFFFFF',
+      subColor: 'rgba(255,255,255,0.82)',
+      idleBorder: 'rgba(212,168,67,0.35)',
+    },
+    {
+      id: 'dawn',
+      name: 'Dawn',
+      description: 'Purple to gold gradient',
+      previewBg: 'linear-gradient(135deg, #2d1b69 0%, #5a2d82 40%, #c2773a 80%, #e8a84e 100%)',
+      labelColor: '#FFFFFF',
+      subColor: 'rgba(255,255,255,0.85)',
+      idleBorder: 'rgba(255,255,255,0.22)',
+    },
+    {
+      id: 'scripture',
+      name: 'Scripture',
+      description: 'Dark green, earthy',
+      previewBg: 'linear-gradient(180deg, #2d6a4f 0%, #1e4d35 100%)',
+      labelColor: '#FFFFFF',
+      subColor: 'rgba(255,248,231,0.85)',
+      idleBorder: 'rgba(212,168,67,0.35)',
+    },
+    {
+      id: 'midnight',
+      name: 'Midnight',
+      description: 'Pure black, minimal',
+      previewBg: 'linear-gradient(180deg, #000000 0%, #0a0a0f 55%, #000000 100%)',
+      labelColor: '#FFFFFF',
+      subColor: 'rgba(255,255,255,0.78)',
+      idleBorder: 'rgba(212,168,67,0.4)',
+    },
+    {
+      id: 'golden',
+      name: 'Golden Hour',
+      description: 'Warm gold gradient',
+      previewBg: 'linear-gradient(165deg, #fff5e6 0%, #ffd89b 38%, #e8a84e 72%, #c77d2a 100%)',
+      labelColor: '#1a1a1a',
+      subColor: 'rgba(26,26,26,0.75)',
+      idleBorder: 'rgba(139,105,20,0.45)',
+    },
+    {
+      id: 'ocean',
+      name: 'Ocean',
+      description: 'Deep blue & teal',
+      previewBg: 'linear-gradient(180deg, #1a3a6e 0%, #1e6091 50%, #1a8a7a 100%)',
+      labelColor: '#FFFFFF',
+      subColor: 'rgba(224,255,251,0.88)',
+      idleBorder: 'rgba(94,234,212,0.4)',
+    },
+    {
+      id: 'rose',
+      name: 'Rose Garden',
+      description: 'Soft pink & cream',
+      previewBg: 'linear-gradient(170deg, #fffdfb 0%, #fce7f3 40%, #fbcfe8 75%, #f9a8d4 100%)',
+      labelColor: '#4a044e',
+      subColor: 'rgba(74,4,78,0.72)',
+      idleBorder: 'rgba(219,39,119,0.35)',
+    },
+    {
+      id: 'forest',
+      name: 'Forest',
+      description: 'Deep green & earth',
+      previewBg: 'linear-gradient(180deg, #2d6a4f 0%, #3d8b6f 60%, #2a5c44 100%)',
+      labelColor: '#FFFFFF',
+      subColor: 'rgba(240,253,244,0.88)',
+      idleBorder: 'rgba(163,177,138,0.45)',
+    },
   ]
 
   const fontOptions = [
@@ -197,26 +264,45 @@ export default function ShareCard() {
           Card Style
         </p>
         <div className="grid grid-cols-2 gap-3">
-          {cardStyles.map((style) => (
-            <button
-              key={style.id}
-              onClick={() => setCardStyle(style.id)}
-              className={`
-                p-4 rounded-xl border-2 transition-all text-left
-                ${cardStyle === style.id
-                  ? 'border-[#D4A843] bg-[#D4A843]/10 shadow-[0_0_20px_rgba(212,168,67,0.3)]'
-                  : 'hover:border-white/20'
-                }
-              `}
-              style={{
-                borderColor: cardStyle === style.id ? 'var(--gold-border)' : 'var(--glass-border)',
-                background: cardStyle === style.id ? 'rgba(212,168,67,0.1)' : 'var(--glass-bg)'
-              }}
-            >
-              <p style={{ color: 'var(--text-primary)', fontWeight: 600, marginBottom: '4px' }}>{style.name}</p>
-              <p style={{ color: 'var(--text-primary)', fontSize: '12px', opacity: 0.7 }}>{style.description}</p>
-            </button>
-          ))}
+          {cardStyles.map((style) => {
+            const selected = cardStyle === style.id
+            const starDots =
+              'radial-gradient(1px 1px at 18% 28%, rgba(255,255,255,0.45), transparent), radial-gradient(1px 1px at 72% 22%, rgba(255,255,255,0.35), transparent), radial-gradient(1px 1px at 45% 62%, rgba(255,255,255,0.3), transparent), radial-gradient(1px 1px at 88% 78%, rgba(255,255,255,0.25), transparent)'
+            return (
+              <button
+                key={style.id}
+                type="button"
+                onClick={() => setCardStyle(style.id)}
+                className="relative overflow-hidden rounded-xl border-2 p-4 text-left transition-all min-h-[5.5rem] shadow-md hover:brightness-[1.03] active:scale-[0.99]"
+                style={{
+                  borderColor: selected ? '#D4A843' : style.idleBorder,
+                  background: style.previewBg,
+                  boxShadow: selected
+                    ? '0 0 0 2px rgba(212,168,67,0.45), 0 8px 24px rgba(0,0,0,0.35)'
+                    : '0 4px 14px rgba(0,0,0,0.2)',
+                }}
+              >
+                {style.previewStars ? (
+                  <div
+                    className="pointer-events-none absolute inset-0 opacity-[0.55]"
+                    style={{
+                      backgroundImage: starDots,
+                      backgroundSize: '120% 120%',
+                    }}
+                    aria-hidden
+                  />
+                ) : null}
+                <div className="relative z-[1]" style={{ textShadow: style.labelColor === '#FFFFFF' ? '0 1px 3px rgba(0,0,0,0.65)' : '0 1px 2px rgba(255,255,255,0.5)' }}>
+                  <div style={{ color: style.labelColor, fontWeight: 600, marginBottom: '4px', fontSize: '15px' }}>
+                    {style.name}
+                  </div>
+                  <div style={{ color: style.subColor, fontSize: '12px', lineHeight: 1.35 }}>
+                    {style.description}
+                  </div>
+                </div>
+              </button>
+            )
+          })}
         </div>
       </div>
 

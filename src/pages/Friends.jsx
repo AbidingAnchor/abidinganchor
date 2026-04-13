@@ -5,9 +5,10 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
 const cardStyle = {
-  background: 'rgba(255, 255, 255, 0.1)',
-  border: '1px solid rgba(255, 255, 255, 0.2)',
+  background: '#F5EDD6',
+  border: '1px solid rgba(212, 168, 67, 0.35)',
   borderRadius: '16px',
+  color: '#1c1812',
 }
 
 function otherUserId(row, me) {
@@ -284,7 +285,7 @@ export default function Friends() {
               className="flex-1 rounded-xl py-2.5 text-xs font-semibold transition sm:text-sm"
               style={{
                 background: tab === key ? 'rgba(212, 168, 67, 0.35)' : 'transparent',
-                color: tab === key ? '#fff' : 'rgba(255,255,255,0.7)',
+                color: tab === key ? '#1c1812' : 'rgba(28, 24, 18, 0.55)',
                 border: tab === key ? '1px solid rgba(212,168,67,0.6)' : '1px solid transparent',
               }}
             >
@@ -294,7 +295,7 @@ export default function Friends() {
         </div>
 
         {loading && tab !== 'find' ? (
-          <article className="p-4 text-white/70" style={cardStyle}>
+          <article className="p-4 text-stone-700" style={cardStyle}>
             Loading…
           </article>
         ) : null}
@@ -302,31 +303,31 @@ export default function Friends() {
         {tab === 'find' && (
           <section className="space-y-4">
             <div style={cardStyle} className="p-4">
-              <label className="text-xs font-semibold uppercase tracking-wide text-white/70">Search by name or email</label>
+              <label className="text-xs font-semibold uppercase tracking-wide text-stone-600">Search by name or email</label>
               <div className="mt-2 flex gap-2">
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && runSearch()}
                   placeholder="Start typing…"
-                  className="glass-input-field min-w-0 flex-1 rounded-xl p-3 text-white placeholder:text-white/50 focus:outline-none focus:ring-1 focus:ring-[#D4A843]"
+                  className="glass-input-field min-w-0 flex-1 rounded-xl p-3 text-stone-900 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-[#D4A843]"
                 />
                 <button type="button" className="gold-btn shrink-0 px-4" onClick={() => runSearch()}>
                   Search
                 </button>
               </div>
-              <p className="mt-2 text-xs text-white/55">People you are already friends with or have a pending request with will not appear.</p>
+              <p className="mt-2 text-xs text-stone-600">People you are already friends with or have a pending request with will not appear.</p>
             </div>
-            {searching ? <p className="text-sm text-white/70">Searching…</p> : null}
+            {searching ? <p className="text-sm text-stone-700">Searching…</p> : null}
             {!searching && searchResults.length === 0 && search.trim() ? (
-              <p className="text-sm text-white/70">No matches found.</p>
+              <p className="text-sm text-stone-700">No matches found.</p>
             ) : null}
             <ul className="space-y-3">
               {searchResults.map((p) => (
-                <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 p-4 text-white" style={cardStyle}>
+                <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 p-4 text-stone-900" style={cardStyle}>
                   <div>
-                    <p className="font-semibold text-white">{displayName(p)}</p>
-                    {p.email ? <p className="text-xs text-white/60">{p.email}</p> : null}
+                    <p className="font-semibold text-stone-900">{displayName(p)}</p>
+                    {p.email ? <p className="text-xs text-stone-600">{p.email}</p> : null}
                   </div>
                   <button type="button" className="gold-btn text-sm" onClick={() => addFriend(p.id)}>
                     Add Friend
@@ -340,22 +341,22 @@ export default function Friends() {
         {tab === 'requests' && !loading && (
           <section className="space-y-3">
             {incoming.length === 0 ? (
-              <article className="p-6 text-center text-white/85" style={cardStyle}>
+              <article className="p-6 text-center text-stone-800" style={cardStyle}>
                 <p className="text-2xl text-[#D4A843]">📬</p>
-                <p className="mt-2 font-semibold text-white">No pending requests</p>
+                <p className="mt-2 font-semibold text-stone-900">No pending requests</p>
               </article>
             ) : (
               incoming.map((r) => (
-                <article key={r.id} className="p-4 text-white" style={cardStyle}>
-                  <p className="font-semibold text-white">{displayName(r.requester)}</p>
-                  <p className="text-xs text-white/60">wants to be friends</p>
+                <article key={r.id} className="p-4 text-stone-900" style={cardStyle}>
+                  <p className="font-semibold text-stone-900">{displayName(r.requester)}</p>
+                  <p className="text-xs text-stone-600">wants to be friends</p>
                   <div className="mt-3 flex gap-2">
                     <button type="button" className="gold-btn flex-1 py-2 text-sm" onClick={() => acceptRequest(r.id)}>
                       Accept
                     </button>
                     <button
                       type="button"
-                      className="flex-1 rounded-xl border border-white/30 py-2 text-sm font-semibold text-white/90"
+                      className="flex-1 rounded-xl border border-stone-400/50 py-2 text-sm font-semibold text-stone-800"
                       onClick={() => declineRequest(r.id)}
                     >
                       Decline
@@ -370,16 +371,16 @@ export default function Friends() {
         {tab === 'friends' && !loading && (
           <section className="space-y-3">
             {friendsList.length === 0 ? (
-              <article className="p-6 text-center text-white/85" style={cardStyle}>
+              <article className="p-6 text-center text-stone-800" style={cardStyle}>
                 <p className="text-2xl text-[#D4A843]">👥</p>
-                <p className="mt-2 font-semibold text-white">No friends yet</p>
-                <p className="mt-1 text-sm text-white/70">Use Find Friends to connect.</p>
+                <p className="mt-2 font-semibold text-stone-900">No friends yet</p>
+                <p className="mt-1 text-sm text-stone-600">Use Find Friends to connect.</p>
               </article>
             ) : (
               friendsList.map(({ friendshipId, profile: p }) => (
                 <article
                   key={friendshipId}
-                  className="flex flex-wrap items-center justify-between gap-3 p-4 text-white"
+                  className="flex flex-wrap items-center justify-between gap-3 p-4 text-stone-900"
                   style={cardStyle}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -425,7 +426,7 @@ export default function Friends() {
                       </button>
                     </div>
                     <div>
-                      <p className="font-semibold text-white">{displayName(p)}</p>
+                      <p className="font-semibold text-stone-900">{displayName(p)}</p>
                       <p className="text-sm text-[#D4A843]">
                         {t('home.dayStreak', { n: Math.max(0, Number(p.reading_streak) || 0) })}
                       </p>
