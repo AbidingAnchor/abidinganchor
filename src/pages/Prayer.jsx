@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
@@ -247,50 +248,72 @@ export default function Prayer() {
         )}
       </div>
 
-      {showAddModal ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setShowAddModal(false)}
-            aria-hidden
-          />
-          <div
-            className="glass relative z-10 w-full max-w-md rounded-3xl p-6 border border-white/10 pointer-events-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-[#D4A843] font-bold text-center mb-4">{t('prayer.addPersonalPrayer')}</h2>
-            <textarea
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              className="relative z-10 w-full min-h-[140px] rounded-xl border border-white/15 p-4 mb-4 outline-none focus:border-[#D4A843]/40 pointer-events-auto caret-[#F5E6B8] placeholder:text-[rgba(255,255,255,0.55)]"
-              style={{
-                color: '#ffffff',
-                backgroundColor: 'rgba(255, 255, 255, 0.08)',
-              }}
-              placeholder={t('prayer.personalPlaceholder')}
-            />
-            <button
-              type="button"
-              className="btn-primary w-full mb-2 disabled:opacity-50"
-              disabled={saving || !draft.trim()}
-              onClick={addPrayer}
-            >
-              {saving ? '…' : t('prayer.savePrayer')}
-            </button>
-            <button
-              type="button"
-              className="w-full py-2 text-white/50 text-sm hover:text-white/75"
-              onClick={() => setShowAddModal(false)}
-            >
-              {t('common.cancel')}
-            </button>
-          </div>
-        </div>
-      ) : null}
+      {showAddModal && typeof document !== 'undefined'
+        ? createPortal(
+            <>
+              <div
+                aria-hidden="true"
+                style={{
+                  position: 'fixed',
+                  inset: 0,
+                  background: 'rgba(0, 0, 0, 0.5)',
+                  zIndex: 10050,
+                }}
+                onClick={() => setShowAddModal(false)}
+              />
+              <div
+                role="dialog"
+                aria-modal="true"
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  position: 'fixed',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  zIndex: 10051,
+                  width: 'min(90vw, 390px)',
+                  maxWidth: '100%',
+                  maxHeight: '85vh',
+                  overflowY: 'auto',
+                  WebkitOverflowScrolling: 'touch',
+                  boxSizing: 'border-box',
+                  borderRadius: '20px',
+                  padding: '24px 20px',
+                  background: 'rgba(10, 15, 40, 0.97)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                }}
+              >
+                <h2 className="text-[#D4A843] font-bold text-center mb-4">{t('prayer.addPersonalPrayer')}</h2>
+                <textarea
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  className="relative z-10 w-full min-h-[140px] rounded-xl border border-white/15 p-4 mb-4 outline-none focus:border-[#D4A843]/40 pointer-events-auto caret-[#F5E6B8] placeholder:text-[rgba(255,255,255,0.55)]"
+                  style={{
+                    color: '#ffffff',
+                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                  }}
+                  placeholder={t('prayer.personalPlaceholder')}
+                />
+                <button
+                  type="button"
+                  className="btn-primary w-full mb-2 disabled:opacity-50"
+                  disabled={saving || !draft.trim()}
+                  onClick={addPrayer}
+                >
+                  {saving ? '…' : t('prayer.savePrayer')}
+                </button>
+                <button
+                  type="button"
+                  className="w-full py-2 text-white/50 text-sm hover:text-white/75"
+                  onClick={() => setShowAddModal(false)}
+                >
+                  {t('common.cancel')}
+                </button>
+              </div>
+            </>,
+            document.body,
+          )
+        : null}
 
       {toast ? (
         <div className="prayer-faithful-toast" role="status" aria-live="polite">
