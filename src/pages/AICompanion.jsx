@@ -42,14 +42,6 @@ export default function AICompanion() {
   useEffect(() => {
     const ctx = location.state?.aiCompanionContext
     if (!ctx?.verse) return
-    const block = [
-      `Today's verse (${ctx.reference}): "${ctx.verse}"`,
-      '',
-      ctx.reflection,
-      '',
-      `Help me reflect on this: ${ctx.prompt}`,
-    ].join('\n')
-    setInput(block)
     navigate(location.pathname, { replace: true, state: {} })
   }, [location.state, location.pathname, navigate])
 
