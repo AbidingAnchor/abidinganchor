@@ -214,27 +214,3 @@
   background: #8B6200 !important;
   color: white !important;
 }
-
-/* ── CARD SURFACES: daytime only — warm parchment (#F5EDD6) */
-[data-theme="day"] .app-card,
-[data-theme="day"] .glass-panel,
-[data-theme="day"] .glass-card,
-[data-theme="day"] .glass-strong,
-[data-theme="day"] .home-gold-glass {
-  background: #F5EDD6 !important;
-}
-
-[data-theme="day"] .glass-panel:hover,
-[data-theme="day"] .glass-card:hover,
-[data-theme="day"] .home-gold-glass:hover,
-[data-theme="day"] .home-tool-tile:hover {
-  background: #ebe3cf !important;
-}
-
-[data-theme="day"] .glass:not([class*="rounded-full"]) {
-  background: #F5EDD6 !important;
-}
-
-[data-theme="day"] .glass:not([class*="rounded-full"]):hover {
-  background: #ebe3cf !important;
-}
