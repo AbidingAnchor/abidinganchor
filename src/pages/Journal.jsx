@@ -944,11 +944,11 @@ function Journal() {
           </div>
         ) : (
           <div style={{
-            background: 'rgba(255,255,255,0.6)',
+            background: 'rgba(255, 255, 255, 0.05)',
             backdropFilter: 'blur(16px)',
             WebkitBackdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255,255,255,0.12)',
-            borderRadius: '14px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '16px',
             padding: '28px 20px',
             textAlign: 'center',
             marginTop: '8px',
