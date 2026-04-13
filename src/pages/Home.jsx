@@ -327,12 +327,12 @@ function Home({ onOpenWorship, worshipStatus }) {
                 <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('home.toolBibleVideosSub')}</p>
               </Link>
               <Link
-                to="/scripture-art"
+                to="/worship"
                 className="home-gold-glass home-tool-tile"
               >
-                <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>🎨</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolScriptureArt')}</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('home.toolScriptureArtSub')}</p>
+                <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>🎵</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>Worship Mode</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Music for your soul</p>
               </Link>
               <Link
                 to="/reading-plans"
