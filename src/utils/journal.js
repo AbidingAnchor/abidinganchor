@@ -5,6 +5,12 @@ function localYmdFromDate(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
+function normalizeActivityYmd(value) {
+  if (value == null) return ''
+  const s = String(value).slice(0, 10)
+  return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : ''
+}
+
 /**
  * Local calendar YYYY-MM-DD for a `journal_entries.created_at` value.
  * Plain `YYYY-MM-DD` (no time) is treated as that calendar day in the user's local timezone — not UTC midnight
@@ -67,8 +73,8 @@ function shortDayNameFromYmd(ymd) {
 }
 
 /**
- * Fetches `journal_entries` for the current user with `created_at` in [this week's local Monday 00:00, next Monday 00:00).
- * Returns distinct local calendar dates (YYYY-MM-DD) derived from `created_at` only (never UTC date parts).
+ * Local YYYY-MM-DDs in the current Mon–Sun week where the user had writing activity.
+ * Uses `journal_activity_log` so deleting entries does not remove a day from the week heatmap.
  *
  * @param {string} userId
  * @returns {Promise<string[]>}
@@ -76,6 +82,22 @@ function shortDayNameFromYmd(ymd) {
 export async function fetchJournalWeekEntryLocalDates(userId) {
   if (!userId) return []
   const { allowed, startMs, endMs } = getJournalMondayWeekContext()
+  const allowedArr = [...allowed]
+  const merged = new Set()
+  try {
+    const { data, error } = await supabase
+      .from('journal_activity_log')
+      .select('activity_date')
+      .eq('user_id', userId)
+      .in('activity_date', allowedArr)
+    if (error) throw error
+    for (const row of data || []) {
+      const ymd = normalizeActivityYmd(row.activity_date)
+      if (ymd && allowed.has(ymd)) merged.add(ymd)
+    }
+  } catch (err) {
+    console.warn('fetchJournalWeekEntryLocalDates (activity log):', err)
+  }
   try {
     const { data, error } = await supabase
       .from('journal_entries')
@@ -84,7 +106,6 @@ export async function fetchJournalWeekEntryLocalDates(userId) {
       .gte('created_at', new Date(startMs).toISOString())
       .lt('created_at', new Date(endMs).toISOString())
     if (error) throw error
-    const ymds = new Set()
     for (const row of data || []) {
       const raw = row.created_at
       if (raw == null || raw === '') continue
@@ -97,13 +118,12 @@ export async function fetchJournalWeekEntryLocalDates(userId) {
         if (Number.isNaN(t) || t < startMs || t >= endMs) continue
       }
 
-      ymds.add(ymd)
+      merged.add(ymd)
     }
-    return [...ymds]
   } catch (err) {
     console.error('fetchJournalWeekEntryLocalDates:', err)
-    return []
   }
+  return [...merged]
 }
 
 /**
@@ -167,6 +187,83 @@ export async function getJournalEntries(userIdArg) {
   }
 }
 
+/**
+ * Record one local calendar day as a writing day (idempotent). Survives journal entry deletion.
+ * @param {string} userId
+ * @param {string} activityYmd YYYY-MM-DD (user local calendar day when the entry was created)
+ */
+export async function logJournalWritingDay(userId, activityYmd) {
+  const ymd = normalizeActivityYmd(activityYmd)
+  if (!userId || !ymd) return
+  try {
+    const { error } = await supabase.from('journal_activity_log').upsert(
+      { user_id: userId, activity_date: ymd },
+      { onConflict: 'user_id,activity_date' },
+    )
+    if (error) throw error
+  } catch (e) {
+    console.warn('logJournalWritingDay:', e)
+  }
+}
+
+function addDaysToYmdString(ymd, deltaDays) {
+  const [y, m, d] = ymd.split('-').map(Number)
+  const next = new Date(y, m - 1, d + deltaDays, 12, 0, 0, 0)
+  return getLocalDateKey(next)
+}
+
+/**
+ * All local YYYY-MM-DD values with logged writing activity (persists after entries are deleted).
+ * @param {string} userId
+ * @returns {Promise<string[]>}
+ */
+export async function fetchJournalActivityLocalYmds(userId) {
+  if (!userId) return []
+  const merged = new Set()
+  try {
+    const { data, error } = await supabase.from('journal_activity_log').select('activity_date').eq('user_id', userId)
+    if (error) throw error
+    for (const row of data || []) {
+      const y = normalizeActivityYmd(row.activity_date)
+      if (y) merged.add(y)
+    }
+  } catch (e) {
+    console.warn('fetchJournalActivityLocalYmds (activity log):', e)
+  }
+  try {
+    const entries = await getJournalEntries(userId)
+    for (const e of entries || []) {
+      const y = getJournalEntryLocalYmd(e)
+      if (y) merged.add(y)
+    }
+  } catch (e2) {
+    console.warn('fetchJournalActivityLocalYmds (entries):', e2)
+  }
+  return [...merged]
+}
+
+/**
+ * Consecutive local days with logged activity (today, or yesterday if today has none yet).
+ * @param {string[]} ymdStrings
+ * @returns {number}
+ */
+export function computeWritingStreakFromActivityDates(ymdStrings) {
+  const dates = new Set((ymdStrings || []).map((s) => normalizeActivityYmd(s)).filter(Boolean))
+  if (dates.size === 0) return 0
+  const today = getLocalDateKey(new Date())
+  let cursor = today
+  if (!dates.has(cursor)) {
+    cursor = addDaysToYmdString(today, -1)
+    if (!dates.has(cursor)) return 0
+  }
+  let streak = 0
+  while (dates.has(cursor)) {
+    streak += 1
+    cursor = addDaysToYmdString(cursor, -1)
+  }
+  return streak
+}
+
 // NOTE: Run this migration in Supabase if local_date column is missing:
 // ALTER TABLE journal_entries ADD COLUMN IF NOT EXISTS local_date TEXT;
 export async function saveToJournal({ verse, reference, note = '', tags = [], userId: userIdArg, id: existingId, mood }) {
@@ -220,6 +317,9 @@ export async function saveToJournal({ verse, reference, note = '', tags = [], us
       localStorage.setItem(jk, String(next))
     }
     if (!data) return null
+    if (!existingId) {
+      void logJournalWritingDay(userId, payload.local_date)
+    }
     return { ...data, isFirstJournalEntry }
   } catch (err) {
     console.error('Error saving to journal:', err)

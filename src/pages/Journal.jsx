@@ -10,6 +10,8 @@ import {
   markPrayerAnswered,
   fetchJournalWeekEntryLocalDates,
   getJournalWritingWeekColumnsMonSun,
+  fetchJournalActivityLocalYmds,
+  computeWritingStreakFromActivityDates,
 } from '../utils/journal'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -41,29 +43,6 @@ function toLocalYmd(d) {
 function localTodayYmd() {
   const now = new Date()
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-}
-
-function addDaysToYmd(ymd, deltaDays) {
-  const [y, m, d] = ymd.split('-').map(Number)
-  const next = new Date(y, m - 1, d + deltaDays)
-  return toLocalYmd(next)
-}
-
-/** Consecutive days with ≥1 entry, walking back from today (yesterday counts if today is empty). */
-function computeWritingStreak(rows) {
-  const dates = new Set((rows || []).map((e) => getJournalEntryLocalYmd(e)).filter(Boolean))
-  if (dates.size === 0) return 0
-  let cursor = localTodayYmd()
-  if (!dates.has(cursor)) {
-    cursor = addDaysToYmd(localTodayYmd(), -1)
-    if (!dates.has(cursor)) return 0
-  }
-  let streak = 0
-  while (dates.has(cursor)) {
-    streak += 1
-    cursor = addDaysToYmd(cursor, -1)
-  }
-  return streak
 }
 
 /** Monday 00:00 local of this week; uses noon anchor to avoid DST edge cases. */
@@ -223,11 +202,12 @@ function Journal() {
       }
       setLoading(true)
       const data = await getJournalEntries(user.id)
+      const activityYmds = await fetchJournalActivityLocalYmds(user.id)
       const weekDates = await fetchJournalWeekEntryLocalDates(user.id)
       if (!active) return
       setJournalWeekLocalDates(weekDates)
       setEntries((data || []).map(normalizeEntry))
-      setWritingStreak(computeWritingStreak(data))
+      setWritingStreak(computeWritingStreakFromActivityDates(activityYmds))
       const entryLen = (data || []).length
       setTotalEntries(entryLen)
       try {
@@ -259,7 +239,7 @@ function Journal() {
     const nextEntries = await getJournalEntries(user?.id)
     setJournalWeekLocalDates(await fetchJournalWeekEntryLocalDates(user?.id))
     setEntries((nextEntries || []).map(normalizeEntry))
-    setWritingStreak(computeWritingStreak(nextEntries))
+    setWritingStreak(computeWritingStreakFromActivityDates(await fetchJournalActivityLocalYmds(user?.id)))
     setTotalEntries((nextEntries || []).length)
     setPrayerCount((nextEntries || []).filter(e => e.entry_type === 'prayer' && e.answered === true).length)
   }
@@ -324,7 +304,7 @@ function Journal() {
     setEntries((prev) => [normalizeEntry(savedRow), ...prev])
     const full = await getJournalEntries(user?.id)
     setJournalWeekLocalDates(await fetchJournalWeekEntryLocalDates(user?.id))
-    setWritingStreak(computeWritingStreak(full))
+    setWritingStreak(computeWritingStreakFromActivityDates(await fetchJournalActivityLocalYmds(user?.id)))
     setTotalEntries((full || []).length)
     setPrayerCount((full || []).filter(e => e.entry_type === 'prayer' && e.answered === true).length)
     
