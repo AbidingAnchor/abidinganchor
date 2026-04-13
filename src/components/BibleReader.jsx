@@ -161,13 +161,11 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
     if (!el) return
     const r = el.getBoundingClientRect()
     const gap = 6
-    const maxMenuWidth = 280
-    const menuWidth = Math.min(maxMenuWidth, window.innerWidth - 16)
-    // Right-align to the pill: menu right edge matches button right edge
+    const menuWidth = Math.min(200, window.innerWidth - 16)
     let left = r.right - menuWidth
     left = Math.max(8, Math.min(left, window.innerWidth - menuWidth - 8))
     const top = r.bottom + gap
-    setTranslationDropdownRect({ top, left, width: menuWidth })
+    setTranslationDropdownRect({ top, left })
   }, [])
 
   useLayoutEffect(() => {
@@ -708,74 +706,77 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
               aria-hidden
             />
             <div
-              className="glass-panel"
               style={{
                 position: 'fixed',
                 top: translationDropdownRect.top,
                 left: translationDropdownRect.left,
-                width: translationDropdownRect.width,
+                width: 200,
+                boxSizing: 'border-box',
                 zIndex: 9500,
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
                 borderRadius: '16px',
-                border: '1px solid rgba(255,255,255,0.08)',
-                padding: '16px 14px 14px',
-                maxHeight: 'min(72vh, calc(100vh - 24px))',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                padding: '10px 8px 8px',
+                maxHeight: `min(200px, calc(100dvh - 16px - ${translationDropdownRect.top}px))`,
                 overflowY: 'auto',
-                boxShadow: '0 16px 48px rgba(0,0,0,0.45)',
+                overflowX: 'hidden',
                 pointerEvents: 'auto',
               }}
               role="listbox"
               aria-label={t('bible.translation')}
               onClick={(e) => e.stopPropagation()}
             >
-              <h2
+              <p
                 style={{
                   color: '#D4A843',
-                  fontSize: '16px',
+                  fontSize: '11px',
                   fontWeight: 700,
-                  marginBottom: '6px',
-                  textAlign: 'center',
+                  margin: '0 6px 6px',
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
                 }}
               >
                 {t('bible.translation')}
-              </h2>
-              <p style={{ color: 'rgba(245,230,200,0.65)', fontSize: '11px', textAlign: 'center', marginBottom: '12px', lineHeight: 1.45 }}>
+              </p>
+              <p style={{ color: 'rgba(245,230,200,0.55)', fontSize: '10px', margin: '0 6px 8px', lineHeight: 1.35 }}>
                 {HAS_API_BIBLE ? t('bible.apiFollowsAppLanguage') : t('bible.publicDomainNote')}
               </p>
               {!HAS_API_BIBLE ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
                   {translationOptions.map((opt) => {
                     const active = opt.id === translationId
                     return (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        role="option"
-                        aria-selected={active}
-                        onClick={() => {
-                          setTranslationId(opt.id)
-                          setShowTranslationPicker(false)
-                        }}
-                        style={{
-                          background: active ? 'rgba(212,168,67,0.18)' : 'transparent',
-                          border: '1px solid ' + (active ? 'rgba(212,168,67,0.45)' : 'rgba(255,255,255,0.06)'),
-                          borderRadius: '12px',
-                          color: '#F5E6C8',
-                          cursor: 'pointer',
-                          padding: '12px 12px',
-                          textAlign: 'left',
-                          width: '100%',
-                          transition: 'background 0.2s ease',
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '12px' }}>
-                          <span style={{ fontSize: '15px', fontWeight: 700, color: active ? '#D4A843' : '#F5E6C8' }}>{opt.label}</span>
-                          {active ? <span style={{ fontSize: '12px', color: '#D4A843' }}>✓</span> : null}
-                        </div>
-                        <div style={{ fontSize: '13px', fontWeight: 600, marginTop: '4px', color: 'rgba(245,230,200,0.95)' }}>{opt.subtitle}</div>
-                      </button>
+                      <li key={opt.id} style={{ margin: 0, padding: 0 }}>
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={active}
+                          onClick={() => {
+                            setTranslationId(opt.id)
+                            setShowTranslationPicker(false)
+                          }}
+                          style={{
+                            background: active ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                            border: 'none',
+                            borderRadius: '10px',
+                            color: 'var(--text-primary)',
+                            cursor: 'pointer',
+                            padding: '10px 10px',
+                            textAlign: 'left',
+                            width: '100%',
+                            display: 'block',
+                            transition: 'background 0.15s ease',
+                          }}
+                        >
+                          <span style={{ fontSize: '14px', fontWeight: 600, display: 'block' }}>{opt.label}</span>
+                          <span style={{ fontSize: '11px', fontWeight: 500, color: 'rgba(245,230,200,0.55)', display: 'block', marginTop: '2px', lineHeight: 1.3 }}>{opt.subtitle}</span>
+                        </button>
+                      </li>
                     )
                   })}
-                </div>
+                </ul>
               ) : null}
               <button
                 type="button"
@@ -783,11 +784,11 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: 'rgba(245,230,200,0.7)',
-                  fontSize: '14px',
+                  color: 'rgba(245,230,200,0.65)',
+                  fontSize: '12px',
                   cursor: 'pointer',
-                  marginTop: '12px',
-                  padding: '8px',
+                  marginTop: '6px',
+                  padding: '8px 10px',
                   width: '100%',
                 }}
               >
