@@ -5,9 +5,9 @@ export default function LoadingScreen() {
   return (
     <div style={{ position: 'relative', zIndex: 10, minHeight: '100vh', background: 'transparent', display: 'grid', placeItems: 'center' }}>
       <style>{`
-        @keyframes loading-icon-pulse {
-          0%, 100% { transform: scale(1); opacity: 0.96; }
-          50% { transform: scale(1.05); opacity: 1; }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
         }
       `}</style>
       <div style={{ textAlign: 'center' }}>
@@ -16,7 +16,7 @@ export default function LoadingScreen() {
           alt="AbidingAnchor app icon"
           width={80}
           height={80}
-          style={{ margin: '0 auto', animation: 'loading-icon-pulse 2.2s ease-in-out infinite' }}
+          style={{ margin: '0 auto', borderRadius: '50%', animation: 'pulse 2.2s ease-in-out infinite' }}
         />
         <p style={{ color: '#D4A843', marginTop: '8px', fontWeight: 700, letterSpacing: '0.08em' }}>Abiding in His Word...</p>
       </div>
