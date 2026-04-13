@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import {
   deleteJournalEntry,
   getJournalEntries,
+  getJournalEntryLocalYmd,
   saveToJournal,
   markPrayerAnswered,
   fetchJournalWeekEntryLocalDates,
@@ -31,17 +32,10 @@ function getDaysAgo(iso) {
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 }
 
-/** Local calendar YYYY-MM-DD — uses getFullYear/Month/Date only (never toISOString slice). */
-function toLocalYmd(iso) {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return ''
+/** Local calendar YYYY-MM-DD from a Date (for generated dates in streak / week helpers). */
+function toLocalYmd(d) {
+  if (!d || Number.isNaN(d.getTime())) return ''
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
-/** Prefer DB `local_date` (set at save); else derive from created_at (can drift near midnight UTC). */
-function entryLocalYmd(entry) {
-  if (!entry) return ''
-  return entry.local_date || toLocalYmd(entry.created_at)
 }
 
 function localTodayYmd() {
@@ -57,7 +51,7 @@ function addDaysToYmd(ymd, deltaDays) {
 
 /** Consecutive days with ≥1 entry, walking back from today (yesterday counts if today is empty). */
 function computeWritingStreak(rows) {
-  const dates = new Set((rows || []).map((e) => entryLocalYmd(e)).filter(Boolean))
+  const dates = new Set((rows || []).map((e) => getJournalEntryLocalYmd(e)).filter(Boolean))
   if (dates.size === 0) return 0
   let cursor = localTodayYmd()
   if (!dates.has(cursor)) {
@@ -124,7 +118,7 @@ function Journal() {
   const [sharingToPrayerWall, setSharingToPrayerWall] = useState(false)
   const [showToast, setShowToast] = useState(false)
   const [showFirstEntryCelebration, setShowFirstEntryCelebration] = useState(false)
-  /** Local YYYY-MM-DD with ≥1 `journal_entries` row this Saturday-based week (`created_at` only). */
+  /** Local YYYY-MM-DD with ≥1 journal entry this calendar week (Mon–Sun, resets Mon 00:00 local). */
   const [journalWeekLocalDates, setJournalWeekLocalDates] = useState([])
 
   const [searchOpen, setSearchOpen] = useState(false)
@@ -154,7 +148,7 @@ function Journal() {
         note: entry.content || '',
         date: savedDate,
         created_at: entry.created_at || null,
-        local_date: entry.local_date || toLocalYmd(entry.created_at),
+        local_date: getJournalEntryLocalYmd(entry),
         mood: entry.mood || '',
         entry_type: entry.entry_type || 'reflection',
         answered: entry.answered || false,
@@ -400,9 +394,9 @@ function Journal() {
   const filteredEntries = useMemo(() => {
     let list = [...entries]
     if (entryFilter === 'week') {
-      list = list.filter((e) => isInCurrentCalendarWeek(entryLocalYmd(e)))
+      list = list.filter((e) => isInCurrentCalendarWeek(getJournalEntryLocalYmd(e)))
     } else if (entryFilter === 'month') {
-      list = list.filter((e) => isInThisMonth(entryLocalYmd(e)))
+      list = list.filter((e) => isInThisMonth(getJournalEntryLocalYmd(e)))
     }
     const q = searchQuery.trim().toLowerCase()
     if (q) {

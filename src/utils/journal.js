@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase'
-import { getLocalDateKey, getMostRecentSaturdayDateKey, WEEK_DAY_SHORT } from '../hooks/useStreakTracker'
+import { getLocalDateKey, WEEK_DAY_SHORT } from '../hooks/useStreakTracker'
 
 function localYmdFromDate(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -28,27 +28,34 @@ function isPlainDateOnlyString(value) {
 }
 
 /**
- * Most recent local Saturday 00:00 → next Saturday 00:00 (exclusive): allowed local YYYY-MM-DD set + ms bounds.
+ * Current local Monday 00:00 → next Monday 00:00 (exclusive): Mon–Sun streak week + ms bounds for queries.
+ * Resets every Monday at midnight local time.
  */
-function getJournalSaturdayWeekContext() {
-  const satYmd = getMostRecentSaturdayDateKey()
-  const [y, m, d] = satYmd.split('-').map(Number)
+function getJournalMondayWeekContext() {
+  const now = new Date()
+  const noon = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0, 0)
+  const dow = noon.getDay()
+  const diffToMonday = dow === 0 ? -6 : 1 - dow
+  const mondayNoon = new Date(noon.getFullYear(), noon.getMonth(), noon.getDate() + diffToMonday, 12, 0, 0, 0)
+  const y = mondayNoon.getFullYear()
+  const m = mondayNoon.getMonth()
+  const d = mondayNoon.getDate()
+
   const byShort = {}
   const allowed = new Set()
   for (let i = 0; i < 7; i++) {
-    const dt = new Date(y, m - 1, d + i, 12, 0, 0, 0)
-    const short = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dt.getDay()]
+    const dt = new Date(y, m, d + i, 12, 0, 0, 0)
     const ymdKey = getLocalDateKey(dt)
-    byShort[short] = ymdKey
+    byShort[WEEK_DAY_SHORT[i]] = ymdKey
     allowed.add(ymdKey)
   }
-  const startMs = new Date(y, m - 1, d, 0, 0, 0, 0).getTime()
-  const endMs = new Date(y, m - 1, d + 7, 0, 0, 0, 0).getTime()
-  return { satYmd, byShort, allowed, startMs, endMs }
+  const startMs = new Date(y, m, d, 0, 0, 0, 0).getTime()
+  const endMs = new Date(y, m, d + 7, 0, 0, 0, 0).getTime()
+  return { monYmd: getLocalDateKey(new Date(y, m, d)), byShort, allowed, startMs, endMs }
 }
 
 /**
- * Local calendar day names for each YYYY-MM-DD in the Saturday→Friday window (current streak week).
+ * Local calendar day names for each YYYY-MM-DD in the current Mon–Sun streak week.
  */
 function shortDayNameFromYmd(ymd) {
   const parts = ymd.split('-').map(Number)
@@ -60,15 +67,15 @@ function shortDayNameFromYmd(ymd) {
 }
 
 /**
- * Fetches `journal_entries` for the current user with `created_at` in [last local Saturday 00:00, next Saturday 00:00).
- * Returns distinct local calendar dates (YYYY-MM-DD) derived from `created_at` only.
+ * Fetches `journal_entries` for the current user with `created_at` in [this week's local Monday 00:00, next Monday 00:00).
+ * Returns distinct local calendar dates (YYYY-MM-DD) derived from `created_at` only (never UTC date parts).
  *
  * @param {string} userId
  * @returns {Promise<string[]>}
  */
 export async function fetchJournalWeekEntryLocalDates(userId) {
   if (!userId) return []
-  const { allowed, startMs, endMs } = getJournalSaturdayWeekContext()
+  const { allowed, startMs, endMs } = getJournalMondayWeekContext()
   try {
     const { data, error } = await supabase
       .from('journal_entries')
@@ -100,7 +107,7 @@ export async function fetchJournalWeekEntryLocalDates(userId) {
 }
 
 /**
- * Short names ('Mon'…'Sun') with journal activity this Saturday-based week, Mon→Sun order.
+ * Short names ('Mon'…'Sun') with journal activity this Mon–Sun week, Mon→Sun order.
  * @param {string} userId
  * @returns {Promise<string[]>}
  */
@@ -115,19 +122,23 @@ export async function getJournalWeekActiveDayShortNames(userId) {
 }
 
 /**
- * Maps each UI column (Mon→Sun) to the local YYYY-MM-DD in the current Saturday-based week.
+ * Maps each UI column (Mon→Sun) to the local YYYY-MM-DD in the current Mon–Sun week.
  * @returns {{ shortEn: string, ymd: string }[]}
  */
 export function getJournalWritingWeekColumnsMonSun() {
-  const { byShort } = getJournalSaturdayWeekContext()
+  const { byShort } = getJournalMondayWeekContext()
   return WEEK_DAY_SHORT.map((shortEn) => ({ shortEn, ymd: byShort[shortEn] }))
 }
 
-function entryLocalYmdRow(e) {
-  if (!e) return ''
-  if (e.local_date) return e.local_date
-  if (!e.created_at) return ''
-  return localYmdFromDate(new Date(e.created_at))
+/**
+ * Prefer `local_date` when present; otherwise local calendar YYYY-MM-DD from `created_at`
+ * (ISO timestamps use local date parts; plain YYYY-MM-DD is that calendar day in local time, not UTC midnight).
+ */
+export function getJournalEntryLocalYmd(entry) {
+  if (!entry) return ''
+  if (entry.local_date) return entry.local_date
+  if (!entry.created_at) return ''
+  return localCalendarYmdFromCreatedAt(entry.created_at)
 }
 
 export async function getJournalEntries(userIdArg) {
@@ -178,7 +189,7 @@ export async function saveToJournal({ verse, reference, note = '', tags = [], us
   if (!existingId) {
     const todayLocal = localYmdFromDate(new Date())
     const entries = await getJournalEntries(userId)
-    const isDuplicate = entries.some((e) => e.content === content && entryLocalYmdRow(e) === todayLocal)
+    const isDuplicate = entries.some((e) => e.content === content && getJournalEntryLocalYmd(e) === todayLocal)
     if (isDuplicate) return null
     isFirstJournalEntry = entries.length === 0
   }
