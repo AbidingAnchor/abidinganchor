@@ -1420,7 +1420,7 @@ function Journal() {
                 <h2
                   id="journal-prayer-share-title"
                   style={{
-                    color: '#D4A843',
+                    color: '#FFFFFF',
                     fontSize: '18px',
                     fontWeight: 700,
                     marginBottom: '12px',
@@ -1430,7 +1430,7 @@ function Journal() {
                 </h2>
                 <p
                   style={{
-                    color: 'rgba(255,255,255,0.8)',
+                    color: '#F5EDD6',
                     fontSize: '14px',
                     lineHeight: '1.5',
                     marginBottom: '8px',
@@ -1440,9 +1440,10 @@ function Journal() {
                 </p>
                 <p
                   style={{
-                    color: 'var(--text-secondary)',
+                    color: '#F5EDD6',
                     fontSize: '13px',
                     fontStyle: 'italic',
+                    opacity: 0.95,
                   }}
                 >
                   {t('journal.sharePromptNote')}
@@ -1479,8 +1480,8 @@ function Journal() {
                   style={{
                     flex: 1,
                     background: 'transparent',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    color: 'rgba(255,255,255,0.8)',
+                    border: '1px solid rgba(245, 237, 214, 0.45)',
+                    color: '#F5EDD6',
                     fontWeight: 600,
                     borderRadius: '12px',
                     padding: '12px',
