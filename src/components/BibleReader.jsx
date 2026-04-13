@@ -10,6 +10,9 @@ const BIBLE_API_COM = 'https://bible-api.com'
 
 const BIBLE_READER_TRANSLATION_KEY = 'abidinganchor-bible-reader-translation'
 
+/** Default for bible-api.com when no API.Bible key or when using non-getBible English texts — WEB is reliable on bible-api.com. */
+const DEFAULT_BIBLE_API_COM_TRANSLATION = 'web'
+
 const HAS_API_BIBLE = Boolean(import.meta.env.VITE_API_BIBLE_KEY)
 
 /** bible-api.com `translation` ids — labels match the actual public-domain texts. */
@@ -17,17 +20,25 @@ const BIBLE_READER_TRANSLATIONS = [
   { id: 'kjv', labelKey: 'bible.kjv', subtitleKey: 'bible.subtitleKjv' },
   { id: 'web', labelKey: 'bible.web', subtitleKey: 'bible.subtitleWeb' },
   { id: 'asv', labelKey: 'bible.asv', subtitleKey: 'bible.subtitleAsv' },
-  { id: 'oeb-us', labelKey: 'bible.oeb', subtitleKey: 'bible.subtitleOeb' },
   { id: 'webbe', labelKey: 'bible.webbe', subtitleKey: 'bible.subtitleWebbe' },
   { id: 'bbe', labelKey: 'bible.bbe', subtitleKey: 'bible.subtitleBbe' },
   { id: 'darby', labelKey: 'bible.darby', subtitleKey: 'bible.subtitleDarby' },
 ]
 
 function getStoredTranslationId() {
-  if (typeof window === 'undefined') return 'kjv'
+  if (typeof window === 'undefined') return DEFAULT_BIBLE_API_COM_TRANSLATION
   const raw = localStorage.getItem(BIBLE_READER_TRANSLATION_KEY)
+  // OEB ids were returning 404 from bible-api.com; migrate to WEB.
+  if (raw === 'oeb-us' || raw === 'oeb') {
+    try {
+      localStorage.setItem(BIBLE_READER_TRANSLATION_KEY, DEFAULT_BIBLE_API_COM_TRANSLATION)
+    } catch {
+      /* ignore */
+    }
+    return DEFAULT_BIBLE_API_COM_TRANSLATION
+  }
   if (raw && BIBLE_READER_TRANSLATIONS.some((t) => t.id === raw)) return raw
-  return 'kjv'
+  return DEFAULT_BIBLE_API_COM_TRANSLATION
 }
 
 const BOOKS = [

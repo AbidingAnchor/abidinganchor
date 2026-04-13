@@ -344,7 +344,9 @@ export default function AudioBible() {
       setError(null)
       
       try {
-        const response = await fetch(`https://bible-api.com/${selectedBook.name.toLowerCase()}+${selectedChapter}`)
+        const response = await fetch(
+          `https://bible-api.com/${selectedBook.name.toLowerCase()}+${selectedChapter}?translation=web`,
+        )
         if (!response.ok) {
           throw new Error('Failed to fetch scripture')
         }

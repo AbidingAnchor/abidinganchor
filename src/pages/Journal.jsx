@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
@@ -969,20 +970,26 @@ function Journal() {
         )}
       </div>
 
-      {showModal && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 1000,
-          display: 'flex',
-          alignItems: 'flex-end',
-          justifyContent: 'center'
-        }}>
+      {showModal &&
+        createPortal(
           <div
-            className="glass-scrim"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="journal-guided-flow-title"
             style={{
               position: 'fixed',
-              inset: 0,
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              minHeight: '100dvh',
+              zIndex: 10000,
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'center',
+              background: 'rgba(4, 6, 18, 0.92)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
             }}
             onClick={() => {
               setShowModal(false)
@@ -994,16 +1001,22 @@ function Journal() {
               setGratitude('')
               setSelectedMood('')
             }}
-          />
-          <div className="glass-panel" style={{
-            width: '100%',
-            maxWidth: '390px',
-            borderRadius: '24px 24px 0 0',
-            padding: '24px 20px 40px',
-            position: 'relative',
-            zIndex: 1001,
-            borderTop: '1px solid rgba(255,255,255,0.1)',
-          }}>
+          >
+          <div
+            className="glass-panel"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '390px',
+              maxHeight: 'min(92vh, 100dvh)',
+              overflow: 'auto',
+              borderRadius: '24px 24px 0 0',
+              padding: '24px 20px max(40px, env(safe-area-inset-bottom))',
+              position: 'relative',
+              zIndex: 1,
+              borderTop: '1px solid rgba(255,255,255,0.1)',
+            }}
+          >
             {/* Progress Bar */}
             <div style={{
               marginBottom: '24px'
@@ -1022,13 +1035,16 @@ function Journal() {
                   transition: 'width 0.3s ease'
                 }} />
               </div>
-              <p style={{
-                color: '#D4A843',
-                fontSize: '12px',
-                fontWeight: 600,
-                textAlign: 'center',
-                margin: 0
-              }}>
+              <p
+                id="journal-guided-flow-title"
+                style={{
+                  color: '#D4A843',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  textAlign: 'center',
+                  margin: 0,
+                }}
+              >
                 {t('journal.stepProgress', { current: currentStep })}
               </p>
             </div>
@@ -1310,8 +1326,9 @@ function Journal() {
               {t('common.cancel')}
             </button>
           </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
 
       {showCelebration && (
         <div style={{

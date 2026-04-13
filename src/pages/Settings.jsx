@@ -16,10 +16,9 @@ const UI_LANG_OPTIONS = [
 ]
 
 const BIBLE_TRANSLATION_OPTIONS = [
-  { value: 'KJV', labelKey: 'bible.kjv' },
   { value: 'WEB', labelKey: 'bible.web' },
+  { value: 'KJV', labelKey: 'bible.kjv' },
   { value: 'ASV', labelKey: 'bible.asv' },
-  { value: 'OEB', labelKey: 'bible.oeb' },
   { value: 'WEBBE', labelKey: 'bible.webbe' },
   { value: 'BBE', labelKey: 'bible.bbe' },
   { value: 'Darby', labelKey: 'bible.darby' },
@@ -29,7 +28,7 @@ export default function Settings() {
   const { t, i18n: i18nHook } = useTranslation()
   const navigate = useNavigate()
   const { user, profile, signOut, refreshProfile } = useAuth()
-  const [selectedTranslation, setSelectedTranslation] = useState('KJV')
+  const [selectedTranslation, setSelectedTranslation] = useState('WEB')
   const [uploadStatus, setUploadStatus] = useState('idle') // idle, uploading, success
   const [uploadError, setUploadError] = useState('')
   const [pendingAvatarUrl, setPendingAvatarUrl] = useState(null)
