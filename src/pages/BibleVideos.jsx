@@ -292,8 +292,9 @@ export default function BibleVideos() {
             justifyContent: 'center',
             padding:
               'max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left))',
-            background: 'rgba(5,10,28,0.82)',
-            backdropFilter: 'blur(6px)',
+            background: 'rgba(2, 6, 18, 0.72)',
+            backdropFilter: 'blur(14px) saturate(1.15)',
+            WebkitBackdropFilter: 'blur(14px) saturate(1.15)',
           }}
           onClick={() => setSelected(null)}
         >
@@ -305,11 +306,13 @@ export default function BibleVideos() {
               maxWidth: '100%',
               maxHeight: 'min(92vh, calc(100vh - 24px))',
               overflow: 'auto',
-              borderRadius: '18px',
-              padding: '12px 14px 16px',
-              border: '1px solid rgba(212,168,67,0.25)',
-              background: 'linear-gradient(180deg, #0a1a3e 0%, #0d1f4e 100%)',
-              boxShadow: '0 16px 48px rgba(0,0,0,0.5)',
+              borderRadius: '26px',
+              padding: '14px 16px 18px',
+              border: '1px solid var(--gold-border, rgba(212, 168, 67, 0.42))',
+              background:
+                'radial-gradient(ellipse 110% 90% at 50% -15%, rgba(212, 168, 67, 0.12) 0%, transparent 52%), radial-gradient(ellipse 80% 55% at 100% 100%, rgba(30, 58, 120, 0.35) 0%, transparent 55%), linear-gradient(168deg, #030712 0%, #0a1228 28%, #0f1c3d 55%, #070f22 100%)',
+              boxShadow:
+                '0 0 0 1px rgba(212, 168, 67, 0.08), 0 0 48px var(--gold-glow, rgba(212, 168, 67, 0.18)), 0 28px 72px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06)',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '12px' }}>
@@ -319,8 +322,10 @@ export default function BibleVideos() {
                   margin: 0,
                   fontSize: '16px',
                   fontWeight: 700,
-                  color: '#D4A843',
-                  lineHeight: 1.3,
+                  color: 'var(--gold, #D4A843)',
+                  lineHeight: 1.35,
+                  letterSpacing: '0.01em',
+                  textShadow: '0 1px 2px rgba(0,0,0,0.45), 0 0 24px var(--gold-glow, rgba(212, 168, 67, 0.2))',
                 }}
               >
                 {selected.title}
@@ -330,15 +335,18 @@ export default function BibleVideos() {
                 onClick={() => setSelected(null)}
                 style={{
                   flexShrink: 0,
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '10px',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  background: 'rgba(0,0,0,0.25)',
-                  color: '#fff',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '14px',
+                  border: '1px solid var(--gold-border, rgba(212, 168, 67, 0.45))',
+                  background:
+                    'linear-gradient(165deg, rgba(212, 168, 67, 0.18) 0%, rgba(8, 14, 32, 0.92) 45%, rgba(4, 8, 20, 0.98) 100%)',
+                  color: 'var(--gold, #D4A843)',
                   cursor: 'pointer',
-                  fontSize: '18px',
+                  fontSize: '22px',
+                  fontWeight: 300,
                   lineHeight: 1,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08)',
                 }}
                 aria-label="Close"
               >
