@@ -1,5 +1,10 @@
 import { useEffect, useRef } from "react";
 
+/**
+ * Procedural daytime sky canvas (6 AM–6 PM). Card chrome for `data-theme="sunset"` and
+ * `data-theme="night"` lives in `index.css` / `theme-overrides.css`, not here.
+ */
+
 const SKY_TOP = "#6BB8E8";
 const SKY_MID = "#A8D4F0";
 const SKY_BOTTOM = "#F5E6C8";

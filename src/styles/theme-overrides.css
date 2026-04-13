@@ -239,41 +239,58 @@
   background: #ebe3cf !important;
 }
 
-/* Evening (sunset) + night (celestial): dark purple-navy cards, gold-tinted borders */
+/* Sunset: warm dark purple glass — not day parchment */
 [data-theme="sunset"] .app-card,
 [data-theme="sunset"] .glass-panel,
 [data-theme="sunset"] .glass-card,
 [data-theme="sunset"] .glass-strong,
-[data-theme="sunset"] .home-gold-glass,
-[data-theme="celestial"] .app-card,
-[data-theme="celestial"] .glass-panel,
-[data-theme="celestial"] .glass-card,
-[data-theme="celestial"] .glass-strong,
-[data-theme="celestial"] .home-gold-glass {
-  background: #1a1040 !important;
-  border-color: rgba(212, 168, 67, 0.38) !important;
+[data-theme="sunset"] .home-gold-glass {
+  background: rgba(20, 10, 40, 0.85) !important;
+  border-color: rgba(212, 168, 67, 0.25) !important;
 }
 
 [data-theme="sunset"] .glass-panel:hover,
 [data-theme="sunset"] .glass-card:hover,
 [data-theme="sunset"] .home-gold-glass:hover,
-[data-theme="sunset"] .home-tool-tile:hover,
-[data-theme="celestial"] .glass-panel:hover,
-[data-theme="celestial"] .glass-card:hover,
-[data-theme="celestial"] .home-gold-glass:hover,
-[data-theme="celestial"] .home-tool-tile:hover {
-  background: #241a4e !important;
-  border-color: rgba(244, 192, 96, 0.45) !important;
-}
-
-[data-theme="sunset"] .glass:not([class*="rounded-full"]),
-[data-theme="celestial"] .glass:not([class*="rounded-full"]) {
-  background: #1a1040 !important;
+[data-theme="sunset"] .home-tool-tile:hover {
+  background: rgba(35, 22, 58, 0.88) !important;
   border-color: rgba(212, 168, 67, 0.35) !important;
 }
 
-[data-theme="sunset"] .glass:not([class*="rounded-full"]):hover,
-[data-theme="celestial"] .glass:not([class*="rounded-full"]):hover {
-  background: #241a4e !important;
-  border-color: rgba(244, 192, 96, 0.42) !important;
+[data-theme="sunset"] .glass:not([class*="rounded-full"]) {
+  background: rgba(20, 10, 40, 0.85) !important;
+  border-color: rgba(212, 168, 67, 0.25) !important;
+}
+
+[data-theme="sunset"] .glass:not([class*="rounded-full"]):hover {
+  background: rgba(35, 22, 58, 0.88) !important;
+  border-color: rgba(212, 168, 67, 0.32) !important;
+}
+
+/* Night: deep celestial navy — subtle gold edge; sky/stars show through */
+[data-theme="night"] .app-card,
+[data-theme="night"] .glass-panel,
+[data-theme="night"] .glass-card,
+[data-theme="night"] .glass-strong,
+[data-theme="night"] .home-gold-glass {
+  background: rgba(10, 8, 30, 0.9) !important;
+  border-color: rgba(212, 168, 67, 0.2) !important;
+}
+
+[data-theme="night"] .glass-panel:hover,
+[data-theme="night"] .glass-card:hover,
+[data-theme="night"] .home-gold-glass:hover,
+[data-theme="night"] .home-tool-tile:hover {
+  background: rgba(18, 15, 42, 0.92) !important;
+  border-color: rgba(212, 168, 67, 0.3) !important;
+}
+
+[data-theme="night"] .glass:not([class*="rounded-full"]) {
+  background: rgba(10, 8, 30, 0.9) !important;
+  border-color: rgba(212, 168, 67, 0.2) !important;
+}
+
+[data-theme="night"] .glass:not([class*="rounded-full"]):hover {
+  background: rgba(18, 15, 42, 0.92) !important;
+  border-color: rgba(212, 168, 67, 0.28) !important;
 }
