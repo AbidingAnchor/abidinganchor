@@ -215,7 +215,7 @@
   color: white !important;
 }
 
-/* ── CARD SURFACES: daytime only — warm parchment (#F5EDD6). Evening/night use dark navy via vars below. */
+/* ── CARD SURFACES: daytime only — warm parchment (#F5EDD6) */
 [data-theme="day"] .app-card,
 [data-theme="day"] .glass-panel,
 [data-theme="day"] .glass-card,
@@ -237,60 +237,4 @@
 
 [data-theme="day"] .glass:not([class*="rounded-full"]):hover {
   background: #ebe3cf !important;
-}
-
-/* Sunset: warm dark purple glass — not day parchment */
-[data-theme="sunset"] .app-card,
-[data-theme="sunset"] .glass-panel,
-[data-theme="sunset"] .glass-card,
-[data-theme="sunset"] .glass-strong,
-[data-theme="sunset"] .home-gold-glass {
-  background: rgba(20, 10, 40, 0.85) !important;
-  border-color: rgba(212, 168, 67, 0.25) !important;
-}
-
-[data-theme="sunset"] .glass-panel:hover,
-[data-theme="sunset"] .glass-card:hover,
-[data-theme="sunset"] .home-gold-glass:hover,
-[data-theme="sunset"] .home-tool-tile:hover {
-  background: rgba(35, 22, 58, 0.88) !important;
-  border-color: rgba(212, 168, 67, 0.35) !important;
-}
-
-[data-theme="sunset"] .glass:not([class*="rounded-full"]) {
-  background: rgba(20, 10, 40, 0.85) !important;
-  border-color: rgba(212, 168, 67, 0.25) !important;
-}
-
-[data-theme="sunset"] .glass:not([class*="rounded-full"]):hover {
-  background: rgba(35, 22, 58, 0.88) !important;
-  border-color: rgba(212, 168, 67, 0.32) !important;
-}
-
-/* Night: deep celestial navy — subtle gold edge; sky/stars show through */
-[data-theme="night"] .app-card,
-[data-theme="night"] .glass-panel,
-[data-theme="night"] .glass-card,
-[data-theme="night"] .glass-strong,
-[data-theme="night"] .home-gold-glass {
-  background: rgba(10, 8, 30, 0.9) !important;
-  border-color: rgba(212, 168, 67, 0.2) !important;
-}
-
-[data-theme="night"] .glass-panel:hover,
-[data-theme="night"] .glass-card:hover,
-[data-theme="night"] .home-gold-glass:hover,
-[data-theme="night"] .home-tool-tile:hover {
-  background: rgba(18, 15, 42, 0.92) !important;
-  border-color: rgba(212, 168, 67, 0.3) !important;
-}
-
-[data-theme="night"] .glass:not([class*="rounded-full"]) {
-  background: rgba(10, 8, 30, 0.9) !important;
-  border-color: rgba(212, 168, 67, 0.2) !important;
-}
-
-[data-theme="night"] .glass:not([class*="rounded-full"]):hover {
-  background: rgba(18, 15, 42, 0.92) !important;
-  border-color: rgba(212, 168, 67, 0.28) !important;
 }

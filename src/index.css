@@ -41,11 +41,11 @@
   --heading-text: rgba(255,255,255,0.95);
   --label-text: rgba(255,255,255,0.70);
   --section-title: #D4A843;
-  /* Night: deep navy glass — stars/sky show through; not day parchment */
-  --card-parchment: rgba(10, 8, 30, 0.9);
-  --card-parchment-hover: rgba(18, 15, 42, 0.92);
-  --card-parchment-ink: rgba(255, 255, 255, 0.94);
-  --card-parchment-ink-muted: rgba(235, 232, 255, 0.72);
+  /* Non-day card fill (inherits when sunset does not override — see .app-card / .glass-panel) */
+  --card-parchment: #1a1040;
+  --card-parchment-hover: #241a4e;
+  --card-parchment-ink: rgba(255, 245, 235, 0.95);
+  --card-parchment-ink-muted: rgba(255, 220, 195, 0.72);
 }
 
 [data-theme="day"] {
@@ -137,12 +137,6 @@
   --heading-text: rgba(255,245,230,0.95);
   --label-text: rgba(255,225,195,0.75);
   --section-title: #F4C060;
-
-  /* Sunset: warm dark purple glass + gold border — not daytime parchment / not night navy */
-  --card-parchment: rgba(20, 10, 40, 0.85);
-  --card-parchment-hover: rgba(32, 20, 55, 0.88);
-  --card-parchment-ink: rgba(255, 255, 255, 0.92);
-  --card-parchment-ink-muted: rgba(255, 228, 210, 0.72);
 }
 
 * {
@@ -187,7 +181,7 @@ body {
   background: transparent;
 }
 
-/* Home: card panels — parchment in day; warm sunset glass or night navy via --card-parchment */
+/* Home: warm parchment panels — readable on bright day sky */
 .home-gold-glass {
   background: var(--card-parchment);
   color: var(--card-parchment-ink);
