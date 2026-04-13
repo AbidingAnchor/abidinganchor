@@ -16,7 +16,7 @@ function shortDescription(text, maxLen = 110) {
   return `${t.slice(0, maxLen).trim()}…`
 }
 
-function YouTubeEmbed({ videoId, title }) {
+function YouTubeEmbed({ videoId, title, edgeToEdge }) {
   const src = `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?rel=0&modestbranding=1`
   return (
     <div
@@ -27,9 +27,16 @@ function YouTubeEmbed({ videoId, title }) {
         paddingBottom: 'max(56.25%, 300px)',
         height: 0,
         overflow: 'hidden',
-        borderRadius: '14px',
+        borderRadius: edgeToEdge ? 0 : '14px',
         background: 'rgba(0,0,0,0.45)',
-        border: '1px solid rgba(212,168,67,0.25)',
+        ...(edgeToEdge
+          ? {
+              borderTop: '1px solid rgba(212, 168, 67, 0.28)',
+              borderBottom: '1px solid rgba(212, 168, 67, 0.28)',
+              borderLeft: 'none',
+              borderRight: 'none',
+            }
+          : { border: '1px solid rgba(212,168,67,0.25)' }),
       }}
     >
       <iframe
@@ -307,7 +314,7 @@ export default function BibleVideos() {
               maxHeight: 'min(92vh, calc(100vh - 24px))',
               overflow: 'auto',
               borderRadius: '26px',
-              padding: '14px 16px 18px',
+              padding: '14px 0 18px',
               border: '1px solid var(--gold-border, rgba(212, 168, 67, 0.42))',
               background:
                 'radial-gradient(ellipse 110% 90% at 50% -15%, rgba(212, 168, 67, 0.12) 0%, transparent 52%), radial-gradient(ellipse 80% 55% at 100% 100%, rgba(30, 58, 120, 0.35) 0%, transparent 55%), linear-gradient(168deg, #030712 0%, #0a1228 28%, #0f1c3d 55%, #070f22 100%)',
@@ -315,7 +322,16 @@ export default function BibleVideos() {
                 '0 0 0 1px rgba(212, 168, 67, 0.08), 0 0 48px var(--gold-glow, rgba(212, 168, 67, 0.18)), 0 28px 72px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06)',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '12px' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                gap: '12px',
+                marginBottom: '12px',
+                padding: '0 16px',
+              }}
+            >
               <h3
                 id="bible-video-modal-title"
                 style={{
@@ -353,8 +369,16 @@ export default function BibleVideos() {
                 ×
               </button>
             </div>
-            <YouTubeEmbed videoId={selected.id} title={selected.title} />
-            <p style={{ margin: '12px 0 0 0', fontSize: '13px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.5 }}>
+            <YouTubeEmbed videoId={selected.id} title={selected.title} edgeToEdge />
+            <p
+              style={{
+                margin: '12px 0 0 0',
+                padding: '0 16px',
+                fontSize: '13px',
+                color: 'rgba(255,255,255,0.65)',
+                lineHeight: 1.5,
+              }}
+            >
               {shortDescription(selected.description, 400)}
             </p>
           </div>
