@@ -41,11 +41,11 @@
   --heading-text: rgba(255,255,255,0.95);
   --label-text: rgba(255,255,255,0.70);
   --section-title: #D4A843;
-  /* Warm parchment for card surfaces (see .app-card, .glass-panel, .home-gold-glass) */
-  --card-parchment: #f5edd6;
-  --card-parchment-hover: #ebe3cf;
-  --card-parchment-ink: #1c1812;
-  --card-parchment-ink-muted: rgba(28, 24, 18, 0.72);
+  /* Card surfaces: dark purple-navy (evening/night — see [data-theme="day"] for parchment) */
+  --card-parchment: #1a1040;
+  --card-parchment-hover: #241a4e;
+  --card-parchment-ink: rgba(255, 245, 235, 0.95);
+  --card-parchment-ink-muted: rgba(255, 220, 195, 0.72);
 }
 
 [data-theme="day"] {
@@ -138,10 +138,11 @@
   --label-text: rgba(255,225,195,0.75);
   --section-title: #F4C060;
 
-  --card-parchment: #f5edd6;
-  --card-parchment-hover: #ebe3cf;
-  --card-parchment-ink: #1c1812;
-  --card-parchment-ink-muted: rgba(28, 24, 18, 0.72);
+  /* Evening (sunset): match dark navy cards + gold accents, not daytime parchment */
+  --card-parchment: #1a1040;
+  --card-parchment-hover: #241a4e;
+  --card-parchment-ink: rgba(255, 245, 230, 0.95);
+  --card-parchment-ink-muted: rgba(255, 215, 185, 0.72);
 }
 
 * {
@@ -186,7 +187,7 @@ body {
   background: transparent;
 }
 
-/* Home: warm parchment panels — readable on bright day sky */
+/* Home: card panels — parchment in day theme, dark navy in sunset/celestial */
 .home-gold-glass {
   background: var(--card-parchment);
   color: var(--card-parchment-ink);
@@ -194,9 +195,9 @@ body {
   box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35);
   --text-primary: var(--card-parchment-ink);
   --text-secondary: var(--card-parchment-ink-muted);
-  --verse-text: #252018;
+  --verse-text: var(--card-parchment-ink);
   --heading-text: var(--card-parchment-ink);
-  --label-text: rgba(28, 24, 18, 0.68);
+  --label-text: var(--card-parchment-ink-muted);
   --streak-text: var(--card-parchment-ink);
 }
 
@@ -710,9 +711,9 @@ body {
   transition: border-color 0.3s ease;
   --text-primary: var(--card-parchment-ink);
   --text-secondary: var(--card-parchment-ink-muted);
-  --verse-text: #252018;
+  --verse-text: var(--card-parchment-ink);
   --heading-text: var(--card-parchment-ink);
-  --label-text: rgba(28, 24, 18, 0.68);
+  --label-text: var(--card-parchment-ink-muted);
   --streak-text: var(--card-parchment-ink);
 }
 
@@ -744,9 +745,9 @@ body {
   transition: background 0.4s ease, border-color 0.4s ease;
   --text-primary: var(--card-parchment-ink);
   --text-secondary: var(--card-parchment-ink-muted);
-  --verse-text: #252018;
+  --verse-text: var(--card-parchment-ink);
   --heading-text: var(--card-parchment-ink);
-  --label-text: rgba(28, 24, 18, 0.68);
+  --label-text: var(--card-parchment-ink-muted);
   --streak-text: var(--card-parchment-ink);
 }
 
@@ -1053,9 +1054,9 @@ body {
   box-shadow: var(--card-shadow, 0 4px 20px rgba(0, 0, 0, 0.08));
   --text-primary: var(--card-parchment-ink);
   --text-secondary: var(--card-parchment-ink-muted);
-  --verse-text: #252018;
+  --verse-text: var(--card-parchment-ink);
   --heading-text: var(--card-parchment-ink);
-  --label-text: rgba(28, 24, 18, 0.68);
+  --label-text: var(--card-parchment-ink-muted);
   --streak-text: var(--card-parchment-ink);
 }
 .glass-strong {
@@ -1070,9 +1071,9 @@ body {
   transition: background 0.4s ease, border-color 0.4s ease;
   --text-primary: var(--card-parchment-ink);
   --text-secondary: var(--card-parchment-ink-muted);
-  --verse-text: #252018;
+  --verse-text: var(--card-parchment-ink);
   --heading-text: var(--card-parchment-ink);
-  --label-text: rgba(28, 24, 18, 0.68);
+  --label-text: var(--card-parchment-ink-muted);
   --streak-text: var(--card-parchment-ink);
 }
 

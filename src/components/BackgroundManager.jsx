@@ -15,6 +15,7 @@ function getBackgroundType(date = new Date()) {
   const nightStart = 20 * 60;
 
   if (totalMinutes >= dayStart && totalMinutes < sunsetStart) return "day";
+  /* Evening (6–8 PM): `data-theme="sunset"` — dark navy cards + gold accents (not daytime parchment). */
   if (totalMinutes >= sunsetStart && totalMinutes < nightStart) return "sunset";
   return "celestial";
 }
