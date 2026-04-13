@@ -1,9 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { deleteJournalEntry, getJournalEntries, saveToJournal, markPrayerAnswered } from '../utils/journal'
+import {
+  deleteJournalEntry,
+  getJournalEntries,
+  saveToJournal,
+  markPrayerAnswered,
+  fetchJournalWeekEntryLocalDates,
+  getJournalWritingWeekColumnsMonSun,
+} from '../utils/journal'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import { WEEK_DAY_SHORT } from '../hooks/useStreakTracker'
+import FirstJournalEntryCelebration from '../components/FirstJournalEntryCelebration'
 
 const ACCENT_GOLD = '#c9922a'
 
@@ -113,6 +122,9 @@ function Journal() {
   const [pendingPrayerText, setPendingPrayerText] = useState('')
   const [sharingToPrayerWall, setSharingToPrayerWall] = useState(false)
   const [showToast, setShowToast] = useState(false)
+  const [showFirstEntryCelebration, setShowFirstEntryCelebration] = useState(false)
+  /** Local YYYY-MM-DD with ≥1 `journal_entries` row this Saturday-based week (`created_at` only). */
+  const [journalWeekLocalDates, setJournalWeekLocalDates] = useState([])
 
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -210,10 +222,15 @@ function Journal() {
   useEffect(() => {
     let active = true
     const load = async () => {
-      if (!user?.id) return
+      if (!user?.id) {
+        setJournalWeekLocalDates([])
+        return
+      }
       setLoading(true)
       const data = await getJournalEntries(user.id)
+      const weekDates = await fetchJournalWeekEntryLocalDates(user.id)
       if (!active) return
+      setJournalWeekLocalDates(weekDates)
       setEntries((data || []).map(normalizeEntry))
       setWritingStreak(computeWritingStreak(data))
       const entryLen = (data || []).length
@@ -245,6 +262,7 @@ function Journal() {
   const handleDeleteEntry = async (entry) => {
     await deleteJournalEntry(entry.id)
     const nextEntries = await getJournalEntries(user?.id)
+    setJournalWeekLocalDates(await fetchJournalWeekEntryLocalDates(user?.id))
     setEntries((nextEntries || []).map(normalizeEntry))
     setWritingStreak(computeWritingStreak(nextEntries))
     setTotalEntries((nextEntries || []).length)
@@ -291,7 +309,7 @@ function Journal() {
     
     setSaving(true)
     
-    const newEntry = await saveToJournal({
+    const saved = await saveToJournal({
       verse: verseText.trim() || null,
       reference: verseReference.trim() || null,
       note: reflection.trim(),
@@ -305,9 +323,12 @@ function Journal() {
     
     setSaving(false)
     
-    if (!newEntry) return
-    setEntries((prev) => [normalizeEntry(newEntry), ...prev])
+    if (!saved) return
+    const { isFirstJournalEntry, ...savedRow } = saved
+    if (isFirstJournalEntry) setShowFirstEntryCelebration(true)
+    setEntries((prev) => [normalizeEntry(savedRow), ...prev])
     const full = await getJournalEntries(user?.id)
+    setJournalWeekLocalDates(await fetchJournalWeekEntryLocalDates(user?.id))
     setWritingStreak(computeWritingStreak(full))
     setTotalEntries((full || []).length)
     setPrayerCount((full || []).filter(e => e.entry_type === 'prayer' && e.answered === true).length)
@@ -395,24 +416,22 @@ function Journal() {
   }, [entries, entryFilter, searchQuery, getEntryTitle, t])
 
   const weekHeatmapDays = useMemo(() => {
-    const dateSet = new Set((entries || []).map((e) => entryLocalYmd(e)).filter(Boolean))
-    const monday = getMondayOfWeek(new Date())
-    const now = new Date()
-    const todayYmd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+    const activeYmds = new Set(journalWeekLocalDates)
+    const todayYmd = localTodayYmd()
     const weekdayKeys = ['weekdayMon', 'weekdayTue', 'weekdayWed', 'weekdayThu', 'weekdayFri', 'weekdaySat', 'weekdaySun']
-    return Array.from({ length: 7 }, (_, i) => {
-      const dt = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i, 12, 0, 0, 0)
-      const ymd = toLocalYmd(dt)
+    const todayShortEn = new Date().toLocaleDateString('en-US', { weekday: 'short' })
+    const cols = getJournalWritingWeekColumnsMonSun()
+    return cols.map(({ shortEn, ymd }) => {
       const isToday = ymd === todayYmd
-      const weekdayIndex = (dt.getDay() + 6) % 7
+      const wi = WEEK_DAY_SHORT.indexOf(shortEn)
       return {
         ymd,
-        filled: dateSet.has(ymd),
+        filled: activeYmds.has(ymd),
         isToday,
-        label: isToday ? t('journal.today') : t(`journal.${weekdayKeys[weekdayIndex]}`),
+        label: isToday ? todayShortEn : t(`journal.${weekdayKeys[wi]}`),
       }
     })
-  }, [entries, t])
+  }, [journalWeekLocalDates, t])
 
   const dailyPrompt = useMemo(() => getPromptForEntryDate(null, prompts), [prompts])
 
@@ -494,8 +513,11 @@ function Journal() {
             alignItems: 'center',
             marginBottom: '12px',
           }}>
-            <span className="text-sm font-semibold text-white">
-              {t('journal.writingStreak')}
+            <span className="text-sm font-semibold text-white flex items-center gap-1.5">
+              <span style={{ fontSize: '20px', lineHeight: 1 }} aria-hidden>
+                🔥
+              </span>
+              <span>{t('journal.writingStreak')}</span>
             </span>
             <span className="text-sm font-bold text-amber-400">
               {writingStreak} {writingStreak === 1 ? t('journal.day') : t('journal.days')}
@@ -518,20 +540,32 @@ function Journal() {
                   minWidth: 0,
                 }}
               >
-                <div
-                  title={day.ymd}
-                  style={{
-                    width: 24,
-                    height: 24,
-                    borderRadius: '6px',
-                    background: day.filled ? ACCENT_GOLD : 'rgba(128,128,128,0.3)',
-                    opacity: day.filled ? 1 : 0.3,
-                    boxSizing: 'border-box',
-                    ...(day.isToday && day.filled
-                      ? { boxShadow: `0 0 0 2px ${ACCENT_GOLD}, 0 0 0 4px rgba(201,146,42,0.35)` }
-                      : {}),
-                  }}
-                />
+                {day.filled ? (
+                  <span
+                    title={day.ymd}
+                    style={{
+                      fontSize: '22px',
+                      lineHeight: 1,
+                      ...(day.isToday
+                        ? { filter: 'drop-shadow(0 0 4px rgba(201,146,42,0.65))' }
+                        : {}),
+                    }}
+                    aria-hidden
+                  >
+                    🔥
+                  </span>
+                ) : (
+                  <div
+                    title={day.ymd}
+                    style={{
+                      width: '28px',
+                      height: '28px',
+                      borderRadius: '50%',
+                      background: 'rgba(150,150,150,0.25)',
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
                 <span style={{
                   fontSize: '9px',
                   color: 'var(--text-secondary)',
@@ -1466,6 +1500,11 @@ function Journal() {
           </div>
         </div>
       )}
+
+      <FirstJournalEntryCelebration
+        open={showFirstEntryCelebration}
+        onClose={() => setShowFirstEntryCelebration(false)}
+      />
     </div>
   )
 }

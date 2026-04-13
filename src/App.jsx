@@ -21,6 +21,7 @@ import TermsOfService from './pages/TermsOfService'
 import Legal from './pages/Legal'
 import Settings from './pages/Settings'
 import WorshipMode from './pages/WorshipMode'
+import BibleVideos from './pages/BibleVideos'
 import BottomNav from './components/BottomNav'
 import Header from './components/Header'
 import LegalModal from './components/LegalModal'
@@ -156,6 +157,7 @@ function AppShell() {
               <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               <Route path="/worship" element={<ProtectedRoute><WorshipMode /></ProtectedRoute>} />
+              <Route path="/bible-videos" element={<ProtectedRoute><BibleVideos /></ProtectedRoute>} />
               <Route path="/onboarding" element={<ProtectedRoute><Onboarding onComplete={() => navigate('/')} /></ProtectedRoute>} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />

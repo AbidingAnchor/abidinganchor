@@ -56,7 +56,7 @@ const BUNDLES = {
       saveToJournal: 'Save to Journal',
       shareAsImage: 'Share as Image',
       readingStreak: 'Reading Streak',
-      dayStreak: '🔥 {{n}} Day Streak',
+      dayStreak: '{{n}} Day Streak',
       toolsHeading: 'TOOLS',
       toolScriptureArt: 'Scripture Art',
       toolScriptureArtSub: 'Create shareable verse images',
@@ -187,7 +187,7 @@ const BUNDLES = {
       entryPlural: 'Entries',
       dayStreakLabel: 'Day streak',
       prayersLabel: 'Prayers',
-      writingStreak: '🔥 Writing streak',
+      writingStreak: 'Writing streak',
       day: 'day',
       days: 'days',
       myJournal: 'MY JOURNAL',
@@ -266,7 +266,7 @@ BUNDLES.es = {
     saveToJournal: 'Guardar en el diario',
     shareAsImage: 'Compartir como imagen',
     readingStreak: 'Racha de lectura',
-    dayStreak: '🔥 Racha de {{n}} días',
+    dayStreak: 'Racha de {{n}} días',
     toolsHeading: 'HERRAMIENTAS',
     toolScriptureArt: 'Arte bíblico',
     toolScriptureArtSub: 'Crea imágenes de versículos para compartir',
@@ -400,7 +400,7 @@ BUNDLES.es = {
     entryPlural: 'Entradas',
     dayStreakLabel: 'Racha diaria',
     prayersLabel: 'Oraciones',
-    writingStreak: '🔥 Racha de escritura',
+    writingStreak: 'Racha de escritura',
     day: 'día',
     days: 'días',
     myJournal: 'MI DIARIO',
@@ -471,7 +471,7 @@ function cloneJournalPt() {
   j.entryPlural = 'Entradas'
   j.dayStreakLabel = 'Sequência'
   j.prayersLabel = 'Orações'
-  j.writingStreak = '🔥 Sequência de escrita'
+  j.writingStreak = 'Sequência de escrita'
   j.day = 'dia'
   j.days = 'dias'
   j.myJournal = 'MEU DIÁRIO'
@@ -558,7 +558,7 @@ function journalFr() {
     entryPlural: 'Entrées',
     dayStreakLabel: 'Série',
     prayersLabel: 'Prières',
-    writingStreak: '🔥 Série d’écriture',
+    writingStreak: 'Série d’écriture',
     day: 'jour',
     days: 'jours',
     myJournal: 'MON JOURNAL',
@@ -646,7 +646,7 @@ function journalDe() {
     entryPlural: 'Einträge',
     dayStreakLabel: 'Serie',
     prayersLabel: 'Gebete',
-    writingStreak: '🔥 Schreibserie',
+    writingStreak: 'Schreibserie',
     day: 'Tag',
     days: 'Tage',
     myJournal: 'MEIN TAGEBUCH',
@@ -740,7 +740,7 @@ BUNDLES.pt = {
     saveToJournal: 'Salvar no diário',
     shareAsImage: 'Compartilhar como imagem',
     readingStreak: 'Sequência de leitura',
-    dayStreak: '🔥 Sequência de {{n}} dias',
+    dayStreak: 'Sequência de {{n}} dias',
     toolsHeading: 'FERRAMENTAS',
     toolScriptureArt: 'Arte bíblica',
     toolScriptureArtSub: 'Crie imagens de versículos para compartilhar',
@@ -869,7 +869,7 @@ BUNDLES.fr = {
     saveToJournal: 'Enregistrer dans le journal',
     shareAsImage: 'Partager en image',
     readingStreak: 'Série de lecture',
-    dayStreak: '🔥 Série de {{n}} jours',
+    dayStreak: 'Série de {{n}} jours',
     toolsHeading: 'OUTILS',
     toolScriptureArt: 'Art biblique',
     toolScriptureArtSub: 'Créez des images de versets à partager',
@@ -1002,7 +1002,7 @@ BUNDLES.de = {
     saveToJournal: 'Im Tagebuch speichern',
     shareAsImage: 'Als Bild teilen',
     readingStreak: 'Leseserie',
-    dayStreak: '🔥 {{n}}-Tage-Serie',
+    dayStreak: '{{n}}-Tage-Serie',
     toolsHeading: 'WERKZEUGE',
     toolScriptureArt: 'Schrift-Kunst',
     toolScriptureArtSub: 'Erstellbare Vers-Bilder',

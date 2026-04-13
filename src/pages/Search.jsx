@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import BibleReader from '../components/BibleReader'
 import { saveToJournal } from '../utils/journal'
 import SaveToast from '../components/SaveToast'
+import FirstJournalEntryCelebration from '../components/FirstJournalEntryCelebration'
 import ShareVerse from '../components/ShareVerse'
 import { TOPIC_LIST, TOPIC_VERSES } from '../utils/topicVerses'
 import BookOverviewCard from '../components/BookOverviewCard'
@@ -284,6 +285,7 @@ function Search({ onOpenWorship }) {
   const [fullBibleError, setFullBibleError] = useState('')
   const [fullBiblePage, setFullBiblePage] = useState(1)
   const [toastTrigger, setToastTrigger] = useState(0)
+  const [showFirstJournalCelebration, setShowFirstJournalCelebration] = useState(false)
   const [shareVerse, setShareVerse] = useState(null)
   const [overviewBook, setOverviewBook] = useState(null)
   const [aiQuestion, setAiQuestion] = useState('')
@@ -368,11 +370,12 @@ function Search({ onOpenWorship }) {
   }, [trimmedSearch, isVerseReference, curatedResults.length, searchMode])
 
   const handleSaveToJournal = async (result) => {
-    await saveToJournal({
+    const saved = await saveToJournal({
       verse: result.text,
       reference: result.reference,
       tags: ['Search Result'],
     })
+    if (saved?.isFirstJournalEntry) setShowFirstJournalCelebration(true)
     setToastTrigger((t) => t + 1)
   }
 
@@ -853,6 +856,10 @@ function Search({ onOpenWorship }) {
           </section>
         )}
         <SaveToast trigger={toastTrigger} />
+        <FirstJournalEntryCelebration
+          open={showFirstJournalCelebration}
+          onClose={() => setShowFirstJournalCelebration(false)}
+        />
         {shareVerse ? <ShareVerse text={shareVerse.text} reference={shareVerse.reference} onClose={() => setShareVerse(null)} /> : null}
         <BookOverviewCard
           book={overviewBook?.info}

@@ -17,6 +17,7 @@ const HEADER_PATH_TO_KEY = {
   '/memorize': 'memorize',
   '/devotional': 'devotional',
   '/scripture-art': 'scriptureArt',
+  '/bible-videos': 'bibleVideos',
   '/reading-plans': 'readingPlans',
   '/fasting': 'fasting',
   '/ai-companion': 'aiCompanion',

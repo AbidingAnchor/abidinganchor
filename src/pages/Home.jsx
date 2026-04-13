@@ -10,18 +10,19 @@ import {
 } from '../lib/presenceStreak'
 import DailyEncounterCard from '../components/DailyEncounterCard'
 import DailyStreakCard from '../components/DailyStreakCard'
-import { useStreakTracker } from '../hooks/useStreakTracker'
-import { getJournalEntries, saveToJournal } from '../utils/journal'
+import { getJournalEntries, saveToJournal, getJournalWeekActiveDayShortNames } from '../utils/journal'
 import SaveToast from '../components/SaveToast'
+import FirstJournalEntryCelebration from '../components/FirstJournalEntryCelebration'
 import { useAuth } from '../context/AuthContext'
 
 function Home({ onOpenWorship, worshipStatus }) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { user, profile, loading, refreshProfile } = useAuth()
-  const { activeDays } = useStreakTracker(user?.id)
+  const [journalWeekActiveDays, setJournalWeekActiveDays] = useState([])
   const [dailyEncounter, setDailyEncounter] = useState(() => getDailyEncounter())
   const [toastTrigger, setToastTrigger] = useState(0)
+  const [showFirstJournalCelebration, setShowFirstJournalCelebration] = useState(false)
   const [journalCount, setJournalCount] = useState(0)
   const [suppressPersonalWelcome, setSuppressPersonalWelcome] = useState(false)
   const [presenceVm, setPresenceVm] = useState(() => getPresenceViewModel(syncPresenceState()))
@@ -87,20 +88,22 @@ function Home({ onOpenWorship, worshipStatus }) {
   }, [])
 
   const handleSaveDailyVerse = useCallback(async () => {
-    await saveToJournal({
+    const result = await saveToJournal({
       verse: dailyEncounter.text,
       reference: dailyEncounter.reference,
       tags: [t('home.journalTagDaily')],
     })
+    if (result?.isFirstJournalEntry) setShowFirstJournalCelebration(true)
     setToastTrigger((x) => x + 1)
   }, [dailyEncounter, t])
 
   const handleSaveVerseOfWeek = useCallback(async () => {
-    await saveToJournal({
+    const result = await saveToJournal({
       verse: t('home.verseWeekText'),
       reference: t('home.verseWeekRef'),
       tags: [t('home.journalTagDaily')],
     })
+    if (result?.isFirstJournalEntry) setShowFirstJournalCelebration(true)
     setToastTrigger((x) => x + 1)
   }, [t])
 
@@ -229,10 +232,15 @@ function Home({ onOpenWorship, worshipStatus }) {
   useEffect(() => {
     let active = true
     const loadCount = async () => {
-      if (!user?.id) return
+      if (!user?.id) {
+        setJournalWeekActiveDays([])
+        return
+      }
       const entries = await getJournalEntries(user.id)
+      const weekDays = await getJournalWeekActiveDayShortNames(user.id)
       if (!active) return
       setJournalCount(entries.length)
+      setJournalWeekActiveDays(weekDays)
     }
     loadCount()
     return () => { active = false }
@@ -305,11 +313,19 @@ function Home({ onOpenWorship, worshipStatus }) {
               onPresenceComplete={handlePresenceComplete}
             />
 
-            <DailyStreakCard activeDays={activeDays} />
+            <DailyStreakCard activeDays={journalWeekActiveDays} />
 
             <div style={{ marginBottom: '28px', animation: 'fadeInUp 0.6s ease forwards', animationDelay: '0.3s' }}>
               <h2 style={{ color: 'var(--section-title)', fontSize: '13px', letterSpacing: '0.12em', fontWeight: 500, textTransform: 'uppercase' }}>{t('home.toolsHeading')}</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+              <Link
+                to="/bible-videos"
+                className="home-gold-glass home-tool-tile"
+              >
+                <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>🎬</p>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolBibleVideos')}</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('home.toolBibleVideosSub')}</p>
+              </Link>
               <Link
                 to="/scripture-art"
                 className="home-gold-glass home-tool-tile"
@@ -430,6 +446,10 @@ function Home({ onOpenWorship, worshipStatus }) {
           </div>
         </section>
         <SaveToast trigger={toastTrigger} />
+        <FirstJournalEntryCelebration
+          open={showFirstJournalCelebration}
+          onClose={() => setShowFirstJournalCelebration(false)}
+        />
       </div>
     </div>
     </>
