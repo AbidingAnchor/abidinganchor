@@ -301,7 +301,7 @@ function Search({ onOpenWorship }) {
 
   // Define style objects that were missing
   const glassCard = {
-    background: 'var(--glass-bg)',
+    background: 'var(--card-parchment)',
     border: '1px solid var(--glass-border)',
   }
 

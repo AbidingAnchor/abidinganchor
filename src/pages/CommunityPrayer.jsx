@@ -291,7 +291,7 @@ export default function CommunityPrayer() {
 
         {!loading && tab === 'wall' && prayers.length === 0 ? (
           <article style={{
-            background: 'var(--glass-bg)',
+            background: 'var(--card-parchment)',
             border: '1px solid var(--glass-border)',
             borderLeft: '3px solid var(--gold)',
             borderRadius: '12px',
@@ -307,7 +307,7 @@ export default function CommunityPrayer() {
 
         {!loading && tab === 'mine' && prayers.length === 0 ? (
           <article style={{
-            background: 'var(--glass-bg)',
+            background: 'var(--card-parchment)',
             border: '1px solid var(--glass-border)',
             borderLeft: '3px solid var(--gold)',
             borderRadius: '12px',

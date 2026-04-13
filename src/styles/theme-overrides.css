@@ -214,3 +214,29 @@
   background: #8B6200 !important;
   color: white !important;
 }
+
+/* ── CARD SURFACES: warm parchment in every time-of-day theme (day / sunset / celestial) ──
+   Theme tokens like --glass-bg stay sky-tinted; cards must not follow that. */
+.app-card,
+.glass-panel,
+.glass-card,
+.glass-strong,
+.home-gold-glass {
+  background: #F5EDD6 !important;
+}
+
+.glass-panel:hover,
+.glass-card:hover,
+.home-gold-glass:hover,
+.home-tool-tile:hover {
+  background: #ebe3cf !important;
+}
+
+/* `.glass` panels (e.g. Prayer Wall, Audio Bible) — exclude gold pill chrome (`rounded-full` + gold bg utility) */
+.glass:not([class*="rounded-full"]) {
+  background: #F5EDD6 !important;
+}
+
+.glass:not([class*="rounded-full"]):hover {
+  background: #ebe3cf !important;
+}

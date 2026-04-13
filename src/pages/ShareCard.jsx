@@ -326,7 +326,7 @@ export default function ShareCard() {
               `}
               style={{
                 borderColor: contentFont === f.id ? 'var(--gold-border)' : 'var(--glass-border)',
-                background: contentFont === f.id ? 'rgba(212,168,67,0.1)' : 'var(--glass-bg)',
+                background: contentFont === f.id ? 'rgba(212,168,67,0.1)' : 'var(--card-parchment)',
               }}
             >
               <p style={{ color: 'var(--text-primary)', fontWeight: 600, marginBottom: '4px' }}>{f.name}</p>

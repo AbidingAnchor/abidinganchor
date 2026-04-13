@@ -113,7 +113,7 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
                   alignItems: 'center',
                   gap: '16px',
                   padding: '16px 16px',
-                  background: 'var(--glass-bg)',
+                  background: 'var(--card-parchment)',
                   border: '1px solid var(--glass-border)',
                   borderRadius: '12px',
                   cursor: 'pointer',
@@ -121,11 +121,11 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
                   marginBottom: index < options.length - 1 ? '8px' : '0',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--glass-bg-hover)'
+                  e.currentTarget.style.background = 'var(--card-parchment-hover)'
                   e.currentTarget.style.borderColor = 'var(--gold-border)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'var(--glass-bg)'
+                  e.currentTarget.style.background = 'var(--card-parchment)'
                   e.currentTarget.style.borderColor = 'var(--glass-border)'
                 }}
               >

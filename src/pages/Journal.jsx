@@ -875,7 +875,7 @@ function Journal() {
             )}
             {randomPastEntry && (
               <div className="glass-panel" style={{
-                background: 'var(--glass-bg)',
+                background: 'var(--card-parchment)',
                 border: '1px solid var(--glass-border)',
                 borderRadius: '16px',
                 padding: '16px',
