@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useLayoutEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { dedupeVersesByNumber, prepareBibleReaderVerseText } from '../utils/kjvVerseText'
@@ -122,6 +122,8 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
   const [showBookPicker, setShowBookPicker] = useState(false)
   const [showChapterPicker, setShowChapterPicker] = useState(false)
   const [showTranslationPicker, setShowTranslationPicker] = useState(false)
+  const [translationDropdownRect, setTranslationDropdownRect] = useState(null)
+  const translationButtonRef = useRef(null)
   const [translationId, setTranslationId] = useState(getStoredTranslationId)
   const [fontSize, setFontSize] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -153,6 +155,34 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
   useEffect(() => {
     if (!showEnglishBibleVersions) setShowTranslationPicker(false)
   }, [showEnglishBibleVersions])
+
+  const measureTranslationDropdownPosition = useCallback(() => {
+    const el = translationButtonRef.current
+    if (!el) return
+    const r = el.getBoundingClientRect()
+    const gap = 6
+    const minW = 280
+    const menuWidth = Math.min(Math.max(r.width, minW), window.innerWidth - 16)
+    let left = r.left
+    left = Math.max(8, Math.min(left, window.innerWidth - menuWidth - 8))
+    const top = r.bottom + gap
+    setTranslationDropdownRect({ top, left, width: menuWidth })
+  }, [])
+
+  useLayoutEffect(() => {
+    if (!showTranslationPicker || !showEnglishBibleVersions) {
+      setTranslationDropdownRect(null)
+      return undefined
+    }
+    measureTranslationDropdownPosition()
+    const onScrollOrResize = () => measureTranslationDropdownPosition()
+    window.addEventListener('resize', onScrollOrResize)
+    window.addEventListener('scroll', onScrollOrResize, true)
+    return () => {
+      window.removeEventListener('resize', onScrollOrResize)
+      window.removeEventListener('scroll', onScrollOrResize, true)
+    }
+  }, [showTranslationPicker, showEnglishBibleVersions, measureTranslationDropdownPosition])
 
   useEffect(() => {
     if (!showTranslationPicker || !showEnglishBibleVersions) return undefined
@@ -352,8 +382,9 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
 
             {showEnglishBibleVersions ? (
             <button
+              ref={translationButtonRef}
               type="button"
-              onClick={() => setShowTranslationPicker(true)}
+              onClick={() => setShowTranslationPicker((open) => !open)}
               style={{
                 background: 'rgba(212,168,67,0.12)',
                 border: '1px solid rgba(212,168,67,0.35)',
@@ -658,19 +689,20 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
         </div>
       )}
 
-      {/* Translation Picker — portaled so fixed layer is not clipped/stacked under scroll parents */}
+      {/* Translation dropdown — portaled + anchored to WEB pill (see Journal modals pattern) */}
       {showTranslationPicker &&
         showEnglishBibleVersions &&
+        translationDropdownRect &&
         typeof document !== 'undefined' &&
         createPortal(
           <>
             <div
               onClick={() => setShowTranslationPicker(false)}
-              className="glass-scrim"
               style={{
                 position: 'fixed',
                 inset: 0,
-                zIndex: 9000,
+                zIndex: 9499,
+                background: 'transparent',
               }}
               aria-hidden
             />
@@ -678,106 +710,89 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
               className="glass-panel"
               style={{
                 position: 'fixed',
-                left: 0,
-                right: 0,
-                bottom: 0,
-                zIndex: 9001,
-                borderRadius: '24px 24px 0 0',
-                borderTop: '1px solid rgba(255,255,255,0.08)',
-                padding: '24px 20px 32px',
-                maxHeight: '72vh',
+                top: translationDropdownRect.top,
+                left: translationDropdownRect.left,
+                width: translationDropdownRect.width,
+                zIndex: 9500,
+                borderRadius: '16px',
+                border: '1px solid rgba(255,255,255,0.08)',
+                padding: '16px 14px 14px',
+                maxHeight: 'min(72vh, calc(100vh - 24px))',
                 overflowY: 'auto',
-                animation: 'bibleTranslationSheetUp 0.3s ease-out',
+                boxShadow: '0 16px 48px rgba(0,0,0,0.45)',
                 pointerEvents: 'auto',
               }}
               role="listbox"
               aria-label={t('bible.translation')}
               onClick={(e) => e.stopPropagation()}
             >
-              <div style={{ maxWidth: '680px', margin: '0 auto' }}>
-                <div
-                  style={{
-                    width: '40px',
-                    height: '4px',
-                    background: 'rgba(255,255,255,0.2)',
-                    borderRadius: '2px',
-                    margin: '0 auto 20px',
-                  }}
-                />
-                <h2
-                  style={{
-                    color: '#D4A843',
-                    fontSize: '20px',
-                    fontWeight: 700,
-                    marginBottom: '8px',
-                    textAlign: 'center',
-                  }}
-                >
-                  {t('bible.translation')}
-                </h2>
-                <p style={{ color: 'rgba(245,230,200,0.65)', fontSize: '12px', textAlign: 'center', marginBottom: '20px', lineHeight: 1.45 }}>
-                  {HAS_API_BIBLE ? t('bible.apiFollowsAppLanguage') : t('bible.publicDomainNote')}
-                </p>
-                {!HAS_API_BIBLE ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    {translationOptions.map((opt) => {
-                      const active = opt.id === translationId
-                      return (
-                        <button
-                          key={opt.id}
-                          type="button"
-                          role="option"
-                          aria-selected={active}
-                          onClick={() => {
-                            setTranslationId(opt.id)
-                            setShowTranslationPicker(false)
-                          }}
-                          style={{
-                            background: active ? 'rgba(212,168,67,0.18)' : 'transparent',
-                            border: '1px solid ' + (active ? 'rgba(212,168,67,0.45)' : 'rgba(255,255,255,0.06)'),
-                            borderRadius: '14px',
-                            color: '#F5E6C8',
-                            cursor: 'pointer',
-                            padding: '14px 16px',
-                            textAlign: 'left',
-                            width: '100%',
-                            transition: 'background 0.2s ease',
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '12px' }}>
-                            <span style={{ fontSize: '16px', fontWeight: 700, color: active ? '#D4A843' : '#F5E6C8' }}>{opt.label}</span>
-                            {active ? <span style={{ fontSize: '12px', color: '#D4A843' }}>✓</span> : null}
-                          </div>
-                          <div style={{ fontSize: '14px', fontWeight: 600, marginTop: '4px', color: 'rgba(245,230,200,0.95)' }}>{opt.subtitle}</div>
-                        </button>
-                      )
-                    })}
-                  </div>
-                ) : null}
-                <button
-                  type="button"
-                  onClick={() => setShowTranslationPicker(false)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: 'rgba(245,230,200,0.7)',
-                    fontSize: '15px',
-                    cursor: 'pointer',
-                    marginTop: '20px',
-                    padding: '12px',
-                    width: '100%',
-                  }}
-                >
-                  {t('common.close')}
-                </button>
-              </div>
+              <h2
+                style={{
+                  color: '#D4A843',
+                  fontSize: '16px',
+                  fontWeight: 700,
+                  marginBottom: '6px',
+                  textAlign: 'center',
+                }}
+              >
+                {t('bible.translation')}
+              </h2>
+              <p style={{ color: 'rgba(245,230,200,0.65)', fontSize: '11px', textAlign: 'center', marginBottom: '12px', lineHeight: 1.45 }}>
+                {HAS_API_BIBLE ? t('bible.apiFollowsAppLanguage') : t('bible.publicDomainNote')}
+              </p>
+              {!HAS_API_BIBLE ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  {translationOptions.map((opt) => {
+                    const active = opt.id === translationId
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        role="option"
+                        aria-selected={active}
+                        onClick={() => {
+                          setTranslationId(opt.id)
+                          setShowTranslationPicker(false)
+                        }}
+                        style={{
+                          background: active ? 'rgba(212,168,67,0.18)' : 'transparent',
+                          border: '1px solid ' + (active ? 'rgba(212,168,67,0.45)' : 'rgba(255,255,255,0.06)'),
+                          borderRadius: '12px',
+                          color: '#F5E6C8',
+                          cursor: 'pointer',
+                          padding: '12px 12px',
+                          textAlign: 'left',
+                          width: '100%',
+                          transition: 'background 0.2s ease',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '12px' }}>
+                          <span style={{ fontSize: '15px', fontWeight: 700, color: active ? '#D4A843' : '#F5E6C8' }}>{opt.label}</span>
+                          {active ? <span style={{ fontSize: '12px', color: '#D4A843' }}>✓</span> : null}
+                        </div>
+                        <div style={{ fontSize: '13px', fontWeight: 600, marginTop: '4px', color: 'rgba(245,230,200,0.95)' }}>{opt.subtitle}</div>
+                      </button>
+                    )
+                  })}
+                </div>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => setShowTranslationPicker(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'rgba(245,230,200,0.7)',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  marginTop: '12px',
+                  padding: '8px',
+                  width: '100%',
+                }}
+              >
+                {t('common.close')}
+              </button>
             </div>
-            <style>{`
-              @keyframes bibleTranslationSheetUp {
-                from { transform: translateY(100%); }
-                to { transform: translateY(0); }
-              }
-            `}</style>
           </>,
           document.body,
         )}
