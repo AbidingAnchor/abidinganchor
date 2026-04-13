@@ -474,8 +474,8 @@ function Search({ onOpenWorship }) {
         ) : (
           <section className="space-y-6">
             <header className="space-y-1">
-              <h1 className="text-page-title">Search Scripture</h1>
-              <p className="text-body">Find any verse or passage</p>
+              <h1 className="text-page-title">Seek &amp; Find</h1>
+              <p className="text-body">God&apos;s Word has an answer for every season of life.</p>
             </header>
 
             <section className="space-y-3">
