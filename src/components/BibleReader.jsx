@@ -730,7 +730,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
             >
               <p
                 style={{
-                  color: '#D4A843',
+                  color: 'var(--text-primary)',
                   fontSize: '11px',
                   fontWeight: 700,
                   margin: '0 6px 6px',
@@ -745,10 +745,20 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
               </p>
               {!HAS_API_BIBLE ? (
                 <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-                  {translationOptions.map((opt) => {
+                  {translationOptions.map((opt, index) => {
                     const active = opt.id === translationId
                     return (
-                      <li key={opt.id} style={{ margin: 0, padding: 0 }}>
+                      <li
+                        key={opt.id}
+                        style={{
+                          margin: 0,
+                          padding: 0,
+                          borderBottom:
+                            index < translationOptions.length - 1
+                              ? '1px solid rgba(255, 255, 255, 0.05)'
+                              : 'none',
+                        }}
+                      >
                         <button
                           type="button"
                           role="option"
