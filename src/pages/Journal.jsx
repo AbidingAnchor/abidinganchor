@@ -1400,100 +1400,131 @@ function Journal() {
         </div>
       )}
 
-      {/* Prayer Share Prompt Modal */}
-      {showPrayerSharePrompt && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 2000,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          animation: 'fadeIn 0.3s ease'
-        }}>
-          <div
-            className="glass-scrim"
-            style={{
-              position: 'fixed',
-              inset: 0,
-            }}
-            onClick={handleKeepPrivate}
-          />
-          <div className="glass relative z-10 w-full max-w-md rounded-2xl p-6 border border-[#D4A843]/30" style={{
-            maxWidth: '360px',
-            margin: '16px'
-          }}>
-            <div style={{
-              textAlign: 'center',
-              marginBottom: '20px'
-            }}>
-              <span style={{ fontSize: '32px', display: 'block', marginBottom: '12px' }}>🙏</span>
-              <h2 style={{
-                color: '#D4A843',
-                fontSize: '18px',
-                fontWeight: 700,
-                marginBottom: '12px'
-              }}>
-                {t('journal.sharePromptTitle')}
-              </h2>
-              <p style={{
-                color: 'rgba(255,255,255,0.8)',
-                fontSize: '14px',
-                lineHeight: '1.5',
-                marginBottom: '8px'
-              }}>
-                {t('journal.sharePromptBody')}
-              </p>
-              <p style={{
-                color: 'var(--text-secondary)',
-                fontSize: '13px',
-                fontStyle: 'italic'
-              }}>
-                {t('journal.sharePromptNote')}
-              </p>
-            </div>
-            <div style={{
-              display: 'flex',
-              gap: '12px'
-            }}>
-              <button
-                onClick={handleShareToPrayerWall}
-                disabled={sharingToPrayerWall}
+      {/* Prayer Share Prompt Modal — portal + layered backdrop (matches write modal) */}
+      {showPrayerSharePrompt &&
+        createPortal(
+          <>
+            <div
+              aria-hidden="true"
+              style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 10050,
+              }}
+              onClick={handleKeepPrivate}
+            />
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="journal-prayer-share-title"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                zIndex: 10051,
+                width: 'min(90vw, 360px)',
+                maxWidth: '100%',
+                maxHeight: '85vh',
+                overflowY: 'auto',
+                WebkitOverflowScrolling: 'touch',
+                boxSizing: 'border-box',
+                borderRadius: '16px',
+                padding: '24px',
+                background: 'rgba(10, 15, 40, 0.97)',
+                border: '1px solid rgba(212, 168, 67, 0.22)',
+                boxShadow: '0 20px 56px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.2)',
+              }}
+            >
+              <div
                 style={{
-                  flex: 1,
-                  background: '#D4A843',
-                  color: '#0a1a3e',
-                  fontWeight: 700,
-                  borderRadius: '12px',
-                  padding: '12px',
-                  border: 'none',
-                  cursor: sharingToPrayerWall ? 'not-allowed' : 'pointer',
-                  fontSize: '14px',
-                  opacity: sharingToPrayerWall ? 0.7 : 1
+                  textAlign: 'center',
+                  marginBottom: '20px',
                 }}
               >
-                {sharingToPrayerWall ? t('journal.sharing') : t('journal.shareAnon')}
-              </button>
-              <button
-                onClick={handleKeepPrivate}
+                <span style={{ fontSize: '32px', display: 'block', marginBottom: '12px' }} aria-hidden>
+                  🙏
+                </span>
+                <h2
+                  id="journal-prayer-share-title"
+                  style={{
+                    color: '#D4A843',
+                    fontSize: '18px',
+                    fontWeight: 700,
+                    marginBottom: '12px',
+                  }}
+                >
+                  {t('journal.sharePromptTitle')}
+                </h2>
+                <p
+                  style={{
+                    color: 'rgba(255,255,255,0.8)',
+                    fontSize: '14px',
+                    lineHeight: '1.5',
+                    marginBottom: '8px',
+                  }}
+                >
+                  {t('journal.sharePromptBody')}
+                </p>
+                <p
+                  style={{
+                    color: 'var(--text-secondary)',
+                    fontSize: '13px',
+                    fontStyle: 'italic',
+                  }}
+                >
+                  {t('journal.sharePromptNote')}
+                </p>
+              </div>
+              <div
                 style={{
-                  flex: 1,
-                  background: 'transparent',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  color: 'rgba(255,255,255,0.8)',
-                  fontWeight: 600,
-                  borderRadius: '12px',
-                  padding: '12px',
-                  cursor: 'pointer',
-                  fontSize: '14px'
+                  display: 'flex',
+                  gap: '12px',
                 }}
               >
-                {t('journal.keepPrivate')}
-              </button>
+                <button
+                  type="button"
+                  onClick={handleShareToPrayerWall}
+                  disabled={sharingToPrayerWall}
+                  style={{
+                    flex: 1,
+                    background: '#D4A843',
+                    color: '#0a1a3e',
+                    fontWeight: 700,
+                    borderRadius: '12px',
+                    padding: '12px',
+                    border: 'none',
+                    cursor: sharingToPrayerWall ? 'not-allowed' : 'pointer',
+                    fontSize: '14px',
+                    opacity: sharingToPrayerWall ? 0.7 : 1,
+                  }}
+                >
+                  {sharingToPrayerWall ? t('journal.sharing') : t('journal.shareAnon')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleKeepPrivate}
+                  style={{
+                    flex: 1,
+                    background: 'transparent',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    color: 'rgba(255,255,255,0.8)',
+                    fontWeight: 600,
+                    borderRadius: '12px',
+                    padding: '12px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                  }}
+                >
+                  {t('journal.keepPrivate')}
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </>,
+          document.body,
+        )}
 
       {/* Toast Notification */}
       {showToast && (
