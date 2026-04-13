@@ -385,15 +385,16 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
               type="button"
               onClick={() => setShowTranslationPicker((open) => !open)}
               style={{
-                background: 'rgba(212,168,67,0.12)',
-                border: '1px solid rgba(212,168,67,0.35)',
+                background: 'rgba(10, 16, 40, 0.88)',
+                border: '1px solid rgba(212,168,67,0.38)',
                 borderRadius: '999px',
-                color: '#D4A843',
+                color: '#F5E6C8',
                 fontSize: '12px',
                 fontWeight: 700,
                 cursor: 'pointer',
                 padding: '6px 12px',
                 letterSpacing: '0.04em',
+                boxShadow: '0 8px 20px rgba(0,0,0,0.25)',
               }}
               aria-expanded={showTranslationPicker}
               aria-haspopup="listbox"
@@ -713,14 +714,15 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                 width: 200,
                 boxSizing: 'border-box',
                 zIndex: 9500,
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                background: 'rgba(10, 15, 40, 0.97)',
+                border: '1px solid rgba(212, 168, 67, 0.24)',
                 borderRadius: '16px',
                 padding: '10px 8px 8px',
                 maxHeight: `min(200px, calc(100dvh - 16px - ${translationDropdownRect.top}px))`,
                 overflowY: 'auto',
                 overflowX: 'hidden',
                 pointerEvents: 'auto',
+                boxShadow: '0 18px 40px rgba(0,0,0,0.45)',
               }}
               role="listbox"
               aria-label={t('bible.translation')}
@@ -766,10 +768,10 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                             setShowTranslationPicker(false)
                           }}
                           style={{
-                            background: active ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                            border: 'none',
-                            borderRadius: '10px',
-                            color: 'var(--text-primary)',
+                            background: active ? 'rgba(212, 168, 67, 0.16)' : 'rgba(255,255,255,0.02)',
+                            border: active ? '1px solid rgba(212, 168, 67, 0.55)' : '1px solid transparent',
+                            borderRadius: '12px',
+                            color: '#F8F5EC',
                             cursor: 'pointer',
                             padding: '10px 10px',
                             textAlign: 'left',
@@ -778,8 +780,12 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                             transition: 'background 0.15s ease',
                           }}
                         >
-                          <span style={{ fontSize: '14px', fontWeight: 600, display: 'block' }}>{opt.label}</span>
-                          <span style={{ fontSize: '11px', fontWeight: 500, color: 'rgba(245,230,200,0.55)', display: 'block', marginTop: '2px', lineHeight: 1.3 }}>{opt.subtitle}</span>
+                          <span style={{ fontSize: '14px', fontWeight: 700, color: active ? '#D4A843' : '#F8F5EC', display: 'block' }}>
+                            {opt.label}
+                          </span>
+                          <span style={{ fontSize: '11px', fontWeight: 500, color: 'rgba(245,230,200,0.58)', display: 'block', marginTop: '2px', lineHeight: 1.3 }}>
+                            {opt.subtitle}
+                          </span>
                         </button>
                       </li>
                     )
