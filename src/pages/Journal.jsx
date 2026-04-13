@@ -987,9 +987,9 @@ function Journal() {
               display: 'flex',
               alignItems: 'flex-end',
               justifyContent: 'center',
-              background: 'rgba(4, 6, 18, 0.92)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
+              background: 'rgba(0, 0, 0, 0.7)',
+              backdropFilter: 'blur(4px)',
+              WebkitBackdropFilter: 'blur(4px)',
             }}
             onClick={() => {
               setShowModal(false)
