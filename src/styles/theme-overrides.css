@@ -86,6 +86,23 @@
   color: var(--faith-accent) !important;
 }
 
+/* Journal prayer share modal (portaled): day theme h2/p use !important navy — force cream */
+[data-theme="day"] .journal-prayer-share-modal,
+[data-theme="day"] .journal-prayer-share-modal h2,
+[data-theme="day"] .journal-prayer-share-modal p {
+  color: #f5edd6 !important;
+  opacity: 1 !important;
+}
+
+[data-theme="day"] .journal-prayer-share-modal .journal-prayer-share-modal__primary {
+  color: #0a1a3e !important;
+}
+
+[data-theme="day"] .journal-prayer-share-modal .journal-prayer-share-modal__secondary {
+  color: #f5edd6 !important;
+  opacity: 1 !important;
+}
+
 /* Labels and small text */
 [data-theme="day"] label,
 [data-theme="day"] small,

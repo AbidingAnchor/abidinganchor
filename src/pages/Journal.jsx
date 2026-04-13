@@ -1386,6 +1386,7 @@ function Journal() {
             />
             <div
               role="dialog"
+              className="journal-prayer-share-modal"
               aria-modal="true"
               aria-labelledby="journal-prayer-share-title"
               onClick={(e) => e.stopPropagation()}
@@ -1406,21 +1407,30 @@ function Journal() {
                 background: 'rgba(10, 15, 40, 0.97)',
                 border: '1px solid rgba(212, 168, 67, 0.22)',
                 boxShadow: '0 20px 56px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.2)',
+                color: '#F5EDD6',
+                opacity: 1,
               }}
             >
               <div
                 style={{
                   textAlign: 'center',
                   marginBottom: '20px',
+                  color: '#F5EDD6',
+                  opacity: 1,
                 }}
               >
-                <span style={{ fontSize: '32px', display: 'block', marginBottom: '12px' }} aria-hidden>
+                <span
+                  className="emoji"
+                  style={{ fontSize: '32px', display: 'block', marginBottom: '12px', opacity: 1 }}
+                  aria-hidden
+                >
                   🙏
                 </span>
                 <h2
                   id="journal-prayer-share-title"
                   style={{
                     color: '#F5EDD6',
+                    opacity: 1,
                     fontSize: '18px',
                     fontWeight: 700,
                     marginBottom: '12px',
@@ -1431,6 +1441,7 @@ function Journal() {
                 <p
                   style={{
                     color: '#F5EDD6',
+                    opacity: 1,
                     fontSize: '14px',
                     lineHeight: '1.5',
                     marginBottom: '8px',
@@ -1441,6 +1452,7 @@ function Journal() {
                 <p
                   style={{
                     color: '#F5EDD6',
+                    opacity: 1,
                     fontSize: '13px',
                     fontStyle: 'italic',
                   }}
@@ -1452,10 +1464,12 @@ function Journal() {
                 style={{
                   display: 'flex',
                   gap: '12px',
+                  opacity: 1,
                 }}
               >
                 <button
                   type="button"
+                  className="journal-prayer-share-modal__primary"
                   onClick={handleShareToPrayerWall}
                   disabled={sharingToPrayerWall}
                   style={{
@@ -1475,12 +1489,14 @@ function Journal() {
                 </button>
                 <button
                   type="button"
+                  className="journal-prayer-share-modal__secondary"
                   onClick={handleKeepPrivate}
                   style={{
                     flex: 1,
                     background: 'transparent',
                     border: '1px solid rgba(245, 237, 214, 0.45)',
                     color: '#F5EDD6',
+                    opacity: 1,
                     fontWeight: 600,
                     borderRadius: '12px',
                     padding: '12px',
