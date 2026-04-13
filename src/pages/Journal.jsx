@@ -1420,7 +1420,7 @@ function Journal() {
                 <h2
                   id="journal-prayer-share-title"
                   style={{
-                    color: '#FFFFFF',
+                    color: '#F5EDD6',
                     fontSize: '18px',
                     fontWeight: 700,
                     marginBottom: '12px',
@@ -1443,7 +1443,6 @@ function Journal() {
                     color: '#F5EDD6',
                     fontSize: '13px',
                     fontStyle: 'italic',
-                    opacity: 0.95,
                   }}
                 >
                   {t('journal.sharePromptNote')}
