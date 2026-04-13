@@ -161,9 +161,10 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
     if (!el) return
     const r = el.getBoundingClientRect()
     const gap = 6
-    const minW = 280
-    const menuWidth = Math.min(Math.max(r.width, minW), window.innerWidth - 16)
-    let left = r.left
+    const maxMenuWidth = 280
+    const menuWidth = Math.min(maxMenuWidth, window.innerWidth - 16)
+    // Right-align to the pill: menu right edge matches button right edge
+    let left = r.right - menuWidth
     left = Math.max(8, Math.min(left, window.innerWidth - menuWidth - 8))
     const top = r.bottom + gap
     setTranslationDropdownRect({ top, left, width: menuWidth })
