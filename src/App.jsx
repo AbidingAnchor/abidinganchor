@@ -38,14 +38,59 @@ import { applyDailyStreakOnAppOpen } from './lib/dailyAppStreak'
 import { syncWeeklyActiveDays } from './hooks/useStreakTracker'
 
 function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth()
+  const { user, loading, suspendedInfo } = useAuth()
   if (loading) return <LoadingScreen />
+  if (suspendedInfo) return null
   if (!user) return <Navigate to="/auth" replace />
   return children
 }
 
+function SuspendedScreen({ bannedAt }) {
+  const bannedDateText = bannedAt ? new Date(bannedAt).toLocaleString() : 'Unknown'
+
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(180deg, #081229 0%, #0b1738 55%, #091021 100%)',
+        color: '#F5E6B8',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '24px',
+      }}
+    >
+      <div
+        style={{
+          width: 'min(92vw, 700px)',
+          borderRadius: '20px',
+          border: '1px solid rgba(201,168,76,0.45)',
+          background: 'rgba(9, 17, 39, 0.94)',
+          boxShadow: '0 12px 36px rgba(0,0,0,0.45)',
+          padding: '28px 24px',
+          textAlign: 'center',
+        }}
+      >
+        <p style={{ fontSize: '30px', marginBottom: '10px' }} aria-hidden>🚫</p>
+        <h1 style={{ color: '#C9A84C', fontSize: '28px', fontWeight: 800, margin: '0 0 14px 0' }}>
+          Your Account Has Been Suspended
+        </h1>
+        <p style={{ color: 'rgba(255,255,255,0.85)', lineHeight: 1.65, marginBottom: '8px' }}>
+          Your access to AbidingAnchor has been revoked. This action was taken to protect the integrity of our community.
+        </p>
+        <p style={{ color: '#C9A84C', fontWeight: 700, marginBottom: '10px' }}>
+          Banned on: {bannedDateText}.
+        </p>
+        <p style={{ color: 'rgba(255,255,255,0.8)', lineHeight: 1.65, margin: 0 }}>
+          If you believe this was a mistake or would like to appeal, please reach out to our staff team via Discord.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 function AppShell() {
-  const { user, refreshProfile } = useAuth()
+  const { user, refreshProfile, suspendedInfo } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
   const [worshipVisible, setWorshipVisible] = useState(false)
@@ -109,6 +154,10 @@ function AppShell() {
       if (timeoutId) clearTimeout(timeoutId)
     }
   }, [user?.id, refreshProfile])
+
+  if (suspendedInfo) {
+    return <SuspendedScreen bannedAt={suspendedInfo.bannedAt} />
+  }
 
   return (
     <div className="relative text-white" style={{ background: 'transparent' }}>

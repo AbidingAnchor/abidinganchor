@@ -62,8 +62,6 @@ export default function BottomNav() {
           right: 0,
           zIndex: 9999,
           background: 'var(--nav-bg)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
           borderTop: '1px solid var(--nav-border)',
           height: '72px',
           display: 'flex',

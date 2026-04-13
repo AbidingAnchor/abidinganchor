@@ -150,8 +150,6 @@ export default function BibleVideos() {
               color: 'var(--text-primary)',
               fontSize: '15px',
               outline: 'none',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
             }}
           />
         </div>
@@ -227,8 +225,6 @@ export default function BibleVideos() {
                   overflow: 'hidden',
                   border: '1px solid rgba(255,255,255,0.1)',
                   background: 'rgba(8,20,48,0.55)',
-                  backdropFilter: 'blur(10px)',
-                  WebkitBackdropFilter: 'blur(10px)',
                 }}
               >
                 <div
@@ -300,8 +296,6 @@ export default function BibleVideos() {
             padding:
               'max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left))',
             background: 'rgba(2, 6, 18, 0.72)',
-            backdropFilter: 'blur(14px) saturate(1.15)',
-            WebkitBackdropFilter: 'blur(14px) saturate(1.15)',
           }}
           onClick={() => setSelected(null)}
         >

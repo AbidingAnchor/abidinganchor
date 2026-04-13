@@ -200,8 +200,6 @@ export default function Navbar() {
           right: 0,
           zIndex: 9999,
           background: 'var(--nav-bg)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
           borderTop: '1px solid var(--nav-border)',
           height: '65px',
           display: 'flex',

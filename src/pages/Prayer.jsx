@@ -18,6 +18,8 @@ export default function Prayer() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [draft, setDraft] = useState('')
   const [saving, setSaving] = useState(false)
+  const [pendingDeletePrayerId, setPendingDeletePrayerId] = useState(null)
+  const [deletingPrayerId, setDeletingPrayerId] = useState(null)
   const [toast, setToast] = useState(null)
   const toastTimerRef = useRef(null)
 
@@ -123,6 +125,27 @@ export default function Prayer() {
       await load()
     } catch (e) {
       console.error(e)
+    }
+  }
+
+  const deletePrayer = async (row) => {
+    if (!row?.id) return
+
+    try {
+      setDeletingPrayerId(row.id)
+      const { error } = await supabase
+        .from('personal_prayers')
+        .delete()
+        .eq('id', row.id)
+      if (error) throw error
+
+      setItems((prev) => prev.filter((item) => item.id !== row.id))
+      setAnsweredCount((prev) => Math.max(0, prev - (row.answered ? 1 : 0)))
+      setPendingDeletePrayerId((current) => (current === row.id ? null : current))
+    } catch (e) {
+      console.error('Error deleting prayer:', e)
+    } finally {
+      setDeletingPrayerId((current) => (current === row.id ? null : current))
     }
   }
 
@@ -238,6 +261,37 @@ export default function Prayer() {
                         {t('prayer.unmarkAnswered')}
                       </button>
                     )}
+                    <div className="mt-3 flex justify-end">
+                      {pendingDeletePrayerId === row.id ? (
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => deletePrayer(row)}
+                            disabled={deletingPrayerId === row.id}
+                            className="rounded-full border border-red-300/70 px-3 py-1 text-xs text-red-200 hover:bg-red-500/10 disabled:opacity-60"
+                          >
+                            {deletingPrayerId === row.id ? 'Deleting…' : 'Yes, Delete'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setPendingDeletePrayerId(null)}
+                            disabled={deletingPrayerId === row.id}
+                            className="rounded-full border border-white/25 px-3 py-1 text-xs text-white/70 hover:bg-white/10 disabled:opacity-60"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setPendingDeletePrayerId(row.id)}
+                          className="text-xs text-red-300/85 hover:text-red-200 transition-colors"
+                          aria-label="Delete prayer"
+                        >
+                          🗑 Delete
+                        </button>
+                      )}
+                    </div>
                   </li>
                 ))}
               </ul>

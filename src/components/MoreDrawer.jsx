@@ -39,8 +39,6 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
           right: 0,
           zIndex: 10001,
           background: 'var(--nav-bg)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
           borderTop: '1px solid var(--glass-border)',
           borderRadius: '24px 24px 0 0',
           paddingBottom: 'env(safe-area-inset-bottom, 20px)',

@@ -397,7 +397,7 @@ export default function CommunityPrayer() {
       {modalOpen ? (
         <div
           className="fixed inset-0 z-[10000] flex items-end justify-center p-4 sm:items-center"
-          style={{ background: 'rgba(5, 12, 35, 0.75)', backdropFilter: 'blur(6px)' }}
+          style={{ background: 'rgba(5, 12, 35, 0.75)' }}
           role="presentation"
           onClick={() => !submitting && setModalOpen(false)}
         >

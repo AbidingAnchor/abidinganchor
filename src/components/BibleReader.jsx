@@ -716,8 +716,6 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                 background: 'rgba(255, 255, 255, 0.05)',
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 borderRadius: '16px',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
                 padding: '10px 8px 8px',
                 maxHeight: `min(200px, calc(100dvh - 16px - ${translationDropdownRect.top}px))`,
                 overflowY: 'auto',

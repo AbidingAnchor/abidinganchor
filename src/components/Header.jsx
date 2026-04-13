@@ -84,8 +84,6 @@ export default function Header() {
         padding: '0 16px',
         borderBottom: '1px solid var(--glass-border)',
         background: 'var(--nav-bg)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
       }}
     >
       {/* Profile avatar */}

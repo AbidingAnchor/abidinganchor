@@ -8,6 +8,15 @@ const BIO_MAX = 150
 const USERNAME_CHANGE_LIMIT = 3
 const USERNAME_RESET_WINDOW_DAYS = 90
 const USERNAME_RESET_WINDOW_MS = USERNAME_RESET_WINDOW_DAYS * 24 * 60 * 60 * 1000
+const BANNED_USERNAME_WORDS = ['fuck', 'shit', 'bitch', 'asshole', 'bastard', 'nigger', 'slut', 'whore', 'dick', 'pussy']
+
+function hasProfanity(value = '') {
+  const normalizedParts = value
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean)
+  return normalizedParts.some((part) => BANNED_USERNAME_WORDS.includes(part))
+}
 
 function startOfResetWindow(dateLike) {
   const dt = dateLike ? new Date(dateLike) : new Date()
@@ -47,6 +56,7 @@ export default function EditProfile() {
   const [favoriteVerse, setFavoriteVerse] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveNoticeVisible, setSaveNoticeVisible] = useState(false)
+  const [profileError, setProfileError] = useState('')
 
   useEffect(() => {
     if (!user?.id) return
@@ -171,9 +181,14 @@ export default function EditProfile() {
 
   const handleSaveProfile = async () => {
     if (!user?.id || saving) return
+    const nextUsername = username.trim()
+    if (nextUsername && hasProfanity(nextUsername)) {
+      setProfileError('Please choose an appropriate username.')
+      return
+    }
     try {
+      setProfileError('')
       setSaving(true)
-      const nextUsername = username.trim()
       const { data: latestProfile, error: latestProfileError } = await supabase
         .from('profiles')
         .select('username, username_changes, username_changes_reset_at')
@@ -349,12 +364,20 @@ export default function EditProfile() {
           <input
             type="text"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => {
+              setUsername(e.target.value)
+              if (profileError) setProfileError('')
+            }}
             placeholder="Your display name"
             className="glass-input-field"
             disabled={reachedUsernameLimit}
             style={{ width: '100%', borderRadius: '12px', padding: '12px', marginBottom: '16px' }}
           />
+          {profileError ? (
+            <p style={{ color: '#fca5a5', fontSize: '12px', marginTop: '-8px', marginBottom: '12px' }}>
+              {profileError}
+            </p>
+          ) : null}
           {reachedUsernameLimit ? (
             <p style={{ color: '#D4A843', fontSize: '12px', marginBottom: '12px' }}>
               {`You've reached the maximum username changes (${USERNAME_CHANGE_LIMIT}). Your changes will reset in ${daysRemainingForUsernameReset} days.`}

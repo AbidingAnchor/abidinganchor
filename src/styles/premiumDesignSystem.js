@@ -22,8 +22,6 @@ export const premiumColors = {
 
 export const glassmorphism = {
   background: premiumColors.glass,
-  backdropFilter: 'blur(20px)',
-  WebkitBackdropFilter: 'blur(20px)',
   border: `1px solid ${premiumColors.glassBorder}`,
   boxShadow: `0 8px 32px ${premiumColors.shadow}`
 }

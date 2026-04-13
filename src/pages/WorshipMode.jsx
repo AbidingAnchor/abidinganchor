@@ -536,8 +536,6 @@ export default function WorshipMode() {
         padding: '10px 14px 12px',
         boxSizing: 'border-box',
         background: 'rgba(8, 10, 26, 0.55)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
         border: `1px solid ${goldMuted}`,
         borderRadius: '18px',
         display: 'flex',

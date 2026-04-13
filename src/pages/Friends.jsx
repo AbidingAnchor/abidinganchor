@@ -6,8 +6,6 @@ import { useAuth } from '../context/AuthContext'
 
 const cardStyle = {
   background: 'rgba(255, 255, 255, 0.1)',
-  backdropFilter: 'blur(14px)',
-  WebkitBackdropFilter: 'blur(14px)',
   border: '1px solid rgba(255, 255, 255, 0.2)',
   borderRadius: '16px',
 }

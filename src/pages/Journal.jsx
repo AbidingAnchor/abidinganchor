@@ -896,8 +896,6 @@ function Journal() {
             {randomPastEntry && (
               <div className="glass-panel" style={{
                 background: 'var(--glass-bg)',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
                 border: '1px solid var(--glass-border)',
                 borderRadius: '16px',
                 padding: '16px',
@@ -945,8 +943,6 @@ function Journal() {
         ) : (
           <div style={{
             background: 'rgba(255, 255, 255, 0.05)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             borderRadius: '16px',
             padding: '28px 20px',

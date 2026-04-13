@@ -121,6 +121,7 @@ async function ensureProfile(user) {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
+  const [suspendedInfo, setSuspendedInfo] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -145,6 +146,15 @@ export function AuthProvider({ children }) {
             nextProfile = null
           }
           if (!active) return
+          if (nextProfile?.is_banned) {
+            setSuspendedInfo({ bannedAt: nextProfile?.banned_at || null })
+            setUser(null)
+            setProfile(null)
+            profileSyncedUserIds.clear()
+            await supabase.auth.signOut()
+            return
+          }
+          setSuspendedInfo(null)
           setProfile(nextProfile)
         } else {
           setProfile(null)
@@ -177,6 +187,15 @@ export function AuthProvider({ children }) {
               console.error('onAuthStateChange profile fetch:', err)
               nextProfile = null
             }
+            if (nextProfile?.is_banned) {
+              setSuspendedInfo({ bannedAt: nextProfile?.banned_at || null })
+              setUser(null)
+              setProfile(null)
+              profileSyncedUserIds.clear()
+              await supabase.auth.signOut()
+              return
+            }
+            setSuspendedInfo(null)
             setProfile(nextProfile)
           } else {
             setProfile(null)
@@ -224,6 +243,7 @@ export function AuthProvider({ children }) {
 
   const signOut = async () => {
     profileSyncedUserIds.clear()
+    setSuspendedInfo(null)
     await supabase.auth.signOut()
   }
 
@@ -255,13 +275,14 @@ export function AuthProvider({ children }) {
     () => ({
       user,
       profile,
+      suspendedInfo,
       loading,
       signUp,
       signIn,
       signOut,
       refreshProfile,
     }),
-    [user, profile, loading, refreshProfile],
+    [user, profile, suspendedInfo, loading, refreshProfile],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

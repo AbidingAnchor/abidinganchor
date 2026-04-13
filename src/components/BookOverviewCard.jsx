@@ -21,7 +21,6 @@ export default function BookOverviewCard({ book, onClose, onStart }) {
           width: '100%',
           maxWidth: '480px',
           background: 'rgba(13,31,78,0.92)',
-          backdropFilter: 'blur(16px)',
           border: '1px solid rgba(255,255,255,0.28)',
           borderRadius: '16px',
           padding: '16px',

@@ -704,8 +704,6 @@ export default function Settings() {
                   borderRadius: '12px',
                   padding: '12px',
                   background: 'rgba(255,255,255,0.06)',
-                  backdropFilter: 'blur(12px)',
-                  WebkitBackdropFilter: 'blur(12px)',
                   border: '1px solid ' + (dailyReminderEnabled ? 'rgba(212,168,67,0.4)' : 'rgba(255,255,255,0.12)'),
                   color: 'var(--text-primary)',
                   fontSize: '16px',
@@ -762,8 +760,6 @@ export default function Settings() {
           style={{
             width: '100%',
             background: 'rgba(255,80,80,0.9)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
             border: 'none',
             borderRadius: '16px',
             padding: '16px',
