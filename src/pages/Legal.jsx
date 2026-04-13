@@ -36,7 +36,13 @@ export default function Legal() {
           </div>
 
           <article className="glass-panel rounded-2xl p-5 text-center text-white/90">
-            Questions? Contact us at <span style={{ color: '#D4A843', fontWeight: 700 }}>AbidingAnchor@outlook.com</span>
+            Questions? Contact us at{' '}
+            <a
+              href="mailto:abidingstudiosdev@gmail.com"
+              style={{ color: '#D4A843', fontWeight: 700, textDecoration: 'underline' }}
+            >
+              abidingstudiosdev@gmail.com
+            </a>
           </article>
 
           <article className="glass-panel rounded-2xl p-5 text-white/90">
