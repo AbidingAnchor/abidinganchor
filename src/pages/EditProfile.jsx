@@ -18,6 +18,8 @@ export default function EditProfile() {
   const [localAvatarUrl, setLocalAvatarUrl] = useState(null)
 
   const [username, setUsername] = useState('')
+  const [initialUsername, setInitialUsername] = useState('')
+  const [usernameChanges, setUsernameChanges] = useState(0)
   const [bio, setBio] = useState('')
   const [favoriteVerse, setFavoriteVerse] = useState('')
   const [saving, setSaving] = useState(false)
@@ -28,12 +30,14 @@ export default function EditProfile() {
     const loadProfile = async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('avatar_url, username, bio, favorite_verse')
+        .select('avatar_url, username, username_changes, bio, favorite_verse')
         .eq('id', user.id)
         .maybeSingle()
       if (!data) return
       setLocalAvatarUrl(data.avatar_url || null)
       setUsername(data.username || '')
+      setInitialUsername(data.username || '')
+      setUsernameChanges(Number(data.username_changes) || 0)
       setBio(data.bio || '')
       setFavoriteVerse(data.favorite_verse || '')
     }
@@ -128,13 +132,18 @@ export default function EditProfile() {
 
   const handleSaveProfile = async () => {
     if (!user?.id || saving) return
+    const nextUsername = username.trim()
+    const didUsernameChange = nextUsername !== initialUsername
+    const reachedUsernameLimit = usernameChanges >= 3
+    if (didUsernameChange && reachedUsernameLimit) return
     try {
       setSaving(true)
       const payload = {
-        username: username.trim() || null,
+        username: nextUsername || null,
         bio: bio.trim() || null,
         favorite_verse: favoriteVerse.trim() || null,
       }
+      if (didUsernameChange) payload.username_changes = usernameChanges + 1
       const { data, error } = await supabase
         .from('profiles')
         .update(payload)
@@ -143,6 +152,8 @@ export default function EditProfile() {
         .single()
       if (error) throw error
       await refreshProfile(data)
+      setInitialUsername(data?.username || '')
+      setUsernameChanges(Number(data?.username_changes) || 0)
       setSaveNoticeVisible(true)
     } catch (error) {
       console.error('Profile save error:', error)
@@ -151,10 +162,16 @@ export default function EditProfile() {
     }
   }
 
-  const displayName = profile?.full_name || user?.user_metadata?.full_name || t('common.user')
+  const displayName =
+    username.trim() ||
+    profile?.username ||
+    profile?.full_name ||
+    user?.user_metadata?.full_name ||
+    t('common.user')
   const userEmail = user?.email || ''
   const avatarUrl = avatarPreviewUrl || localAvatarUrl || profile?.avatar_url
   const hasAvatarImage = Boolean(avatarUrl)
+  const reachedUsernameLimit = usernameChanges >= 3
 
   return (
     <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '120px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
@@ -262,8 +279,14 @@ export default function EditProfile() {
             onChange={(e) => setUsername(e.target.value)}
             placeholder="Your display name"
             className="glass-input-field"
+            disabled={reachedUsernameLimit}
             style={{ width: '100%', borderRadius: '12px', padding: '12px', marginBottom: '16px' }}
           />
+          {reachedUsernameLimit ? (
+            <p style={{ color: '#D4A843', fontSize: '12px', marginBottom: '12px' }}>
+              You've reached the maximum username changes (3).
+            </p>
+          ) : null}
 
           <label style={{ color: 'var(--text-primary)', display: 'block', fontSize: '14px', marginBottom: '8px' }}>Bio</label>
           <textarea

@@ -35,6 +35,7 @@ export default function Settings() {
   const [pendingAvatarFile, setPendingAvatarFile] = useState(null)
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState(null)
   const [localAvatarUrl, setLocalAvatarUrl] = useState(null)
+  const [localUsername, setLocalUsername] = useState('')
   const [dailyReminderEnabled, setDailyReminderEnabled] = useState(false)
   const [reminderTime, setReminderTime] = useState('08:00')
   const fileInputRef = useRef(null)
@@ -44,10 +45,11 @@ export default function Settings() {
     const loadAvatar = async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('avatar_url')
+        .select('avatar_url, username')
         .eq('id', user.id)
         .maybeSingle()
       if (data?.avatar_url) setLocalAvatarUrl(data.avatar_url)
+      setLocalUsername(data?.username || '')
     }
     loadAvatar()
   }, [user?.id])
@@ -283,7 +285,12 @@ export default function Settings() {
     setAvatarPreviewUrl(URL.createObjectURL(file))
   }
 
-  const displayName = profile?.full_name || user?.user_metadata?.full_name || t('common.user')
+  const displayName =
+    localUsername ||
+    profile?.username ||
+    profile?.full_name ||
+    user?.user_metadata?.full_name ||
+    t('common.user')
   const userEmail = user?.email || ''
   const avatarUrl = avatarPreviewUrl || localAvatarUrl || profile?.avatar_url
   const hasAvatarImage = Boolean(avatarPreviewUrl || localAvatarUrl || profile?.avatar_url)
