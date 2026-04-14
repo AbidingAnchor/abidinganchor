@@ -100,6 +100,16 @@ export default function Settings() {
               fields: [
                 { name: '\u{1F4CB} Type', value: typeLabel, inline: true },
                 { name: '\u{1F4F1} Platform', value: 'Web/PWA', inline: true },
+                {
+                  name: '\u{1F464} User',
+                  value: `${user?.email || 'Unknown'}\nID: ${user?.id || 'Unknown'}`,
+                  inline: true,
+                },
+                {
+                  name: '\u{1F464} Username',
+                  value: profile?.username || profile?.display_name || 'No username set',
+                  inline: true,
+                },
                 { name: '\u{1F4AC} Message', value: trimmed.slice(0, FEEDBACK_MAX_LEN) },
               ],
               footer: { text: 'Abiding Anchor Feedback' },
