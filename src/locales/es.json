@@ -341,7 +341,29 @@
     "modalTitle": "Nueva oración",
     "titlePlaceholder": "Título (opcional)",
     "bodyPlaceholder": "Escribe tu oración a Dios...",
-    "loading": "Cargando..."
+    "loading": "Cargando...",
+    "guided": {
+      "title": "🎧 Oraciones guiadas",
+      "subtitle": "Permítenos guiarte en la oración",
+      "filterAria": "Filtrar oraciones guiadas",
+      "progressAria": "Posición de reproducción",
+      "closePlayer": "Cerrar reproductor de oración guiada",
+      "play": "Reproducir",
+      "pause": "Pausa",
+      "prev": "Anterior",
+      "next": "Siguiente",
+      "categories": {
+        "all": "Todas",
+        "morning": "Mañana",
+        "evening": "Noche",
+        "peace": "Paz",
+        "strength": "Fortaleza",
+        "healing": "Sanidad",
+        "guidance": "Guía",
+        "gratitude": "Gratitud",
+        "family": "Familia"
+      }
+    }
   },
   "prayerWall": {
     "title": "Muro de oración",

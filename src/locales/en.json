@@ -443,7 +443,29 @@
     "modalTitle": "New Prayer",
     "titlePlaceholder": "Title (optional)",
     "bodyPlaceholder": "Write your prayer to God...",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "guided": {
+      "title": "🎧 Guided Prayers",
+      "subtitle": "Let us guide you in prayer",
+      "filterAria": "Filter guided prayers",
+      "progressAria": "Playback position",
+      "closePlayer": "Close guided prayer player",
+      "play": "Play",
+      "pause": "Pause",
+      "prev": "Previous",
+      "next": "Next",
+      "categories": {
+        "all": "All",
+        "morning": "Morning",
+        "evening": "Evening",
+        "peace": "Peace",
+        "strength": "Strength",
+        "healing": "Healing",
+        "guidance": "Guidance",
+        "gratitude": "Gratitude",
+        "family": "Family"
+      }
+    }
   },
   "prayerWall": {
     "title": "Prayer Wall",

@@ -61,6 +61,14 @@
   --bible-verse-well-bg: transparent;
   --bible-verse-well-border: transparent;
   --verse-number-color: var(--gold);
+
+  /* Guided Prayers — glass list cards + player (night / celestial) */
+  --guided-prayer-card-bg: rgba(8, 20, 50, 0.75);
+  --guided-prayer-card-text: var(--text-primary);
+  --guided-prayer-card-muted: var(--text-secondary);
+  --guided-prayer-card-border: var(--gold);
+  --guided-prayer-player-surface: rgba(8, 16, 42, 0.88);
+  --guided-prayer-pill-active-text: #0f172a;
 }
 
 [data-theme="day"] {
@@ -127,6 +135,13 @@
   --card-border: var(--glass-border);
   --card-text: var(--text-primary);
   --card-text-muted: var(--text-secondary);
+
+  --guided-prayer-card-bg: rgba(255, 255, 255, 0.3);
+  --guided-prayer-card-text: var(--text-primary);
+  --guided-prayer-card-muted: var(--text-muted);
+  --guided-prayer-card-border: var(--gold);
+  --guided-prayer-player-surface: rgba(255, 252, 248, 0.94);
+  --guided-prayer-pill-active-text: var(--text-primary);
 }
 
 /* Body-driven day tokens (morning + afternoon): override html[data-theme=day] navy card/chrome vars */
@@ -155,6 +170,13 @@ body.theme-afternoon {
   --verse-number-color: #d4a843;
   --glass-border: rgba(212, 168, 67, 0.35);
   --gold-border: rgba(212, 168, 67, 0.45);
+
+  --guided-prayer-card-bg: rgba(255, 255, 255, 0.3);
+  --guided-prayer-card-text: var(--card-text);
+  --guided-prayer-card-muted: var(--card-text-muted);
+  --guided-prayer-card-border: var(--verse-number-color);
+  --guided-prayer-player-surface: rgba(255, 252, 248, 0.94);
+  --guided-prayer-pill-active-text: var(--card-text);
 }
 
 [data-theme="sunset"] {
@@ -211,6 +233,13 @@ body.theme-afternoon {
   --card-border: var(--glass-border);
   --card-text: var(--text-primary);
   --card-text-muted: var(--text-secondary);
+
+  --guided-prayer-card-bg: rgba(80, 40, 20, 0.4);
+  --guided-prayer-card-text: rgba(255, 255, 255, 0.95);
+  --guided-prayer-card-muted: var(--text-secondary);
+  --guided-prayer-card-border: var(--gold);
+  --guided-prayer-player-surface: rgba(36, 16, 28, 0.92);
+  --guided-prayer-pill-active-text: #1a0a00;
 }
 
 * {
@@ -841,6 +870,170 @@ body {
 
 .glass-scrim {
   background: var(--glass-scrim);
+}
+
+/* Guided Prayers — theme tokens only (see --guided-prayer-* in theme blocks) */
+.guided-prayer-card {
+  background: var(--guided-prayer-card-bg);
+  color: var(--guided-prayer-card-text);
+  border: 1px solid var(--guided-prayer-card-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 16px;
+  box-shadow: var(--glass-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.guided-prayer-card:active {
+  transform: scale(0.992);
+}
+
+.guided-prayer-pills-scroll {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-left: -4px;
+  margin-right: -4px;
+  padding-left: 4px;
+  padding-right: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.guided-prayer-pills-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.guided-prayer-pills-scroll::-webkit-scrollbar-thumb {
+  background: var(--gold-border);
+  border-radius: 9999px;
+}
+
+.guided-prayer-pill {
+  flex-shrink: 0;
+  padding: 0.4rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  background: transparent;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.guided-prayer-pill--active {
+  background: var(--gold);
+  color: var(--guided-prayer-pill-active-text);
+  border-color: var(--gold);
+}
+
+.guided-prayer-player-panel {
+  background: var(--guided-prayer-player-surface);
+  color: var(--guided-prayer-card-text);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid var(--guided-prayer-card-border);
+  border-radius: 24px;
+  box-shadow: var(--glass-shadow);
+}
+
+.guided-prayer-play-main {
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gold);
+  color: var(--guided-prayer-pill-active-text);
+  border: none;
+  box-shadow: 0 8px 28px var(--gold-glow);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.guided-prayer-play-main:disabled {
+  opacity: 0.55;
+}
+
+.guided-prayer-play-main:not(:disabled):active {
+  transform: scale(0.96);
+}
+
+.guided-prayer-play-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--gold);
+  color: var(--guided-prayer-pill-active-text);
+  border: none;
+  box-shadow: 0 4px 14px var(--gold-glow);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.guided-prayer-play-icon:disabled {
+  opacity: 0.55;
+}
+
+.guided-prayer-play-icon:not(:disabled):active {
+  transform: scale(0.94);
+}
+
+.guided-prayer-progress {
+  width: 100%;
+  height: 6px;
+  border-radius: 9999px;
+  accent-color: var(--gold);
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.guided-prayer-progress::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 1px 6px var(--gold-glow);
+  margin-top: -4px;
+}
+
+.guided-prayer-progress::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 1px 6px var(--gold-glow);
+}
+
+.guided-prayer-nav-btn {
+  padding: 0.65rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid var(--guided-prayer-card-border);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--guided-prayer-card-text);
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+body.theme-day .guided-prayer-nav-btn,
+body.theme-morning .guided-prayer-nav-btn,
+body.theme-afternoon .guided-prayer-nav-btn {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.guided-prayer-nav-btn:active {
+  transform: scale(0.98);
 }
 
 .glass-input-field {

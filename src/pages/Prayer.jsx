@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import PrayerWall from './PrayerWall'
+import GuidedPrayersSection from '../components/GuidedPrayersSection'
 
 export default function Prayer() {
   const { t, i18n } = useTranslation()
@@ -298,7 +299,10 @@ export default function Prayer() {
             )}
           </>
         ) : (
-          <PrayerWall />
+          <>
+            <GuidedPrayersSection />
+            <PrayerWall />
+          </>
         )}
       </div>
 

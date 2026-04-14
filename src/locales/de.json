@@ -337,7 +337,29 @@
     "modalTitle": "Neues Gebet",
     "titlePlaceholder": "Titel (optional)",
     "bodyPlaceholder": "Schreiben Sie Ihr Gebet zu Gott...",
-    "loading": "Wird geladen..."
+    "loading": "Wird geladen...",
+    "guided": {
+      "title": "🎧 Geführte Gebete",
+      "subtitle": "Lassen Sie uns Sie im Gebet anleiten",
+      "filterAria": "Geführte Gebete filtern",
+      "progressAria": "Wiedergabeposition",
+      "closePlayer": "Geführten Player schließen",
+      "play": "Abspielen",
+      "pause": "Pause",
+      "prev": "Zurück",
+      "next": "Weiter",
+      "categories": {
+        "all": "Alle",
+        "morning": "Morgen",
+        "evening": "Abend",
+        "peace": "Frieden",
+        "strength": "Stärke",
+        "healing": "Heilung",
+        "guidance": "Führung",
+        "gratitude": "Dankbarkeit",
+        "family": "Familie"
+      }
+    }
   },
   "prayerWall": {
     "title": "Gebetswand",

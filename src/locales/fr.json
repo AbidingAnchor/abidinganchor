@@ -341,7 +341,29 @@
     "modalTitle": "Nouvelle prière",
     "titlePlaceholder": "Titre (facultatif)",
     "bodyPlaceholder": "Écrivez votre prière à Dieu...",
-    "loading": "Chargement..."
+    "loading": "Chargement...",
+    "guided": {
+      "title": "🎧 Prières guidées",
+      "subtitle": "Laissez-nous vous guider dans la prière",
+      "filterAria": "Filtrer les prières guidées",
+      "progressAria": "Position de lecture",
+      "closePlayer": "Fermer le lecteur de prière guidée",
+      "play": "Lecture",
+      "pause": "Pause",
+      "prev": "Précédent",
+      "next": "Suivant",
+      "categories": {
+        "all": "Toutes",
+        "morning": "Matin",
+        "evening": "Soir",
+        "peace": "Paix",
+        "strength": "Force",
+        "healing": "Guérison",
+        "guidance": "Direction",
+        "gratitude": "Gratitude",
+        "family": "Famille"
+      }
+    }
   },
   "prayerWall": {
     "title": "Mur de prière",
