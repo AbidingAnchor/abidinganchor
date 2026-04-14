@@ -117,8 +117,8 @@ export default function Auth() {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      justifyContent: 'flex-start',
-      padding: 'max(24px, env(safe-area-inset-top, 0px)) 20px max(24px, env(safe-area-inset-bottom, 0px))',
+      justifyContent: 'center',
+      padding: '2rem',
       overflowY: 'auto',
     }}>
       {/* Title */}
