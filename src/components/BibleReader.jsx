@@ -21,7 +21,8 @@ const APP_BAR_HEIGHT_PX = 56
 const CHAPTER_ZONE_HEIGHT_PX = 90
 const BOTTOM_CHROME_NAV_PX = 60
 const BOTTOM_TAB_BAR_PX = 60
-const BIBLE_SCROLL_TOP_PX = APP_BAR_HEIGHT_PX + CHAPTER_ZONE_HEIGHT_PX
+const APP_BAR_TOP_OFFSET = `calc(env(safe-area-inset-top, 0px) + ${APP_BAR_HEIGHT_PX}px)`
+const BIBLE_SCROLL_TOP_OFFSET = `calc(env(safe-area-inset-top, 0px) + ${APP_BAR_HEIGHT_PX + CHAPTER_ZONE_HEIGHT_PX}px)`
 const BIBLE_SCROLL_BOTTOM_PX = BOTTOM_CHROME_NAV_PX + BOTTOM_TAB_BAR_PX
 
 function clampBibleFontSize(n) {
@@ -391,7 +392,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
       <div
         style={{
           position: 'fixed',
-          top: APP_BAR_HEIGHT_PX,
+          top: APP_BAR_TOP_OFFSET,
           left: 0,
           right: 0,
           height: CHAPTER_ZONE_HEIGHT_PX,
@@ -523,7 +524,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
       <div
         style={{
           position: 'fixed',
-          top: BIBLE_SCROLL_TOP_PX,
+          top: BIBLE_SCROLL_TOP_OFFSET,
           bottom: BIBLE_SCROLL_BOTTOM_PX,
           left: 0,
           right: 0,
