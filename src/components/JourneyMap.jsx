@@ -206,9 +206,14 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
     >
       <style>
         {`
-          @keyframes map-pulse {
-            0%, 100% { filter: drop-shadow(0 0 6px rgba(212,168,67,0.35)); transform: scale(1); }
-            50% { filter: drop-shadow(0 0 10px rgba(212,168,67,0.5)); transform: scale(1.08); }
+          @keyframes journey-map-current-ring {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(2); opacity: 0; }
+          }
+          .journey-map-current-pulse-ring {
+            transform-origin: center;
+            transform-box: fill-box;
+            animation: journey-map-current-ring 2s ease-out infinite;
           }
           @keyframes journey-completion-halo {
             0%, 100% { opacity: 0.65; transform: scale(1); }
@@ -276,9 +281,6 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
             </filter>
             <filter id="journeyMapParchmentLabelShadow" x="-25%" y="-25%" width="150%" height="150%">
               <feDropShadow dx="0.35" dy="1.1" stdDeviation="1.15" floodColor="rgba(61, 32, 0, 0.32)" floodOpacity="1" />
-            </filter>
-            <filter id="journeyMapInkGlow" x="-60%" y="-60%" width="220%" height="220%">
-              <feDropShadow dx="0" dy="0" stdDeviation="2.2" floodColor="#D4A843" floodOpacity="0.75" />
             </filter>
           </defs>
 
@@ -376,39 +378,28 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
                   <circle
                     cx={stop.x}
                     cy={stop.y}
-                    r="9"
-                    fill="none"
-                    stroke="#D4A843"
-                    strokeWidth="1.2"
-                    strokeOpacity={isCurrentProgress ? 0.75 : 0.38}
-                    filter={isCurrentProgress ? 'url(#journeyMapInkGlow)' : undefined}
-                    style={
-                      isCurrentProgress
-                        ? {
-                            animation: 'map-pulse 3s ease-in-out infinite',
-                            transformOrigin: 'center',
-                            transformBox: 'fill-box',
-                          }
-                        : undefined
-                    }
+                    r={isCurrentProgress ? 22 : 15}
+                    fill="transparent"
+                    pointerEvents="all"
+                    aria-hidden
                   />
                 ) : null}
-                <circle
-                  cx={stop.x}
-                  cy={stop.y}
-                  r="3.5"
-                  fill={unlocked ? '#8B6914' : 'rgba(100, 70, 20, 0.4)'}
-                  stroke={unlocked ? '#6b4e10' : 'rgba(80, 55, 18, 0.35)'}
-                  strokeWidth="0.6"
-                  opacity={unlocked ? 0.95 : 0.85}
-                  style={
-                    unlocked && !isCurrentProgress
-                      ? { filter: 'drop-shadow(0 0 2px rgba(212, 168, 67, 0.45))' }
-                      : unlocked && isCurrentProgress
-                        ? { filter: 'drop-shadow(0 0 4px rgba(212, 168, 67, 0.85))' }
-                        : undefined
-                  }
-                />
+                {!unlocked ? (
+                  <circle cx={stop.x} cy={stop.y} r="4" fill="rgba(100, 70, 20, 0.4)" />
+                ) : isCurrentProgress ? (
+                  <g transform={`translate(${stop.x} ${stop.y})`}>
+                    <circle
+                      r="10"
+                      fill="none"
+                      stroke="#D4A843"
+                      strokeWidth="2.25"
+                      className="journey-map-current-pulse-ring"
+                    />
+                    <circle r="10" fill="#D4A843" />
+                  </g>
+                ) : (
+                  <circle cx={stop.x} cy={stop.y} r="7" fill="#D4A843" fillOpacity={0.9} />
+                )}
                 <text
                   x={la.x}
                   y={stop.y + 4}
