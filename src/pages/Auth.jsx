@@ -168,6 +168,19 @@ export default function Auth() {
           {mode === 'signin' ? 'Sign In' : 'Create Account'}
         </h2>
 
+        <p style={{
+          textAlign: 'center',
+          fontSize: '12px',
+          fontWeight: 600,
+          color: 'rgba(255,255,255,0.88)',
+          marginTop: '-4px',
+          marginBottom: '12px',
+          letterSpacing: '0.02em',
+          textShadow: '0 1px 6px rgba(0,0,0,0.35)'
+        }}>
+          Join 100+ believers
+        </p>
+
         <form onSubmit={handleSubmit} className="mt-4 grid gap-3">
           {mode === 'signup' ? (
             <>
@@ -210,13 +223,40 @@ export default function Auth() {
         </form>
 
         <div className="mt-4 flex justify-between items-center">
-          <button type="button" onClick={() => { setMode((m) => (m === 'signin' ? 'signup' : 'signin')); setError(''); setSuccess(''); setSignUpConsent(false); setDateOfBirth('') }} className="btn-secondary">
-            {mode === 'signin' ? 'Need an account?' : 'Already have an account?'}
+          <button
+            type="button"
+            onClick={() => { setMode((m) => (m === 'signin' ? 'signup' : 'signin')); setError(''); setSuccess(''); setSignUpConsent(false); setDateOfBirth('') }}
+            className={mode === 'signin' ? 'btn-primary' : 'btn-secondary'}
+            style={mode === 'signin' ? {
+              width: '100%',
+              background: 'linear-gradient(135deg, #E0B44F 0%, #C9972E 100%)',
+              color: '#211507',
+              fontWeight: 700,
+              fontSize: '15px',
+              padding: '12px 16px',
+              borderRadius: '12px',
+              border: '1px solid rgba(255,230,163,0.7)',
+              boxShadow: '0 10px 24px rgba(212,168,67,0.35), inset 0 1px 0 rgba(255,255,255,0.35)'
+            } : undefined}
+          >
+            {mode === 'signin' ? 'Create Free Account' : 'Already have an account?'}
           </button>
-          <button type="button" onClick={handleForgotPassword} className="text-gold text-xs bg-transparent border-none">
-            Forgot password?
-          </button>
+          {mode === 'signin' ? null : (
+            <button type="button" onClick={handleForgotPassword} className="text-gold text-xs bg-transparent border-none">
+              Forgot password?
+            </button>
+          )}
         </div>
+
+        <p style={{
+          textAlign: 'center',
+          fontSize: '11px',
+          color: 'rgba(255,255,255,0.62)',
+          marginTop: '10px',
+          letterSpacing: '0.02em'
+        }}>
+          No ads. No subscriptions. Ever.
+        </p>
 
         {error ? <p className="mt-2 text-[#ffb3b3] text-sm">{error}</p> : null}
         {success ? <p className="mt-2 text-gold text-sm">{success}</p> : null}
@@ -266,32 +306,41 @@ export default function Auth() {
             flexWrap: 'nowrap'
           }}>
             <div style={{
-              background: 'rgba(212,168,67,0.15)',
-              border: '1px solid rgba(212,168,67,0.3)',
-              color: 'rgba(255,255,255,0.7)',
+              background: 'linear-gradient(135deg, rgba(212,168,67,0.35), rgba(153,116,33,0.4))',
+              border: '1px solid rgba(230,192,105,0.8)',
+              color: 'rgba(255,250,237,0.98)',
               borderRadius: '20px',
-              padding: '4px 8px',
-              fontSize: '10px'
+              padding: '6px 11px',
+              fontSize: '11px',
+              fontWeight: 700,
+              letterSpacing: '0.02em',
+              boxShadow: '0 6px 14px rgba(212,168,67,0.3), inset 0 1px 0 rgba(255,255,255,0.2)'
             }}>
               Bible Reader
             </div>
             <div style={{
-              background: 'rgba(212,168,67,0.15)',
-              border: '1px solid rgba(212,168,67,0.3)',
-              color: 'rgba(255,255,255,0.7)',
+              background: 'linear-gradient(135deg, rgba(212,168,67,0.35), rgba(153,116,33,0.4))',
+              border: '1px solid rgba(230,192,105,0.8)',
+              color: 'rgba(255,250,237,0.98)',
               borderRadius: '20px',
-              padding: '4px 8px',
-              fontSize: '10px'
+              padding: '6px 11px',
+              fontSize: '11px',
+              fontWeight: 700,
+              letterSpacing: '0.02em',
+              boxShadow: '0 6px 14px rgba(212,168,67,0.3), inset 0 1px 0 rgba(255,255,255,0.2)'
             }}>
               Prayer Journal
             </div>
             <div style={{
-              background: 'rgba(212,168,67,0.15)',
-              border: '1px solid rgba(212,168,67,0.3)',
-              color: 'rgba(255,255,255,0.7)',
+              background: 'linear-gradient(135deg, rgba(212,168,67,0.35), rgba(153,116,33,0.4))',
+              border: '1px solid rgba(230,192,105,0.8)',
+              color: 'rgba(255,250,237,0.98)',
               borderRadius: '20px',
-              padding: '4px 8px',
-              fontSize: '10px'
+              padding: '6px 11px',
+              fontSize: '11px',
+              fontWeight: 700,
+              letterSpacing: '0.02em',
+              boxShadow: '0 6px 14px rgba(212,168,67,0.3), inset 0 1px 0 rgba(255,255,255,0.2)'
             }}>
               AI Companion
             </div>
