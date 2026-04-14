@@ -31,10 +31,10 @@ const PROGRESS_IMG_W = 1024
 const PROGRESS_IMG_H = 1536
 /** Map marker height in SVG user units (~80px when viewBox maps ~1:1). Popup uses its own fixed size. */
 const PROGRESS_MARKER_HEIGHT = 80
-/** Padding between the bottom of the node dot and the top of the figure. */
-const PROGRESS_MARKER_GAP = 2
-/** Small offset so art clears the dot edge; kept tight so figures read “at” the stop (e.g. Bethlehem). */
-const PROGRESS_MARKER_NUDGE_DOWN = 3
+/** Space under the dot before the figure box (viewBox units). */
+const PROGRESS_MARKER_GAP_BELOW_DOT = 4
+/** Shifts art up so visible subjects sit ~20–30 units below the dot (PNG has transparent top padding). */
+const PROGRESS_MARKER_IMG_LIFT = 26
 /** Padding below the progress figure (and map content) so the card doesn’t feel cramped. */
 const MAP_VIEWBOX_BOTTOM_PAD = 16
 const GEO_Y_MIN = Math.min(...JOURNEY_MAP_GEOMETRY.map((s) => s.y))
@@ -52,8 +52,7 @@ function remapGeoYToViewBox(yGeo, viewBoxH) {
 
 /** ViewBox height so lowest stop + figure + padding fit; trail occupies y ∈ [0.30H, 0.72H]. */
 function computeMapViewBoxHeight() {
-  const markerStack =
-    NODE_DOT_R + PROGRESS_MARKER_GAP + PROGRESS_MARKER_NUDGE_DOWN + PROGRESS_MARKER_HEIGHT
+  const markerStack = NODE_DOT_R + PROGRESS_MARKER_GAP_BELOW_DOT + PROGRESS_MARKER_HEIGHT
   return Math.max(480, Math.ceil((markerStack + MAP_VIEWBOX_BOTTOM_PAD) / (1 - PATH_Y_BOTTOM_FRAC)))
 }
 
@@ -70,7 +69,7 @@ function progressMarkerLayout(stop, viewBoxH) {
   const h = PROGRESS_MARKER_HEIGHT
   const w = (PROGRESS_IMG_W / PROGRESS_IMG_H) * h
   const { x, y } = stop
-  const top = y + NODE_DOT_R + PROGRESS_MARKER_GAP + PROGRESS_MARKER_NUDGE_DOWN
+  const top = y + NODE_DOT_R + PROGRESS_MARKER_GAP_BELOW_DOT
   let left = x - w / 2
   const margin = 4
   left = Math.max(margin, Math.min(left, MAP_VIEWBOX_W - w - margin))
@@ -96,7 +95,17 @@ function JourneyProgressMarker({ stop, viewBoxH }) {
       />
       <ellipse cx={cx} cy={y + h * 0.52} rx={w * 0.42} ry={h * 0.38} fill="rgba(212, 168, 67, 0.2)" filter="url(#jmpFigureWarmGlow)" />
       <foreignObject x={x} y={y} width={w} height={h}>
-        <div xmlns="http://www.w3.org/1999/xhtml" style={{ margin: 0, padding: 0, lineHeight: 0, width: '100%', height: '100%' }}>
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+          style={{
+            margin: 0,
+            padding: 0,
+            lineHeight: 0,
+            width: '100%',
+            height: '100%',
+            overflow: 'visible',
+          }}
+        >
           <img
             src="/jesus-and-person.png"
             alt=""
@@ -106,6 +115,7 @@ function JourneyProgressMarker({ stop, viewBoxH }) {
               height: '100%',
               objectFit: 'contain',
               objectPosition: 'bottom center',
+              transform: `translateY(-${PROGRESS_MARKER_IMG_LIFT}px)`,
               pointerEvents: 'none',
             }}
           />
@@ -351,7 +361,7 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
             width={45}
             height={45}
             pointerEvents="none"
-            style={{ filter: 'sepia(1) saturate(0.3) opacity(0.35)' }}
+            style={{ filter: 'sepia(1) saturate(0.2) opacity(0.22)' }}
           />
 
           {stops.map((stop, i) => {
