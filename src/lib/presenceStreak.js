@@ -1,5 +1,6 @@
 /**
- * Daily “presence” check-in for the Daily Encounter (localStorage now; Supabase later).
+ * Daily “presence” check-in for the Daily Encounter (localStorage cache; streak of record lives in
+ * profiles.reading_streak / last_active_date — use {@link alignPresenceLocalWithProfile} after DB updates).
  *
  * Persistence shape — keep in sync when adding a DB column set:
  * @typedef {object} PresenceStreakPersisted
@@ -206,4 +207,32 @@ export function getPresenceViewModel(state) {
     currentStreak: state.currentStreak || 0,
     longestStreak: state.longestStreak || 0,
   }
+}
+
+/**
+ * After Supabase streak updates, keep localStorage aligned so offline fallbacks match profiles.reading_streak.
+ * @param {string} userId
+ * @param {{ last_active_date?: string | null, reading_streak?: number | null, longest_streak?: number | null }} profile
+ */
+export function alignPresenceLocalWithProfile(userId, profile) {
+  if (!userId || !profile) return
+  const today = getLocalDateKey()
+  const last =
+    profile.last_active_date != null && profile.last_active_date !== ''
+      ? String(profile.last_active_date).slice(0, 10)
+      : null
+  const prev = loadPresenceState(userId)
+  const history = [...(prev.completionHistory || [])]
+  if (last === today && !history.includes(today)) {
+    history.push(today)
+    while (history.length > HISTORY_CAP) history.shift()
+  }
+  const next = {
+    ...prev,
+    lastCompletedDate: last === today ? today : prev.lastCompletedDate,
+    currentStreak: Number(profile.reading_streak) || 0,
+    longestStreak: Math.max(prev.longestStreak || 0, Number(profile.longest_streak) || 0),
+    completionHistory: history,
+  }
+  savePresenceState(next, userId)
 }

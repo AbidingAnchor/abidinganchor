@@ -1,13 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { getDailyEncounter } from '../utils/dailyEncounter'
 import {
+  alignPresenceLocalWithProfile,
+  getLocalDateKey,
   getPresenceViewModel,
-  markPresenceComplete,
   syncPresenceState,
   isCompletedToday,
 } from '../lib/presenceStreak'
+import { applyDailyStreakOnAppOpen } from '../lib/dailyAppStreak'
+import { useStreakTracker, syncWeeklyActiveDays, WEEK_DAY_SHORT } from '../hooks/useStreakTracker'
 import DailyEncounterCard from '../components/DailyEncounterCard'
 import DailyStreakCard from '../components/DailyStreakCard'
 import { getJournalEntries, saveToJournal, getJournalWeekActiveDayShortNames } from '../utils/journal'
@@ -20,23 +23,44 @@ function Home({ onOpenWorship, worshipStatus }) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { user, profile, loading, refreshProfile } = useAuth()
+  const { activeDays: profileWeekActiveDays } = useStreakTracker(user?.id)
   const [journalWeekActiveDays, setJournalWeekActiveDays] = useState([])
   const [dailyEncounter, setDailyEncounter] = useState(() => getDailyEncounter())
   const [toastTrigger, setToastTrigger] = useState(0)
   const [showFirstJournalCelebration, setShowFirstJournalCelebration] = useState(false)
   const [journalCount, setJournalCount] = useState(0)
   const [suppressPersonalWelcome, setSuppressPersonalWelcome] = useState(false)
-  const [presenceVm, setPresenceVm] = useState(() => getPresenceViewModel(syncPresenceState(null)))
   const [presenceJustCompleted, setPresenceJustCompleted] = useState(false)
   const presenceGlowTimerRef = useRef(null)
 
-  const refreshPresence = useCallback(() => {
-    if (!user?.id) {
-      setPresenceVm(getPresenceViewModel(syncPresenceState(null)))
-      return
+  const presenceVm = useMemo(() => {
+    if (!user?.id) return { completedToday: false, currentStreak: 0 }
+    if (profile?.id === user.id) {
+      const today = getLocalDateKey()
+      const last =
+        profile.last_active_date != null && profile.last_active_date !== ''
+          ? String(profile.last_active_date).slice(0, 10)
+          : null
+      return {
+        completedToday: last === today,
+        currentStreak: Number(profile.reading_streak) || 0,
+      }
     }
-    setPresenceVm(getPresenceViewModel(syncPresenceState(user.id)))
-  }, [user?.id])
+    return getPresenceViewModel(syncPresenceState(user.id))
+  }, [user?.id, profile?.id, profile?.last_active_date, profile?.reading_streak, profile])
+
+  const mergedWeekActiveDays = useMemo(() => {
+    const set = new Set([...profileWeekActiveDays, ...journalWeekActiveDays])
+    return WEEK_DAY_SHORT.filter((d) => set.has(d))
+  }, [profileWeekActiveDays, journalWeekActiveDays])
+
+  const syncStreakToSupabase = useCallback(async () => {
+    if (!user?.id) return
+    await syncWeeklyActiveDays(user.id)
+    await applyDailyStreakOnAppOpen(user.id)
+    const row = await refreshProfile()
+    if (row) alignPresenceLocalWithProfile(user.id, row)
+  }, [user?.id, refreshProfile])
 
   const finishPresenceGlow = useCallback(() => {
     if (presenceGlowTimerRef.current) clearTimeout(presenceGlowTimerRef.current)
@@ -45,20 +69,25 @@ function Home({ onOpenWorship, worshipStatus }) {
 
   const handlePresenceComplete = useCallback(() => {
     if (!user?.id) return
-    markPresenceComplete(user.id)
-    refreshPresence()
-    setPresenceJustCompleted(true)
-    finishPresenceGlow()
-  }, [user?.id, refreshPresence, finishPresenceGlow])
+    const today = getLocalDateKey()
+    const lastDb = profile?.last_active_date ? String(profile.last_active_date).slice(0, 10) : null
+    if (lastDb === today) return
+    ;(async () => {
+      await syncStreakToSupabase()
+      setPresenceJustCompleted(true)
+      finishPresenceGlow()
+    })().catch((err) => console.warn('presence streak sync:', err))
+  }, [user?.id, profile?.last_active_date, syncStreakToSupabase, finishPresenceGlow])
 
   const markPresenceFromEngagement = useCallback(() => {
     if (!user?.id) return
-    if (isCompletedToday(syncPresenceState(user.id))) return
-    markPresenceComplete(user.id)
-    refreshPresence()
+    const today = getLocalDateKey()
+    const lastDb = profile?.last_active_date ? String(profile.last_active_date).slice(0, 10) : null
+    if (lastDb === today || isCompletedToday(syncPresenceState(user.id))) return
+    syncStreakToSupabase().catch((err) => console.warn('presence streak sync:', err))
     setPresenceJustCompleted(true)
     finishPresenceGlow()
-  }, [user?.id, refreshPresence, finishPresenceGlow])
+  }, [user?.id, profile?.last_active_date, syncStreakToSupabase, finishPresenceGlow])
 
   useEffect(() => {
     if (profile) setSuppressPersonalWelcome(false)
@@ -79,7 +108,6 @@ function Home({ onOpenWorship, worshipStatus }) {
     let timeoutId
     const scheduleNextMidnight = () => {
       setDailyEncounter(getDailyEncounter())
-      refreshPresence()
       refreshProfile()
       const now = new Date()
       const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0)
@@ -88,7 +116,7 @@ function Home({ onOpenWorship, worshipStatus }) {
     }
     scheduleNextMidnight()
     return () => clearTimeout(timeoutId)
-  }, [refreshPresence, refreshProfile])
+  }, [refreshProfile])
 
   useEffect(() => {
     return () => {
@@ -322,7 +350,10 @@ function Home({ onOpenWorship, worshipStatus }) {
               onPresenceComplete={handlePresenceComplete}
             />
 
-            <DailyStreakCard activeDays={journalWeekActiveDays} />
+            <DailyStreakCard
+              activeDays={mergedWeekActiveDays}
+              consecutiveStreak={Number(profile?.reading_streak) || 0}
+            />
 
             <div style={{ marginBottom: '28px', animation: 'fadeInUp 0.6s ease forwards', animationDelay: '0.3s' }}>
               <h2 style={{ color: 'var(--section-title)', fontSize: '13px', letterSpacing: '0.12em', fontWeight: 500, textTransform: 'uppercase' }}>{t('home.toolsHeading')}</h2>

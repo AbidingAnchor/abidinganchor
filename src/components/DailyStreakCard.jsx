@@ -4,8 +4,9 @@ import { WEEK_DAY_SHORT } from '../hooks/useStreakTracker'
 /**
  * @param {object} props
  * @param {string[]} props.activeDays Short names present this week (e.g. 'Mon', 'Tue')
+ * @param {number} [props.consecutiveStreak] Consecutive calendar-day streak from profiles.reading_streak (preferred over activeDays.length for the counter)
  */
-export default function DailyStreakCard({ activeDays = [] }) {
+export default function DailyStreakCard({ activeDays = [], consecutiveStreak }) {
   const { t } = useTranslation()
 
   const dayLabels = [
@@ -18,10 +19,13 @@ export default function DailyStreakCard({ activeDays = [] }) {
     t('home.weekdaySun'),
   ]
 
-  const streakCount = activeDays.length
+  const streakCount =
+    typeof consecutiveStreak === 'number' && Number.isFinite(consecutiveStreak)
+      ? Math.max(0, Math.floor(consecutiveStreak))
+      : activeDays.length
   const streakMessage =
-    streakCount >= 1 && streakCount <= 5
-      ? t(`home.streak${streakCount}`)
+    streakCount === 0
+      ? t('home.streakSubZero')
       : t('home.streakDay', { n: streakCount })
 
   const set = new Set(activeDays)
