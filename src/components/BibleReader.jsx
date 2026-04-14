@@ -354,6 +354,8 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
         width: '100%',
         alignSelf: 'stretch',
         background: 'transparent',
+        /* Pull flush toward tab bar: parent uses large pb (e.g. pb-32); leave ~8px breathing room */
+        marginBottom: 'calc(8px - 8rem)',
       }}
     >
       {/* Top Bar */}
@@ -443,7 +445,10 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
             alignItems: 'center',
             justifyContent: 'center',
             width: 'fit-content',
-            margin: '8px auto 12px',
+            marginTop: '12px',
+            marginLeft: 'auto',
+            marginRight: 'auto',
+            marginBottom: '12px',
             position: 'relative',
             zIndex: 1,
             flexShrink: 0,
