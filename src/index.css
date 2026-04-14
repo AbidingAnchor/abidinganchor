@@ -854,6 +854,7 @@ body {
   background-color: rgba(18, 22, 42, 0.98) !important;
   color: #f3f4f6 !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  transition: none !important;
 }
 
 .settings-bible-translation-select option {
@@ -1068,6 +1069,20 @@ body.theme-day .fj-hub-prayers__arrow,
 body.theme-morning .fj-hub-prayers__arrow,
 body.theme-afternoon .fj-hub-prayers__arrow {
   color: rgba(42, 31, 14, 0.45) !important;
+}
+
+body.theme-day .fj-hub-stat-card,
+body.theme-morning .fj-hub-stat-card,
+body.theme-afternoon .fj-hub-stat-card,
+body.theme-day .fj-hub-vod-card,
+body.theme-morning .fj-hub-vod-card,
+body.theme-afternoon .fj-hub-vod-card {
+  background: rgba(255, 255, 255, 0.3) !important;
+  border: 1px solid #d4a843 !important;
+  border-radius: 12px !important;
+  color: #1a1a2e !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
 }
 
 /* Evening: streak + prayers CTA match plum hub */

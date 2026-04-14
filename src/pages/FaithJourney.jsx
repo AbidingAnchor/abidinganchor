@@ -394,37 +394,45 @@ export default function FaithJourney() {
             gap: '10px',
             marginBottom: '24px'
           }}>
-            <div style={{
+            <div
+              className="fj-hub-stat-card"
+              style={{
               flex: 1,
               ...JOURNEY_NIGHT_CARD_STYLE,
               padding: '14px',
               textAlign: 'center'
             }}>
               <p style={{ color: '#D4A843', fontSize: '22px', fontWeight: 700, marginBottom: '2px' }}>{stats.versesRead}</p>
-              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('faithJourney.statVerses')}</p>
+              <p style={{ color: 'var(--text-primary)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('faithJourney.statVerses')}</p>
             </div>
-            <div style={{
+            <div
+              className="fj-hub-stat-card"
+              style={{
               flex: 1,
               ...JOURNEY_NIGHT_CARD_STYLE,
               padding: '14px',
               textAlign: 'center'
             }}>
               <p style={{ color: '#D4A843', fontSize: '22px', fontWeight: 700, marginBottom: '2px' }}>{streakCount}</p>
-              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('faithJourney.statStreak')}</p>
+              <p style={{ color: 'var(--text-primary)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('faithJourney.statStreak')}</p>
             </div>
-            <div style={{
+            <div
+              className="fj-hub-stat-card"
+              style={{
               flex: 1,
               ...JOURNEY_NIGHT_CARD_STYLE,
               padding: '14px',
               textAlign: 'center'
             }}>
               <p style={{ color: '#D4A843', fontSize: '22px', fontWeight: 700, marginBottom: '2px' }}>{stats.badges}</p>
-              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('faithJourney.statBadges')}</p>
+              <p style={{ color: 'var(--text-primary)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('faithJourney.statBadges')}</p>
             </div>
           </div>
 
           {/* Verse of the Day */}
-          <div style={{
+          <div
+            className="fj-hub-vod-card"
+            style={{
             ...JOURNEY_NIGHT_CARD_STYLE,
             padding: '16px',
             position: 'relative',
@@ -453,7 +461,7 @@ export default function FaithJourney() {
               {t('faithJourney.vodLabel')}
             </p>
             <p style={{ 
-              color: 'rgba(255,255,255,0.85)', 
+              color: 'var(--text-primary)', 
               fontSize: '13px', 
               fontStyle: 'italic',
               lineHeight: 1.6,

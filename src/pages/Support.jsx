@@ -149,21 +149,25 @@ export default function Support() {
               padding:'14px 18px', marginBottom:'10px',
               cursor:'pointer', display:'flex',
               alignItems:'center', gap:'14px',
-              textDecoration:'none' }}>
-            <div style={{ background:'rgba(255,210,60,0.25)',
-              border:'1px solid rgba(255,210,60,0.5)',
+              textDecoration:'none',
+              background: 'rgba(255, 255, 255, 0.4)',
+              border: '1px solid #D4A843',
+              color: '#1a1a2e',
+            }}>
+            <div style={{ background:'#D4A843',
+              border:'1px solid #D4A843',
               borderRadius:'12px', padding:'8px 14px',
               minWidth:'52px', textAlign:'center' }}>
-              <div style={{ color:'#FFE066', fontSize:'18px',
+              <div style={{ color:'#1a1a2e', fontSize:'18px',
                 fontWeight:'bold' }}>{tier.amount}</div>
             </div>
             <div style={{ flex:1 }}>
-              <div style={{ color:'var(--text-primary)', fontSize:'14px',
+              <div style={{ color:'#1a1a2e', fontSize:'14px',
                 fontWeight:'600' }}>{tier.label}</div>
-              <div style={{ color:'rgba(255,255,255,0.7)',
+              <div style={{ color:'#1a1a2e',
                 fontSize:'12px', marginTop:'2px' }}>{tier.desc}</div>
             </div>
-            <div style={{ color:'rgba(255,210,60,0.8)',
+            <div style={{ color:'#1a1a2e',
               fontSize:'20px' }}>›</div>
           </a>
         ))}

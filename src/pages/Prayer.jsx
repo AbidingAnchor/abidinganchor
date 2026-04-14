@@ -189,7 +189,15 @@ export default function Prayer() {
             {loading ? (
               <p className="text-center text-white/50 py-12">{t('prayer.loading')}</p>
             ) : items.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-[#1e1b3a]/60 p-8 text-center text-white/50 text-sm">
+              <div
+                className="rounded-2xl p-8 text-center text-sm"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.3)',
+                  border: '1px solid #D4A843',
+                  borderRadius: '12px',
+                  color: '#1a1a2e',
+                }}
+              >
                 {t('prayer.personalEmpty')}
               </div>
             ) : (

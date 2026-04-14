@@ -605,7 +605,16 @@ function Search({ onOpenWorship }) {
                     ))}
                   </div>
                 ) : (
-                  <article className="rounded-xl p-4" style={{ ...glassCard, ...bodyStyle }}>Pick a topic to begin.</article>
+                  <article
+                    className="rounded-xl p-4"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.3)',
+                      border: '1px solid #D4A843',
+                      color: '#1a1a2e',
+                    }}
+                  >
+                    Pick a topic to begin.
+                  </article>
                 )}
               </section>
             ) : trimmedSearch ? (
