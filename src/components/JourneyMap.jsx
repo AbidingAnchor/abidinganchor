@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { JOURNEY_MAP_GEOMETRY } from '../data/journeyMapGeometry'
 import { useAuth } from '../context/AuthContext'
 import { userStorageKey } from '../utils/userStorage'
-import JourneyMapGardenScene from './JourneyMapGardenScene'
+import JourneyMapParchmentScene from './JourneyMapParchmentScene'
 
 function readJson(key, fallback) {
   try {
@@ -37,22 +37,24 @@ const PROGRESS_MARKER_GAP = 8
 const PROGRESS_MARKER_NUDGE_DOWN = 12
 /** Padding below the progress figure (and map content) so the card doesn’t feel cramped. */
 const MAP_VIEWBOX_BOTTOM_PAD = 16
-/** Space below the lowest node for labels (path ends at Bethlehem). */
-const MAP_LABEL_BOTTOM_CLEARANCE = 12
-/** Lowest point on the path (largest y). */
-const MAP_LOWEST_Y = Math.max(...JOURNEY_MAP_GEOMETRY.map((s) => s.y))
-/** Bottom edge of static map content (nodes, path, labels) — independent of progress marker position. */
-const MAP_CONTENT_BOTTOM = MAP_LOWEST_Y + NODE_DOT_R + MAP_LABEL_BOTTOM_CLEARANCE
+const GEO_Y_MIN = Math.min(...JOURNEY_MAP_GEOMETRY.map((s) => s.y))
+const GEO_Y_MAX = Math.max(...JOURNEY_MAP_GEOMETRY.map((s) => s.y))
+/** Northern end (Rome): center y fraction; dot edge clears top30% (sky) for typical viewBox heights. */
+const PATH_Y_TOP_FRAC = 0.33
+/** Southern end (Bethlehem) — leaves room below for marker + labels. */
+const PATH_Y_BOTTOM_FRAC = 0.71
 
-function mapViewBoxHeight(progressStop) {
-  const markerBottom = progressStop
-    ? progressStop.y +
-      NODE_DOT_R +
-      PROGRESS_MARKER_GAP +
-      PROGRESS_MARKER_NUDGE_DOWN +
-      PROGRESS_MARKER_HEIGHT
-    : 0
-  return Math.max(MAP_CONTENT_BOTTOM, markerBottom) + MAP_VIEWBOX_BOTTOM_PAD
+/** Map raw geometry y (north = small, south = large) into viewBox y within the lower “garden” band. */
+function remapGeoYToViewBox(yGeo, viewBoxH) {
+  const t = (yGeo - GEO_Y_MIN) / (GEO_Y_MAX - GEO_Y_MIN)
+  return viewBoxH * (PATH_Y_TOP_FRAC + t * (PATH_Y_BOTTOM_FRAC - PATH_Y_TOP_FRAC))
+}
+
+/** ViewBox height so lowest stop + figure + padding fit; trail occupies y ∈ [0.30H, 0.72H]. */
+function computeMapViewBoxHeight() {
+  const markerStack =
+    NODE_DOT_R + PROGRESS_MARKER_GAP + PROGRESS_MARKER_NUDGE_DOWN + PROGRESS_MARKER_HEIGHT
+  return Math.max(480, Math.ceil((markerStack + MAP_VIEWBOX_BOTTOM_PAD) / (1 - PATH_Y_BOTTOM_FRAC)))
 }
 
 /** Labels on the left of the dot when the node is on the right; avoids clipping long names. */
@@ -80,8 +82,20 @@ function progressMarkerLayout(stop, viewBoxH) {
 function JourneyProgressMarker({ stop, viewBoxH }) {
   if (!stop) return null
   const { x, y, w, h } = progressMarkerLayout(stop, viewBoxH)
+  const cx = x + w / 2
+  const feetY = y + h - 2
   return (
     <g pointerEvents="none" aria-hidden="true">
+      {/* Sandy grass strip so figures read as standing on ground, not bare parchment */}
+      <ellipse
+        cx={cx}
+        cy={feetY}
+        rx={Math.min(w * 0.58, MAP_VIEWBOX_W * 0.22)}
+        ry={12}
+        fill="url(#jmpFigureGround)"
+        opacity={0.92}
+      />
+      <ellipse cx={cx} cy={y + h * 0.52} rx={w * 0.42} ry={h * 0.38} fill="rgba(212, 168, 67, 0.2)" filter="url(#jmpFigureWarmGlow)" />
       <foreignObject x={x} y={y} width={w} height={h}>
         <div xmlns="http://www.w3.org/1999/xhtml" style={{ margin: 0, padding: 0, lineHeight: 0, width: '100%', height: '100%' }}>
           <img
@@ -115,18 +129,20 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
     [user?.id],
   )
 
+  const mapViewBoxH = useMemo(() => computeMapViewBoxHeight(), [])
+
   const stops = useMemo(
     () =>
       JOURNEY_MAP_GEOMETRY.map((g) => ({
         id: g.id,
         x: g.x,
-        y: g.y,
+        y: remapGeoYToViewBox(g.y, mapViewBoxH),
         scripture: g.scripture,
         label: t(`journeyMap.stops.${g.id}.label`),
         description: t(`journeyMap.stops.${g.id}.description`),
         jesusVoice: t(`journeyMap.stops.${g.id}.jesusVoice`),
       })),
-    [t, i18n.language],
+    [t, i18n.language, mapViewBoxH],
   )
 
   const [state, setState] = useState({ seenFacts: {}, updatedAt: '' })
@@ -182,7 +198,7 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
     return stops[idx]
   }, [unlockedCount, stops])
 
-  const mapViewBoxH = useMemo(() => mapViewBoxHeight(currentProgressStop), [currentProgressStop])
+  const jerusalemStop = useMemo(() => stops.find((s) => s.id === 'jerusalem'), [stops])
 
   return (
     <div
@@ -207,25 +223,39 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
       </style>
 
       <div className="mb-3 flex shrink-0 items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: '#D4A843' }}>
+        <p
+          className="text-xs font-semibold uppercase tracking-[0.14em]"
+          style={{ color: '#5c4018', fontFamily: 'Georgia, "Times New Roman", serif' }}
+        >
           {t('journeyMap.ui.mapTitle')}
         </p>
-        <button type="button" onClick={onExit} className="text-xs text-white/70">
+        <button
+          type="button"
+          onClick={onExit}
+          className="text-xs underline-offset-2 transition hover:opacity-80"
+          style={{ color: '#6b4a18', fontFamily: 'Georgia, "Times New Roman", serif' }}
+        >
           {t('journeyMap.ui.back')}
         </button>
       </div>
 
-      <div className="mb-3 shrink-0 glass-panel rounded-xl p-3 text-xs text-white/80">
+      <div
+        className="mb-3 shrink-0 rounded-lg px-3 py-2.5 text-xs leading-relaxed shadow-sm"
+        style={{
+          background: 'rgba(232, 213, 163, 0.95)',
+          border: '1px solid #8B6914',
+          color: '#3d2000',
+          fontFamily: 'Georgia, "Times New Roman", serif',
+        }}
+      >
         {t('journeyMap.ui.unlocksHelp')} <br />
-        <span style={{ color: '#D4A843', fontWeight: 700 }}>
-          {t('journeyMap.ui.unlockedLabel', { current: unlockedCount, total: stops.length })}
-        </span>
+        <span style={{ color: '#6b4a12', fontWeight: 700 }}>{t('journeyMap.ui.unlockedLabel', { current: unlockedCount, total: stops.length })}</span>
       </div>
 
       <div
-        className={`relative min-h-0 overflow-hidden rounded-2xl border border-white/15 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] sm:p-3 ${fillVertical ? 'flex flex-1 flex-col' : ''}`}
+        className={`relative min-h-0 overflow-hidden rounded-xl border border-[#8B6914]/55 p-2 shadow-[inset_0_0_40px_rgba(80,45,15,0.12)] sm:p-3 ${fillVertical ? 'flex flex-1 flex-col' : ''}`}
       >
-        <JourneyMapGardenScene />
+        <JourneyMapParchmentScene />
         <svg
           width="100%"
           viewBox={`0 0 ${MAP_VIEWBOX_W} ${mapViewBoxH}`}
@@ -234,46 +264,86 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
           style={{ display: 'block' }}
         >
           <defs>
-            <linearGradient id="goldPath" x1="0" x2="1">
-              <stop offset="0%" stopColor="#D4A843" stopOpacity="0.15" />
-              <stop offset="60%" stopColor="#D4A843" stopOpacity="0.55" />
-              <stop offset="100%" stopColor="#D4A843" stopOpacity="0.25" />
+            <linearGradient id="jmpFigureGround" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor="#d4c49a" />
+              <stop offset="55%" stopColor="#a8b87a" />
+              <stop offset="100%" stopColor="#6d8a52" />
             </linearGradient>
-            <filter id="journeyMapLabelShadow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="1" stdDeviation="1.4" floodColor="rgba(8, 14, 24, 0.85)" floodOpacity="1" />
+            <filter id="jmpFigureWarmGlow" x="-80%" y="-80%" width="260%" height="260%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="9" result="b" />
+              <feMerge>
+                <feMergeNode in="b" />
+              </feMerge>
+            </filter>
+            <filter id="journeyMapParchmentLabelShadow" x="-25%" y="-25%" width="150%" height="150%">
+              <feDropShadow dx="0.35" dy="1.1" stdDeviation="1.15" floodColor="rgba(61, 32, 0, 0.32)" floodOpacity="1" />
+            </filter>
+            <filter id="journeyMapInkGlow" x="-60%" y="-60%" width="220%" height="220%">
+              <feDropShadow dx="0" dy="0" stdDeviation="2.2" floodColor="#D4A843" floodOpacity="0.75" />
             </filter>
           </defs>
 
-          {/* Subtle frosted plane so path, nodes, and labels stay readable over the garden */}
-          <rect
-            x="4"
-            y="4"
-            width={MAP_VIEWBOX_W - 8}
-            height={mapViewBoxH - 8}
-            rx="14"
-            ry="14"
-            fill="rgba(255, 252, 245, 0.09)"
-            stroke="rgba(255, 255, 255, 0.14)"
-            strokeWidth="1"
+          {/* Faint mountain silhouettes — behind ink route */}
+          <g opacity={0.22} fill="rgba(90, 60, 35, 0.35)" stroke="none">
+            <path
+              d={`M-8 ${mapViewBoxH * 0.34} L42 ${mapViewBoxH * 0.2} L88 ${mapViewBoxH * 0.26} L130 ${mapViewBoxH * 0.18} L175 ${mapViewBoxH * 0.24} L220 ${mapViewBoxH * 0.17} L268 ${mapViewBoxH * 0.22} L328 ${mapViewBoxH * 0.28} L328 ${mapViewBoxH * 0.42} L-8 ${mapViewBoxH * 0.42} Z`}
+            />
+            <path
+              d={`M0 ${mapViewBoxH * 0.4} L55 ${mapViewBoxH * 0.3} L100 ${mapViewBoxH * 0.35} L155 ${mapViewBoxH * 0.28} L210 ${mapViewBoxH * 0.32} L280 ${mapViewBoxH * 0.27} L320 ${mapViewBoxH * 0.33} L320 ${mapViewBoxH * 0.48} L0 ${mapViewBoxH * 0.48} Z`}
+              opacity={0.65}
+            />
+          </g>
+
+          {/* Hand-drawn ink route */}
+          <path
+            d={pathD}
+            fill="none"
+            stroke="#8B6914"
+            strokeWidth="4.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeOpacity={0.72}
+            transform="translate(0.25, 0.2)"
+          />
+          <path
+            d={pathD}
+            fill="none"
+            stroke="#8B6914"
+            strokeWidth="4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeOpacity={0.92}
+            transform="translate(-0.15, -0.1)"
           />
 
-          <path
-            d={pathD}
-            fill="none"
-            stroke="rgba(255, 255, 255, 0.22)"
-            strokeWidth="9"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            opacity="0.95"
-          />
-          <path
-            d={pathD}
-            fill="none"
-            stroke="url(#goldPath)"
-            strokeWidth="5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          {/* Compass rose — ancient map corner */}
+          <g transform={`translate(24, ${mapViewBoxH * 0.06})`} opacity={0.72}>
+            <polygon points="0,-14 3,-2 0,14 -3,-2" fill="#D4A843" stroke="#8B6914" strokeWidth="0.6" />
+            <polygon points="-14,0 -2,-3 14,0 -2,3" fill="#c9a85c" stroke="#8B6914" strokeWidth="0.6" />
+            <circle r="3.2" fill="#e8d5a3" stroke="#8B6914" strokeWidth="0.5" />
+          </g>
+
+          {/* Dove — faint silhouette, upper right */}
+          <g transform={`translate(252, ${mapViewBoxH * 0.065})`} opacity={0.48}>
+            <ellipse cx="0" cy="1" rx="9" ry="4.5" fill="rgba(110, 82, 58, 0.38)" />
+            <circle cx="-7" cy="1" r="3.2" fill="rgba(95, 72, 52, 0.42)" />
+            <path d="M8,1 Q12,0 14,2" fill="none" stroke="rgba(85, 62, 45, 0.35)" strokeWidth="0.5" strokeLinecap="round" />
+          </g>
+
+          {/* Cross near Jerusalem */}
+          {jerusalemStop ? (
+            <g transform={`translate(${jerusalemStop.x + 12}, ${jerusalemStop.y - 14})`} opacity={0.65}>
+              <rect x="-0.9" y="-10" width="1.8" height="12" rx="0.3" fill="#8B6914" />
+              <rect x="-6" y="-6" width="12" height="1.8" rx="0.3" fill="#8B6914" />
+            </g>
+          ) : null}
+
+          {/* Anchor — Abiding Anchor, lower map */}
+          <g transform={`translate(${MAP_VIEWBOX_W / 2}, ${mapViewBoxH - 26})`} opacity={0.55}>
+            <circle cx="0" cy="-9" r="5.5" fill="none" stroke="#8B6914" strokeWidth="1.05" />
+            <line x1="0" y1="-3.5" x2="0" y2="9" stroke="#8B6914" strokeWidth="1.05" strokeLinecap="round" />
+            <path d="M-9,6 Q0,12.5 9,6" fill="none" stroke="#8B6914" strokeWidth="1.05" strokeLinecap="round" />
+          </g>
 
           {stops.map((stop, i) => {
             const unlocked = i < unlockedCount
@@ -295,21 +365,41 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
                 }}
                 style={{ cursor: unlocked ? 'pointer' : 'not-allowed' }}
               >
+                {unlocked ? (
+                  <circle
+                    cx={stop.x}
+                    cy={stop.y}
+                    r="9"
+                    fill="none"
+                    stroke="#D4A843"
+                    strokeWidth="1.2"
+                    strokeOpacity={isCurrentProgress ? 0.75 : 0.38}
+                    filter={isCurrentProgress ? 'url(#journeyMapInkGlow)' : undefined}
+                    style={
+                      isCurrentProgress
+                        ? {
+                            animation: 'map-pulse 3s ease-in-out infinite',
+                            transformOrigin: 'center',
+                            transformBox: 'fill-box',
+                          }
+                        : undefined
+                    }
+                  />
+                ) : null}
                 <circle
                   cx={stop.x}
                   cy={stop.y}
-                  r="10"
-                  fill={unlocked ? '#D4A843' : 'rgba(255,255,255,0.22)'}
-                  stroke={unlocked ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.22)'}
-                  strokeWidth="2"
+                  r="3.5"
+                  fill={unlocked ? '#8B6914' : 'rgba(100, 70, 20, 0.4)'}
+                  stroke={unlocked ? '#6b4e10' : 'rgba(80, 55, 18, 0.35)'}
+                  strokeWidth="0.6"
+                  opacity={unlocked ? 0.95 : 0.85}
                   style={
-                    unlocked && isCurrentProgress
-                      ? {
-                          animation: 'map-pulse 3s ease-in-out infinite',
-                          transformOrigin: 'center',
-                          transformBox: 'fill-box',
-                        }
-                      : undefined
+                    unlocked && !isCurrentProgress
+                      ? { filter: 'drop-shadow(0 0 2px rgba(212, 168, 67, 0.45))' }
+                      : unlocked && isCurrentProgress
+                        ? { filter: 'drop-shadow(0 0 4px rgba(212, 168, 67, 0.85))' }
+                        : undefined
                   }
                 />
                 <text
@@ -317,15 +407,15 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
                   y={stop.y + 4}
                   fontSize="8.5"
                   textAnchor={la.textAnchor}
-                  fill={unlocked ? 'rgba(255,255,255,0.98)' : 'rgba(255,255,255,0.52)'}
-                  stroke="rgba(12, 22, 36, 0.55)"
-                  strokeWidth="0.45"
-                  paintOrder="stroke fill"
-                  filter="url(#journeyMapLabelShadow)"
+                  fontFamily="Georgia, 'Times New Roman', serif"
+                  fill={unlocked ? '#3d2000' : 'rgba(80, 50, 10, 0.4)'}
+                  filter="url(#journeyMapParchmentLabelShadow)"
                 >
                   {unlocked ? stop.label : `${t('journeyMap.ui.lockedPrefix')}${stop.label}`}
                 </text>
-                {seen && unlocked ? <circle cx={stop.x} cy={stop.y} r="3" fill="#fff" opacity="0.85" /> : null}
+                {seen && unlocked ? (
+                  <circle cx={stop.x + 5} cy={stop.y - 5} r="2" fill="#D4A843" opacity="0.75" />
+                ) : null}
               </g>
             )
           })}
