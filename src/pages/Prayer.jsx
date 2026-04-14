@@ -156,26 +156,18 @@ export default function Prayer() {
   return (
     <div className="bg-transparent">
       <div className="content-scroll px-4 pt-3 max-w-[680px] mx-auto w-full">
-        <div className="flex gap-1 p-1 rounded-xl bg-[#0a1028]/90 border border-white/10 mb-6 backdrop-blur-md">
+        <div className="prayer-page-main-tabs">
           <button
             type="button"
             onClick={() => setMainTab('mine')}
-            className={`flex-1 py-3 rounded-lg text-sm font-semibold transition-colors ${
-              mainTab === 'mine'
-                ? 'bg-[#1e1b3a] text-[#D4A843] border border-[#D4A843]/35 shadow-[0_0_20px_rgba(212,168,67,0.12)]'
-                : 'text-white/55 hover:text-white/85'
-            }`}
+            className={`prayer-page-main-tab ${mainTab === 'mine' ? 'prayer-page-main-tab--active' : ''}`}
           >
             {t('prayer.tabMyPrayers')}
           </button>
           <button
             type="button"
             onClick={() => setMainTab('wall')}
-            className={`flex-1 py-3 rounded-lg text-sm font-semibold transition-colors ${
-              mainTab === 'wall'
-                ? 'bg-[#1e1b3a] text-[#D4A843] border border-[#D4A843]/35 shadow-[0_0_20px_rgba(212,168,67,0.12)]'
-                : 'text-white/55 hover:text-white/85'
-            }`}
+            className={`prayer-page-main-tab ${mainTab === 'wall' ? 'prayer-page-main-tab--active' : ''}`}
           >
             {t('prayer.tabPrayerWall')}
           </button>

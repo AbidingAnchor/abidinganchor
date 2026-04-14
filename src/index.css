@@ -843,7 +843,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-/* Settings: Bible translation — dark surface + light text so native <option> lists are readable (incl. day theme) */
+/* Settings: Bible translation — dark surface for sunset/night; day sky uses body.theme-day* below */
 .settings-bible-translation-select {
   color-scheme: dark;
   background-color: rgba(18, 22, 42, 0.98) !important;
@@ -856,14 +856,240 @@ body {
   color: #f3f4f6;
 }
 
-[data-theme="day"] .settings-bible-translation-select {
-  background-color: rgba(18, 22, 42, 0.98) !important;
-  color: #f3f4f6 !important;
+/* Faith Journey hub — learning path cards (default: evening/night/sunset) */
+.faith-journey-learning-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.faith-journey-learning-card--featured {
+  background: rgba(212, 168, 67, 0.08);
+  border: 1px solid rgba(212, 168, 67, 0.2);
+}
+.faith-journey-learning-card--featured:hover {
+  background: rgba(212, 168, 67, 0.12);
+}
+.faith-journey-learning-card:not(.faith-journey-learning-card--featured):hover {
+  background: rgba(255, 255, 255, 0.06);
 }
 
-[data-theme="day"] .settings-bible-translation-select option {
-  background-color: #13182a !important;
-  color: #f3f4f6 !important;
+/* DAY sky — Journey hub list cards + streak + answered prayers row */
+body.theme-day .faith-journey-learning-card,
+body.theme-morning .faith-journey-learning-card,
+body.theme-afternoon .faith-journey-learning-card {
+  background: rgba(245, 237, 214, 0.82) !important;
+  border: 1px solid rgba(212, 168, 67, 0.35) !important;
+}
+body.theme-day .faith-journey-learning-card--featured:hover,
+body.theme-morning .faith-journey-learning-card--featured:hover,
+body.theme-afternoon .faith-journey-learning-card--featured:hover,
+body.theme-day .faith-journey-learning-card:not(.faith-journey-learning-card--featured):hover,
+body.theme-morning .faith-journey-learning-card:not(.faith-journey-learning-card--featured):hover,
+body.theme-afternoon .faith-journey-learning-card:not(.faith-journey-learning-card--featured):hover {
+  background: rgba(245, 232, 200, 0.92) !important;
+  border-color: rgba(212, 168, 67, 0.45) !important;
+}
+body.theme-day .faith-journey-learning-card__title,
+body.theme-morning .faith-journey-learning-card__title,
+body.theme-afternoon .faith-journey-learning-card__title,
+body.theme-day .faith-journey-learning-card__subtitle,
+body.theme-morning .faith-journey-learning-card__subtitle,
+body.theme-afternoon .faith-journey-learning-card__subtitle {
+  color: #2a1f0e !important;
+}
+body.theme-day .faith-journey-learning-card__subtitle,
+body.theme-morning .faith-journey-learning-card__subtitle,
+body.theme-afternoon .faith-journey-learning-card__subtitle {
+  color: rgba(42, 31, 14, 0.55) !important;
+}
+body.theme-day .faith-journey-learning-card__progress-track,
+body.theme-morning .faith-journey-learning-card__progress-track,
+body.theme-afternoon .faith-journey-learning-card__progress-track {
+  background: rgba(42, 31, 14, 0.12) !important;
+}
+body.theme-day .faith-journey-path-badge,
+body.theme-morning .faith-journey-path-badge,
+body.theme-afternoon .faith-journey-path-badge {
+  background: #d4a843 !important;
+  color: #ffffff !important;
+}
+
+body.theme-day .faith-journey-streak,
+body.theme-morning .faith-journey-streak,
+body.theme-afternoon .faith-journey-streak {
+  background: rgba(245, 237, 214, 0.82) !important;
+  border: 1px solid rgba(212, 168, 67, 0.35) !important;
+}
+body.theme-day .faith-journey-streak__line,
+body.theme-morning .faith-journey-streak__line,
+body.theme-afternoon .faith-journey-streak__line {
+  color: #2a1f0e !important;
+}
+body.theme-day .faith-journey-streak__sub,
+body.theme-morning .faith-journey-streak__sub,
+body.theme-afternoon .faith-journey-streak__sub {
+  color: rgba(42, 31, 14, 0.55) !important;
+}
+
+.faith-journey-streak-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+}
+.faith-journey-streak-dot--loading {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.3);
+}
+.faith-journey-streak-dot--today {
+  background: #d4a843;
+  color: #0a1a3e;
+}
+.faith-journey-streak-dot--done {
+  background: rgba(212, 168, 67, 0.3);
+  color: #d4a843;
+}
+.faith-journey-streak-dot--idle {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.3);
+}
+
+body.theme-day .faith-journey-streak-dot--loading,
+body.theme-morning .faith-journey-streak-dot--loading,
+body.theme-afternoon .faith-journey-streak-dot--loading {
+  background: rgba(42, 31, 14, 0.08) !important;
+  color: rgba(42, 31, 14, 0.35) !important;
+}
+body.theme-day .faith-journey-streak-dot--today,
+body.theme-morning .faith-journey-streak-dot--today,
+body.theme-afternoon .faith-journey-streak-dot--today {
+  background: #d4a843 !important;
+  color: #ffffff !important;
+}
+body.theme-day .faith-journey-streak-dot--done,
+body.theme-morning .faith-journey-streak-dot--done,
+body.theme-afternoon .faith-journey-streak-dot--done {
+  background: rgba(212, 168, 67, 0.28) !important;
+  color: #8b6200 !important;
+}
+body.theme-day .faith-journey-streak-dot--idle,
+body.theme-morning .faith-journey-streak-dot--idle,
+body.theme-afternoon .faith-journey-streak-dot--idle {
+  background: rgba(42, 31, 14, 0.06) !important;
+  color: rgba(42, 31, 14, 0.35) !important;
+}
+
+body.theme-day .faith-journey-prayers-row,
+body.theme-morning .faith-journey-prayers-row,
+body.theme-afternoon .faith-journey-prayers-row {
+  background: rgba(245, 237, 214, 0.82) !important;
+  border: 1px solid rgba(212, 168, 67, 0.35) !important;
+  box-shadow: none !important;
+}
+body.theme-day .faith-journey-prayers-row p,
+body.theme-morning .faith-journey-prayers-row p,
+body.theme-afternoon .faith-journey-prayers-row p {
+  color: #2a1f0e !important;
+}
+body.theme-day .faith-journey-prayers-row p:last-of-type,
+body.theme-morning .faith-journey-prayers-row p:last-of-type,
+body.theme-afternoon .faith-journey-prayers-row p:last-of-type {
+  color: rgba(42, 31, 14, 0.55) !important;
+}
+body.theme-day .faith-journey-prayers-row__arrow,
+body.theme-morning .faith-journey-prayers-row__arrow,
+body.theme-afternoon .faith-journey-prayers-row__arrow {
+  color: rgba(42, 31, 14, 0.45) !important;
+}
+
+/* Prayer page — My Prayers / Prayer Wall (night default stays inline Tailwind; day = cream) */
+.prayer-page-main-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(10, 16, 40, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.prayer-page-main-tab {
+  flex: 1;
+  padding: 12px 8px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+}
+.prayer-page-main-tab:hover:not(.prayer-page-main-tab--active) {
+  color: rgba(255, 255, 255, 0.85);
+}
+.prayer-page-main-tab--active {
+  background: rgba(30, 27, 58, 1);
+  color: #d4a843;
+  border-color: rgba(212, 168, 67, 0.35);
+  box-shadow: 0 0 20px rgba(212, 168, 67, 0.12);
+}
+
+body.theme-day .prayer-page-main-tabs,
+body.theme-morning .prayer-page-main-tabs,
+body.theme-afternoon .prayer-page-main-tabs {
+  background: rgba(235, 225, 200, 0.85) !important;
+  border: 1px solid rgba(212, 168, 67, 0.35) !important;
+}
+body.theme-day .prayer-page-main-tab,
+body.theme-morning .prayer-page-main-tab,
+body.theme-afternoon .prayer-page-main-tab {
+  color: rgba(42, 31, 14, 0.6) !important;
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+body.theme-day .prayer-page-main-tab:hover:not(.prayer-page-main-tab--active),
+body.theme-morning .prayer-page-main-tab:hover:not(.prayer-page-main-tab--active),
+body.theme-afternoon .prayer-page-main-tab:hover:not(.prayer-page-main-tab--active) {
+  color: rgba(42, 31, 14, 0.75) !important;
+}
+body.theme-day .prayer-page-main-tab--active,
+body.theme-morning .prayer-page-main-tab--active,
+body.theme-afternoon .prayer-page-main-tab--active {
+  background: #d4a843 !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Settings — Bible translation select: cream on day sky only */
+body.theme-day .settings-bible-translation-select,
+body.theme-morning .settings-bible-translation-select,
+body.theme-afternoon .settings-bible-translation-select {
+  color-scheme: light !important;
+  background: rgba(245, 237, 214, 0.9) !important;
+  border: 1px solid rgba(212, 168, 67, 0.45) !important;
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+  color: #2a1f0e !important;
+}
+body.theme-day .settings-bible-translation-select option,
+body.theme-morning .settings-bible-translation-select option,
+body.theme-afternoon .settings-bible-translation-select option {
+  background-color: rgba(245, 237, 214, 0.98) !important;
+  color: #2a1f0e !important;
+}
+body.theme-day .settings-bible-translation-select option:checked,
+body.theme-day .settings-bible-translation-select option:hover,
+body.theme-morning .settings-bible-translation-select option:checked,
+body.theme-morning .settings-bible-translation-select option:hover,
+body.theme-afternoon .settings-bible-translation-select option:checked,
+body.theme-afternoon .settings-bible-translation-select option:hover {
+  background-color: rgba(212, 168, 67, 0.25) !important;
 }
 
 .btn-primary {

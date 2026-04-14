@@ -37,9 +37,8 @@ function getDayIndexForWeek() {
 const LearningPathCard = ({ icon, title, subtitle, accentColor, iconBg, progress, featured, badge, onStart }) => (
   <article
     onClick={onStart}
+    className={`faith-journey-learning-card ${featured ? 'faith-journey-learning-card--featured' : ''}`}
     style={{
-      background: featured ? 'rgba(212,168,67,0.08)' : 'rgba(255,255,255,0.03)',
-      border: featured ? '1px solid rgba(212,168,67,0.2)' : '1px solid rgba(255,255,255,0.06)',
       borderRadius: '16px',
       padding: '14px',
       display: 'flex',
@@ -49,12 +48,6 @@ const LearningPathCard = ({ icon, title, subtitle, accentColor, iconBg, progress
       transition: 'background 0.2s',
       position: 'relative',
       overflow: 'hidden'
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.background = featured ? 'rgba(212,168,67,0.12)' : 'rgba(255,255,255,0.06)'
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.background = featured ? 'rgba(212,168,67,0.08)' : 'rgba(255,255,255,0.03)'
     }}
   >
     {/* Left accent bar */}
@@ -85,15 +78,18 @@ const LearningPathCard = ({ icon, title, subtitle, accentColor, iconBg, progress
 
     {/* Content */}
     <div style={{ flex: 1, minWidth: 0 }}>
-      <p style={{ color: '#FFFFFF', fontSize: '13px', fontWeight: 700, marginBottom: '2px' }}>{title}</p>
-      <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', marginBottom: '6px' }}>{subtitle}</p>
+      <p className="faith-journey-learning-card__title" style={{ color: '#FFFFFF', fontSize: '13px', fontWeight: 700, marginBottom: '2px' }}>{title}</p>
+      <p className="faith-journey-learning-card__subtitle" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', marginBottom: '6px' }}>{subtitle}</p>
       {/* Progress bar */}
-      <div style={{
+      <div
+        className="faith-journey-learning-card__progress-track"
+        style={{
         height: '3px',
         background: 'rgba(255,255,255,0.1)',
         borderRadius: '2px',
         overflow: 'hidden'
-      }}>
+      }}
+      >
         <div style={{
           height: '100%',
           width: `${progress}%`,
@@ -105,7 +101,9 @@ const LearningPathCard = ({ icon, title, subtitle, accentColor, iconBg, progress
 
     {/* Badge */}
     {badge && (
-      <div style={{
+      <div
+        className={`faith-journey-path-badge ${featured ? 'faith-journey-path-badge--featured' : ''}`}
+        style={{
         padding: '4px 12px',
         borderRadius: '20px',
         fontSize: '10px',
@@ -114,7 +112,8 @@ const LearningPathCard = ({ icon, title, subtitle, accentColor, iconBg, progress
         letterSpacing: '0.05em',
         background: featured ? '#D4A843' : 'rgba(255,255,255,0.1)',
         color: featured ? '#0a1a3e' : 'rgba(255,255,255,0.6)'
-      }}>
+      }}
+      >
         {badge}
       </div>
     )}
@@ -251,7 +250,9 @@ export default function FaithJourney() {
           }} />
 
           {/* Streak Bar */}
-          <div style={{
+          <div
+            className="faith-journey-streak"
+            style={{
             background: 'rgba(212,168,67,0.07)',
             border: '1px solid rgba(212,168,67,0.18)',
             borderRadius: '16px',
@@ -260,49 +261,34 @@ export default function FaithJourney() {
             display: 'flex',
             alignItems: 'center',
             gap: '12px'
-          }}>
+          }}
+          >
             <span style={{ fontSize: '22px' }}>🔥</span>
             <div style={{ flex: 1 }}>
-              <p style={{ color: '#FFFFFF', fontSize: '13px', fontWeight: 600, marginBottom: '2px' }}>
+              <p className="faith-journey-streak__line" style={{ color: '#FFFFFF', fontSize: '13px', fontWeight: 600, marginBottom: '2px' }}>
                 {loading ? t('faithJourney.streakLoading') : t('faithJourney.streakLine', { n: streakCount })}
               </p>
-              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px' }}>
+              <p className="faith-journey-streak__sub" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px' }}>
                 {loading ? t('faithJourney.streakSubLoading') : streakCount === 0 ? t('faithJourney.streakSubZero') : t('faithJourney.streakSubActive')}
               </p>
             </div>
             {/* Day of week dots */}
-            <div style={{ display: 'flex', gap: '6px' }}>
+            <div className="faith-journey-streak-dots" style={{ display: 'flex', gap: '6px' }}>
               {days.map((day, i) => {
                 const isToday = i === dayIndex
                 const isPast = i < dayIndex && dayIndex !== -1
                 const isCompleted = !loading && isPast
+                const dotState = loading
+                  ? 'loading'
+                  : isToday
+                    ? 'today'
+                    : isCompleted
+                      ? 'done'
+                      : 'idle'
                 return (
                   <div
                     key={day}
-                    style={{
-                      width: '24px',
-                      height: '24px',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '10px',
-                      fontWeight: 600,
-                      background: loading
-                        ? 'rgba(255,255,255,0.06)'
-                        : isToday
-                          ? '#D4A843'
-                          : isCompleted
-                            ? 'rgba(212,168,67,0.3)'
-                            : 'rgba(255,255,255,0.06)',
-                      color: loading
-                        ? 'rgba(255,255,255,0.3)'
-                        : isToday
-                          ? '#0a1a3e'
-                          : isCompleted
-                            ? '#D4A843'
-                            : 'rgba(255,255,255,0.3)'
-                    }}
+                    className={`faith-journey-streak-dot faith-journey-streak-dot--${dotState}`}
                   >
                     {day}
                   </div>
@@ -314,6 +300,7 @@ export default function FaithJourney() {
           <button
             type="button"
             onClick={() => navigate('/prayer')}
+            className="faith-journey-prayers-row"
             style={{
               width: '100%',
               marginBottom: '24px',
@@ -357,7 +344,7 @@ export default function FaithJourney() {
                 {t('faithJourney.prayersAnsweredHint')}
               </p>
             </div>
-            <span style={{ color: 'rgba(212,168,67,0.8)', fontSize: '18px', flexShrink: 0 }} aria-hidden>
+            <span className="faith-journey-prayers-row__arrow" style={{ color: 'rgba(212,168,67,0.8)', fontSize: '18px', flexShrink: 0 }} aria-hidden>
               →
             </span>
           </button>

@@ -595,7 +595,6 @@ export default function Settings() {
               padding: '12px',
               fontSize: '16px',
               cursor: 'pointer',
-              colorScheme: 'dark',
             }}
           >
             {BIBLE_TRANSLATION_OPTIONS.map(({ value, labelKey }) => (
