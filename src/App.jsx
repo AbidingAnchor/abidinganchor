@@ -38,6 +38,8 @@ import { useWorshipPlaybackState } from './lib/worshipGlobalAudio'
 import { applyDailyStreakOnAppOpen } from './lib/dailyAppStreak'
 import { syncWeeklyActiveDays } from './hooks/useStreakTracker'
 
+const LEGAL_ACCEPTED_KEY = 'legalAccepted'
+
 function ProtectedRoute({ children }) {
   const { user, loading, suspendedInfo } = useAuth()
   if (loading) return <LoadingScreen />
@@ -96,6 +98,9 @@ function AppShell() {
   const navigate = useNavigate()
   const [worshipVisible, setWorshipVisible] = useState(false)
   const [worshipAutoPlayToken, setWorshipAutoPlayToken] = useState(0)
+  const [hasAcceptedLegal, setHasAcceptedLegal] = useState(
+    () => localStorage.getItem(LEGAL_ACCEPTED_KEY) === 'true',
+  )
   const worshipPlayback = useWorshipPlaybackState()
   const worshipStatus = useMemo(
     () => ({
@@ -152,6 +157,14 @@ function AppShell() {
       if (timeoutId) clearTimeout(timeoutId)
     }
   }, [user?.id, refreshProfile])
+
+  useEffect(() => {
+    const syncLegalAccepted = () => {
+      setHasAcceptedLegal(localStorage.getItem(LEGAL_ACCEPTED_KEY) === 'true')
+    }
+    window.addEventListener('storage', syncLegalAccepted)
+    return () => window.removeEventListener('storage', syncLegalAccepted)
+  }, [])
 
   if (suspendedInfo) {
     return <SuspendedScreen bannedAt={suspendedInfo.bannedAt} />
@@ -220,7 +233,14 @@ function AppShell() {
           </div>
         </div>
       </div>
-      {showFooter ? <LegalModal onAgreed={() => navigate('/onboarding')} /> : null}
+      {showFooter && !hasAcceptedLegal ? (
+        <LegalModal
+          onAgreed={() => {
+            setHasAcceptedLegal(true)
+            navigate('/onboarding')
+          }}
+        />
+      ) : null}
       <WorshipPlayer
         visible={worshipVisible}
         onClose={() => setWorshipVisible(false)}
