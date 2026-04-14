@@ -54,6 +54,9 @@ export default function Settings() {
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false)
   const [feedbackSuccess, setFeedbackSuccess] = useState(false)
   const [feedbackSubmitError, setFeedbackSubmitError] = useState('')
+  const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false)
+  const [deleteAccountSubmitting, setDeleteAccountSubmitting] = useState(false)
+  const [deleteAccountError, setDeleteAccountError] = useState('')
   const feedbackSuccessTimerRef = useRef(null)
   const fileInputRef = useRef(null)
 
@@ -140,13 +143,13 @@ export default function Settings() {
   }, [])
 
   useEffect(() => {
-    if (!feedbackModalOpen) return
+    if (!feedbackModalOpen && !deleteAccountModalOpen) return
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
       document.body.style.overflow = prev
     }
-  }, [feedbackModalOpen])
+  }, [feedbackModalOpen, deleteAccountModalOpen])
 
   useEffect(() => {
     if (!user?.id) return
@@ -263,6 +266,31 @@ export default function Settings() {
   const handleSignOut = async () => {
     await signOut()
     navigate('/auth', { replace: true })
+  }
+
+  const handleConfirmDeleteAccount = async () => {
+    setDeleteAccountError('')
+    setDeleteAccountSubmitting(true)
+    try {
+      const { error } = await supabase.rpc('delete_user')
+      if (error) {
+        console.error('delete_user RPC:', error)
+        setDeleteAccountError(error.message || t('settings.deleteAccountError'))
+        return
+      }
+      try {
+        await signOut()
+      } catch {
+        /* session may already be invalid */
+      }
+      setDeleteAccountModalOpen(false)
+      navigate('/auth', { replace: true })
+    } catch (e) {
+      console.error(e)
+      setDeleteAccountError(t('settings.deleteAccountError'))
+    } finally {
+      setDeleteAccountSubmitting(false)
+    }
   }
 
   const handleReplayTutorial = async () => {
@@ -960,6 +988,28 @@ export default function Settings() {
         >
           {t('settings.signOut')}
         </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setDeleteAccountError('')
+            setDeleteAccountModalOpen(true)
+          }}
+          style={{
+            width: '100%',
+            marginTop: '12px',
+            background: 'rgba(90, 45, 45, 0.55)',
+            border: '1px solid rgba(140, 80, 80, 0.45)',
+            borderRadius: '16px',
+            padding: '16px',
+            color: 'var(--text-primary)',
+            fontSize: '16px',
+            fontWeight: 700,
+            cursor: 'pointer',
+          }}
+        >
+          {t('settings.deleteAccount')}
+        </button>
       </section>
 
       {feedbackModalOpen ? (
@@ -1083,6 +1133,77 @@ export default function Settings() {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      ) : null}
+
+      {deleteAccountModalOpen ? (
+        <div
+          className="fixed inset-0 z-[10050] flex items-center justify-center p-4"
+          style={{ background: 'var(--glass-scrim)' }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="settings-delete-account-title"
+        >
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default border-0"
+            style={{ background: 'transparent' }}
+            aria-label={t('common.close')}
+            onClick={() => !deleteAccountSubmitting && setDeleteAccountModalOpen(false)}
+          />
+          <div
+            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
+            style={{
+              background: 'var(--modal-bg)',
+              border: '1px solid var(--glass-border)',
+              boxShadow: 'var(--glass-shadow)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-5 pb-6 pt-5">
+              <h2
+                id="settings-delete-account-title"
+                className="m-0 text-lg font-semibold leading-snug"
+                style={{ color: 'var(--gold, #D4A843)' }}
+              >
+                {t('settings.deleteAccountConfirmTitle')}
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                {t('settings.deleteAccountConfirmBody')}
+              </p>
+              {deleteAccountError ? (
+                <p className="mt-3 text-sm" style={{ color: '#f87171' }}>
+                  {deleteAccountError}
+                </p>
+              ) : null}
+              <button
+                type="button"
+                disabled={deleteAccountSubmitting}
+                onClick={handleConfirmDeleteAccount}
+                className="mt-5 w-full rounded-xl border py-3 text-base font-semibold transition disabled:opacity-50"
+                style={{
+                  border: '1px solid rgba(140, 80, 80, 0.55)',
+                  background: 'rgba(120, 55, 55, 0.65)',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                {deleteAccountSubmitting ? t('settings.deleteAccountDeleting') : t('settings.deleteAccountConfirmButton')}
+              </button>
+              <button
+                type="button"
+                disabled={deleteAccountSubmitting}
+                onClick={() => setDeleteAccountModalOpen(false)}
+                className="mt-3 w-full rounded-xl border py-3 text-base font-medium transition disabled:opacity-50"
+                style={{
+                  borderColor: 'var(--glass-border)',
+                  background: 'transparent',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                {t('common.cancel')}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}
