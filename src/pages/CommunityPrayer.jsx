@@ -233,7 +233,7 @@ export default function CommunityPrayer() {
           </Link>
         </header>
 
-        <div className="mb-4 flex gap-2 app-card">
+        <div className="community-prayer-tabs mb-4 flex gap-2 app-card">
           {['wall', 'mine'].map((key) => (
             <button
               key={key}
@@ -248,13 +248,13 @@ export default function CommunityPrayer() {
 
         {tab === 'wall' && (
           <>
-            <div style={{ marginBottom: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            <div className="community-prayer-filters" style={{ marginBottom: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {FILTER_CATEGORIES.map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setFilterCat(c)}
-                  className={filterCat === c ? '' : 'glass-panel'}
+                  className={`community-filter-btn ${filterCat === c ? 'community-filter-btn--active' : ''} ${filterCat === c ? '' : 'glass-panel'}`}
                   style={{
                     borderRadius: '50px',
                     padding: '6px 12px',
@@ -290,9 +290,9 @@ export default function CommunityPrayer() {
         ) : null}
 
         {!loading && tab === 'wall' && prayers.length === 0 ? (
-          <article style={{
-            background: 'var(--card-parchment)',
-            border: '1px solid var(--glass-border)',
+          <article className="community-empty-state app-card" style={{
+            background: 'var(--card-bg)',
+            border: '1px solid var(--card-border)',
             borderLeft: '3px solid var(--gold)',
             borderRadius: '12px',
             padding: '24px',
@@ -306,9 +306,9 @@ export default function CommunityPrayer() {
         ) : null}
 
         {!loading && tab === 'mine' && prayers.length === 0 ? (
-          <article style={{
-            background: 'var(--card-parchment)',
-            border: '1px solid var(--glass-border)',
+          <article className="community-empty-state app-card" style={{
+            background: 'var(--card-bg)',
+            border: '1px solid var(--card-border)',
             borderLeft: '3px solid var(--gold)',
             borderRadius: '12px',
             padding: '24px',

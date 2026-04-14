@@ -47,6 +47,20 @@
   --card-parchment-hover: rgba(22, 28, 58, 0.95);
   --card-parchment-ink: rgba(255, 255, 255, 0.95);
   --card-parchment-ink-muted: rgba(255, 255, 255, 0.72);
+
+  /* Semantic aliases (night/sunset — body.theme-day* overrides for creamy day) */
+  --card-bg: var(--card-parchment);
+  --card-border: var(--gold-border);
+  --card-text: var(--card-parchment-ink);
+  --card-text-muted: var(--card-parchment-ink-muted);
+  --modal-bg: var(--nav-bg);
+  --more-menu-item-bg: var(--card-parchment);
+  --more-menu-item-hover: var(--card-parchment-hover);
+  --bible-chrome-bg: rgba(15, 20, 45, 0.95);
+  --bible-nav-bar-bg: rgba(15, 20, 45, 0.95);
+  --bible-verse-well-bg: transparent;
+  --bible-verse-well-border: transparent;
+  --verse-number-color: var(--gold);
 }
 
 [data-theme="day"] {
@@ -100,6 +114,47 @@
 
   --glass-nav-blur: 20px;
   --glass-scrim: rgba(200, 220, 240, 0.45);
+
+  --modal-bg: var(--nav-bg);
+  --more-menu-item-bg: var(--card-parchment);
+  --more-menu-item-hover: var(--card-parchment-hover);
+  --bible-chrome-bg: rgba(15, 20, 45, 0.95);
+  --bible-nav-bar-bg: rgba(15, 20, 45, 0.95);
+  --bible-verse-well-bg: transparent;
+  --bible-verse-well-border: transparent;
+  --verse-number-color: var(--gold);
+  --card-bg: var(--card-parchment);
+  --card-border: var(--glass-border);
+  --card-text: var(--text-primary);
+  --card-text-muted: var(--text-secondary);
+}
+
+/* Body-driven day tokens (morning + afternoon): override html[data-theme=day] navy card/chrome vars */
+body.theme-day,
+body.theme-morning,
+body.theme-afternoon {
+  --card-bg: rgba(245, 237, 214, 0.82);
+  --card-border: rgba(212, 168, 67, 0.4);
+  --card-text: #2a1f0e;
+  --card-text-muted: rgba(42, 31, 14, 0.6);
+  --modal-bg: rgba(245, 237, 214, 0.95);
+  --more-menu-item-bg: rgba(235, 225, 200, 0.85);
+  --more-menu-item-hover: rgba(225, 215, 192, 0.95);
+  --card-parchment: var(--card-bg);
+  --card-parchment-hover: var(--more-menu-item-hover);
+  --card-parchment-ink: var(--card-text);
+  --card-parchment-ink-muted: var(--card-text-muted);
+  --nav-bg: var(--modal-bg);
+  --text-primary: var(--card-text);
+  --text-secondary: var(--card-text-muted);
+  --text-muted: rgba(42, 31, 14, 0.45);
+  --bible-chrome-bg: rgba(245, 237, 214, 0.92);
+  --bible-nav-bar-bg: rgba(245, 237, 214, 0.92);
+  --bible-verse-well-bg: rgba(245, 237, 214, 0.78);
+  --bible-verse-well-border: rgba(212, 168, 67, 0.3);
+  --verse-number-color: #d4a843;
+  --glass-border: rgba(212, 168, 67, 0.35);
+  --gold-border: rgba(212, 168, 67, 0.45);
 }
 
 [data-theme="sunset"] {
@@ -143,6 +198,19 @@
   --card-parchment-hover: rgba(22, 28, 58, 0.95);
   --card-parchment-ink: rgba(255, 255, 255, 0.95);
   --card-parchment-ink-muted: rgba(255, 255, 255, 0.72);
+
+  --modal-bg: var(--nav-bg);
+  --more-menu-item-bg: var(--card-parchment);
+  --more-menu-item-hover: var(--card-parchment-hover);
+  --bible-chrome-bg: rgba(15, 20, 45, 0.95);
+  --bible-nav-bar-bg: rgba(15, 20, 45, 0.95);
+  --bible-verse-well-bg: transparent;
+  --bible-verse-well-border: transparent;
+  --verse-number-color: var(--gold);
+  --card-bg: var(--card-parchment);
+  --card-border: var(--glass-border);
+  --card-text: var(--text-primary);
+  --card-text-muted: var(--text-secondary);
 }
 
 * {
@@ -1385,11 +1453,29 @@ body.theme-afternoon .home-tool-tile * {
   color: var(--nav-text-active) !important;
 }
 
-/* More drawer in day mode */
+/* More drawer — --modal-bg is cream when body.theme-day* */
 [data-theme="day"] [style*="zIndex: 10001"] {
-  background: rgba(255, 248, 225, 0.95) !important;
+  background: var(--modal-bg) !important;
 }
 
 [data-theme="day"] [style*="zIndex: 10001"] span[style*="color"] {
-  color: #0f1e3d !important;
+  color: var(--card-text, #0f1e3d) !important;
+}
+
+/* Bible reader: verse panel uses theme variables (cream on body.theme-day*) */
+.bible-verse-well {
+  border-radius: 16px;
+  padding: 16px 18px;
+  background: var(--bible-verse-well-bg);
+  border: 1px solid var(--bible-verse-well-border);
+  box-sizing: border-box;
+}
+
+/* Community Prayer — day: filter chips (inactive) */
+body.theme-day .community-prayer-filters .community-filter-btn:not(.community-filter-btn--active),
+body.theme-morning .community-prayer-filters .community-filter-btn:not(.community-filter-btn--active),
+body.theme-afternoon .community-prayer-filters .community-filter-btn:not(.community-filter-btn--active) {
+  background: rgba(245, 237, 214, 0.65) !important;
+  color: var(--card-text) !important;
+  border: 1px solid rgba(212, 168, 67, 0.35) !important;
 }

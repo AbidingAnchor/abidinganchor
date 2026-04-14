@@ -372,8 +372,8 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
           right: 0,
           height: CHAPTER_ZONE_HEIGHT_PX,
           zIndex: 90,
-          background: 'rgba(15, 20, 45, 0.95)',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          background: 'var(--bible-chrome-bg)',
+          borderBottom: '1px solid var(--glass-border)',
           boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'column',
@@ -419,10 +419,10 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                 type="button"
                 onClick={() => setShowTranslationPicker((o) => !o)}
                 style={{
-                  background: 'rgba(10, 16, 40, 0.88)',
+                  background: 'var(--bible-chrome-bg)',
                   border: '1px solid rgba(212,168,67,0.38)',
                   borderRadius: '999px',
-                  color: '#F5E6C8',
+                  color: 'var(--text-primary)',
                   fontSize: '11px',
                   fontWeight: 700,
                   cursor: 'pointer',
@@ -518,6 +518,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
             </div>
           ) : (
             <div
+              className="bible-verse-well"
               style={{
                 color: 'var(--text-primary)',
                 fontSize: `${fontSize}px`,
@@ -529,7 +530,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                 <p key={v.verse} style={{ marginBottom: '1.2rem', textAlign: 'justify' }}>
                   <sup
                     style={{
-                      color: 'var(--gold)',
+                      color: 'var(--verse-number-color)',
                       fontSize: '0.75em',
                       fontWeight: 600,
                       marginRight: '4px',
@@ -555,10 +556,10 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
           right: 0,
           height: BOTTOM_CHROME_NAV_PX,
           zIndex: 90,
-          background: 'rgba(15, 20, 45, 0.95)',
+          background: 'var(--bible-nav-bar-bg)',
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
-          borderTop: '1px solid rgba(255,255,255,0.1)',
+          borderTop: '1px solid var(--glass-border)',
           boxSizing: 'border-box',
           display: 'flex',
           alignItems: 'center',
