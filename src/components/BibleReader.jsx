@@ -11,6 +11,16 @@ const BIBLE_API_COM = 'https://bible-api.com'
 
 const BIBLE_READER_TRANSLATION_KEY = 'abidinganchor-bible-reader-translation'
 
+const BIBLE_FONT_MIN = 14
+const BIBLE_FONT_MAX = 24
+const BIBLE_FONT_DEFAULT = 18
+const BIBLE_FONT_STEP = 2
+
+function clampBibleFontSize(n) {
+  if (!Number.isFinite(n)) return BIBLE_FONT_DEFAULT
+  return Math.min(BIBLE_FONT_MAX, Math.max(BIBLE_FONT_MIN, Math.round(n)))
+}
+
 /** Default for bible-api.com when no API.Bible key or when using non-getBible English texts — WEB is reliable on bible-api.com. */
 const DEFAULT_BIBLE_API_COM_TRANSLATION = 'web'
 
@@ -126,10 +136,9 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
   const translationButtonRef = useRef(null)
   const [translationId, setTranslationId] = useState(getStoredTranslationId)
   const [fontSize, setFontSize] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return parseInt(localStorage.getItem('bibleFontSize')) || 18
-    }
-    return 18
+    if (typeof window === 'undefined') return BIBLE_FONT_DEFAULT
+    const raw = localStorage.getItem('bibleFontSize')
+    return clampBibleFontSize(parseInt(raw ?? '', 10))
   })
 
   const selectedBook = BOOKS[bookIndex]
@@ -345,67 +354,159 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
       }}
       >
         <div style={{ maxWidth: '680px', margin: '0 auto' }}>
-          {/* Row 1: Book selector | Chapter selector | Translation */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
-            <button
-              type="button"
-              onClick={() => setShowBookPicker(true)}
+          {/* Row: Book | Chapter | Translation (center) + font size (right) */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+              width: '100%',
+            }}
+          >
+            <div
               style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--text-primary)',
-                fontSize: '18px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                padding: '4px 12px'
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '16px',
+                flex: 1,
+                minWidth: 0,
+                flexWrap: 'wrap',
               }}
             >
-              {selectedBook ? bookDisplayName(selectedBook) : t('bible.loading')}
-            </button>
+              <button
+                type="button"
+                onClick={() => setShowBookPicker(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-primary)',
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  padding: '4px 12px',
+                }}
+              >
+                {selectedBook ? bookDisplayName(selectedBook) : t('bible.loading')}
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setShowChapterPicker(true)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--text-primary)',
-                fontSize: '18px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                padding: '4px 12px'
-              }}
-            >
-              {t('bible.chapter', { n: chapter })}
-            </button>
+              <button
+                type="button"
+                onClick={() => setShowChapterPicker(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-primary)',
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  padding: '4px 12px',
+                }}
+              >
+                {t('bible.chapter', { n: chapter })}
+              </button>
 
-            {showEnglishBibleVersions ? (
-            <button
-              ref={translationButtonRef}
-              type="button"
-              onClick={() => setShowTranslationPicker((open) => !open)}
+              {showEnglishBibleVersions ? (
+                <button
+                  ref={translationButtonRef}
+                  type="button"
+                  onClick={() => setShowTranslationPicker((open) => !open)}
+                  style={{
+                    background: 'rgba(10, 16, 40, 0.88)',
+                    border: '1px solid rgba(212,168,67,0.38)',
+                    borderRadius: '999px',
+                    color: '#F5E6C8',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    padding: '6px 12px',
+                    letterSpacing: '0.04em',
+                    boxShadow: '0 8px 20px rgba(0,0,0,0.25)',
+                  }}
+                  aria-expanded={showTranslationPicker}
+                  aria-haspopup="listbox"
+                >
+                  {HAS_API_BIBLE ? uiLang.toUpperCase() : selectedTranslation.label} ▾
+                </button>
+              ) : (
+                <span style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(212,168,67,0.85)', padding: '6px 8px' }}>
+                  {getBibleSlug ? String(getBibleSlug).toUpperCase() : ''}
+                </span>
+              )}
+            </div>
+
+            <div
               style={{
-                background: 'rgba(10, 16, 40, 0.88)',
-                border: '1px solid rgba(212,168,67,0.38)',
-                borderRadius: '999px',
-                color: '#F5E6C8',
-                fontSize: '12px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                padding: '6px 12px',
-                letterSpacing: '0.04em',
-                boxShadow: '0 8px 20px rgba(0,0,0,0.25)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                flexShrink: 0,
               }}
-              aria-expanded={showTranslationPicker}
-              aria-haspopup="listbox"
+              aria-label="Bible text size"
             >
-              {HAS_API_BIBLE ? uiLang.toUpperCase() : selectedTranslation.label} ▾
-            </button>
-            ) : (
-              <span style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(212,168,67,0.85)', padding: '6px 8px' }}>
-                {getBibleSlug ? String(getBibleSlug).toUpperCase() : ''}
-              </span>
-            )}
+              <button
+                type="button"
+                onClick={() => {
+                  setFontSize((s) => {
+                    const next = clampBibleFontSize(s - BIBLE_FONT_STEP)
+                    try {
+                      localStorage.setItem('bibleFontSize', String(next))
+                    } catch {
+                      /* ignore */
+                    }
+                    return next
+                  })
+                }}
+                disabled={fontSize <= BIBLE_FONT_MIN}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#D4A843',
+                  fontSize: '15px',
+                  fontWeight: 700,
+                  cursor: fontSize <= BIBLE_FONT_MIN ? 'not-allowed' : 'pointer',
+                  padding: '4px 6px',
+                  opacity: fontSize <= BIBLE_FONT_MIN ? 0.35 : 1,
+                }}
+              >
+                A-
+              </button>
+              <div
+                style={{
+                  width: '1px',
+                  height: '14px',
+                  background: 'rgba(255,255,255,0.2)',
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setFontSize((s) => {
+                    const next = clampBibleFontSize(s + BIBLE_FONT_STEP)
+                    try {
+                      localStorage.setItem('bibleFontSize', String(next))
+                    } catch {
+                      /* ignore */
+                    }
+                    return next
+                  })
+                }}
+                disabled={fontSize >= BIBLE_FONT_MAX}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--gold)',
+                  fontSize: '15px',
+                  fontWeight: 700,
+                  cursor: fontSize >= BIBLE_FONT_MAX ? 'not-allowed' : 'pointer',
+                  padding: '4px 6px',
+                  opacity: fontSize >= BIBLE_FONT_MAX ? 0.35 : 1,
+                }}
+              >
+                A+
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -483,14 +584,16 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
         ) : (
           <div>
             {/* Verse Text - Premium Styling */}
-            <div style={{
-              padding: '20px',
-              color: 'var(--text-primary)',
-              fontSize: '1.1rem',
-              lineHeight: '1.8',
-              fontFamily: 'Lora, serif',
-              paddingBottom: mode === 'listen' ? '160px' : '80px'
-            }}>
+            <div
+              style={{
+                padding: '20px',
+                color: 'var(--text-primary)',
+                fontSize: `${fontSize}px`,
+                lineHeight: '1.8',
+                fontFamily: 'Lora, serif',
+                paddingBottom: mode === 'listen' ? '160px' : '80px',
+              }}
+            >
               {verses.map(v => (
                 <p key={v.verse} style={{
                   marginBottom: '1.2rem',
@@ -508,63 +611,6 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                   {v.text}
                 </p>
               ))}
-            </div>
-
-            {/* Font Size Controls - Fixed above tab bar */}
-            <div className="glass-panel" style={{
-              position: 'fixed',
-              bottom: '80px',
-              right: '20px',
-              borderRadius: '50px',
-              padding: '8px 16px',
-              display: 'flex',
-              gap: '12px',
-              alignItems: 'center',
-              zIndex: 150,
-            }}>
-              <button
-                type="button"
-                onClick={() => {
-                  const newSize = Math.max(14, fontSize - 2)
-                  setFontSize(newSize)
-                  localStorage.setItem('bibleFontSize', newSize.toString())
-                }}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#D4A843',
-                  fontSize: '16px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  padding: 0
-                }}
-              >
-                A-
-              </button>
-              <div style={{ 
-                width: '1px', 
-                height: '16px', 
-                background: 'rgba(255,255,255,0.2)' 
-              }} />
-              <button
-                type="button"
-                onClick={() => {
-                  const newSize = Math.min(28, fontSize + 2)
-                  setFontSize(newSize)
-                  localStorage.setItem('bibleFontSize', newSize.toString())
-                }}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--gold)',
-                  fontSize: '16px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  padding: 0
-                }}
-              >
-                A+
-              </button>
             </div>
 
             {/* Chapter Navigation - Normal Flow */}
