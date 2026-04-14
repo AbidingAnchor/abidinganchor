@@ -39,8 +39,8 @@ const PROGRESS_MARKER_NUDGE_DOWN = 12
 const MAP_VIEWBOX_BOTTOM_PAD = 16
 const GEO_Y_MIN = Math.min(...JOURNEY_MAP_GEOMETRY.map((s) => s.y))
 const GEO_Y_MAX = Math.max(...JOURNEY_MAP_GEOMETRY.map((s) => s.y))
-/** Northern end (Rome): center y fraction; dot edge clears top30% (sky) for typical viewBox heights. */
-const PATH_Y_TOP_FRAC = 0.33
+/** Northern end (Rome): center y fraction — extra margin from top edge of parchment. */
+const PATH_Y_TOP_FRAC = 0.38
 /** Southern end (Bethlehem) — leaves room below for marker + labels. */
 const PATH_Y_BOTTOM_FRAC = 0.71
 
@@ -86,14 +86,13 @@ function JourneyProgressMarker({ stop, viewBoxH }) {
   const feetY = y + h - 2
   return (
     <g pointerEvents="none" aria-hidden="true">
-      {/* Sandy grass strip so figures read as standing on ground, not bare parchment */}
+      {/* Soft sepia contact shadow only — parchment-toned, no green */}
       <ellipse
         cx={cx}
-        cy={feetY}
-        rx={Math.min(w * 0.58, MAP_VIEWBOX_W * 0.22)}
-        ry={12}
-        fill="url(#jmpFigureGround)"
-        opacity={0.92}
+        cy={feetY + 3}
+        rx={Math.min(w * 0.48, MAP_VIEWBOX_W * 0.19)}
+        ry={5.5}
+        fill="url(#jmpFigureFeetShadow)"
       />
       <ellipse cx={cx} cy={y + h * 0.52} rx={w * 0.42} ry={h * 0.38} fill="rgba(212, 168, 67, 0.2)" filter="url(#jmpFigureWarmGlow)" />
       <foreignObject x={x} y={y} width={w} height={h}>
@@ -264,11 +263,11 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
           style={{ display: 'block' }}
         >
           <defs>
-            <linearGradient id="jmpFigureGround" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="#d4c49a" />
-              <stop offset="55%" stopColor="#a8b87a" />
-              <stop offset="100%" stopColor="#6d8a52" />
-            </linearGradient>
+            <radialGradient id="jmpFigureFeetShadow" cx="50%" cy="45%" r="65%">
+              <stop offset="0%" stopColor="rgb(120, 80, 20)" stopOpacity="0.25" />
+              <stop offset="55%" stopColor="rgb(120, 80, 20)" stopOpacity="0.08" />
+              <stop offset="100%" stopColor="rgb(120, 80, 20)" stopOpacity="0" />
+            </radialGradient>
             <filter id="jmpFigureWarmGlow" x="-80%" y="-80%" width="260%" height="260%">
               <feGaussianBlur in="SourceGraphic" stdDeviation="9" result="b" />
               <feMerge>
@@ -323,11 +322,18 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
             <circle r="3.2" fill="#e8d5a3" stroke="#8B6914" strokeWidth="0.5" />
           </g>
 
-          {/* Dove — faint silhouette, upper right */}
-          <g transform={`translate(252, ${mapViewBoxH * 0.065})`} opacity={0.48}>
-            <ellipse cx="0" cy="1" rx="9" ry="4.5" fill="rgba(110, 82, 58, 0.38)" />
-            <circle cx="-7" cy="1" r="3.2" fill="rgba(95, 72, 52, 0.42)" />
-            <path d="M8,1 Q12,0 14,2" fill="none" stroke="rgba(85, 62, 45, 0.35)" strokeWidth="0.5" strokeLinecap="round" />
+          {/* Minimal dove — soft white/cream, spread wings, upper right */}
+          <g transform={`translate(262, ${mapViewBoxH * 0.072}) scale(0.52)`} opacity={0.95}>
+            <path
+              fill="rgba(255, 255, 255, 0.6)"
+              d="M-6,4 Q-20,-14 -32,-2 Q-18,10 -6,6 Q-5,5 -6,4 Z"
+            />
+            <path
+              fill="rgba(255, 255, 255, 0.6)"
+              d="M6,4 Q20,-14 32,-2 Q18,10 6,6 Q5,5 6,4 Z"
+            />
+            <ellipse cx="0" cy="5.5" rx="6" ry="3.8" fill="rgba(255, 255, 255, 0.6)" />
+            <circle cx="-12" cy="1" r="4.2" fill="rgba(255, 255, 255, 0.6)" />
           </g>
 
           {/* Cross near Jerusalem */}
