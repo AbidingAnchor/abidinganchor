@@ -43,8 +43,8 @@
   --label-text: rgba(255,255,255,0.70);
   --section-title: #D4A843;
   /* Card chrome: fixed dark glass (time-of-day sky is separate) */
-  --card-parchment: rgba(15, 20, 50, 0.72);
-  --card-parchment-hover: rgba(22, 28, 62, 0.82);
+  --card-parchment: rgba(15, 20, 45, 0.9);
+  --card-parchment-hover: rgba(22, 28, 58, 0.95);
   --card-parchment-ink: rgba(255, 255, 255, 0.95);
   --card-parchment-ink-muted: rgba(255, 255, 255, 0.72);
 }
@@ -93,8 +93,8 @@
   --label-text: #2a3f6f;
   --section-title: #8B6200;
 
-  --card-parchment: rgba(15, 20, 50, 0.72);
-  --card-parchment-hover: rgba(22, 28, 62, 0.82);
+  --card-parchment: rgba(15, 20, 45, 0.9);
+  --card-parchment-hover: rgba(22, 28, 58, 0.95);
   --card-parchment-ink: rgba(255, 255, 255, 0.95);
   --card-parchment-ink-muted: rgba(255, 255, 255, 0.72);
 
@@ -139,8 +139,8 @@
   --label-text: rgba(255,225,195,0.75);
   --section-title: #F4C060;
 
-  --card-parchment: rgba(15, 20, 50, 0.72);
-  --card-parchment-hover: rgba(22, 28, 62, 0.82);
+  --card-parchment: rgba(15, 20, 45, 0.9);
+  --card-parchment-hover: rgba(22, 28, 58, 0.95);
   --card-parchment-ink: rgba(255, 255, 255, 0.95);
   --card-parchment-ink-muted: rgba(255, 255, 255, 0.72);
 }
@@ -189,7 +189,7 @@ body {
 
 /* Home: dark glass panels (same in every time-of-day theme) */
 .home-gold-glass {
-  background: rgba(15, 20, 50, 0.72);
+  background: rgba(15, 20, 45, 0.9);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   color: var(--card-parchment-ink);
@@ -704,7 +704,7 @@ body {
   to { opacity: 1; }
 }
 .app-card {
-  background: rgba(15, 20, 50, 0.72);
+  background: rgba(15, 20, 45, 0.9);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   color: var(--card-parchment-ink);
@@ -741,7 +741,7 @@ body {
 
 /* Literal blur() — some engines mishandle var() inside filter/backdrop-filter */
 .glass-panel {
-  background: rgba(15, 20, 50, 0.72);
+  background: rgba(15, 20, 45, 0.9);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   color: var(--card-parchment-ink);
@@ -758,7 +758,7 @@ body {
 }
 
 .glass-panel:hover {
-  background: rgba(22, 28, 62, 0.82);
+  background: rgba(22, 28, 58, 0.95);
   border-color: rgba(212, 168, 67, 0.42);
 }
 
@@ -1053,7 +1053,7 @@ body {
   pointer-events: none;
 }
 .glass {
-  background: rgba(15, 20, 50, 0.72);
+  background: rgba(15, 20, 45, 0.9);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   color: var(--card-parchment-ink);
@@ -1068,7 +1068,7 @@ body {
   --streak-text: var(--card-parchment-ink);
 }
 .glass-strong {
-  background: rgba(15, 20, 50, 0.72);
+  background: rgba(15, 20, 45, 0.9);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
@@ -1083,7 +1083,7 @@ body {
 }
 
 .glass-card {
-  background: rgba(15, 20, 50, 0.72);
+  background: rgba(15, 20, 45, 0.9);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   color: var(--card-parchment-ink);
@@ -1099,7 +1099,7 @@ body {
 }
 
 .glass-card:hover {
-  background: rgba(22, 28, 62, 0.82);
+  background: rgba(22, 28, 58, 0.95);
   border-color: rgba(212, 168, 67, 0.42);
 }
 
@@ -1287,7 +1287,7 @@ body {
 [data-theme="day"] .glass:not(.glass-nav-bar):not(.glass-scrim),
 [data-theme="day"] .app-card,
 [data-theme="day"] .home-gold-glass {
-  background: rgba(15, 20, 50, 0.72) !important;
+  background: rgba(15, 20, 45, 0.9) !important;
   backdrop-filter: blur(14px) !important;
   -webkit-backdrop-filter: blur(14px) !important;
   border-color: rgba(212, 168, 67, 0.3) !important;
@@ -1298,7 +1298,7 @@ body {
 [data-theme="day"] .glass-panel:hover,
 [data-theme="day"] .glass-card:hover,
 [data-theme="day"] .home-gold-glass:hover {
-  background: rgba(22, 28, 62, 0.82) !important;
+  background: rgba(22, 28, 58, 0.95) !important;
   border-color: rgba(212, 168, 67, 0.42) !important;
 }
 

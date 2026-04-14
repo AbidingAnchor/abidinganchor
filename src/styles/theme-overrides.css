@@ -199,28 +199,19 @@
   color: white !important;
 }
 
-/* ── CARDS: always dark navy glass + gold border + light text (all time-of-day themes) ── */
-.app-card,
-.glass-panel,
-.glass-card,
-.glass-strong,
-.home-gold-glass,
-.home-tool-tile,
-.glass:not(.glass-nav-bar):not(.glass-scrim):not([class*="rounded-full"]) {
-  background: rgba(15, 20, 50, 0.72) !important;
+/* ── Homepage tiles only: beat day-theme / Tailwind bleed (do not target .glass-panel app-wide) ── */
+.home-page .home-gold-glass,
+.home-page .home-tool-tile {
+  background: rgba(15, 20, 45, 0.9) !important;
   backdrop-filter: blur(14px) !important;
   -webkit-backdrop-filter: blur(14px) !important;
   border-color: rgba(212, 168, 67, 0.3) !important;
-  color: #fff !important;
+  color: rgba(255, 255, 255, 0.95) !important;
 }
 
-.app-card:hover,
-.glass-panel:hover,
-.glass-card:hover,
-.home-gold-glass:hover,
-.home-tool-tile:hover,
-.glass:not(.glass-nav-bar):not(.glass-scrim):not([class*="rounded-full"]):hover {
-  background: rgba(22, 28, 62, 0.85) !important;
+.home-page .home-gold-glass:hover,
+.home-page .home-tool-tile:hover {
+  background: rgba(22, 28, 58, 0.95) !important;
   border-color: rgba(212, 168, 67, 0.42) !important;
 }
 

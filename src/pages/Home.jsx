@@ -271,7 +271,7 @@ function Home({ onOpenWorship, worshipStatus }) {
     <>
       <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: 'transparent', paddingBottom: '120px', paddingTop: '60px' }}>
         <div
-          className="content-scroll"
+          className="content-scroll home-page"
           style={{
             padding: '0 16px',
             maxWidth: '680px',
