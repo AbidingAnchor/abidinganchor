@@ -9,6 +9,15 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { userStorageKey } from '../utils/userStorage'
 
+const JOURNEY_NIGHT_CARD_STYLE = {
+  background: 'rgba(8, 20, 50, 0.75)',
+  border: '1px solid #D4A843',
+  borderRadius: '12px',
+  color: 'white',
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
+}
+
 function readJson(key, fallback) {
   try {
     const raw = localStorage.getItem(key)
@@ -246,9 +255,7 @@ export default function FaithJourney() {
           <div
             className="fj-hub-streak"
             style={{
-            background: 'rgba(212,168,67,0.07)',
-            border: '1px solid rgba(212,168,67,0.18)',
-            borderRadius: '16px',
+            ...JOURNEY_NIGHT_CARD_STYLE,
             padding: '12px 14px',
             marginBottom: '24px',
             display: 'flex',
@@ -298,18 +305,13 @@ export default function FaithJourney() {
               width: '100%',
               marginBottom: '24px',
               padding: '14px 16px',
-              borderRadius: '14px',
-              border: '1px solid rgba(212,168,67,0.35)',
-              background:
-                answeredPrayersCount > 0
-                  ? 'linear-gradient(125deg, rgba(95,55,145,0.35) 0%, rgba(12,14,32,0.85) 45%, rgba(212,168,67,0.12) 100%)'
-                  : 'rgba(255,255,255,0.03)',
+              ...JOURNEY_NIGHT_CARD_STYLE,
               cursor: 'pointer',
               textAlign: 'left',
               display: 'flex',
               alignItems: 'center',
               gap: '12px',
-              boxShadow: answeredPrayersCount > 0 ? '0 4px 20px rgba(45,28,90,0.35)' : 'none',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.25)',
             }}
           >
             <span
@@ -394,9 +396,7 @@ export default function FaithJourney() {
           }}>
             <div style={{
               flex: 1,
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.06)',
-              borderRadius: '12px',
+              ...JOURNEY_NIGHT_CARD_STYLE,
               padding: '14px',
               textAlign: 'center'
             }}>
@@ -405,9 +405,7 @@ export default function FaithJourney() {
             </div>
             <div style={{
               flex: 1,
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.06)',
-              borderRadius: '12px',
+              ...JOURNEY_NIGHT_CARD_STYLE,
               padding: '14px',
               textAlign: 'center'
             }}>
@@ -416,9 +414,7 @@ export default function FaithJourney() {
             </div>
             <div style={{
               flex: 1,
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.06)',
-              borderRadius: '12px',
+              ...JOURNEY_NIGHT_CARD_STYLE,
               padding: '14px',
               textAlign: 'center'
             }}>
@@ -429,9 +425,7 @@ export default function FaithJourney() {
 
           {/* Verse of the Day */}
           <div style={{
-            background: 'rgba(212,168,67,0.06)',
-            border: '1px solid rgba(212,168,67,0.15)',
-            borderRadius: '14px',
+            ...JOURNEY_NIGHT_CARD_STYLE,
             padding: '16px',
             position: 'relative',
             overflow: 'hidden',

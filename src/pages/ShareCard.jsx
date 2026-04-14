@@ -442,7 +442,11 @@ export default function ShareCard() {
         <button 
           onClick={handleSaveToGallery}
           disabled={generating}
-          className="w-full py-3 rounded-xl border border-[#D4A843]/50 text-[#D4A843] font-semibold hover:bg-[#D4A843]/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-3 rounded-xl border-none text-[#0a1a3e] font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{
+            background: 'linear-gradient(135deg, #D4A843, #f0c060)',
+            borderRadius: '12px',
+          }}
         >
           Save to Gallery
         </button>

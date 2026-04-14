@@ -86,9 +86,13 @@ export default function Header() {
         background: 'var(--nav-bg)',
       }}
     >
-      {/* Profile avatar */}
+      {/* Profile avatar (settings trigger) */}
       {displayName ? (
-        <div
+        <button
+          type="button"
+          onClick={() => navigate('/settings')}
+          aria-label={t('header.settings')}
+          title={t('header.settings')}
           key={localAvatarUrl || 'no-avatar'}
           style={{
             width: '36px',
@@ -101,7 +105,9 @@ export default function Header() {
             alignItems: 'center',
             justifyContent: 'center',
             boxShadow: '0 2px 8px rgba(212, 168, 67, 0.3)',
-            border: rawAvatarUrl ? '2px solid rgba(212, 168, 67, 0.4)' : 'none',
+            border: '2px solid #D4A843',
+            cursor: 'pointer',
+            padding: 0,
           }}
         >
           <span
@@ -137,7 +143,7 @@ export default function Header() {
               }}
             />
           ) : null}
-        </div>
+        </button>
       ) : (
         <div style={{ width: '36px' }} />
       )}
@@ -156,35 +162,7 @@ export default function Header() {
         {currentTitle}
       </h1>
 
-      {/* Settings icon */}
-      <button
-        type="button"
-        onClick={() => navigate('/settings')}
-        style={{
-          width: '36px',
-          height: '36px',
-          borderRadius: '50%',
-          background: 'var(--btn-secondary-bg)',
-          border: '1px solid var(--glass-border-hover)',
-          color: '#fff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '16px',
-          cursor: 'pointer',
-          transition: 'all 0.2s ease',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'var(--btn-secondary-bg)'
-          e.currentTarget.style.borderColor = 'var(--glass-border-hover)'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'var(--btn-secondary-bg)'
-          e.currentTarget.style.borderColor = 'var(--glass-border-hover)'
-        }}
-      >
-        ⚙️
-      </button>
+      <div style={{ width: '36px', height: '36px' }} aria-hidden />
     </div>
   )
 }

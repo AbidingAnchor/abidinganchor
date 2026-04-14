@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { WORSHIP_TRACKS } from '../data/worshipTracks'
 import { getActiveStorageUserId, userStorageKey } from '../utils/userStorage'
@@ -319,8 +319,6 @@ export function worshipStartPlaybackFromOverlay() {
   void worshipLoadAndPlay(worshipState.currentIndex)
 }
 
-const SKY_STAR_COUNT = 92
-
 export default function WorshipMode() {
   const { user } = useAuth()
   const tracks = WORSHIP_TRACKS
@@ -358,20 +356,7 @@ export default function WorshipMode() {
 
   const current = tracks[currentIndex] ?? tracks[0]
   const gold = '#D4A843'
-  const goldMuted = 'rgba(212, 168, 67, 0.35)'
-
-  const skyStars = useMemo(
-    () =>
-      Array.from({ length: SKY_STAR_COUNT }, (_, i) => ({
-        id: i,
-        left: Math.random() * 100,
-        top: Math.random() * 100,
-        size: 1 + Math.random() * 2.2,
-        duration: 5 + Math.random() * 7,
-        delay: Math.random() * 14,
-      })),
-    [],
-  )
+  const goldMuted = 'rgba(212, 168, 67, 0.45)'
 
   return (
     <>
@@ -386,31 +371,6 @@ export default function WorshipMode() {
         alignItems: 'stretch',
       }}
     >
-      <div className="worship-sky" aria-hidden>
-        <div className="worship-sky-gradient" />
-        <div className="worship-nebula worship-nebula--a" />
-        <div className="worship-nebula worship-nebula--b" />
-        <div className="worship-nebula worship-nebula--c" />
-        {skyStars.map((s) => (
-          <span
-            key={s.id}
-            className="worship-star"
-            style={{
-              '--star-left': `${s.left}%`,
-              '--star-top': `${s.top}%`,
-              '--star-size': `${s.size}px`,
-              '--tw-dur': `${s.duration}s`,
-              '--tw-delay': `${s.delay}s`,
-            }}
-          />
-        ))}
-        <span className="worship-shooting worship-shooting--1" />
-        <span className="worship-shooting worship-shooting--2" />
-        <span className="worship-shooting worship-shooting--3" />
-        <span className="worship-shooting worship-shooting--4" />
-        <span className="worship-shooting worship-shooting--5" />
-      </div>
-
       <div
         style={{
           position: 'relative',
@@ -450,7 +410,7 @@ export default function WorshipMode() {
           textAlign: 'center',
           paddingBottom: '14px',
           marginBottom: '12px',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          borderBottom: '1px solid var(--card-border)',
         }}
       >
         <div style={{ fontSize: '36px', lineHeight: 1 }} aria-hidden>
@@ -473,7 +433,7 @@ export default function WorshipMode() {
             margin: '8px 0 0',
             fontSize: '14px',
             fontWeight: 500,
-            color: 'rgba(255,255,255,0.5)',
+            color: 'var(--text-secondary)',
             letterSpacing: '0.04em',
           }}
         >
@@ -489,7 +449,7 @@ export default function WorshipMode() {
       <section style={{ flex: '0 0 auto', width: '100%', margin: 0, padding: 0 }}>
         <p
           style={{
-            color: 'rgba(255,255,255,0.45)',
+            color: 'var(--text-secondary)',
             fontSize: '11px',
             fontWeight: 600,
             letterSpacing: '0.1em',
@@ -522,9 +482,9 @@ export default function WorshipMode() {
                     textAlign: 'left',
                     padding: '14px 16px',
                     borderRadius: '12px',
-                    border: active ? `2px solid ${gold}` : '1px solid rgba(255,255,255,0.08)',
-                    background: active ? 'rgba(212, 168, 67, 0.18)' : 'rgba(255,255,255,0.04)',
-                    color: active ? gold : 'rgba(255,255,255,0.88)',
+                    border: active ? `2px solid ${gold}` : '1px solid var(--card-border)',
+                    background: active ? 'rgba(212, 168, 67, 0.18)' : 'var(--card-bg)',
+                    color: active ? gold : 'var(--text-primary)',
                     fontSize: '15px',
                     fontWeight: active ? 700 : 500,
                     cursor: 'pointer',
@@ -554,8 +514,10 @@ export default function WorshipMode() {
         zIndex: 9500,
         padding: '10px 14px 12px',
         boxSizing: 'border-box',
-        background: 'rgba(8, 10, 26, 0.55)',
-        border: `1px solid ${goldMuted}`,
+        background: 'var(--card-bg)',
+        border: `1px solid var(--card-border)`,
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
         borderRadius: '18px',
         display: 'flex',
         flexDirection: 'column',
@@ -620,7 +582,7 @@ export default function WorshipMode() {
             height: '52px',
             borderRadius: '50%',
             border: `1px solid ${goldMuted}`,
-            background: 'rgba(255,255,255,0.08)',
+            background: 'var(--btn-secondary-bg)',
             color: gold,
             fontSize: '22px',
             cursor: 'pointer',
@@ -655,7 +617,7 @@ export default function WorshipMode() {
             height: '52px',
             borderRadius: '50%',
             border: `1px solid ${goldMuted}`,
-            background: 'rgba(255,255,255,0.08)',
+            background: 'var(--btn-secondary-bg)',
             color: gold,
             fontSize: '22px',
             cursor: 'pointer',

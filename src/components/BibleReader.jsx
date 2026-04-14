@@ -777,7 +777,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
               style={{
                 position: 'fixed',
                 inset: 0,
-                zIndex: 9499,
+                zIndex: 10019,
                 background: 'transparent',
               }}
               aria-hidden
@@ -785,20 +785,23 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
             <div
               style={{
                 position: 'fixed',
-                top: translationDropdownRect.top,
+                top: `max(${translationDropdownRect.top}px, calc(env(safe-area-inset-top, 0px) + 8px))`,
                 left: translationDropdownRect.left,
                 width: 200,
                 boxSizing: 'border-box',
-                zIndex: 9500,
-                background: 'rgba(10, 15, 40, 0.97)',
-                border: '1px solid rgba(212, 168, 67, 0.24)',
-                borderRadius: '16px',
+                zIndex: 10020,
+                background: 'rgba(8, 20, 50, 0.85)',
+                border: '1px solid #D4A843',
+                borderRadius: '12px',
                 padding: '10px 8px 8px',
-                maxHeight: `min(200px, calc(100dvh - 16px - ${translationDropdownRect.top}px))`,
+                maxHeight: 'min(200px, calc(100dvh - env(safe-area-inset-top, 0px) - 16px))',
                 overflowY: 'auto',
                 overflowX: 'hidden',
                 pointerEvents: 'auto',
                 boxShadow: '0 18px 40px rgba(0,0,0,0.45)',
+                color: 'white',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
               }}
               role="listbox"
               aria-label={t('bible.translation')}

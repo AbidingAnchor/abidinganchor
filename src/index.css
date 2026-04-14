@@ -736,8 +736,8 @@ body {
 .worship-volume-slider::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 2px;
-  background: rgba(15, 18, 40, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(212, 168, 67, 0.35);
+  border: 1px solid rgba(212, 168, 67, 0.55);
 }
 
 .worship-volume-slider::-webkit-slider-thumb {
@@ -754,8 +754,8 @@ body {
 .worship-volume-slider::-moz-range-track {
   height: 4px;
   border-radius: 2px;
-  background: rgba(15, 18, 40, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(212, 168, 67, 0.35);
+  border: 1px solid rgba(212, 168, 67, 0.55);
 }
 
 .worship-volume-slider::-moz-range-thumb {
