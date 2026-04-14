@@ -6,11 +6,17 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
+      document.body.style.touchAction = 'none'
+      document.body.style.overscrollBehavior = 'none'
     } else {
       document.body.style.overflow = ''
+      document.body.style.touchAction = ''
+      document.body.style.overscrollBehavior = ''
     }
     return () => {
       document.body.style.overflow = ''
+      document.body.style.touchAction = ''
+      document.body.style.overscrollBehavior = ''
     }
   }, [isOpen])
 
@@ -20,18 +26,22 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
     <>
       {/* Backdrop */}
       <div
-        onClick={onClose}
+        onPointerUp={onClose}
         style={{
           position: 'fixed',
           inset: 0,
           background: 'rgba(0, 0, 0, 0.6)',
           zIndex: 10000,
           animation: 'fadeIn 0.2s ease',
+          pointerEvents: 'auto',
+          touchAction: 'manipulation',
         }}
       />
 
       {/* Bottom Sheet */}
       <div
+        onClick={(e) => e.stopPropagation()}
+        onPointerUp={(e) => e.stopPropagation()}
         style={{
           position: 'fixed',
           bottom: 0,
@@ -45,8 +55,12 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
           paddingLeft: 'env(safe-area-inset-left, 0px)',
           paddingRight: 'env(safe-area-inset-right, 0px)',
           animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-          maxHeight: '70vh',
+          maxHeight: '76vh',
           overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain',
+          pointerEvents: 'auto',
+          touchAction: 'pan-y',
         }}
       >
         {/* Handle bar */}
@@ -81,7 +95,14 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
             {t('nav.more')}
           </h2>
           <button
-            onClick={onClose}
+            type="button"
+            onPointerUp={onClose}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                onClose()
+              }
+            }}
             style={{
               width: '32px',
               height: '32px',
@@ -95,6 +116,7 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
               fontSize: '18px',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
+              touchAction: 'manipulation',
             }}
           >
             ✕
@@ -106,7 +128,14 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
           {options.map((option, index) => (
             <div key={option.path}>
               <button
-                onClick={() => onOptionPress(option.path)}
+                type="button"
+                onPointerUp={() => onOptionPress(option.path)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    onOptionPress(option.path)
+                  }
+                }}
                 style={{
                   width: '100%',
                   display: 'flex',
@@ -119,14 +148,8 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                   marginBottom: index < options.length - 1 ? '8px' : '0',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--more-menu-item-hover)'
-                  e.currentTarget.style.borderColor = 'var(--gold-border)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'var(--more-menu-item-bg)'
-                  e.currentTarget.style.borderColor = 'var(--glass-border)'
+                  touchAction: 'manipulation',
+                  WebkitTapHighlightColor: 'transparent',
                 }}
               >
                 <span

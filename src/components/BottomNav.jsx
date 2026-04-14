@@ -93,6 +93,7 @@ export default function BottomNav() {
         {mainTabs.map((tab) => (
           <button
             key={tab.path}
+            type="button"
             onClick={() => handleTabPress(tab)}
             style={{
               flex: 1,
