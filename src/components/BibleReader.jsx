@@ -569,6 +569,9 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
 
             {/* Chapter Navigation - Normal Flow */}
             <div className="glass-panel" style={{
+              background: 'rgba(15, 20, 45, 0.75)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
               padding: '16px 20px',
               display: 'flex',
               justifyContent: 'space-between',
