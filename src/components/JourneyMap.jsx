@@ -322,19 +322,16 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
             <circle r="3.2" fill="#e8d5a3" stroke="#8B6914" strokeWidth="0.5" />
           </g>
 
-          {/* Minimal dove — soft white/cream, spread wings, upper right */}
-          <g transform={`translate(262, ${mapViewBoxH * 0.072}) scale(0.52)`} opacity={0.95}>
-            <path
-              fill="rgba(255, 255, 255, 0.6)"
-              d="M-6,4 Q-20,-14 -32,-2 Q-18,10 -6,6 Q-5,5 -6,4 Z"
-            />
-            <path
-              fill="rgba(255, 255, 255, 0.6)"
-              d="M6,4 Q20,-14 32,-2 Q18,10 6,6 Q5,5 6,4 Z"
-            />
-            <ellipse cx="0" cy="5.5" rx="6" ry="3.8" fill="rgba(255, 255, 255, 0.6)" />
-            <circle cx="-12" cy="1" r="4.2" fill="rgba(255, 255, 255, 0.6)" />
-          </g>
+          {/* Dove — asset tinted to match parchment ink */}
+          <image
+            href="/dove.svg"
+            x={MAP_VIEWBOX_W - 55 - 10}
+            y={mapViewBoxH * 0.032}
+            width={55}
+            height={55}
+            pointerEvents="none"
+            style={{ filter: 'sepia(1) saturate(0.6) opacity(0.65)' }}
+          />
 
           {/* Cross near Jerusalem */}
           {jerusalemStop ? (
@@ -344,12 +341,16 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
             </g>
           ) : null}
 
-          {/* Anchor — Abiding Anchor, lower map */}
-          <g transform={`translate(${MAP_VIEWBOX_W / 2}, ${mapViewBoxH - 26})`} opacity={0.55}>
-            <circle cx="0" cy="-9" r="5.5" fill="none" stroke="#8B6914" strokeWidth="1.05" />
-            <line x1="0" y1="-3.5" x2="0" y2="9" stroke="#8B6914" strokeWidth="1.05" strokeLinecap="round" />
-            <path d="M-9,6 Q0,12.5 9,6" fill="none" stroke="#8B6914" strokeWidth="1.05" strokeLinecap="round" />
-          </g>
+          {/* Anchor — bottom center; drawn before figures so it reads as parchment stamp */}
+          <image
+            href="/anchor.svg"
+            x={MAP_VIEWBOX_W / 2 - 22.5}
+            y={mapViewBoxH - 52}
+            width={45}
+            height={45}
+            pointerEvents="none"
+            style={{ filter: 'sepia(1) saturate(0.6) opacity(0.55)' }}
+          />
 
           {stops.map((stop, i) => {
             const unlocked = i < unlockedCount
