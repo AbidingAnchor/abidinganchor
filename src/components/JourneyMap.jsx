@@ -32,9 +32,9 @@ const PROGRESS_IMG_H = 1536
 /** Map marker height in SVG user units (~80px when viewBox maps ~1:1). Popup uses its own fixed size. */
 const PROGRESS_MARKER_HEIGHT = 80
 /** Padding between the bottom of the node dot and the top of the figure. */
-const PROGRESS_MARKER_GAP = 8
-/** Extra offset below the dot so figures clear the label and the path to the next stop. */
-const PROGRESS_MARKER_NUDGE_DOWN = 12
+const PROGRESS_MARKER_GAP = 2
+/** Small offset so art clears the dot edge; kept tight so figures read “at” the stop (e.g. Bethlehem). */
+const PROGRESS_MARKER_NUDGE_DOWN = 3
 /** Padding below the progress figure (and map content) so the card doesn’t feel cramped. */
 const MAP_VIEWBOX_BOTTOM_PAD = 16
 const GEO_Y_MIN = Math.min(...JOURNEY_MAP_GEOMETRY.map((s) => s.y))
@@ -332,7 +332,7 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
             width={55}
             height={55}
             pointerEvents="none"
-            style={{ filter: 'sepia(1) saturate(0.6) opacity(0.65)' }}
+            style={{ filter: 'sepia(0.3) saturate(0.5) opacity(0.75)' }}
           />
 
           {/* Cross near Jerusalem */}
@@ -351,7 +351,7 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
             width={45}
             height={45}
             pointerEvents="none"
-            style={{ filter: 'sepia(1) saturate(0.6) opacity(0.55)' }}
+            style={{ filter: 'sepia(1) saturate(0.3) opacity(0.35)' }}
           />
 
           {stops.map((stop, i) => {
