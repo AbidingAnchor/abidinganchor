@@ -95,7 +95,7 @@ export default function DailyEncounterCard({
             margin: '0 0 14px',
             fontSize: '14px',
             lineHeight: 1.55,
-            color: 'rgba(40, 32, 22, 0.88)',
+            color: 'rgba(255, 255, 255, 0.88)',
             textAlign: 'center',
             fontWeight: 500,
           }}
@@ -170,7 +170,7 @@ export default function DailyEncounterCard({
           {presence.completedToday ? (
             <div className="text-center">
               <p className="text-sm font-semibold text-[#8B6200] mb-1">{t('home.presenceDoneLine')}</p>
-              <p className="text-xs text-stone-600 mb-0">
+              <p className="text-xs text-white/75 mb-0">
                 {presence.justCompleted ? t('home.presenceEncourage') : t('home.presenceComeBack')}
               </p>
             </div>
@@ -179,11 +179,11 @@ export default function DailyEncounterCard({
               <button
                 type="button"
                 onClick={onPresenceComplete}
-                className="w-full rounded-lg border border-[#D4A843]/45 bg-[rgba(255,255,255,0.55)] py-2.5 px-3 text-sm font-semibold text-[#1c1812] shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] transition hover:border-[#D4A843]/65 hover:bg-[rgba(212,168,67,0.12)] hover:shadow-[0_0_18px_rgba(212,168,67,0.15)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D4A843]/40"
+                className="w-full rounded-lg border border-[#D4A843]/45 bg-[rgba(255,255,255,0.1)] py-2.5 px-3 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition hover:border-[#D4A843]/65 hover:bg-[rgba(212,168,67,0.18)] hover:shadow-[0_0_18px_rgba(212,168,67,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D4A843]/40"
               >
                 {t('home.presenceCta')}
               </button>
-              <p className="text-[10px] text-center text-stone-500 mt-2 mb-0 leading-snug">{t('home.presenceSubtleHint')}</p>
+              <p className="text-[10px] text-center text-white/55 mt-2 mb-0 leading-snug">{t('home.presenceSubtleHint')}</p>
             </>
           )}
         </div>
@@ -192,19 +192,19 @@ export default function DailyEncounterCard({
           <button
             type="button"
             onClick={onShareImage}
-            className="inline-flex items-center gap-1 border-0 bg-transparent p-0 text-xs font-medium text-stone-600 hover:text-stone-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D4A843]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded"
+            className="inline-flex items-center gap-1 border-0 bg-transparent p-0 text-xs font-medium text-white/75 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D4A843]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded"
             aria-label={t('home.shareAsImage')}
           >
             <span aria-hidden>📤</span>
             {t('home.encounterShareLink')}
           </button>
-          <span className="text-stone-400 select-none" aria-hidden>
+          <span className="text-white/40 select-none" aria-hidden>
             •
           </span>
           <button
             type="button"
             onClick={onQuickSave}
-            className="inline-flex items-center gap-1 border-0 bg-transparent p-0 text-xs font-medium text-stone-600 hover:text-stone-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D4A843]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded"
+            className="inline-flex items-center gap-1 border-0 bg-transparent p-0 text-xs font-medium text-white/75 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D4A843]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded"
             aria-label={t('home.encounterQuickSave')}
           >
             <span aria-hidden>🔖</span>
@@ -223,18 +223,18 @@ export default function DailyEncounterCard({
           min-height: 64px;
           padding: 10px 6px;
           border-radius: 12px;
-          border: 1px solid rgba(212, 168, 67, 0.4);
-          background: rgba(255, 255, 255, 0.5);
-          color: rgba(28, 24, 18, 0.92);
+          border: 1px solid rgba(212, 168, 67, 0.35);
+          background: rgba(255, 255, 255, 0.08);
+          color: rgba(255, 255, 255, 0.95);
           font-size: 12px;
           font-weight: 600;
           cursor: pointer;
           transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
         }
         .daily-encounter-action-btn:hover {
-          border-color: rgba(212, 168, 67, 0.65);
-          box-shadow: 0 0 16px rgba(212, 168, 67, 0.12);
-          background: rgba(212, 168, 67, 0.12);
+          border-color: rgba(212, 168, 67, 0.55);
+          box-shadow: 0 0 16px rgba(212, 168, 67, 0.15);
+          background: rgba(212, 168, 67, 0.14);
         }
         .daily-encounter-action-emoji {
           font-size: 20px;

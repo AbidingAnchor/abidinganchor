@@ -5,7 +5,8 @@
 @tailwind utilities;
 
 :root,
-[data-theme="celestial"] {
+[data-theme="celestial"],
+[data-theme="night"] {
   --sat: env(safe-area-inset-top, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
   --glass-bg: rgba(15, 23, 42, 0.45);
@@ -41,11 +42,11 @@
   --heading-text: rgba(255,255,255,0.95);
   --label-text: rgba(255,255,255,0.70);
   --section-title: #D4A843;
-  /* Warm parchment for card surfaces (see .app-card, .glass-panel, .home-gold-glass) */
-  --card-parchment: #f5edd6;
-  --card-parchment-hover: #ebe3cf;
-  --card-parchment-ink: #1c1812;
-  --card-parchment-ink-muted: rgba(28, 24, 18, 0.72);
+  /* Card chrome: fixed dark glass (time-of-day sky is separate) */
+  --card-parchment: rgba(15, 20, 50, 0.72);
+  --card-parchment-hover: rgba(22, 28, 62, 0.82);
+  --card-parchment-ink: rgba(255, 255, 255, 0.95);
+  --card-parchment-ink-muted: rgba(255, 255, 255, 0.72);
 }
 
 [data-theme="day"] {
@@ -92,10 +93,10 @@
   --label-text: #2a3f6f;
   --section-title: #8B6200;
 
-  --card-parchment: #f5edd6;
-  --card-parchment-hover: #ebe3cf;
-  --card-parchment-ink: #1c1812;
-  --card-parchment-ink-muted: rgba(28, 24, 18, 0.72);
+  --card-parchment: rgba(15, 20, 50, 0.72);
+  --card-parchment-hover: rgba(22, 28, 62, 0.82);
+  --card-parchment-ink: rgba(255, 255, 255, 0.95);
+  --card-parchment-ink-muted: rgba(255, 255, 255, 0.72);
 
   --glass-nav-blur: 20px;
   --glass-scrim: rgba(200, 220, 240, 0.45);
@@ -138,10 +139,10 @@
   --label-text: rgba(255,225,195,0.75);
   --section-title: #F4C060;
 
-  --card-parchment: #f5edd6;
-  --card-parchment-hover: #ebe3cf;
-  --card-parchment-ink: #1c1812;
-  --card-parchment-ink-muted: rgba(28, 24, 18, 0.72);
+  --card-parchment: rgba(15, 20, 50, 0.72);
+  --card-parchment-hover: rgba(22, 28, 62, 0.82);
+  --card-parchment-ink: rgba(255, 255, 255, 0.95);
+  --card-parchment-ink-muted: rgba(255, 255, 255, 0.72);
 }
 
 * {
@@ -186,17 +187,19 @@ body {
   background: transparent;
 }
 
-/* Home: warm parchment panels — readable on bright day sky */
+/* Home: dark glass panels (same in every time-of-day theme) */
 .home-gold-glass {
-  background: var(--card-parchment);
+  background: rgba(15, 20, 50, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   color: var(--card-parchment-ink);
   border: 1px solid rgba(212, 168, 67, 0.3);
   box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35);
   --text-primary: var(--card-parchment-ink);
   --text-secondary: var(--card-parchment-ink-muted);
-  --verse-text: #252018;
+  --verse-text: rgba(255, 255, 255, 0.95);
   --heading-text: var(--card-parchment-ink);
-  --label-text: rgba(28, 24, 18, 0.68);
+  --label-text: rgba(255, 255, 255, 0.72);
   --streak-text: var(--card-parchment-ink);
 }
 
@@ -701,29 +704,31 @@ body {
   to { opacity: 1; }
 }
 .app-card {
-  background: var(--card-parchment);
+  background: rgba(15, 20, 50, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   color: var(--card-parchment-ink);
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(212, 168, 67, 0.3);
   border-radius: 18px;
   box-shadow: var(--card-shadow, 0 4px 20px rgba(0, 0, 0, 0.08));
   padding: 20px;
   transition: border-color 0.3s ease;
   --text-primary: var(--card-parchment-ink);
   --text-secondary: var(--card-parchment-ink-muted);
-  --verse-text: #252018;
+  --verse-text: rgba(255, 255, 255, 0.95);
   --heading-text: var(--card-parchment-ink);
-  --label-text: rgba(28, 24, 18, 0.68);
+  --label-text: rgba(255, 255, 255, 0.72);
   --streak-text: var(--card-parchment-ink);
 }
 
 .app-card .app-input {
-  background: rgba(255, 255, 255, 0.75);
-  border-color: rgba(180, 150, 100, 0.45);
-  color: var(--card-parchment-ink);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(212, 168, 67, 0.35);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .app-card .app-input::placeholder {
-  color: rgba(28, 24, 18, 0.45);
+  color: rgba(255, 255, 255, 0.45);
 }
 
 /* Tailwind `text-white` on parchment surfaces — use ink for contrast */
@@ -736,23 +741,25 @@ body {
 
 /* Literal blur() — some engines mishandle var() inside filter/backdrop-filter */
 .glass-panel {
-  background: var(--card-parchment);
+  background: rgba(15, 20, 50, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   color: var(--card-parchment-ink);
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(212, 168, 67, 0.3);
   border-radius: 18px;
   box-shadow: var(--glass-shadow);
   transition: background 0.4s ease, border-color 0.4s ease;
   --text-primary: var(--card-parchment-ink);
   --text-secondary: var(--card-parchment-ink-muted);
-  --verse-text: #252018;
+  --verse-text: rgba(255, 255, 255, 0.95);
   --heading-text: var(--card-parchment-ink);
-  --label-text: rgba(28, 24, 18, 0.68);
+  --label-text: rgba(255, 255, 255, 0.72);
   --streak-text: var(--card-parchment-ink);
 }
 
 .glass-panel:hover {
-  background: var(--card-parchment-hover);
-  border-color: var(--glass-border-hover);
+  background: rgba(22, 28, 62, 0.82);
+  border-color: rgba(212, 168, 67, 0.42);
 }
 
 .glass-nav-bar {
@@ -1046,39 +1053,54 @@ body {
   pointer-events: none;
 }
 .glass {
-  background: var(--card-parchment);
+  background: rgba(15, 20, 50, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   color: var(--card-parchment-ink);
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(212, 168, 67, 0.3);
   border-radius: 18px;
   box-shadow: var(--card-shadow, 0 4px 20px rgba(0, 0, 0, 0.08));
   --text-primary: var(--card-parchment-ink);
   --text-secondary: var(--card-parchment-ink-muted);
-  --verse-text: #252018;
+  --verse-text: rgba(255, 255, 255, 0.95);
   --heading-text: var(--card-parchment-ink);
-  --label-text: rgba(28, 24, 18, 0.68);
+  --label-text: rgba(255, 255, 255, 0.72);
   --streak-text: var(--card-parchment-ink);
 }
 .glass-strong {
-  background: var(--card-parchment);
+  background: rgba(15, 20, 50, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* Compact gold pills (not full-width cards) */
+.glass[class*="rounded-full"] {
+  background: rgba(212, 168, 67, 0.18);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-color: rgba(212, 168, 67, 0.45);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .glass-card {
-  background: var(--card-parchment);
+  background: rgba(15, 20, 50, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   color: var(--card-parchment-ink);
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(212, 168, 67, 0.3);
   box-shadow: var(--glass-shadow);
   transition: background 0.4s ease, border-color 0.4s ease;
   --text-primary: var(--card-parchment-ink);
   --text-secondary: var(--card-parchment-ink-muted);
-  --verse-text: #252018;
+  --verse-text: rgba(255, 255, 255, 0.95);
   --heading-text: var(--card-parchment-ink);
-  --label-text: rgba(28, 24, 18, 0.68);
+  --label-text: rgba(255, 255, 255, 0.72);
   --streak-text: var(--card-parchment-ink);
 }
 
 .glass-card:hover {
-  background: var(--card-parchment-hover);
-  border-color: var(--glass-border-hover);
+  background: rgba(22, 28, 62, 0.82);
+  border-color: rgba(212, 168, 67, 0.42);
 }
 
 /* =========================
@@ -1259,33 +1281,34 @@ body {
   100% { transform: translateY(0.5%) scale(1.03) rotate(1deg); opacity: 0.28; }
 }
 
-/* ── DAY THEME FORCE OVERRIDES ── */
+/* ── DAY THEME: cards stay dark glass (do not force cream/parchment on glass surfaces) ── */
 [data-theme="day"] .glass-panel,
 [data-theme="day"] .glass-card,
-[data-theme="day"] .glass {
-  background: var(--card-parchment) !important;
-  border: 1px solid rgba(212, 168, 67, 0.25) !important;
-  box-shadow: 
-    0 8px 40px rgba(180, 130, 40, 0.18),
-    0 2px 8px rgba(255, 200, 80, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.60) !important;
+[data-theme="day"] .glass:not(.glass-nav-bar):not(.glass-scrim),
+[data-theme="day"] .app-card,
+[data-theme="day"] .home-gold-glass {
+  background: rgba(15, 20, 50, 0.72) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border-color: rgba(212, 168, 67, 0.3) !important;
+  box-shadow: var(--glass-shadow) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
 }
 
 [data-theme="day"] .glass-panel:hover,
-[data-theme="day"] .glass-card:hover {
-  background: var(--card-parchment-hover) !important;
-  border-color: rgba(212, 168, 67, 0.45) !important;
-  box-shadow:
-    0 12px 48px rgba(180, 130, 40, 0.22),
-    0 4px 12px rgba(255, 200, 80, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.70) !important;
+[data-theme="day"] .glass-card:hover,
+[data-theme="day"] .home-gold-glass:hover {
+  background: rgba(22, 28, 62, 0.82) !important;
+  border-color: rgba(212, 168, 67, 0.42) !important;
 }
 
 [data-theme="day"] .glass-panel *,
 [data-theme="day"] .glass-card *,
-[data-theme="day"] .glass * {
-  --text-primary: #0f1e3d;
-  --text-secondary: #2a3f6f;
+[data-theme="day"] .glass:not(.glass-nav-bar):not(.glass-scrim) *,
+[data-theme="day"] .app-card *,
+[data-theme="day"] .home-gold-glass * {
+  --text-primary: rgba(255, 255, 255, 0.95);
+  --text-secondary: rgba(255, 255, 255, 0.75);
 }
 
 /* Force nav text visible in all themes */
