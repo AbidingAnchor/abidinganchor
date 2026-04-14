@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Routes, Route, useLocation, useNavigate } from 'react-router-dom'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import ReactGA from 'react-ga4'
 import Home from './pages/Home'
 import ReadingPlan from './pages/ReadingPlan'
 import Search from './pages/Search'
@@ -39,6 +40,7 @@ import { applyDailyStreakOnAppOpen } from './lib/dailyAppStreak'
 import { syncWeeklyActiveDays } from './hooks/useStreakTracker'
 
 const LEGAL_ACCEPTED_KEY = 'legalAccepted'
+const GA_MEASUREMENT_ID = 'G-1VXQ7114R7'
 
 function ProtectedRoute({ children }) {
   const { user, loading, suspendedInfo } = useAuth()
@@ -101,6 +103,8 @@ function AppShell() {
   const [hasAcceptedLegal, setHasAcceptedLegal] = useState(
     () => localStorage.getItem(LEGAL_ACCEPTED_KEY) === 'true',
   )
+  const gaInitializedRef = useRef(false)
+  const lastTrackedPathRef = useRef('')
   const worshipPlayback = useWorshipPlaybackState()
   const worshipStatus = useMemo(
     () => ({
@@ -165,6 +169,17 @@ function AppShell() {
     window.addEventListener('storage', syncLegalAccepted)
     return () => window.removeEventListener('storage', syncLegalAccepted)
   }, [])
+
+  useEffect(() => {
+    if (!gaInitializedRef.current) {
+      ReactGA.initialize(GA_MEASUREMENT_ID)
+      gaInitializedRef.current = true
+    }
+    const page = `${location.pathname}${location.search}${location.hash}`
+    if (lastTrackedPathRef.current === page) return
+    lastTrackedPathRef.current = page
+    ReactGA.send({ hitType: 'pageview', page })
+  }, [location.pathname, location.search, location.hash])
 
   if (suspendedInfo) {
     return <SuspendedScreen bannedAt={suspendedInfo.bannedAt} />
