@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -42,6 +42,15 @@ const BIBLE_TRANSLATION_OPTIONS = [
   { value: 'Darby', labelKey: 'bible.darby' },
 ]
 
+const FEEDBACK_TYPES = [
+  { id: 'bug', label: '🐛 Bug Report' },
+  { id: 'suggestion', label: '💡 Suggestion' },
+  { id: 'praise', label: '🙌 Praise' },
+  { id: 'other', label: '💬 Other' },
+]
+
+const FEEDBACK_MAX_LEN = 500
+
 export default function Settings() {
   const { t, i18n: i18nHook } = useTranslation()
   const navigate = useNavigate()
@@ -58,7 +67,95 @@ export default function Settings() {
   const [reminderTime, setReminderTime] = useState('08:00')
   const [devThemeChoice, setDevThemeChoice] = useState(readDevThemeChoice)
   const [devThemeSnap, setDevThemeSnap] = useState(() => getBackgroundTypeForTime())
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false)
+  const [feedbackType, setFeedbackType] = useState('suggestion')
+  const [feedbackText, setFeedbackText] = useState('')
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false)
+  const [feedbackSuccess, setFeedbackSuccess] = useState(false)
+  const [feedbackSubmitError, setFeedbackSubmitError] = useState('')
+  const feedbackSuccessTimerRef = useRef(null)
   const fileInputRef = useRef(null)
+
+  const openFeedbackModal = () => {
+    setFeedbackType('suggestion')
+    setFeedbackText('')
+    setFeedbackSuccess(false)
+    setFeedbackSubmitError('')
+    setFeedbackModalOpen(true)
+  }
+
+  const closeFeedbackModal = () => {
+    if (feedbackSuccessTimerRef.current) {
+      clearTimeout(feedbackSuccessTimerRef.current)
+      feedbackSuccessTimerRef.current = null
+    }
+    setFeedbackModalOpen(false)
+    setFeedbackSubmitting(false)
+    setFeedbackSuccess(false)
+    setFeedbackSubmitError('')
+  }
+
+  const submitFeedback = async () => {
+    const webhook = import.meta.env.VITE_DISCORD_FEEDBACK_WEBHOOK_URL
+    const trimmed = feedbackText.trim()
+    if (!trimmed) return
+    if (!webhook || typeof webhook !== 'string') {
+      setFeedbackSubmitError('Feedback is not available right now. Please try again later.')
+      console.error('VITE_DISCORD_FEEDBACK_WEBHOOK_URL is not set')
+      return
+    }
+    const typeLabel = FEEDBACK_TYPES.find((x) => x.id === feedbackType)?.label || feedbackType
+    setFeedbackSubmitError('')
+    setFeedbackSubmitting(true)
+    try {
+      const res = await fetch(webhook, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          embeds: [
+            {
+              title: '\u{1F4EC} New App Feedback',
+              color: 0xd4a843,
+              fields: [
+                { name: '\u{1F4CB} Type', value: typeLabel, inline: true },
+                { name: '\u{1F4F1} Platform', value: 'Web/PWA', inline: true },
+                { name: '\u{1F4AC} Message', value: trimmed.slice(0, FEEDBACK_MAX_LEN) },
+              ],
+              footer: { text: 'Abiding Anchor Feedback' },
+              timestamp: new Date().toISOString(),
+            },
+          ],
+        }),
+      })
+      if (!res.ok) throw new Error(`Discord webhook ${res.status}`)
+      setFeedbackSuccess(true)
+      setFeedbackSubmitting(false)
+      if (feedbackSuccessTimerRef.current) clearTimeout(feedbackSuccessTimerRef.current)
+      feedbackSuccessTimerRef.current = setTimeout(() => {
+        feedbackSuccessTimerRef.current = null
+        closeFeedbackModal()
+      }, 2000)
+    } catch (e) {
+      console.error('Feedback submit failed:', e)
+      setFeedbackSubmitting(false)
+      setFeedbackSubmitError('Could not send feedback. Please try again.')
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      if (feedbackSuccessTimerRef.current) clearTimeout(feedbackSuccessTimerRef.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!feedbackModalOpen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [feedbackModalOpen])
 
   const applyDevThemePreview = useCallback((choice) => {
     // TODO: REMOVE BEFORE LAUNCH
@@ -869,6 +966,88 @@ export default function Settings() {
           <span style={{ color: 'rgba(255,255,255,0.4)' }}>↺</span>
         </button>
 
+        {/* Feedback */}
+        <div>
+          <p className="text-section-header" style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span aria-hidden>{'\u{1F4AC}'}</span>
+            <span>Feedback</span>
+          </p>
+          <button
+            type="button"
+            onClick={openFeedbackModal}
+            className="glass-panel"
+            style={{
+              width: '100%',
+              borderRadius: '16px',
+              padding: '16px 20px',
+              color: 'var(--text-primary)',
+              fontSize: '16px',
+              fontWeight: 500,
+              cursor: 'pointer',
+              textAlign: 'left',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <span>Send Feedback</span>
+            <span style={{ color: 'rgba(255,255,255,0.4)' }}>→</span>
+          </button>
+        </div>
+
+        {/* Legal & Privacy */}
+        <div>
+          <p className="text-section-header" style={{ marginBottom: '10px' }}>
+            Legal & Privacy
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <Link
+              to="/legal"
+              className="glass-panel"
+              style={{
+                width: '100%',
+                borderRadius: '16px',
+                padding: '16px 20px',
+                color: 'var(--text-primary)',
+                fontSize: '16px',
+                fontWeight: 500,
+                cursor: 'pointer',
+                textAlign: 'left',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                textDecoration: 'none',
+                boxSizing: 'border-box',
+              }}
+            >
+              <span>{t('header.legalPage')}</span>
+              <span style={{ color: 'rgba(255,255,255,0.4)' }}>→</span>
+            </Link>
+            <Link
+              to="/privacy"
+              className="glass-panel"
+              style={{
+                width: '100%',
+                borderRadius: '16px',
+                padding: '16px 20px',
+                color: 'var(--text-primary)',
+                fontSize: '16px',
+                fontWeight: 500,
+                cursor: 'pointer',
+                textAlign: 'left',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                textDecoration: 'none',
+                boxSizing: 'border-box',
+              }}
+            >
+              <span>{t('header.privacyPolicy')}</span>
+              <span style={{ color: 'rgba(255,255,255,0.4)' }}>→</span>
+            </Link>
+          </div>
+        </div>
+
         {/* About AbidingAnchor */}
         <div className="glass-panel" style={{
           borderRadius: '16px',
@@ -904,6 +1083,131 @@ export default function Settings() {
           {t('settings.signOut')}
         </button>
       </section>
+
+      {feedbackModalOpen ? (
+        <div
+          className="fixed inset-0 z-[10050] flex items-center justify-center p-4"
+          style={{ background: 'var(--glass-scrim)' }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={feedbackSuccess ? 'settings-feedback-success' : 'settings-feedback-title'}
+        >
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default border-0"
+            style={{ background: 'transparent' }}
+            aria-label={t('common.close')}
+            onClick={() => !feedbackSubmitting && closeFeedbackModal()}
+          />
+          <div
+            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
+            style={{
+              background: 'var(--modal-bg)',
+              border: '1px solid var(--glass-border)',
+              boxShadow: 'var(--glass-shadow)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {feedbackSuccess ? (
+              <div className="px-5 py-10 text-center">
+                <p
+                  id="settings-feedback-success"
+                  className="text-base font-semibold leading-relaxed"
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  Thank you! Feedback sent {'\u{1F64F}'}
+                </p>
+              </div>
+            ) : (
+              <div className="px-5 pb-6 pt-5">
+                <h2
+                  id="settings-feedback-title"
+                  className="m-0 text-lg font-semibold leading-snug"
+                  style={{ color: 'var(--gold, #D4A843)' }}
+                >
+                  Send Feedback {'\u{1F4AC}'}
+                </h2>
+                <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                  Help us improve Abiding Anchor {'\u{1F64F}'}
+                </p>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {FEEDBACK_TYPES.map(({ id, label }) => {
+                    const active = feedbackType === id
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => setFeedbackType(id)}
+                        className="rounded-full border px-3 py-2 text-xs font-medium transition"
+                        style={{
+                          borderColor: active ? 'var(--gold-border, rgba(212,168,67,0.55))' : 'var(--glass-border)',
+                          background: active ? 'var(--gold-glow, rgba(212,168,67,0.2))' : 'var(--input-bg, rgba(255,255,255,0.06))',
+                          color: 'var(--text-primary)',
+                        }}
+                      >
+                        {label}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                <label className="mt-4 block">
+                  <span className="sr-only">Feedback message</span>
+                  <textarea
+                    value={feedbackText}
+                    onChange={(e) => setFeedbackText(e.target.value.slice(0, FEEDBACK_MAX_LEN))}
+                    maxLength={FEEDBACK_MAX_LEN}
+                    rows={5}
+                    placeholder="Share your thoughts..."
+                    className="w-full resize-none rounded-xl px-3 py-3 text-sm outline-none"
+                    style={{
+                      background: 'var(--input-bg)',
+                      border: '1px solid var(--input-border)',
+                      color: 'var(--text-primary)',
+                    }}
+                  />
+                </label>
+                <p className="mt-1 text-right text-xs" style={{ color: 'var(--text-muted)' }}>
+                  {feedbackText.length}/{FEEDBACK_MAX_LEN}
+                </p>
+
+                {feedbackSubmitError ? (
+                  <p className="mt-3 text-sm" style={{ color: '#f87171' }}>
+                    {feedbackSubmitError}
+                  </p>
+                ) : null}
+
+                <button
+                  type="button"
+                  disabled={feedbackSubmitting || !feedbackText.trim()}
+                  onClick={submitFeedback}
+                  className="mt-4 w-full rounded-xl border-0 py-3 text-base font-semibold transition disabled:opacity-50"
+                  style={{
+                    background: 'var(--btn-primary-bg)',
+                    color: 'var(--btn-primary-text)',
+                  }}
+                >
+                  {feedbackSubmitting ? 'Sending…' : 'Submit'}
+                </button>
+                <button
+                  type="button"
+                  disabled={feedbackSubmitting}
+                  onClick={closeFeedbackModal}
+                  className="mt-3 w-full rounded-xl border py-3 text-base font-medium transition disabled:opacity-50"
+                  style={{
+                    borderColor: 'var(--glass-border)',
+                    background: 'transparent',
+                    color: 'var(--text-primary)',
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

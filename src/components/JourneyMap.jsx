@@ -259,7 +259,7 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
       </div>
 
       <div
-        className="mb-3 shrink-0 rounded-lg px-3 py-2.5 text-xs leading-relaxed shadow-sm"
+        className="mb-1 shrink-0 rounded-lg px-3 py-2.5 text-xs leading-relaxed shadow-sm"
         style={{
           background: 'rgba(232, 213, 163, 0.95)',
           border: '1px solid #8B6914',
@@ -272,7 +272,7 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
       </div>
 
       <div
-        className={`relative min-h-0 overflow-hidden rounded-xl border border-[#8B6914]/55 p-2 shadow-[inset_0_0_40px_rgba(80,45,15,0.12)] sm:p-3 ${fillVertical ? 'flex flex-1 flex-col' : ''}`}
+        className={`relative min-h-0 overflow-hidden rounded-xl border border-[#8B6914]/55 px-2 pb-2 pt-1 shadow-[inset_0_0_40px_rgba(80,45,15,0.12)] sm:px-3 sm:pb-3 sm:pt-1.5 ${fillVertical ? 'flex flex-1 flex-col' : ''}`}
       >
         <JourneyMapParchmentScene />
         <svg
