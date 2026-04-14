@@ -64,7 +64,6 @@ function BackgroundLayer({ type, isVisible }) {
 export default function BackgroundManager() {
   const [currentBg, setCurrentBg] = useState(() => {
     const initial = getBackgroundType();
-    console.log('[BackgroundManager] Initial theme:', initial);
     document.documentElement.setAttribute("data-theme", initial);
     syncBodySkyClasses(initial);
     return initial;
@@ -77,7 +76,6 @@ export default function BackgroundManager() {
     const updateBackground = () => {
       const nextBg = getBackgroundType();
       syncBodySkyClasses(nextBg);
-      console.log('[BackgroundManager] Setting theme:', nextBg);
       setCurrentBg((prevBg) => {
         if (prevBg !== nextBg) {
           document.documentElement.setAttribute("data-theme", nextBg);

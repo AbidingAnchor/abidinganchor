@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useAuth } from '../context/AuthContext'
+import { userStorageKey } from '../utils/userStorage'
 
 const presets = [5, 10, 15, 30]
 const prompts = [
@@ -10,6 +12,7 @@ const prompts = [
 ]
 
 export default function PrayerTimer({ open, onClose }) {
+  const { user } = useAuth()
   const [minutes, setMinutes] = useState(10)
   const [customMinutes, setCustomMinutes] = useState('20')
   const [secondsLeft, setSecondsLeft] = useState(0)
@@ -30,8 +33,9 @@ export default function PrayerTimer({ open, onClose }) {
     if (secondsLeft > 0 || !running) return
     setRunning(false)
     const elapsed = minutes * 60
-    const current = Number(localStorage.getItem('abidinganchor-prayer-time') || '0') || 0
-    localStorage.setItem('abidinganchor-prayer-time', String(current + elapsed))
+    const pk = userStorageKey(user?.id, 'prayer-time-seconds')
+    const current = Number(localStorage.getItem(pk) || '0') || 0
+    localStorage.setItem(pk, String(current + elapsed))
     if (navigator.vibrate) navigator.vibrate([180, 120, 180])
     try {
       const audio = new Audio('/notification.mp3')

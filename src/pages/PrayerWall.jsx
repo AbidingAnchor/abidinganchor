@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import { userStorageKey } from '../utils/userStorage'
 
 const REPORT_REASONS = ['Inappropriate content', 'Offensive language', 'Spam', 'Other']
 const MODERATOR_ROLES = new Set(['founder', 'admin', 'mod'])
@@ -82,14 +83,25 @@ export default function PrayerWall() {
 
   useEffect(() => {
     fetchPrayers()
-    loadPrayedPrayers()
   }, [])
 
+  useEffect(() => {
+    loadPrayedPrayers()
+  }, [user?.id])
+
+  const prayedStorageKey = user?.id ? userStorageKey(user.id, 'prayed-prayer-ids') : null
+
   const loadPrayedPrayers = () => {
+    if (!prayedStorageKey) {
+      setPrayedPrayers(new Set())
+      return
+    }
     try {
-      const saved = localStorage.getItem('prayedPrayers')
+      const saved = localStorage.getItem(prayedStorageKey)
       if (saved) {
         setPrayedPrayers(new Set(JSON.parse(saved)))
+      } else {
+        setPrayedPrayers(new Set())
       }
     } catch (error) {
       console.error('Error loading prayed prayers:', error)
@@ -97,10 +109,11 @@ export default function PrayerWall() {
   }
 
   const savePrayedPrayers = (prayerId) => {
+    if (!prayedStorageKey) return
     const updated = new Set(prayedPrayers)
     updated.add(prayerId)
     setPrayedPrayers(updated)
-    localStorage.setItem('prayedPrayers', JSON.stringify([...updated]))
+    localStorage.setItem(prayedStorageKey, JSON.stringify([...updated]))
   }
 
   const fetchPrayers = async () => {
@@ -109,12 +122,6 @@ export default function PrayerWall() {
       const cutoffDate = new Date()
       cutoffDate.setDate(cutoffDate.getDate() - 30)
       const cutoffIso = cutoffDate.toISOString()
-
-      // Auto-clean stale posts older than 30 days.
-      await supabase
-        .from('prayer_wall')
-        .delete()
-        .lt('created_at', cutoffIso)
 
       const { data: prayerRows, error: prayerError } = await supabase
         .from('prayer_wall')
@@ -196,11 +203,9 @@ export default function PrayerWall() {
       // Save to localStorage
       savePrayedPrayers(prayerId)
       
-      // Increment in Supabase
-      const { error } = await supabase
-        .from('prayer_wall')
-        .update({ praying_count: supabase.raw('praying_count + 1') })
-        .eq('id', prayerId)
+      const { error } = await supabase.rpc('increment_prayer_wall_praying_count', {
+        p_prayer_id: prayerId,
+      })
       
       if (error) {
         console.error('Error updating praying count:', error)

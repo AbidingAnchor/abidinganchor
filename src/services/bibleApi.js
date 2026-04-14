@@ -1,10 +1,6 @@
-const API_BASE = '/api/bible?path=';
+import { getActiveStorageUserId, userStorageKey } from '../utils/userStorage'
 
-// Debug: Fetch available Bible IDs at startup
-fetch('/api/bible?path=bibles')
-  .then(r => r.json())
-  .then(data => console.log('Available bibles:', data.data?.map(b => b.id + ' - ' + b.name)))
-  .catch(err => console.error('Error fetching available bibles:', err));
+const API_BASE = '/api/bible?path=';
 
 export const DEFAULT_BIBLE_ID = 'de4e12af7f28f599-02'; // KJV
 
@@ -40,9 +36,9 @@ export async function getChapter(bibleId, chapterId) {
 }
 
 export function getSavedBibleId() {
-  return localStorage.getItem('abidinganchor_bible_version') || DEFAULT_BIBLE_ID;
+  return localStorage.getItem(userStorageKey(getActiveStorageUserId(), 'api-bible-version')) || DEFAULT_BIBLE_ID
 }
 
 export function saveBibleId(bibleId) {
-  localStorage.setItem('abidinganchor_bible_version', bibleId);
+  localStorage.setItem(userStorageKey(getActiveStorageUserId(), 'api-bible-version'), bibleId)
 }

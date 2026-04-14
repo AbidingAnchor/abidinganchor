@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
-
-const STREAK_KEY = 'abidinganchor-trivia-streak'
-const STATS_KEY = 'abidinganchor-trivia-stats'
+import { useMemo, useState } from 'react'
+import { useAuth } from '../context/AuthContext'
+import { userStorageKey } from '../utils/userStorage'
 
 function todayKey() {
   return new Date().toISOString().slice(0, 10)
@@ -172,6 +171,15 @@ function pickQuestions(count = 10) {
 }
 
 export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = false }) {
+  const { user } = useAuth()
+  const storageKeys = useMemo(
+    () => ({
+      streak: userStorageKey(user?.id, 'trivia-streak'),
+      stats: userStorageKey(user?.id, 'trivia-stats'),
+    }),
+    [user?.id],
+  )
+
   const [roundQuestions, setRoundQuestions] = useState(() => pickQuestions(10))
   const [index, setIndex] = useState(0)
   const [selected, setSelected] = useState(null)
@@ -182,7 +190,7 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
   const current = roundQuestions[index]
   const progress = Math.round(((index + (done ? 1 : 0)) / roundQuestions.length) * 100)
 
-  const streak = useMemo(() => readJson(STREAK_KEY, { count: 0, lastDay: '' }), [])
+  const streak = useMemo(() => readJson(storageKeys.streak, { count: 0, lastDay: '' }), [storageKeys.streak])
 
   const handleAnswer = (choiceIdx) => {
     if (selected !== null) return
@@ -195,12 +203,12 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
         setConfetti(true)
         setTimeout(() => setConfetti(false), 1800)
         const day = todayKey()
-        const prev = readJson(STREAK_KEY, { count: 0, lastDay: '' })
+        const prev = readJson(storageKeys.streak, { count: 0, lastDay: '' })
         const nextCount =
           prev.lastDay === day ? prev.count : prev.lastDay === yesterdayKey() ? prev.count + 1 : 1
-        writeJson(STREAK_KEY, { count: nextCount, lastDay: day })
+        writeJson(storageKeys.streak, { count: nextCount, lastDay: day })
 
-        const statsPrev = readJson(STATS_KEY, { gamesCompleted: 0, psalmsCorrect: 0, bestScore: 0, lastScore: 0 })
+        const statsPrev = readJson(storageKeys.stats, { gamesCompleted: 0, psalmsCorrect: 0, bestScore: 0, lastScore: 0 })
         const psalmsCorrectThisRound =
           current.category === 'Psalms' && correct ? 1 : 0
         const psalmsTotalCorrect =
@@ -215,7 +223,7 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
             }, 0)
 
         const finalScore = correct ? score + 1 : score
-        writeJson(STATS_KEY, {
+        writeJson(storageKeys.stats, {
           ...statsPrev,
           gamesCompleted: statsPrev.gamesCompleted + 1,
           bestScore: Math.max(statsPrev.bestScore || 0, finalScore),

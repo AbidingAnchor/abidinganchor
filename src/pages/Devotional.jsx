@@ -2,10 +2,8 @@ import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import DevotionalReader from '../components/DevotionalReader'
 import { devotionalTopics, devotionals } from '../data/devotionals'
-
-const PROGRESS_KEY = 'abidinganchor-devotional-progress'
-const STREAK_KEY = 'abidinganchor-devotional-streak'
-const FAVORITES_KEY = 'abidinganchor-favorites'
+import { useAuth } from '../context/AuthContext'
+import { userStorageKey } from '../utils/userStorage'
 
 function readJson(key, fallback) {
   try {
@@ -41,12 +39,28 @@ function getTodayDevotional() {
 }
 
 export default function Devotional() {
+  const { user } = useAuth()
+  const keys = useMemo(
+    () => ({
+      progress: userStorageKey(user?.id, 'devotional-progress'),
+      streak: userStorageKey(user?.id, 'devotional-streak'),
+      favorites: userStorageKey(user?.id, 'devotional-favorites'),
+    }),
+    [user?.id],
+  )
+
   const [activeTopic, setActiveTopic] = useState('All')
   const [selectedId, setSelectedId] = useState(null)
-  const [progress, setProgress] = useState(() => readJson(PROGRESS_KEY, { items: {}, completedDates: [] }))
-  const [streak, setStreak] = useState(() => readJson(STREAK_KEY, { count: 0, lastDate: null, missedRecently: false }))
-  const [favorites, setFavorites] = useState(() => readJson(FAVORITES_KEY, []))
+  const [progress, setProgress] = useState({ items: {}, completedDates: [] })
+  const [streak, setStreak] = useState({ count: 0, lastDate: null, missedRecently: false })
+  const [favorites, setFavorites] = useState([])
   const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    setProgress(readJson(keys.progress, { items: {}, completedDates: [] }))
+    setStreak(readJson(keys.streak, { count: 0, lastDate: null, missedRecently: false }))
+    setFavorites(readJson(keys.favorites, []))
+  }, [keys.progress, keys.streak, keys.favorites])
 
   const today = getTodayDevotional()
   const nextDay = (devotionals || [])[today.day % (devotionals?.length || 1)]
@@ -78,7 +92,7 @@ export default function Devotional() {
       },
     }
     setProgress(next)
-    writeJson(PROGRESS_KEY, next)
+    writeJson(keys.progress, next)
     setSelectedId(devotional.id)
   }
 
@@ -88,7 +102,7 @@ export default function Devotional() {
     else set.add(id)
     const next = Array.from(set)
     setFavorites(next)
-    writeJson(FAVORITES_KEY, next)
+    writeJson(keys.favorites, next)
   }
 
   const markComplete = (id) => {
@@ -106,7 +120,7 @@ export default function Devotional() {
         nextStreak = { count: 1, lastDate: todayKey, missedRecently: true }
       }
       setStreak(nextStreak)
-      writeJson(STREAK_KEY, nextStreak)
+      writeJson(keys.streak, nextStreak)
     }
 
     const completedDates = Array.from(new Set([...(progress.completedDates || []), todayKey]))
@@ -124,7 +138,7 @@ export default function Devotional() {
       },
     }
     setProgress(nextProgress)
-    writeJson(PROGRESS_KEY, nextProgress)
+    writeJson(keys.progress, nextProgress)
   }
 
   if (selectedDevotional) {

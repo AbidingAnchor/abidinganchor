@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef } from 'react'
+import { useAuth } from '../context/AuthContext'
+import { userStorageKey } from '../utils/userStorage'
 
-function incrementSharedCount() {
-  const raw = localStorage.getItem('abidinganchor-shared-count')
+function incrementSharedCount(userId) {
+  const k = userStorageKey(userId, 'verse-share-count')
+  const raw = localStorage.getItem(k)
   const count = raw ? Number(raw) || 0 : 0
-  localStorage.setItem('abidinganchor-shared-count', String(count + 1))
+  localStorage.setItem(k, String(count + 1))
 }
 
 function wrapText(ctx, text, maxWidth) {
@@ -24,6 +27,7 @@ function wrapText(ctx, text, maxWidth) {
 }
 
 export default function ShareVerse({ text, reference, onClose }) {
+  const { user } = useAuth()
   const canvasRef = useRef(null)
   const fileName = useMemo(() => `abidinganchor-${reference.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.png`, [reference])
 
@@ -75,7 +79,7 @@ export default function ShareVerse({ text, reference, onClose }) {
     link.href = url
     link.download = fileName
     link.click()
-    incrementSharedCount()
+    incrementSharedCount(user?.id)
   }
 
   const handleShare = async () => {
@@ -90,7 +94,7 @@ export default function ShareVerse({ text, reference, onClose }) {
       const file = new File([blob], fileName, { type: 'image/png' })
       try {
         await navigator.share({ files: [file], title: reference, text })
-        incrementSharedCount()
+        incrementSharedCount(user?.id)
       } catch {
         handleDownload()
       }

@@ -1,11 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { JOURNEY_MAP_GEOMETRY } from '../data/journeyMapGeometry'
-
-const KEY = 'abidinganchor-journey-map'
-const COMPLETION_MODAL_DISMISSED_KEY = 'abidinganchor-journey-map-completion-modal-dismissed'
-const TRIVIA_STATS_KEY = 'abidinganchor-trivia-stats'
-const VERSE_PROGRESS_KEY = 'abidinganchor-verse-progress'
+import { useAuth } from '../context/AuthContext'
+import { userStorageKey } from '../utils/userStorage'
 
 function readJson(key, fallback) {
   try {
@@ -105,6 +102,17 @@ function JourneyProgressMarker({ stop, viewBoxH }) {
 
 export default function JourneyMap({ onExit, fillVertical = false }) {
   const { t, i18n } = useTranslation()
+  const { user } = useAuth()
+  const keys = useMemo(
+    () => ({
+      map: userStorageKey(user?.id, 'journey-map'),
+      completionDismissed: userStorageKey(user?.id, 'journey-map-completion-modal-dismissed'),
+      triviaStats: userStorageKey(user?.id, 'trivia-stats'),
+      verseProgress: userStorageKey(user?.id, 'verse-progress'),
+    }),
+    [user?.id],
+  )
+
   const stops = useMemo(
     () =>
       JOURNEY_MAP_GEOMETRY.map((g) => ({
@@ -119,12 +127,16 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
     [t, i18n.language],
   )
 
-  const [state, setState] = useState(() => readJson(KEY, { seenFacts: {}, updatedAt: '' }))
+  const [state, setState] = useState({ seenFacts: {}, updatedAt: '' })
   const [activeStop, setActiveStop] = useState(null)
   const [showJourneyCompletionModal, setShowJourneyCompletionModal] = useState(false)
 
-  const triviaStats = useMemo(() => readJson(TRIVIA_STATS_KEY, { gamesCompleted: 0 }), [])
-  const verseProgress = useMemo(() => readJson(VERSE_PROGRESS_KEY, {}), [])
+  useEffect(() => {
+    setState(readJson(keys.map, { seenFacts: {}, updatedAt: '' }))
+  }, [keys.map])
+
+  const triviaStats = useMemo(() => readJson(keys.triviaStats, { gamesCompleted: 0 }), [keys.triviaStats])
+  const verseProgress = useMemo(() => readJson(keys.verseProgress, {}), [keys.verseProgress])
   const memorizedCount = useMemo(() => Object.values(verseProgress).filter((p) => p?.memorized).length, [verseProgress])
 
   const unlockedCount = Math.min(
@@ -137,14 +149,14 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
   useEffect(() => {
     if (
       journeyFullyUnlocked &&
-      !readJson(COMPLETION_MODAL_DISMISSED_KEY, false)
+      !readJson(keys.completionDismissed, false)
     ) {
       setShowJourneyCompletionModal(true)
     }
-  }, [journeyFullyUnlocked])
+  }, [journeyFullyUnlocked, keys.completionDismissed])
 
   const dismissJourneyCompletionModal = () => {
-    writeJson(COMPLETION_MODAL_DISMISSED_KEY, true)
+    writeJson(keys.completionDismissed, true)
     setShowJourneyCompletionModal(false)
   }
 
@@ -157,7 +169,7 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
       updatedAt: new Date().toISOString(),
     }
     setState(next)
-    writeJson(KEY, next)
+    writeJson(keys.map, next)
   }
 
   const pathD = useMemo(() => buildPathD(stops), [stops])

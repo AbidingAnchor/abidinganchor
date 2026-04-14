@@ -7,6 +7,8 @@ import ShareVerse from '../components/ShareVerse'
 import { TOPIC_LIST, TOPIC_VERSES } from '../utils/topicVerses'
 import BookOverviewCard from '../components/BookOverviewCard'
 import { bibleBooks } from '../data/bibleBooks'
+import { useAuth } from '../context/AuthContext'
+import { userStorageKey } from '../utils/userStorage'
 
 const quickSuggestionsRow1 = ['faith', 'love', 'peace', 'strength', 'hope']
 const quickSuggestionsRow2 = ['fear', 'greed', 'healing', 'forgiveness', 'anger']
@@ -269,6 +271,7 @@ async function fetchKeywordSearch(query) {
 }
 
 function Search({ onOpenWorship }) {
+  const { user } = useAuth()
   const [searchMode, setSearchMode] = useState('keyword')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTopic, setSelectedTopic] = useState('')
@@ -399,7 +402,7 @@ function Search({ onOpenWorship }) {
   const pagedFullBibleResults = fullBibleResults.slice(startIndex, startIndex + FULL_BIBLE_PAGE_SIZE)
 
   const handleBookTap = (book) => {
-    const seen = JSON.parse(localStorage.getItem('abidinganchor-book-overviews-seen') || '[]')
+    const seen = JSON.parse(localStorage.getItem(userStorageKey(user?.id, 'book-overviews-seen')) || '[]')
     const info = bibleBooks.find((b) => b.name === book.name)
     if (seen.includes(book.name) || !info) {
       setSelectedBook(book)
@@ -410,9 +413,10 @@ function Search({ onOpenWorship }) {
   }
 
   const markOverviewSeen = (bookName) => {
-    const seen = JSON.parse(localStorage.getItem('abidinganchor-book-overviews-seen') || '[]')
+    const sk = userStorageKey(user?.id, 'book-overviews-seen')
+    const seen = JSON.parse(localStorage.getItem(sk) || '[]')
     if (!seen.includes(bookName)) {
-      localStorage.setItem('abidinganchor-book-overviews-seen', JSON.stringify([...seen, bookName]))
+      localStorage.setItem(sk, JSON.stringify([...seen, bookName]))
     }
   }
 

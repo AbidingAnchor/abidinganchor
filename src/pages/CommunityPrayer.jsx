@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { userStorageKey } from '../utils/userStorage'
 
 const FILTER_CATEGORIES = ['All', 'Health', 'Family', 'Guidance', 'Praise', 'Grief', 'Protection']
 const FORM_CATEGORIES = ['Health', 'Family', 'Guidance', 'Praise', 'Grief', 'Protection', 'General']
@@ -134,10 +135,9 @@ export default function CommunityPrayer() {
         prayer_id: id,
       })
       if (i1) throw i1
-      const { error: i2 } = await supabase
-        .from('community_prayers')
-        .update({ pray_count: count + 1 })
-        .eq('id', id)
+      const { error: i2 } = await supabase.rpc('increment_community_prayer_pray_count', {
+        p_prayer_id: id,
+      })
       if (i2) throw i2
       setMyPrayedIds((prev) => new Set(prev).add(id))
       setPrayers((prev) => prev.map((p) => (p.id === id ? { ...p, pray_count: count + 1 } : p)))
@@ -166,7 +166,7 @@ export default function CommunityPrayer() {
       })
       if (error) throw error
       try {
-        const pk = 'abidinganchor-community-prayer-submissions'
+        const pk = userStorageKey(user.id, 'community-prayer-submissions')
         localStorage.setItem(pk, String(parseInt(localStorage.getItem(pk) || '0', 10) + 1))
       } catch {
         /* ignore */

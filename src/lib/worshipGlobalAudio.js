@@ -3,7 +3,6 @@
  */
 export {
   INITIAL_AUDIO_URL,
-  WORSHIP_VOLUME_KEY,
   globalAudio,
   globalWorshipAudio,
   readStoredVolume,

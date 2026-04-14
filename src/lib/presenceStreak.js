@@ -9,8 +9,13 @@
  * @property {string[]} [completionHistory]  optional recent days (newest appended; capped)
  */
 
-export const PRESENCE_STREAK_STORAGE_KEY = 'abidinganchor-presence-streak-v1'
+import { userStorageKey } from '../utils/userStorage'
+
 const HISTORY_CAP = 120
+
+function streakStorageKey(userId) {
+  return userStorageKey(userId, 'presence-streak-v1')
+}
 
 /** @returns {PresenceStreakPersisted} */
 function defaultState() {
@@ -78,11 +83,26 @@ function normalize(raw) {
 
 /**
  * Read raw persisted state (no migration of broken streaks — use {@link syncPresenceState}).
+ * @param {string | undefined | null} userId
  * @returns {PresenceStreakPersisted}
  */
-export function loadPresenceState() {
+export function loadPresenceState(userId) {
+  if (!userId) return defaultState()
   try {
-    const s = localStorage.getItem(PRESENCE_STREAK_STORAGE_KEY)
+    const k = streakStorageKey(userId)
+    let s = localStorage.getItem(k)
+    if (!s) {
+      const legacy = localStorage.getItem('abidinganchor-presence-streak-v1')
+      if (legacy) {
+        s = legacy
+        try {
+          localStorage.setItem(k, legacy)
+          localStorage.removeItem('abidinganchor-presence-streak-v1')
+        } catch {
+          /* ignore */
+        }
+      }
+    }
     if (!s) return defaultState()
     return normalize(JSON.parse(s))
   } catch {
@@ -92,10 +112,12 @@ export function loadPresenceState() {
 
 /**
  * @param {PresenceStreakPersisted} state
+ * @param {string | undefined | null} userId
  */
-export function savePresenceState(state) {
+export function savePresenceState(state, userId) {
+  if (!userId) return
   try {
-    localStorage.setItem(PRESENCE_STREAK_STORAGE_KEY, JSON.stringify(state))
+    localStorage.setItem(streakStorageKey(userId), JSON.stringify(state))
   } catch (e) {
     console.warn('presence streak save failed', e)
   }
@@ -104,10 +126,11 @@ export function savePresenceState(state) {
 /**
  * If the user missed one or more calendar days since last completion, reset current streak in storage.
  * Call on app load and before computing UI.
+ * @param {string | undefined | null} userId
  * @returns {PresenceStreakPersisted}
  */
-export function syncPresenceState() {
-  const raw = loadPresenceState()
+export function syncPresenceState(userId) {
+  const raw = loadPresenceState(userId)
   const today = getLocalDateKey()
   const last = raw.lastCompletedDate
   if (!last) return raw
@@ -117,7 +140,7 @@ export function syncPresenceState() {
   const gap = calendarDaysBetween(last, today)
   if (gap >= 2) {
     const next = { ...raw, currentStreak: 0 }
-    savePresenceState(next)
+    savePresenceState(next, userId)
     return next
   }
 
@@ -135,10 +158,11 @@ export function isCompletedToday(state) {
 /**
  * Apply a completion for today. Idempotent: if already completed today, state unchanged.
  * Updates longest streak and optional history.
+ * @param {string | undefined | null} userId
  * @returns {PresenceStreakPersisted}
  */
-export function markPresenceComplete() {
-  const synced = syncPresenceState()
+export function markPresenceComplete(userId) {
+  const synced = syncPresenceState(userId)
   const today = getLocalDateKey()
 
   if (synced.lastCompletedDate === today) {
@@ -166,7 +190,7 @@ export function markPresenceComplete() {
     longestStreak,
     completionHistory: history,
   }
-  savePresenceState(next)
+  savePresenceState(next, userId)
   return next
 }
 
@@ -183,10 +207,3 @@ export function getPresenceViewModel(state) {
     longestStreak: state.longestStreak || 0,
   }
 }
-
-/**
- * Supabase migration (future): map the same fields to columns, e.g.
- * profiles.presence_last_completed_at (date), presence_current_streak, presence_longest_streak, presence_history (jsonb).
- * Replace load/save with supabase.from('profiles').select / .update and keep markPresenceComplete logic
- * in a shared pure function that takes previous row + “today” and returns the next row.
- */

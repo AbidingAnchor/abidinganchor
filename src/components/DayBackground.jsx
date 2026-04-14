@@ -4,7 +4,8 @@ import { useEffect, useRef } from "react";
 export const DEV_FORCE_HOUR = null; // 10 = day, 18 = sunset, 21 = night, null = real time
 
 // TODO: REMOVE BEFORE LAUNCH
-export const DEV_THEME_STORAGE_KEY = "devForceTheme";
+/** Cleared on sign-out with other `abidinganchor*` keys. */
+export const DEV_THEME_STORAGE_KEY = "abidinganchor-dev-force-theme";
 
 /**
  * Effective hour for background theme: localStorage `devForceTheme` overrides DEV_FORCE_HOUR and clock.

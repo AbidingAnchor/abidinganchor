@@ -14,6 +14,7 @@ import {
   computeWritingStreakFromActivityDates,
 } from '../utils/journal'
 import { useAuth } from '../context/AuthContext'
+import { userStorageKey } from '../utils/userStorage'
 import { supabase } from '../lib/supabase'
 import { WEEK_DAY_SHORT } from '../hooks/useStreakTracker'
 import FirstJournalEntryCelebration from '../components/FirstJournalEntryCelebration'
@@ -211,7 +212,7 @@ function Journal() {
       const entryLen = (data || []).length
       setTotalEntries(entryLen)
       try {
-        const jk = 'abidinganchor-journal-entry-count'
+        const jk = userStorageKey(user.id, 'journal-entry-count')
         const prev = parseInt(localStorage.getItem(jk) || '0', 10)
         localStorage.setItem(jk, String(Math.max(prev, entryLen)))
       } catch {

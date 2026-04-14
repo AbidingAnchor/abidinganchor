@@ -7,10 +7,7 @@ import JourneyMap from '../components/JourneyMap'
 import Achievements from '../components/Achievements'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
-
-const VERSE_PROGRESS_KEY = 'abidinganchor-verse-progress'
-const TRIVIA_STREAK_KEY = 'abidinganchor-trivia-streak'
-const ACHIEVEMENTS_KEY = 'abidinganchor-achievements'
+import { userStorageKey } from '../utils/userStorage'
 
 function readJson(key, fallback) {
   try {
@@ -153,10 +150,10 @@ export default function FaithJourney() {
         if (!cancelled) setAnsweredPrayersCount(typeof answeredCt === 'number' ? answeredCt : 0)
       } catch {
         // Fallback to localStorage on error
-        const verseProgress = readJson(VERSE_PROGRESS_KEY, {})
+        const verseProgress = readJson(userStorageKey(user.id, 'verse-progress'), {})
         const memorized = Object.values(verseProgress).filter((p) => p?.memorized).length
-        const triviaStreak = readJson(TRIVIA_STREAK_KEY, { count: 0 }).count || 0
-        const achievements = readJson(ACHIEVEMENTS_KEY, {})
+        const triviaStreak = readJson(userStorageKey(user.id, 'trivia-streak'), { count: 0 }).count || 0
+        const achievements = readJson(userStorageKey(user.id, 'achievements'), {})
         const badges = Object.values(achievements).filter((a) => a?.unlockedAt).length
         setStats({
           versesRead: memorized,

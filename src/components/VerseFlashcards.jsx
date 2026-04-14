@@ -1,19 +1,19 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { VERSE_FLASHCARDS, FLASHCARD_FILTER_OPTIONS } from '../data/verseFlashcards'
+import { useAuth } from '../context/AuthContext'
+import { userStorageKey } from '../utils/userStorage'
 
-const KEY = 'abidinganchor-verse-progress'
-
-function readProgress() {
+function readProgress(storageKey) {
   try {
-    const raw = localStorage.getItem(KEY)
+    const raw = localStorage.getItem(storageKey)
     return raw ? JSON.parse(raw) : {}
   } catch {
     return {}
   }
 }
 
-function writeProgress(obj) {
-  localStorage.setItem(KEY, JSON.stringify(obj))
+function writeProgress(storageKey, obj) {
+  localStorage.setItem(storageKey, JSON.stringify(obj))
 }
 
 function matchesFilter(verse, filter) {
@@ -55,11 +55,17 @@ function ProgressRing({ percent }) {
 }
 
 export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertical = false }) {
-  const [progress, setProgress] = useState(() => readProgress())
+  const { user } = useAuth()
+  const progressKey = useMemo(() => userStorageKey(user?.id, 'verse-progress'), [user?.id])
+  const [progress, setProgress] = useState({})
   const [category, setCategory] = useState('All')
   const [idx, setIdx] = useState(0)
   const [flipped, setFlipped] = useState(false)
   const [checkFlash, setCheckFlash] = useState(false)
+
+  useEffect(() => {
+    setProgress(readProgress(progressKey))
+  }, [progressKey])
 
   const filtered = useMemo(
     () => VERSE_FLASHCARDS.filter((v) => matchesFilter(v, category)),
@@ -102,7 +108,7 @@ export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertica
       },
     }
     setProgress(next)
-    writeProgress(next)
+    writeProgress(progressKey, next)
     if (memorized) {
       setCheckFlash(true)
       setTimeout(() => setCheckFlash(false), 600)

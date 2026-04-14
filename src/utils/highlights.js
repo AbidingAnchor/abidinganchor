@@ -1,8 +1,12 @@
-const HIGHLIGHT_KEY = 'abidinganchor-highlights'
+import { getActiveStorageUserId, userStorageKey } from './userStorage'
+
+function highlightKey() {
+  return userStorageKey(getActiveStorageUserId(), 'highlights')
+}
 
 function read() {
   try {
-    const raw = localStorage.getItem(HIGHLIGHT_KEY)
+    const raw = localStorage.getItem(highlightKey())
     return raw ? JSON.parse(raw) : {}
   } catch {
     return {}
@@ -10,7 +14,7 @@ function read() {
 }
 
 function write(entries) {
-  localStorage.setItem(HIGHLIGHT_KEY, JSON.stringify(entries))
+  localStorage.setItem(highlightKey(), JSON.stringify(entries))
 }
 
 export function saveHighlight({ book, chapter, verse, color, text, reference }) {

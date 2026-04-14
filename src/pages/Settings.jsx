@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import { userStorageKey } from '../utils/userStorage'
 import { getAvatarUploadExtension } from '../utils/avatarUrl'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import i18n, { LANGUAGE_STORAGE_KEY } from '../i18n.js'
@@ -119,18 +120,19 @@ export default function Settings() {
     }
   }, [avatarPreviewUrl])
 
-  // Load daily reminder preferences from localStorage
+  // Load daily reminder preferences from localStorage (per user)
   useEffect(() => {
-    const savedEnabled = localStorage.getItem('dailyReminderEnabled')
-    const savedTime = localStorage.getItem('reminderTime')
-    
+    if (!user?.id) return
+    const savedEnabled = localStorage.getItem(userStorageKey(user.id, 'daily-reminder-enabled'))
+    const savedTime = localStorage.getItem(userStorageKey(user.id, 'reminder-time'))
+
     if (savedEnabled !== null) {
       setDailyReminderEnabled(savedEnabled === 'true')
     }
     if (savedTime) {
       setReminderTime(savedTime)
     }
-  }, [])
+  }, [user?.id])
 
   const scheduleNotifications = useCallback(async () => {
     try {
@@ -173,7 +175,6 @@ export default function Settings() {
       }
       
       await LocalNotifications.schedule({ notifications })
-      console.log('Daily notifications scheduled at', reminderTime)
     } catch (error) {
       console.error('Error scheduling notifications:', error)
     }
@@ -182,7 +183,7 @@ export default function Settings() {
   const handleDailyReminderToggle = async () => {
     const newValue = !dailyReminderEnabled
     setDailyReminderEnabled(newValue)
-    localStorage.setItem('dailyReminderEnabled', newValue.toString())
+    if (user?.id) localStorage.setItem(userStorageKey(user.id, 'daily-reminder-enabled'), newValue.toString())
     
     if (newValue) {
       await scheduleNotifications()
@@ -194,7 +195,7 @@ export default function Settings() {
   const handleTimeChange = async (e) => {
     const newTime = e.target.value
     setReminderTime(newTime)
-    localStorage.setItem('reminderTime', newTime)
+    if (user?.id) localStorage.setItem(userStorageKey(user.id, 'reminder-time'), newTime)
     
     if (dailyReminderEnabled) {
       await scheduleNotifications()
@@ -209,7 +210,7 @@ export default function Settings() {
   const handleReplayTutorial = async () => {
     try {
       // Clear from localStorage (do NOT clear tos_agreed)
-      localStorage.removeItem('onboarding_complete')
+      if (user?.id) localStorage.removeItem(userStorageKey(user.id, 'onboarding-complete'))
       
       // Clear from Supabase profile
       if (user?.id) {

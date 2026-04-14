@@ -87,7 +87,7 @@ export async function fetchApiBibleChapterVerses(bibleId, bookOsis, chapterNum) 
   const url = `${BASE}/bibles/${bibleId}/chapters/${encodeURIComponent(chapterId)}/verses?content-type=json`
   const res = await fetch(url, { headers: h })
   if (!res.ok) {
-    console.warn('[apiBible] verses fetch failed:', res.status, await res.text())
+    if (import.meta.env.DEV) console.warn('[apiBible] verses fetch failed:', res.status)
     return null
   }
   const json = await res.json()

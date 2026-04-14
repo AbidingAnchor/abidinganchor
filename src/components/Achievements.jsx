@@ -1,13 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { JOURNEY_MAP_GEOMETRY } from '../data/journeyMapGeometry'
-
-const KEY = 'abidinganchor-achievements'
-const TRIVIA_STATS_KEY = 'abidinganchor-trivia-stats'
-const STREAK_KEY = 'abidinganchor-trivia-streak'
-const VERSE_PROGRESS_KEY = 'abidinganchor-verse-progress'
-const DEVOTIONAL_PROGRESS_KEY = 'abidinganchor-devotional-progress'
-const DEVOTIONAL_STREAK_KEY = 'abidinganchor-devotional-streak'
+import { userStorageKey } from '../utils/userStorage'
 
 function readJson(key, fallback) {
   try {
@@ -45,14 +39,36 @@ const BADGES = [
   { id: 'overcomer', icon: '👑', name: 'Overcomer', desc: 'Maintain a 30-day streak', check: (s) => (s.readingStreak || 0) >= 30 },
 ]
 
-function computeSnapshot(profile) {
-  const triviaStats = readJson(TRIVIA_STATS_KEY, { gamesCompleted: 0, bestScore: 0, psalmsCorrect: 0 })
-  const streak = readJson(STREAK_KEY, { count: 0 })
-  const verseProgress = readJson(VERSE_PROGRESS_KEY, {})
-  const devotionalProgress = readJson(DEVOTIONAL_PROGRESS_KEY, { completedDates: [] })
-  const devotionalStreakObj = readJson(DEVOTIONAL_STREAK_KEY, { count: 0 })
-  const mapState = readJson('abidinganchor-journey-map', { seenFacts: {} })
-  const startDateRaw = localStorage.getItem('abidinganchor-start-date')
+function computeSnapshot(profile, userId) {
+  if (!userId) {
+    return {
+      gamesCompleted: 0,
+      bestScore: 0,
+      psalmsCorrect: 0,
+      triviaStreak: 0,
+      appDays: 1,
+      memorizedTotal: 0,
+      memorizedNT: 0,
+      memorizedHope: 0,
+      memorizedPeace: 0,
+      memorizedLove: 0,
+      devotionalsCompleted: 0,
+      journalEntries: 0,
+      communityPrayers: 0,
+      verseCardShared: false,
+      mapFullyVisited: false,
+      profileComplete: false,
+      readingStreak: 0,
+      devotionalReadingStreak: 0,
+    }
+  }
+  const triviaStats = readJson(userStorageKey(userId, 'trivia-stats'), { gamesCompleted: 0, bestScore: 0, psalmsCorrect: 0 })
+  const streak = readJson(userStorageKey(userId, 'trivia-streak'), { count: 0 })
+  const verseProgress = readJson(userStorageKey(userId, 'verse-progress'), {})
+  const devotionalProgress = readJson(userStorageKey(userId, 'devotional-progress'), { completedDates: [] })
+  const devotionalStreakObj = readJson(userStorageKey(userId, 'devotional-streak'), { count: 0 })
+  const mapState = readJson(userStorageKey(userId, 'journey-map'), { seenFacts: {} })
+  const startDateRaw = localStorage.getItem(userStorageKey(userId, 'app-start-date'))
   const start = startDateRaw ? new Date(startDateRaw) : new Date()
   const appDays = Math.max(1, Math.floor((Date.now() - start.getTime()) / 86400000) + 1)
 
@@ -71,9 +87,9 @@ function computeSnapshot(profile) {
   const memorizedLove = memorized.filter((p) => String(p.category || '').toLowerCase() === 'love').length
   const devotionalsCompleted = Array.isArray(devotionalProgress.completedDates) ? devotionalProgress.completedDates.length : 0
 
-  const journalEntries = parseInt(localStorage.getItem('abidinganchor-journal-entry-count') || '0', 10)
-  const communityPrayers = parseInt(localStorage.getItem('abidinganchor-community-prayer-submissions') || '0', 10)
-  const verseCardShared = localStorage.getItem('abidinganchor-verse-card-shared') === '1'
+  const journalEntries = parseInt(localStorage.getItem(userStorageKey(userId, 'journal-entry-count')) || '0', 10)
+  const communityPrayers = parseInt(localStorage.getItem(userStorageKey(userId, 'community-prayer-submissions')) || '0', 10)
+  const verseCardShared = localStorage.getItem(userStorageKey(userId, 'verse-card-shared')) === '1'
   const mapFullyVisited = JOURNEY_MAP_GEOMETRY.every((stop) => mapState.seenFacts?.[stop.id])
   const profileComplete = profile?.onboarding_complete === true
   const readingStreak = Number(profile?.reading_streak) || 0
@@ -99,11 +115,22 @@ function computeSnapshot(profile) {
 }
 
 export default function Achievements({ onExit, fillVertical = false }) {
-  const { profile } = useAuth()
-  const [store, setStore] = useState(() => readJson(KEY, {}))
-  const snapshot = useMemo(() => computeSnapshot(profile), [profile])
+  const { profile, user } = useAuth()
+  const achievementKey = user?.id ? userStorageKey(user.id, 'achievements') : null
+  const [store, setStore] = useState({})
+
+  useEffect(() => {
+    if (!achievementKey) {
+      setStore({})
+      return
+    }
+    setStore(readJson(achievementKey, {}))
+  }, [achievementKey])
+
+  const snapshot = useMemo(() => computeSnapshot(profile, user?.id), [profile, user?.id])
 
   const computed = useMemo(() => {
+    if (!achievementKey) return BADGES.map((b) => ({ ...b, unlockedAt: null }))
     const now = new Date().toISOString()
     const nextStore = { ...store }
     let changed = false
@@ -117,10 +144,10 @@ export default function Achievements({ onExit, fillVertical = false }) {
     })
     if (changed) {
       setStore(nextStore)
-      writeJson(KEY, nextStore)
+      writeJson(achievementKey, nextStore)
     }
     return list
-  }, [snapshot, store])
+  }, [snapshot, store, achievementKey])
 
   const earned = computed.filter((b) => b.unlockedAt).length
 

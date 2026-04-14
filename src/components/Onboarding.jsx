@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import { userStorageKey } from '../utils/userStorage'
 
 const GROWTH_GOALS = [
   { id: 'prayer', icon: '🙏', label: 'Deeper Prayer Life' },
@@ -81,8 +82,9 @@ export default function Onboarding({ onComplete }) {
   const handleComplete = async () => {
     setLoading(true)
     try {
-      // Save to localStorage
-      localStorage.setItem('onboarding_complete', 'true')
+      if (user?.id) {
+        localStorage.setItem(userStorageKey(user.id, 'onboarding-complete'), 'true')
+      }
       
       // Save to Supabase profile
       if (user?.id) {

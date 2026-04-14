@@ -1,4 +1,8 @@
-const SCENERY_KEY = 'abidinganchor-scenery'
+import { getActiveStorageUserId, userStorageKey } from './userStorage'
+
+function sceneryKey() {
+  return userStorageKey(getActiveStorageUserId(), 'scenery')
+}
 
 export function getAutoScenery() {
   const hour = new Date().getHours()
@@ -6,7 +10,7 @@ export function getAutoScenery() {
 }
 
 export function getSavedScenery() {
-  const stored = localStorage.getItem(SCENERY_KEY)
+  const stored = localStorage.getItem(sceneryKey())
   if (stored === 'day' || stored === 'night') return stored
   return null
 }
@@ -17,7 +21,7 @@ export function getScenery() {
 
 export function setScenery(next) {
   const value = next === 'night' ? 'night' : 'day'
-  localStorage.setItem(SCENERY_KEY, value)
+  localStorage.setItem(sceneryKey(), value)
   return value
 }
 

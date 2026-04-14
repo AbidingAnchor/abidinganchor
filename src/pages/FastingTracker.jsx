@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-
-const KEY = 'abidinganchor-fasting'
+import { useAuth } from '../context/AuthContext'
+import { userStorageKey } from '../utils/userStorage'
 
 const fastTypes = [
   { id: 'sunrise-sunset', label: '🌅 Sunrise to Sunset', hours: 12 },
@@ -18,16 +18,16 @@ const encouragements = [
   { ref: 'Acts 13:2-3', text: 'While they were worshiping the Lord and fasting...', note: 'Fasting can sharpen spiritual direction.' },
 ]
 
-function readStore() {
+function readStore(storageKey) {
   try {
-    return JSON.parse(localStorage.getItem(KEY) || '{"history":[],"active":null,"notes":[]}')
+    return JSON.parse(localStorage.getItem(storageKey) || '{"history":[],"active":null,"notes":[]}')
   } catch {
     return { history: [], active: null, notes: [] }
   }
 }
 
-function saveStore(v) {
-  localStorage.setItem(KEY, JSON.stringify(v))
+function saveStore(storageKey, v) {
+  localStorage.setItem(storageKey, JSON.stringify(v))
 }
 
 function formatDuration(ms) {
@@ -39,7 +39,9 @@ function formatDuration(ms) {
 }
 
 export default function FastingTracker() {
-  const [store, setStore] = useState(() => readStore())
+  const { user } = useAuth()
+  const storageKey = useMemo(() => userStorageKey(user?.id, 'fasting'), [user?.id])
+  const [store, setStore] = useState({ history: [], active: null, notes: [] })
   const [now, setNow] = useState(Date.now())
   const [type, setType] = useState('sunrise-sunset')
   const [customHours, setCustomHours] = useState(8)
@@ -55,6 +57,10 @@ export default function FastingTracker() {
     const t = setTimeout(() => setLoading(false), 220)
     return () => clearTimeout(t)
   }, [])
+
+  useEffect(() => {
+    setStore(readStore(storageKey))
+  }, [storageKey])
 
   const active = store.active
   const elapsedMs = active ? now - new Date(active.startedAt).getTime() : 0
@@ -84,7 +90,7 @@ export default function FastingTracker() {
       },
     }
     setStore(next)
-    saveStore(next)
+    saveStore(storageKey, next)
     setIntention('')
   }
 
@@ -96,7 +102,7 @@ export default function FastingTracker() {
     const entry = { ...active, endedAt, durationMs, date: new Date().toLocaleDateString() }
     const next = { ...store, active: null, history: [entry, ...(store.history || [])].slice(0, 100) }
     setStore(next)
-    saveStore(next)
+    saveStore(storageKey, next)
   }
 
   const addNote = () => {
@@ -106,7 +112,7 @@ export default function FastingTracker() {
       notes: [{ id: Date.now(), text: note.trim(), at: new Date().toISOString() }, ...(store.notes || [])].slice(0, 80),
     }
     setStore(next)
-    saveStore(next)
+    saveStore(storageKey, next)
     setNote('')
   }
 

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { userStorageKey } from '../utils/userStorage'
 
 const quickPrompts = [
   'Explain this verse',
@@ -12,9 +14,9 @@ const quickPrompts = [
 const welcomeMessage =
   "Peace be with you! 🕊️ I'm your AI Bible Study Companion, here to help you dive deeper into God's Word. You can ask me to explain any verse or passage, explore biblical topics, or find scriptures for what you're going through. What would you like to study today?"
 
-const HISTORY_KEY = 'abidinganchor-ai-chats'
-
 export default function AICompanion() {
+  const { user } = useAuth()
+  const historyKey = useMemo(() => userStorageKey(user?.id, 'ai-chats'), [user?.id])
   const location = useLocation()
   const navigate = useNavigate()
   const [input, setInput] = useState('')
@@ -48,11 +50,11 @@ export default function AICompanion() {
   useEffect(() => {
     const nonWelcome = (messages || []).filter((m) => m.id !== 'welcome')
     if (nonWelcome.length === 0) return
-    const existing = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]')
+    const existing = JSON.parse(localStorage.getItem(historyKey) || '[]')
     const session = { id: sessionId, updatedAt: new Date().toISOString(), messages }
     const next = [session, ...(existing || []).filter((s) => s.id !== sessionId)].slice(0, 5)
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(next))
-  }, [messages, sessionId])
+    localStorage.setItem(historyKey, JSON.stringify(next))
+  }, [messages, sessionId, historyKey])
 
   const resetConversation = () => {
     setMessages([{ id: 'welcome', role: 'assistant', content: welcomeMessage }])
@@ -91,14 +93,15 @@ export default function AICompanion() {
       const safeText = aiText || "I couldn't generate a response right now. Please try again."
       setMessages((prev) => [...prev, { id: `${Date.now()}-assistant`, role: 'assistant', content: safeText }])
     } catch (err) {
-      console.error('Full error:', err)
-      setError(err?.message || JSON.stringify(err) || 'Unknown error')
+      if (import.meta.env.DEV) console.error('AI companion request failed:', err)
+      const userMessage = 'Something went wrong. Please try again in a moment.'
+      setError(userMessage)
       setMessages((prev) => [
         ...prev,
         {
           id: `${Date.now()}-assistant-error`,
           role: 'assistant',
-          content: err?.message || JSON.stringify(err) || 'Unknown error',
+          content: userMessage,
         },
       ])
     } finally {

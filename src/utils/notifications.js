@@ -1,6 +1,14 @@
-const ENABLED_KEY = 'abidinganchor-notif-enabled'
-const TIME_KEY = 'abidinganchor-notif-time'
-const LEGACY_KEY = 'abidinganchor-notifications'
+import { getActiveStorageUserId, userStorageKey } from './userStorage'
+
+function enabledKey() {
+  return userStorageKey(getActiveStorageUserId(), 'notif-enabled')
+}
+function timeKey() {
+  return userStorageKey(getActiveStorageUserId(), 'notif-time')
+}
+function permissionKey() {
+  return userStorageKey(getActiveStorageUserId(), 'notif-permission')
+}
 
 export function getNotificationPermissionStatus() {
   if (!('Notification' in window)) return 'unsupported'
@@ -9,26 +17,26 @@ export function getNotificationPermissionStatus() {
 
 export function getNotificationSettings() {
   return {
-    enabled: localStorage.getItem(ENABLED_KEY) === 'true',
-    time: localStorage.getItem(TIME_KEY) || 'morning',
+    enabled: localStorage.getItem(enabledKey()) === 'true',
+    time: localStorage.getItem(timeKey()) || 'morning',
   }
 }
 
 export function saveNotificationTime(time) {
-  localStorage.setItem(TIME_KEY, time === 'evening' ? 'evening' : 'morning')
+  localStorage.setItem(timeKey(), time === 'evening' ? 'evening' : 'morning')
 }
 
 export function setNotificationsEnabled(enabled) {
-  localStorage.setItem(ENABLED_KEY, enabled ? 'true' : 'false')
+  localStorage.setItem(enabledKey(), enabled ? 'true' : 'false')
 }
 
 export async function requestNotificationPermission() {
   if (!('Notification' in window)) return 'unsupported'
   if (!('serviceWorker' in navigator)) return 'unsupported'
   
-  const permission = await Notification.requestPermission();
-  localStorage.setItem(LEGACY_KEY, permission);
-  return permission;
+  const permission = await Notification.requestPermission()
+  localStorage.setItem(permissionKey(), permission)
+  return permission
 }
 
 export const scheduleLocalNotification = () => {
@@ -61,8 +69,8 @@ export const scheduleLocalNotification = () => {
 };
 
 export const getNotificationStatus = () => {
-  return localStorage.getItem(LEGACY_KEY) || 'default';
-};
+  return localStorage.getItem(permissionKey()) || 'default'
+}
 
 export async function syncNotificationSettingsToServiceWorker() {
   if (!('serviceWorker' in navigator)) return

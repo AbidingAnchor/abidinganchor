@@ -1,9 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useAuth } from '../context/AuthContext'
 import { WORSHIP_TRACKS } from '../data/worshipTracks'
+import { getActiveStorageUserId, userStorageKey } from '../utils/userStorage'
 
 export const INITIAL_AUDIO_URL = '/music/soaking-worship.mp3'
-export const WORSHIP_VOLUME_KEY = 'abidinganchor-worship-volume'
 const DEFAULT_WORSHIP_VOLUME = 0.7
+
+function worshipVolumeStorageKey() {
+  return userStorageKey(getActiveStorageUserId(), 'worship-volume')
+}
 
 /** Single HTMLAudioElement — module scope; persists across route changes and remounts */
 export const globalAudio = new Audio()
@@ -26,7 +31,7 @@ function defaultIndex() {
 
 export function readStoredVolume() {
   try {
-    const raw = localStorage.getItem(WORSHIP_VOLUME_KEY)
+    const raw = localStorage.getItem(worshipVolumeStorageKey())
     if (raw == null) return DEFAULT_WORSHIP_VOLUME
     const n = parseFloat(raw)
     if (!Number.isFinite(n)) return DEFAULT_WORSHIP_VOLUME
@@ -282,10 +287,19 @@ export function worshipSetVolume(v) {
   worshipState = { ...worshipState, volume: vol }
   globalAudio.volume = vol
   try {
-    localStorage.setItem(WORSHIP_VOLUME_KEY, String(vol))
+    localStorage.setItem(worshipVolumeStorageKey(), String(vol))
   } catch {
     /* ignore */
   }
+  notify()
+}
+
+/** After sign-in / user switch, load volume for the active account’s storage key. */
+export function reloadWorshipVolumeForActiveUser() {
+  ensureAudioListeners()
+  const vol = readStoredVolume()
+  worshipState = { ...worshipState, volume: vol }
+  globalAudio.volume = vol
   notify()
 }
 
@@ -308,6 +322,7 @@ export function worshipStartPlaybackFromOverlay() {
 const SKY_STAR_COUNT = 92
 
 export default function WorshipMode() {
+  const { user } = useAuth()
   const tracks = WORSHIP_TRACKS
   const wp = useWorshipPlaybackState()
   const { currentIndex, isPlaying, isLoading, audioError, volume } = wp
@@ -315,6 +330,10 @@ export default function WorshipMode() {
   useEffect(() => {
     resyncWorshipStateFromAudio()
   }, [])
+
+  useEffect(() => {
+    reloadWorshipVolumeForActiveUser()
+  }, [user?.id])
 
   const handleVolumeInput = (e) => {
     const v = parseFloat(e.target.value)

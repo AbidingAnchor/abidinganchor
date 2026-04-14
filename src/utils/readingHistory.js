@@ -1,8 +1,12 @@
-const KEY = 'abidinganchor-reading-history'
+import { getActiveStorageUserId, userStorageKey } from './userStorage'
+
+function historyKey() {
+  return userStorageKey(getActiveStorageUserId(), 'reading-history')
+}
 
 function read() {
   try {
-    const raw = localStorage.getItem(KEY)
+    const raw = localStorage.getItem(historyKey())
     return raw ? JSON.parse(raw) : []
   } catch {
     return []
@@ -10,7 +14,7 @@ function read() {
 }
 
 function write(entries) {
-  localStorage.setItem(KEY, JSON.stringify(entries))
+  localStorage.setItem(historyKey(), JSON.stringify(entries))
 }
 
 export function getReadingHistory() {

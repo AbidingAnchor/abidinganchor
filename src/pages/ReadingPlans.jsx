@@ -1,18 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
 import { readingPlans } from '../data/readingPlans'
+import { useAuth } from '../context/AuthContext'
+import { userStorageKey } from '../utils/userStorage'
 
-const KEY = 'abidinganchor-reading-plans'
-
-function readStore() {
+function readStore(storageKey) {
   try {
-    return JSON.parse(localStorage.getItem(KEY) || '{}')
+    return JSON.parse(localStorage.getItem(storageKey) || '{}')
   } catch {
     return {}
   }
 }
 
-function saveStore(v) {
-  localStorage.setItem(KEY, JSON.stringify(v))
+function saveStore(storageKey, v) {
+  localStorage.setItem(storageKey, JSON.stringify(v))
 }
 
 function todayKey() {
@@ -26,7 +26,9 @@ function yesterdayKey() {
 }
 
 export default function ReadingPlans() {
-  const [store, setStore] = useState(() => readStore())
+  const { user } = useAuth()
+  const storageKey = useMemo(() => userStorageKey(user?.id, 'reading-plans'), [user?.id])
+  const [store, setStore] = useState({})
   const [selectedPlanId, setSelectedPlanId] = useState(null)
   const [celebratePlanId, setCelebratePlanId] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -34,6 +36,10 @@ export default function ReadingPlans() {
     const t = setTimeout(() => setLoading(false), 220)
     return () => clearTimeout(t)
   }, [])
+
+  useEffect(() => {
+    setStore(readStore(storageKey))
+  }, [storageKey])
 
   const selectedPlan = selectedPlanId ? readingPlans.find((p) => p.id === selectedPlanId) : null
   const activePlanId = store.activePlanId || null
@@ -49,7 +55,7 @@ export default function ReadingPlans() {
   const startPlan = (planId) => {
     const next = { ...store, activePlanId: planId, [planId]: store[planId] || { completedDays: {}, streak: 0, lastDate: null } }
     setStore(next)
-    saveStore(next)
+    saveStore(storageKey, next)
     setSelectedPlanId(planId)
   }
 
@@ -68,7 +74,7 @@ export default function ReadingPlans() {
       setCelebratePlanId(plan.id)
     }
     setStore(next)
-    saveStore(next)
+    saveStore(storageKey, next)
   }
 
   if (selectedPlan) {

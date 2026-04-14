@@ -1,19 +1,25 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { scheduleLocalNotification } from '../utils/notifications'
+import { useAuth } from '../context/AuthContext'
+import { userStorageKey } from '../utils/userStorage'
 
-const LEGAL_STORAGE_KEY = 'abidinganchor-welcomed'
 const LEGACY_KEY = 'abidinganchor-legal-agreed'
 
 export default function LegalModal({ onAgreed }) {
+  const { user } = useAuth()
   const navigate = useNavigate()
-  const [open, setOpen] = useState(() => {
-    const alreadyAgreed = localStorage.getItem(LEGAL_STORAGE_KEY) || localStorage.getItem(LEGACY_KEY)
-    return !alreadyAgreed
-  })
+  const [open, setOpen] = useState(true)
+
+  useEffect(() => {
+    const legacy = localStorage.getItem(LEGACY_KEY) === 'true'
+    const scoped = user?.id && localStorage.getItem(userStorageKey(user.id, 'legal-welcomed')) === 'true'
+    if (legacy || scoped) setOpen(false)
+  }, [user?.id])
 
   const handleAgree = () => {
-    localStorage.setItem(LEGAL_STORAGE_KEY, 'true')
+    localStorage.setItem(LEGACY_KEY, 'true')
+    if (user?.id) localStorage.setItem(userStorageKey(user.id, 'legal-welcomed'), 'true')
     setOpen(false)
     // Trigger notification setup if permission is already granted
     if (Notification.permission === 'granted') {

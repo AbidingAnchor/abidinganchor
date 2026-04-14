@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { userStorageKey } from '../utils/userStorage'
 
 const BMAC_LINK = 'https://buymeacoffee.com/abidinganchor'
 
 export default function Support() {
+  const { user } = useAuth()
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
 
   useEffect(() => {
-    setNotificationsEnabled(localStorage.getItem('abidinganchor-notifications') === 'enabled')
-  }, [])
+    setNotificationsEnabled(localStorage.getItem(userStorageKey(user?.id, 'support-browser-notifications')) === 'enabled')
+  }, [user?.id])
 
   const handleNotifications = async () => {
     if (!('Notification' in window)) {
@@ -21,7 +24,7 @@ export default function Support() {
         body: 'You will now receive daily verse notifications! 🙏',
         icon: '/icon-192x192.png',
       })
-      localStorage.setItem('abidinganchor-notifications', 'enabled')
+      localStorage.setItem(userStorageKey(user?.id, 'support-browser-notifications'), 'enabled')
       setNotificationsEnabled(true)
     } else {
       alert('Notifications blocked. Please enable them in your browser settings.')

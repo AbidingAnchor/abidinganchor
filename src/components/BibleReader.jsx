@@ -5,11 +5,11 @@ import { dedupeVersesByNumber, prepareBibleReaderVerseText } from '../utils/kjvV
 import { BOOK_CDN_TO_OSIS } from '../utils/bookOsisMap'
 import { fetchApiBibleChapterVerses, resolveBibleIdForLanguage } from '../services/apiBible'
 import { fetchGetBibleChapter, resolveGetBibleTranslationId } from '../services/getBibleApi'
+import { useAuth } from '../context/AuthContext'
+import { userStorageKey } from '../utils/userStorage'
 
 /** Free JSON API — see https://bible-api.com/ and GET /data for supported translations (public domain). */
 const BIBLE_API_COM = 'https://bible-api.com'
-
-const BIBLE_READER_TRANSLATION_KEY = 'abidinganchor-bible-reader-translation'
 
 const BIBLE_FONT_MIN = 14
 const BIBLE_FONT_MAX = 24
@@ -44,13 +44,29 @@ const BIBLE_READER_TRANSLATIONS = [
   { id: 'darby', labelKey: 'bible.darby', subtitleKey: 'bible.subtitleDarby' },
 ]
 
-function getStoredTranslationId() {
+function translationStorageKey(userId) {
+  return userStorageKey(userId, 'bible-reader-translation')
+}
+
+function getStoredTranslationId(userId) {
   if (typeof window === 'undefined') return DEFAULT_BIBLE_API_COM_TRANSLATION
-  const raw = localStorage.getItem(BIBLE_READER_TRANSLATION_KEY)
+  const k = translationStorageKey(userId)
+  let raw = localStorage.getItem(k)
+  if (raw == null && userId) {
+    const legacy = localStorage.getItem('abidinganchor-bible-reader-translation')
+    if (legacy) {
+      raw = legacy
+      try {
+        localStorage.setItem(k, legacy)
+      } catch {
+        /* ignore */
+      }
+    }
+  }
   // OEB ids were returning 404 from bible-api.com; migrate to WEB.
   if (raw === 'oeb-us' || raw === 'oeb') {
     try {
-      localStorage.setItem(BIBLE_READER_TRANSLATION_KEY, DEFAULT_BIBLE_API_COM_TRANSLATION)
+      localStorage.setItem(k, DEFAULT_BIBLE_API_COM_TRANSLATION)
     } catch {
       /* ignore */
     }
@@ -131,6 +147,7 @@ const BOOKS = [
 
 export default function BibleReader({ open, onClose, mode = 'read', onModeChange }) {
   const { t, i18n } = useTranslation()
+  const { user } = useAuth()
   const uiLang = (i18n.resolvedLanguage || i18n.language || 'en').toLowerCase().split(/[-_]/)[0]
 
   const [bookIndex, setBookIndex] = useState(0)
@@ -142,12 +159,18 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
   const [showTranslationPicker, setShowTranslationPicker] = useState(false)
   const [translationDropdownRect, setTranslationDropdownRect] = useState(null)
   const translationButtonRef = useRef(null)
-  const [translationId, setTranslationId] = useState(getStoredTranslationId)
-  const [fontSize, setFontSize] = useState(() => {
-    if (typeof window === 'undefined') return BIBLE_FONT_DEFAULT
-    const raw = localStorage.getItem('bibleFontSize')
-    return clampBibleFontSize(parseInt(raw ?? '', 10))
-  })
+  const [translationId, setTranslationId] = useState(DEFAULT_BIBLE_API_COM_TRANSLATION)
+  const [fontSize, setFontSize] = useState(BIBLE_FONT_DEFAULT)
+
+  useEffect(() => {
+    setTranslationId(getStoredTranslationId(user?.id))
+    try {
+      const raw = localStorage.getItem(userStorageKey(user?.id, 'bible-font-size'))
+      if (raw != null) setFontSize(clampBibleFontSize(parseInt(raw, 10)))
+    } catch {
+      /* ignore */
+    }
+  }, [user?.id])
 
   const selectedBook = BOOKS[bookIndex]
   const maxChapter = selectedBook?.chapters || 1
@@ -211,18 +234,17 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
 
   useEffect(() => {
     if (!open) return
-    
-    // Load from localStorage
-    const savedBookIndex = localStorage.getItem('bibleBookIndex')
-    const savedChapter = localStorage.getItem('bibleChapter')
-    
+
+    const savedBookIndex = localStorage.getItem(userStorageKey(user?.id, 'bible-book-index'))
+    const savedChapter = localStorage.getItem(userStorageKey(user?.id, 'bible-chapter'))
+
     if (savedBookIndex !== null) {
-      setBookIndex(parseInt(savedBookIndex))
+      setBookIndex(parseInt(savedBookIndex, 10))
     }
     if (savedChapter !== null) {
-      setChapter(parseInt(savedChapter))
+      setChapter(parseInt(savedChapter, 10))
     }
-  }, [open])
+  }, [open, user?.id])
 
   useEffect(() => {
     if (!open || !selectedBook) return
@@ -238,12 +260,6 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
           return r.json()
         })
         .then((data) => {
-          if (selectedBook.cdnName === 'genesis' && chapter === 3) {
-            console.log('[BibleReader] Raw API response (Genesis 3):', data)
-            const rawV6 = (data.verses || []).find((v) => Number(v.verse) === 6)
-            console.log('[BibleReader] Genesis 3:6 raw verse text from API:', rawV6?.text)
-          }
-
           const rows = dedupeVersesByNumber(data.verses || [])
           return rows.map((v) => ({
             verse: v.verse,
@@ -296,7 +312,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
           setLoading(false)
         }
       } catch (err) {
-        console.error('Error loading verses:', err)
+        if (import.meta.env.DEV) console.error('Error loading verses:', err)
         if (!cancelled) {
           setVerses([])
           setLoading(false)
@@ -311,14 +327,22 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
 
   useEffect(() => {
     if (selectedBook) {
-      localStorage.setItem('bibleBookIndex', bookIndex.toString())
-      localStorage.setItem('bibleChapter', chapter.toString())
+      try {
+        localStorage.setItem(userStorageKey(user?.id, 'bible-book-index'), bookIndex.toString())
+        localStorage.setItem(userStorageKey(user?.id, 'bible-chapter'), chapter.toString())
+      } catch {
+        /* ignore */
+      }
     }
-  }, [bookIndex, chapter, selectedBook])
+  }, [bookIndex, chapter, selectedBook, user?.id])
 
   useEffect(() => {
-    localStorage.setItem(BIBLE_READER_TRANSLATION_KEY, translationId)
-  }, [translationId])
+    try {
+      localStorage.setItem(translationStorageKey(user?.id), translationId)
+    } catch {
+      /* ignore */
+    }
+  }, [translationId, user?.id])
 
   const handleBookSelect = (index) => {
     setBookIndex(index)
@@ -601,7 +625,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                 setFontSize((s) => {
                   const next = clampBibleFontSize(s - BIBLE_FONT_STEP)
                   try {
-                    localStorage.setItem('bibleFontSize', String(next))
+                    localStorage.setItem(userStorageKey(user?.id, 'bible-font-size'), String(next))
                   } catch {
                     /* ignore */
                   }
@@ -629,7 +653,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                 setFontSize((s) => {
                   const next = clampBibleFontSize(s + BIBLE_FONT_STEP)
                   try {
-                    localStorage.setItem('bibleFontSize', String(next))
+                    localStorage.setItem(userStorageKey(user?.id, 'bible-font-size'), String(next))
                   } catch {
                     /* ignore */
                   }

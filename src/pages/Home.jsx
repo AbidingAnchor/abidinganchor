@@ -14,6 +14,7 @@ import { getJournalEntries, saveToJournal, getJournalWeekActiveDayShortNames } f
 import SaveToast from '../components/SaveToast'
 import FirstJournalEntryCelebration from '../components/FirstJournalEntryCelebration'
 import { useAuth } from '../context/AuthContext'
+import { userStorageKey } from '../utils/userStorage'
 
 function Home({ onOpenWorship, worshipStatus }) {
   const { t, i18n } = useTranslation()
@@ -25,13 +26,17 @@ function Home({ onOpenWorship, worshipStatus }) {
   const [showFirstJournalCelebration, setShowFirstJournalCelebration] = useState(false)
   const [journalCount, setJournalCount] = useState(0)
   const [suppressPersonalWelcome, setSuppressPersonalWelcome] = useState(false)
-  const [presenceVm, setPresenceVm] = useState(() => getPresenceViewModel(syncPresenceState()))
+  const [presenceVm, setPresenceVm] = useState(() => getPresenceViewModel(syncPresenceState(null)))
   const [presenceJustCompleted, setPresenceJustCompleted] = useState(false)
   const presenceGlowTimerRef = useRef(null)
 
   const refreshPresence = useCallback(() => {
-    setPresenceVm(getPresenceViewModel(syncPresenceState()))
-  }, [])
+    if (!user?.id) {
+      setPresenceVm(getPresenceViewModel(syncPresenceState(null)))
+      return
+    }
+    setPresenceVm(getPresenceViewModel(syncPresenceState(user.id)))
+  }, [user?.id])
 
   const finishPresenceGlow = useCallback(() => {
     if (presenceGlowTimerRef.current) clearTimeout(presenceGlowTimerRef.current)
@@ -39,19 +44,21 @@ function Home({ onOpenWorship, worshipStatus }) {
   }, [])
 
   const handlePresenceComplete = useCallback(() => {
-    markPresenceComplete()
+    if (!user?.id) return
+    markPresenceComplete(user.id)
     refreshPresence()
     setPresenceJustCompleted(true)
     finishPresenceGlow()
-  }, [refreshPresence, finishPresenceGlow])
+  }, [user?.id, refreshPresence, finishPresenceGlow])
 
   const markPresenceFromEngagement = useCallback(() => {
-    if (isCompletedToday(syncPresenceState())) return
-    markPresenceComplete()
+    if (!user?.id) return
+    if (isCompletedToday(syncPresenceState(user.id))) return
+    markPresenceComplete(user.id)
     refreshPresence()
     setPresenceJustCompleted(true)
     finishPresenceGlow()
-  }, [refreshPresence, finishPresenceGlow])
+  }, [user?.id, refreshPresence, finishPresenceGlow])
 
   useEffect(() => {
     if (profile) setSuppressPersonalWelcome(false)
@@ -59,7 +66,9 @@ function Home({ onOpenWorship, worshipStatus }) {
 
   useEffect(() => {
     if (user?.id && profile && !loading) {
-      const isComplete = profile.onboarding_complete === true || localStorage.getItem('onboarding_complete') === 'true'
+      const onboardingLocal =
+        user?.id && localStorage.getItem(userStorageKey(user.id, 'onboarding-complete')) === 'true'
+      const isComplete = profile.onboarding_complete === true || onboardingLocal
       if (!isComplete) {
         navigate('/onboarding')
       }

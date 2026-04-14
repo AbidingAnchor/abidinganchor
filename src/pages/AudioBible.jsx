@@ -329,7 +329,7 @@ export default function AudioBible() {
     const initVoices = async () => {
       if (typeof window !== 'undefined' && window.speechSynthesis) {
         await loadVoices()
-        console.log('Voices loaded successfully')
+        if (import.meta.env.DEV) console.log('Voices loaded successfully')
       } else {
         setSpeechSupported(false)
       }

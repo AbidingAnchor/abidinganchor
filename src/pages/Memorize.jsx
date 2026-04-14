@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import { useAuth } from '../context/AuthContext'
+import { userStorageKey } from '../utils/userStorage'
 
 const memoryVerses = [
   { reference: 'John 3:16', text: 'For God so loved the world, that he gave his one and only Son, that whoever believes in him should not perish, but have eternal life.' },
@@ -22,6 +24,7 @@ function hideWords(text, ratio) {
 }
 
 export default function Memorize() {
+  const { user } = useAuth()
   const [selected, setSelected] = useState(memoryVerses[0])
   const [customText, setCustomText] = useState('')
   const [customRef, setCustomRef] = useState('')
@@ -35,8 +38,9 @@ export default function Memorize() {
   const tokens = useMemo(() => hideWords(sourceText, ratios[round]), [sourceText, round])
 
   const saveMemorized = () => {
-    const existing = JSON.parse(localStorage.getItem('abidinganchor-memorized') || '[]')
-    localStorage.setItem('abidinganchor-memorized', JSON.stringify([{ reference: sourceRef, text: sourceText }, ...existing]))
+    const mk = userStorageKey(user?.id, 'memorized-verses')
+    const existing = JSON.parse(localStorage.getItem(mk) || '[]')
+    localStorage.setItem(mk, JSON.stringify([{ reference: sourceRef, text: sourceText }, ...existing]))
   }
 
   const nextRound = () => {

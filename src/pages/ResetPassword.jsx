@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { clearAbidingAnchorUserStorage } from '../utils/userStorage'
 
 function captureRecoveryHintFromUrl() {
   if (typeof window === 'undefined') return { hash: '', search: '' }
@@ -130,6 +131,7 @@ export default function ResetPassword() {
     try {
       const { error } = await supabase.auth.updateUser({ password })
       if (error) throw error
+      clearAbidingAnchorUserStorage()
       await supabase.auth.signOut()
       setSuccess(true)
     } catch (err) {

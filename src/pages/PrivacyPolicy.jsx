@@ -38,6 +38,10 @@ export default function PrivacyPolicy() {
                 This policy applies globally to all users of our Bible application. We are committed to a &quot;Privacy by Design&quot;
                 approach, meaning we aim to collect the absolute minimum data necessary to function.
               </p>
+              <p>
+                This application does not embed third-party advertising or analytics trackers (such as Google Analytics or Meta Pixel)
+                in the client. Features that call external APIs (for example YouTube for video content) are described below.
+              </p>
             </section>
 
             <section className="space-y-2">

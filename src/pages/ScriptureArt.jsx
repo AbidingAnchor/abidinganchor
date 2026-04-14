@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-
-const GALLERY_KEY = 'abidinganchor-art-gallery'
+import { useAuth } from '../context/AuthContext'
+import { userStorageKey } from '../utils/userStorage'
 
 const popularVerses = [
   { ref: 'John 3:16', text: 'For God so loved the world that he gave his one and only Son...' },
@@ -46,15 +46,17 @@ const themes = {
 
 const textColors = ['#FFFFFF', '#D4A843', '#f6efd9']
 
-function readGallery() {
+function readGallery(storageKey) {
   try {
-    return JSON.parse(localStorage.getItem(GALLERY_KEY) || '[]')
+    return JSON.parse(localStorage.getItem(storageKey) || '[]')
   } catch {
     return []
   }
 }
 
 export default function ScriptureArt() {
+  const { user } = useAuth()
+  const galleryKey = useMemo(() => userStorageKey(user?.id, 'art-gallery'), [user?.id])
   const canvasRef = useRef(null)
   const [verse, setVerse] = useState('Peace I leave with you; my peace I give you.')
   const [reference, setReference] = useState('John 14:27')
@@ -63,7 +65,11 @@ export default function ScriptureArt() {
   const [textColor, setTextColor] = useState('#FFFFFF')
   const [showCross, setShowCross] = useState(true)
   const [showPicker, setShowPicker] = useState(false)
-  const [gallery, setGallery] = useState(() => readGallery())
+  const [gallery, setGallery] = useState([])
+
+  useEffect(() => {
+    setGallery(readGallery(galleryKey))
+  }, [galleryKey])
 
   const fontFamily = useMemo(() => {
     if (fontStyle === 'Sans-serif') return 'Inter, system-ui, sans-serif'
@@ -140,7 +146,7 @@ export default function ScriptureArt() {
     }
     const next = [item, ...gallery].slice(0, 12)
     setGallery(next)
-    localStorage.setItem(GALLERY_KEY, JSON.stringify(next))
+    localStorage.setItem(galleryKey, JSON.stringify(next))
   }
 
   return (

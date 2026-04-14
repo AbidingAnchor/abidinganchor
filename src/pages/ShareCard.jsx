@@ -5,8 +5,11 @@ import { Share } from '@capacitor/share'
 import { Filesystem, Directory } from '@capacitor/filesystem'
 import { Camera } from '@capacitor/camera'
 import FaithCard from '../components/FaithCard'
+import { useAuth } from '../context/AuthContext'
+import { userStorageKey } from '../utils/userStorage'
 
 export default function ShareCard() {
+  const { user } = useAuth()
   const location = useLocation()
   const cardRef = useRef(null)
   const [verseReference, setVerseReference] = useState('Psalm 23:1')
@@ -154,7 +157,7 @@ export default function ShareCard() {
       })
 
       try {
-        localStorage.setItem('abidinganchor-verse-card-shared', '1')
+        localStorage.setItem(userStorageKey(user?.id, 'verse-card-shared'), '1')
       } catch {
         /* ignore */
       }

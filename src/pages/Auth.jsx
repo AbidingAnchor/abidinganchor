@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 
 function isValidEmail(email) {
-  console.log('Email being validated:', email)
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
 }
 
@@ -75,7 +74,6 @@ export default function Auth() {
     if (mode === 'signin') {
       const { error: signInError } = await signIn(cleanEmail, password)
       if (signInError) {
-        console.log('Supabase error:', signInError)
         setError(signInError.message)
       }
       setLoading(false)
@@ -83,7 +81,6 @@ export default function Auth() {
     }
     const { error: signUpError, usedEmailFallback } = await signUp(cleanEmail, password, fullName.trim())
     if (signUpError) {
-      console.log('Supabase error:', signUpError)
       setError(signUpError.message)
     }
     else if (usedEmailFallback) setSuccess('Account created and signed in. You can continue now. 🙏')
@@ -109,8 +106,8 @@ export default function Auth() {
       if (resetError) throw resetError
       setSuccess('Password reset email sent.')
     } catch (err) {
-      console.error('Password reset error:', err)
-      setError(err.message || 'Failed to send password reset email.')
+      if (import.meta.env.DEV) console.error('Password reset error:', err)
+      setError(err?.message || 'Failed to send password reset email.')
     }
   }
 

@@ -123,12 +123,6 @@ function AppShell() {
   }
 
   useEffect(() => {
-    if (!localStorage.getItem('abidinganchor-start-date')) {
-      localStorage.setItem('abidinganchor-start-date', new Date().toISOString())
-    }
-  }, [])
-
-  useEffect(() => {
     if (!user?.id) return
     let cancelled = false
     let timeoutId

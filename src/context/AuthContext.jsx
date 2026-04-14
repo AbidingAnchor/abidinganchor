@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { clearAbidingAnchorUserStorage, setActiveStorageUserId, userStorageKey } from '../utils/userStorage'
 
 const AuthContext = createContext({})
 
@@ -95,16 +96,32 @@ async function ensureProfile(user) {
       return
     }
 
+    const isNewProfile = !existingProfile
+    const today = new Date().toISOString().split('T')[0]
+    const baseRow = {
+      id: user.id,
+      email: user.email ?? '',
+      full_name: user.user_metadata?.full_name ?? user.user_metadata?.name ?? '',
+      bible_version: 'KJV',
+      last_active_date: today,
+      onboarding_complete: existingProfile?.onboarding_complete ?? false,
+    }
+    /** Fresh accounts must not inherit another session’s client state; DB defaults anchor Genesis 1. */
+    const newUserDefaults = isNewProfile
+      ? {
+          reading_streak: 0,
+          journal_streak: 0,
+          prayer_streak: 0,
+          prayer_total_minutes: 0,
+          longest_streak: 0,
+          last_book: 'GEN',
+          last_chapter: 'GEN.1',
+          weekly_active_days: [],
+        }
+      : {}
+
     const { error } = await supabase.from('profiles').upsert(
-      {
-        id: user.id,
-        email: user.email ?? '',
-        full_name:
-          user.user_metadata?.full_name ?? user.user_metadata?.name ?? '',
-        bible_version: 'KJV',
-        last_active_date: new Date().toISOString().split('T')[0],
-        onboarding_complete: existingProfile?.onboarding_complete ?? false,
-      },
+      { ...baseRow, ...newUserDefaults },
       { onConflict: 'id' },
     )
 
@@ -123,6 +140,23 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null)
   const [suspendedInfo, setSuspendedInfo] = useState(null)
   const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    setActiveStorageUserId(user?.id ?? null)
+  }, [user?.id])
+
+  /** Per-user anchor for achievements “days since start”; never reuse another account’s value. */
+  useEffect(() => {
+    if (typeof window === 'undefined' || !user?.id) return
+    try {
+      const k = userStorageKey(user.id, 'app-start-date')
+      if (!localStorage.getItem(k)) {
+        localStorage.setItem(k, new Date().toISOString())
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [user?.id])
 
   useEffect(() => {
     let active = true
@@ -151,6 +185,7 @@ export function AuthProvider({ children }) {
             setUser(null)
             setProfile(null)
             profileSyncedUserIds.clear()
+            clearAbidingAnchorUserStorage()
             await supabase.auth.signOut()
             return
           }
@@ -192,6 +227,7 @@ export function AuthProvider({ children }) {
               setUser(null)
               setProfile(null)
               profileSyncedUserIds.clear()
+              clearAbidingAnchorUserStorage()
               await supabase.auth.signOut()
               return
             }
@@ -244,6 +280,7 @@ export function AuthProvider({ children }) {
   const signOut = async () => {
     profileSyncedUserIds.clear()
     setSuspendedInfo(null)
+    clearAbidingAnchorUserStorage()
     await supabase.auth.signOut()
   }
 
