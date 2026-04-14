@@ -139,19 +139,20 @@ export default function Auth() {
 
       {/* Sign in card */}
       <article 
-        className="app-card" 
+        className="app-card sign-in-modal" 
         style={{ 
-          width: 'min(360px, calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px) - 24px))',
-          maxWidth: '360px',
+          width: '90%',
+          maxWidth: '400px',
           position: 'fixed',
-          top: 'calc(50% + ((env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) / 2))',
+          top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
+          margin: 0,
           zIndex: 30,
           animation: 'fadeInUp 0.8s ease forwards',
           animationDelay: '0.2s',
           padding: '24px',
-          maxHeight: 'calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px)',
+          maxHeight: 'calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 16px)',
           overflowY: 'auto'
         }}
       >
