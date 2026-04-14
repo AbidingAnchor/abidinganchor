@@ -137,45 +137,57 @@ export default function Auth() {
         </p>
       </div>
 
-      {/* Sign in card */}
-      <article 
-        className="app-card sign-in-modal" 
-        style={{ 
-          width: '90%',
-          maxWidth: '400px',
+      <div
+        style={{
           position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          margin: 0,
-          zIndex: 30,
-          animation: 'fadeInUp 0.8s ease forwards',
-          animationDelay: '0.2s',
-          padding: '24px',
-          maxHeight: 'calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 16px)',
-          overflowY: 'auto'
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          backgroundColor: 'rgba(0,0,0,0.3)',
+          padding: '12px',
+          boxSizing: 'border-box',
         }}
       >
-        {/* Gold shimmer border effect */}
-        <div style={{
-          position: 'absolute',
-          inset: -2,
-          borderRadius: '20px',
-          padding: '2px',
-          background: 'linear-gradient(45deg, rgba(212,168,67,0), rgba(212,168,67,0.4), rgba(212,168,67,0))',
-          backgroundSize: '200% 200%',
-          animation: 'shimmer 3s ease infinite',
-          WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-          WebkitMaskComposite: 'xor',
-          maskComposite: 'exclude',
-          pointerEvents: 'none'
-        }} />
-        
-        <h2 className="font-cinzel text-[28px] text-gold text-center mb-4" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
-          {mode === 'signin' ? 'Sign In' : 'Create Account'}
-        </h2>
+        {/* Sign in card */}
+        <article 
+          className="app-card sign-in-modal" 
+          style={{ 
+            position: 'relative',
+            width: '90%',
+            maxWidth: '400px',
+            borderRadius: '16px',
+            padding: '2rem',
+            margin: 0,
+            maxHeight: 'calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px)',
+            overflowY: 'auto',
+            animation: 'authCardFadeIn 0.28s ease-out forwards',
+          }}
+        >
+          {/* Gold shimmer border effect */}
+          <div style={{
+            position: 'absolute',
+            inset: -2,
+            borderRadius: '20px',
+            padding: '2px',
+            background: 'linear-gradient(45deg, rgba(212,168,67,0), rgba(212,168,67,0.4), rgba(212,168,67,0))',
+            backgroundSize: '200% 200%',
+            animation: 'shimmer 3s ease infinite',
+            WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+            WebkitMaskComposite: 'xor',
+            maskComposite: 'exclude',
+            pointerEvents: 'none'
+          }} />
+          
+          <h2 className="font-cinzel text-[28px] text-gold text-center mb-4" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+            {mode === 'signin' ? 'Sign In' : 'Create Account'}
+          </h2>
 
-        <form onSubmit={handleSubmit} className="mt-4 grid gap-3">
+          <form onSubmit={handleSubmit} className="mt-4 grid gap-3">
           {mode === 'signup' ? (
             <>
               <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full Name" className="app-input" style={{ borderRadius: '12px', padding: '12px' }} />
@@ -214,20 +226,21 @@ export default function Auth() {
           <button type="submit" className="btn-primary w-full" disabled={loading || (mode === 'signup' && !signUpConsent)} style={{ opacity: loading || (mode === 'signup' && !signUpConsent) ? 0.55 : 1 }}>
             {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Account'}
           </button>
-        </form>
+          </form>
 
-        <div className="mt-4 flex justify-between items-center">
-          <button type="button" onClick={() => { setMode((m) => (m === 'signin' ? 'signup' : 'signin')); setError(''); setSuccess(''); setSignUpConsent(false); setDateOfBirth('') }} className="btn-secondary">
-            {mode === 'signin' ? 'Need an account?' : 'Already have an account?'}
-          </button>
-          <button type="button" onClick={handleForgotPassword} className="text-gold text-xs bg-transparent border-none">
-            Forgot password?
-          </button>
-        </div>
+          <div className="mt-4 flex justify-between items-center">
+            <button type="button" onClick={() => { setMode((m) => (m === 'signin' ? 'signup' : 'signin')); setError(''); setSuccess(''); setSignUpConsent(false); setDateOfBirth('') }} className="btn-secondary">
+              {mode === 'signin' ? 'Need an account?' : 'Already have an account?'}
+            </button>
+            <button type="button" onClick={handleForgotPassword} className="text-gold text-xs bg-transparent border-none">
+              Forgot password?
+            </button>
+          </div>
 
-        {error ? <p className="mt-2 text-[#ffb3b3] text-sm">{error}</p> : null}
-        {success ? <p className="mt-2 text-gold text-sm">{success}</p> : null}
-      </article>
+          {error ? <p className="mt-2 text-[#ffb3b3] text-sm">{error}</p> : null}
+          {success ? <p className="mt-2 text-gold text-sm">{success}</p> : null}
+        </article>
+      </div>
 
       {/* Bottom - pushed to bottom with marginTop auto */}
       <div style={{ marginTop: '40px', textAlign: 'center', 
@@ -345,6 +358,14 @@ export default function Auth() {
           }
           100% {
             background-position: 0% 50%;
+          }
+        }
+        @keyframes authCardFadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
           }
         }
       `}</style>
