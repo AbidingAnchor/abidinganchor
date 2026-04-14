@@ -36,7 +36,9 @@ const PROGRESS_MARKER_GAP_BELOW_DOT = 4
 /** Shifts art up so visible subjects sit ~20–30 units below the dot (PNG has transparent top padding). */
 const PROGRESS_MARKER_IMG_LIFT = 26
 /** Lower the figure block on the map (viewBox units ~px at 1:1 scale). */
-const PROGRESS_MARKER_OFFSET_DOWN = 45
+const PROGRESS_MARKER_OFFSET_DOWN = 65
+/** Extra height above the marker box (viewBox units) so PNG translateY lift doesn’t clip halo/head in foreignObject. */
+const PROGRESS_MARKER_HALO_PAD = 22
 /** Padding below the progress figure (and map content) so the card doesn’t feel cramped. */
 const MAP_VIEWBOX_BOTTOM_PAD = 16
 const GEO_Y_MIN = Math.min(...JOURNEY_MAP_GEOMETRY.map((s) => s.y))
@@ -97,7 +99,7 @@ function JourneyProgressMarker({ stop, viewBoxH }) {
         fill="url(#jmpFigureFeetShadow)"
       />
       <ellipse cx={cx} cy={y + h * 0.52} rx={w * 0.42} ry={h * 0.38} fill="rgba(212, 168, 67, 0.2)" filter="url(#jmpFigureWarmGlow)" />
-      <foreignObject x={x} y={y} width={w} height={h}>
+      <foreignObject x={x} y={y - PROGRESS_MARKER_HALO_PAD} width={w} height={h + PROGRESS_MARKER_HALO_PAD}>
         <div
           xmlns="http://www.w3.org/1999/xhtml"
           style={{
