@@ -34,89 +34,85 @@ function getDayIndexForWeek() {
   return day - 1 // Monday=0, Friday=4
 }
 
-const LearningPathCard = ({ icon, title, subtitle, accentColor, iconBg, progress, featured, badge, onStart }) => (
+const LearningPathCard = ({ icon, title, subtitle, accentColor, iconBg, featured, badge, onStart }) => (
   <article
+    role="button"
+    tabIndex={0}
     onClick={onStart}
-    className={`faith-journey-learning-card ${featured ? 'faith-journey-learning-card--featured' : ''}`}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        onStart()
+      }
+    }}
+    className={`fj-hub-card ${featured ? 'fj-hub-card--featured' : ''}`}
     style={{
       borderRadius: '16px',
-      padding: '14px',
+      padding: '12px 14px',
       display: 'flex',
       alignItems: 'center',
       gap: '12px',
       cursor: 'pointer',
       transition: 'background 0.2s',
       position: 'relative',
-      overflow: 'hidden'
+      overflow: 'hidden',
     }}
   >
     {/* Left accent bar */}
-    <div style={{
-      width: '3px',
-      height: '100%',
-      position: 'absolute',
-      left: 0,
-      top: 0,
-      background: accentColor,
-      borderRadius: '16px 0 0 16px'
-    }} />
-    
+    <div
+      style={{
+        width: '3px',
+        height: '100%',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        background: accentColor,
+        borderRadius: '16px 0 0 16px',
+      }}
+    />
+
     {/* Icon box */}
-    <div style={{
-      width: '40px',
-      height: '40px',
-      borderRadius: '12px',
-      background: iconBg,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontSize: '20px',
-      marginLeft: '6px'
-    }}>
+    <div
+      style={{
+        width: '40px',
+        height: '40px',
+        borderRadius: '12px',
+        background: iconBg,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '20px',
+        marginLeft: '6px',
+        flexShrink: 0,
+      }}
+    >
       {icon}
     </div>
 
-    {/* Content */}
-    <div style={{ flex: 1, minWidth: 0 }}>
-      <p className="faith-journey-learning-card__title" style={{ color: '#FFFFFF', fontSize: '13px', fontWeight: 700, marginBottom: '2px' }}>{title}</p>
-      <p className="faith-journey-learning-card__subtitle" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', marginBottom: '6px' }}>{subtitle}</p>
-      {/* Progress bar */}
-      <div
-        className="faith-journey-learning-card__progress-track"
-        style={{
-        height: '3px',
-        background: 'rgba(255,255,255,0.1)',
-        borderRadius: '2px',
-        overflow: 'hidden'
-      }}
-      >
-        <div style={{
-          height: '100%',
-          width: `${progress}%`,
-          background: accentColor,
-          borderRadius: '2px'
-        }} />
-      </div>
+    {/* Title + subtitle (divs — not p — avoids global day/form resets; no faux “input” look) */}
+    <div className="fj-hub-card__text" style={{ flex: 1, minWidth: 0 }}>
+      <div className="fj-hub-card__title">{title}</div>
+      <div className="fj-hub-card__subtitle">{subtitle}</div>
     </div>
 
-    {/* Badge */}
-    {badge && (
-      <div
-        className={`faith-journey-path-badge ${featured ? 'faith-journey-path-badge--featured' : ''}`}
+    {badge ? (
+      <span
+        className={`fj-hub-badge ${featured ? 'fj-hub-badge--featured' : ''}`}
         style={{
-        padding: '4px 12px',
-        borderRadius: '20px',
-        fontSize: '10px',
-        fontWeight: 600,
-        textTransform: 'uppercase',
-        letterSpacing: '0.05em',
-        background: featured ? '#D4A843' : 'rgba(255,255,255,0.1)',
-        color: featured ? '#0a1a3e' : 'rgba(255,255,255,0.6)'
-      }}
+          padding: '4px 12px',
+          borderRadius: '20px',
+          fontSize: '10px',
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          background: featured ? '#D4A843' : 'rgba(255,255,255,0.1)',
+          color: featured ? '#0a1a3e' : 'rgba(255,255,255,0.6)',
+          flexShrink: 0,
+        }}
       >
         {badge}
-      </div>
-    )}
+      </span>
+    ) : null}
   </article>
 )
 
@@ -251,7 +247,7 @@ export default function FaithJourney() {
 
           {/* Streak Bar */}
           <div
-            className="faith-journey-streak"
+            className="fj-hub-streak"
             style={{
             background: 'rgba(212,168,67,0.07)',
             border: '1px solid rgba(212,168,67,0.18)',
@@ -265,15 +261,15 @@ export default function FaithJourney() {
           >
             <span style={{ fontSize: '22px' }}>🔥</span>
             <div style={{ flex: 1 }}>
-              <p className="faith-journey-streak__line" style={{ color: '#FFFFFF', fontSize: '13px', fontWeight: 600, marginBottom: '2px' }}>
+              <p className="fj-hub-streak__line" style={{ color: '#FFFFFF', fontSize: '13px', fontWeight: 600, marginBottom: '2px' }}>
                 {loading ? t('faithJourney.streakLoading') : t('faithJourney.streakLine', { n: streakCount })}
               </p>
-              <p className="faith-journey-streak__sub" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px' }}>
+              <p className="fj-hub-streak__sub" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px' }}>
                 {loading ? t('faithJourney.streakSubLoading') : streakCount === 0 ? t('faithJourney.streakSubZero') : t('faithJourney.streakSubActive')}
               </p>
             </div>
             {/* Day of week dots */}
-            <div className="faith-journey-streak-dots" style={{ display: 'flex', gap: '6px' }}>
+            <div className="fj-hub-streak-dots" style={{ display: 'flex', gap: '6px' }}>
               {days.map((day, i) => {
                 const isToday = i === dayIndex
                 const isPast = i < dayIndex && dayIndex !== -1
@@ -288,7 +284,7 @@ export default function FaithJourney() {
                 return (
                   <div
                     key={day}
-                    className={`faith-journey-streak-dot faith-journey-streak-dot--${dotState}`}
+                    className={`fj-hub-streak-dot fj-hub-streak-dot--${dotState}`}
                   >
                     {day}
                   </div>
@@ -300,7 +296,7 @@ export default function FaithJourney() {
           <button
             type="button"
             onClick={() => navigate('/prayer')}
-            className="faith-journey-prayers-row"
+            className="fj-hub-prayers"
             style={{
               width: '100%',
               marginBottom: '24px',
@@ -344,7 +340,7 @@ export default function FaithJourney() {
                 {t('faithJourney.prayersAnsweredHint')}
               </p>
             </div>
-            <span className="faith-journey-prayers-row__arrow" style={{ color: 'rgba(212,168,67,0.8)', fontSize: '18px', flexShrink: 0 }} aria-hidden>
+            <span className="fj-hub-prayers__arrow" style={{ color: 'rgba(212,168,67,0.8)', fontSize: '18px', flexShrink: 0 }} aria-hidden>
               →
             </span>
           </button>
@@ -357,7 +353,6 @@ export default function FaithJourney() {
               subtitle={t('faithJourney.cardTriviaSub')}
               accentColor="#D4A843"
               iconBg="rgba(212,168,67,0.15)"
-              progress={0}
               featured={true}
               badge={t('faithJourney.badgeToday')}
               onStart={() => setView('trivia')}
@@ -368,7 +363,6 @@ export default function FaithJourney() {
               subtitle={t('faithJourney.cardFlashSub')}
               accentColor="#7F77DD"
               iconBg="rgba(127,119,221,0.15)"
-              progress={0}
               featured={false}
               badge={t('faithJourney.badgeStart')}
               onStart={() => setView('flashcards')}
@@ -379,7 +373,6 @@ export default function FaithJourney() {
               subtitle={t('faithJourney.cardMapSub')}
               accentColor="#1D9E75"
               iconBg="rgba(29,158,117,0.15)"
-              progress={0}
               featured={false}
               badge={t('faithJourney.badgeStart')}
               onStart={() => setView('map')}
@@ -390,7 +383,6 @@ export default function FaithJourney() {
               subtitle={t('faithJourney.cardAchievementsSub')}
               accentColor="#378ADD"
               iconBg="rgba(55,138,221,0.15)"
-              progress={0}
               featured={false}
               badge={t('faithJourney.badgeStart')}
               onStart={() => setView('achievements')}

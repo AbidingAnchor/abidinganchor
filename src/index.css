@@ -856,81 +856,135 @@ body {
   color: #f3f4f6;
 }
 
-/* Faith Journey hub — learning path cards (default: evening/night/sunset) */
-.faith-journey-learning-card {
+/* Faith Journey hub — class names use fj-hub-* (no "faith"/"journey" substrings) so theme-overrides
+   [class*="faith"] / [class*="journey"] do not treat rows as form/text fields. */
+.fj-hub-card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
-.faith-journey-learning-card--featured {
+.fj-hub-card--featured {
   background: rgba(212, 168, 67, 0.08);
   border: 1px solid rgba(212, 168, 67, 0.2);
 }
-.faith-journey-learning-card--featured:hover {
+.fj-hub-card--featured:hover {
   background: rgba(212, 168, 67, 0.12);
 }
-.faith-journey-learning-card:not(.faith-journey-learning-card--featured):hover {
+.fj-hub-card:not(.fj-hub-card--featured):hover {
   background: rgba(255, 255, 255, 0.06);
 }
 
-/* DAY sky — Journey hub list cards + streak + answered prayers row */
-body.theme-day .faith-journey-learning-card,
-body.theme-morning .faith-journey-learning-card,
-body.theme-afternoon .faith-journey-learning-card {
-  background: rgba(245, 237, 214, 0.82) !important;
-  border: 1px solid rgba(212, 168, 67, 0.35) !important;
+.fj-hub-card__title,
+.fj-hub-card__subtitle {
+  margin: 0;
+  padding: 0;
+  border: none !important;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  text-decoration: none !important;
+  display: block;
+  width: auto;
+  max-width: 100%;
 }
-body.theme-day .faith-journey-learning-card--featured:hover,
-body.theme-morning .faith-journey-learning-card--featured:hover,
-body.theme-afternoon .faith-journey-learning-card--featured:hover,
-body.theme-day .faith-journey-learning-card:not(.faith-journey-learning-card--featured):hover,
-body.theme-morning .faith-journey-learning-card:not(.faith-journey-learning-card--featured):hover,
-body.theme-afternoon .faith-journey-learning-card:not(.faith-journey-learning-card--featured):hover {
-  background: rgba(245, 232, 200, 0.92) !important;
-  border-color: rgba(212, 168, 67, 0.45) !important;
+.fj-hub-card__title {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 2px;
+  color: rgba(255, 255, 255, 0.95);
 }
-body.theme-day .faith-journey-learning-card__title,
-body.theme-morning .faith-journey-learning-card__title,
-body.theme-afternoon .faith-journey-learning-card__title,
-body.theme-day .faith-journey-learning-card__subtitle,
-body.theme-morning .faith-journey-learning-card__subtitle,
-body.theme-afternoon .faith-journey-learning-card__subtitle {
-  color: #2a1f0e !important;
+.fj-hub-card__subtitle {
+  font-size: 10px;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.5);
 }
-body.theme-day .faith-journey-learning-card__subtitle,
-body.theme-morning .faith-journey-learning-card__subtitle,
-body.theme-afternoon .faith-journey-learning-card__subtitle {
-  color: rgba(42, 31, 14, 0.55) !important;
+
+/* EVENING — plum glass hub rows (matches global evening cards; explicit copy for title/subtitle) */
+body.theme-evening .fj-hub-card {
+  background: rgba(60, 20, 80, 0.72) !important;
+  border: 1px solid rgba(212, 168, 67, 0.45) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  box-shadow: 0 4px 24px rgba(180, 80, 20, 0.2) !important;
 }
-body.theme-day .faith-journey-learning-card__progress-track,
-body.theme-morning .faith-journey-learning-card__progress-track,
-body.theme-afternoon .faith-journey-learning-card__progress-track {
-  background: rgba(42, 31, 14, 0.12) !important;
+body.theme-evening .fj-hub-card--featured:hover,
+body.theme-evening .fj-hub-card:not(.fj-hub-card--featured):hover {
+  background: rgba(72, 28, 95, 0.78) !important;
+  border-color: rgba(212, 168, 67, 0.55) !important;
+  box-shadow: 0 6px 28px rgba(200, 85, 35, 0.28) !important;
 }
-body.theme-day .faith-journey-path-badge,
-body.theme-morning .faith-journey-path-badge,
-body.theme-afternoon .faith-journey-path-badge {
+body.theme-evening .fj-hub-card__title {
+  color: #f0eeea !important;
+}
+body.theme-evening .fj-hub-card__subtitle {
+  color: rgba(240, 238, 234, 0.6) !important;
+}
+body.theme-evening .fj-hub-badge:not(.fj-hub-badge--featured) {
+  background: rgba(212, 168, 67, 0.28) !important;
+  color: #f0eeea !important;
+}
+body.theme-evening .fj-hub-badge--featured {
   background: #d4a843 !important;
   color: #ffffff !important;
 }
 
-body.theme-day .faith-journey-streak,
-body.theme-morning .faith-journey-streak,
-body.theme-afternoon .faith-journey-streak {
+/* DAY sky — Journey hub list cards + streak + answered prayers row */
+body.theme-day .fj-hub-card,
+body.theme-morning .fj-hub-card,
+body.theme-afternoon .fj-hub-card {
   background: rgba(245, 237, 214, 0.82) !important;
   border: 1px solid rgba(212, 168, 67, 0.35) !important;
 }
-body.theme-day .faith-journey-streak__line,
-body.theme-morning .faith-journey-streak__line,
-body.theme-afternoon .faith-journey-streak__line {
+body.theme-day .fj-hub-card--featured:hover,
+body.theme-morning .fj-hub-card--featured:hover,
+body.theme-afternoon .fj-hub-card--featured:hover,
+body.theme-day .fj-hub-card:not(.fj-hub-card--featured):hover,
+body.theme-morning .fj-hub-card:not(.fj-hub-card--featured):hover,
+body.theme-afternoon .fj-hub-card:not(.fj-hub-card--featured):hover {
+  background: rgba(245, 232, 200, 0.92) !important;
+  border-color: rgba(212, 168, 67, 0.45) !important;
+}
+body.theme-day .fj-hub-card__title,
+body.theme-morning .fj-hub-card__title,
+body.theme-afternoon .fj-hub-card__title,
+body.theme-day .fj-hub-card__subtitle,
+body.theme-morning .fj-hub-card__subtitle,
+body.theme-afternoon .fj-hub-card__subtitle {
   color: #2a1f0e !important;
 }
-body.theme-day .faith-journey-streak__sub,
-body.theme-morning .faith-journey-streak__sub,
-body.theme-afternoon .faith-journey-streak__sub {
+body.theme-day .fj-hub-card__subtitle,
+body.theme-morning .fj-hub-card__subtitle,
+body.theme-afternoon .fj-hub-card__subtitle {
+  color: rgba(42, 31, 14, 0.55) !important;
+}
+body.theme-day .fj-hub-badge,
+body.theme-morning .fj-hub-badge,
+body.theme-afternoon .fj-hub-badge {
+  background: #d4a843 !important;
+  color: #ffffff !important;
+}
+
+body.theme-day .fj-hub-streak,
+body.theme-morning .fj-hub-streak,
+body.theme-afternoon .fj-hub-streak {
+  background: rgba(245, 237, 214, 0.82) !important;
+  border: 1px solid rgba(212, 168, 67, 0.35) !important;
+}
+body.theme-day .fj-hub-streak__line,
+body.theme-morning .fj-hub-streak__line,
+body.theme-afternoon .fj-hub-streak__line {
+  color: #2a1f0e !important;
+}
+body.theme-day .fj-hub-streak__sub,
+body.theme-morning .fj-hub-streak__sub,
+body.theme-afternoon .fj-hub-streak__sub {
   color: rgba(42, 31, 14, 0.55) !important;
 }
 
-.faith-journey-streak-dot {
+.fj-hub-streak-dot {
   width: 24px;
   height: 24px;
   border-radius: 50%;
@@ -940,69 +994,112 @@ body.theme-afternoon .faith-journey-streak__sub {
   font-size: 10px;
   font-weight: 600;
 }
-.faith-journey-streak-dot--loading {
+.fj-hub-streak-dot--loading {
   background: rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.3);
 }
-.faith-journey-streak-dot--today {
+.fj-hub-streak-dot--today {
   background: #d4a843;
   color: #0a1a3e;
 }
-.faith-journey-streak-dot--done {
+.fj-hub-streak-dot--done {
   background: rgba(212, 168, 67, 0.3);
   color: #d4a843;
 }
-.faith-journey-streak-dot--idle {
+.fj-hub-streak-dot--idle {
   background: rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.3);
 }
 
-body.theme-day .faith-journey-streak-dot--loading,
-body.theme-morning .faith-journey-streak-dot--loading,
-body.theme-afternoon .faith-journey-streak-dot--loading {
+body.theme-day .fj-hub-streak-dot--loading,
+body.theme-morning .fj-hub-streak-dot--loading,
+body.theme-afternoon .fj-hub-streak-dot--loading {
   background: rgba(42, 31, 14, 0.08) !important;
   color: rgba(42, 31, 14, 0.35) !important;
 }
-body.theme-day .faith-journey-streak-dot--today,
-body.theme-morning .faith-journey-streak-dot--today,
-body.theme-afternoon .faith-journey-streak-dot--today {
+body.theme-day .fj-hub-streak-dot--today,
+body.theme-morning .fj-hub-streak-dot--today,
+body.theme-afternoon .fj-hub-streak-dot--today {
   background: #d4a843 !important;
   color: #ffffff !important;
 }
-body.theme-day .faith-journey-streak-dot--done,
-body.theme-morning .faith-journey-streak-dot--done,
-body.theme-afternoon .faith-journey-streak-dot--done {
+body.theme-day .fj-hub-streak-dot--done,
+body.theme-morning .fj-hub-streak-dot--done,
+body.theme-afternoon .fj-hub-streak-dot--done {
   background: rgba(212, 168, 67, 0.28) !important;
   color: #8b6200 !important;
 }
-body.theme-day .faith-journey-streak-dot--idle,
-body.theme-morning .faith-journey-streak-dot--idle,
-body.theme-afternoon .faith-journey-streak-dot--idle {
+body.theme-day .fj-hub-streak-dot--idle,
+body.theme-morning .fj-hub-streak-dot--idle,
+body.theme-afternoon .fj-hub-streak-dot--idle {
   background: rgba(42, 31, 14, 0.06) !important;
   color: rgba(42, 31, 14, 0.35) !important;
 }
 
-body.theme-day .faith-journey-prayers-row,
-body.theme-morning .faith-journey-prayers-row,
-body.theme-afternoon .faith-journey-prayers-row {
+body.theme-day .fj-hub-prayers,
+body.theme-morning .fj-hub-prayers,
+body.theme-afternoon .fj-hub-prayers {
   background: rgba(245, 237, 214, 0.82) !important;
   border: 1px solid rgba(212, 168, 67, 0.35) !important;
   box-shadow: none !important;
 }
-body.theme-day .faith-journey-prayers-row p,
-body.theme-morning .faith-journey-prayers-row p,
-body.theme-afternoon .faith-journey-prayers-row p {
+body.theme-day .fj-hub-prayers p,
+body.theme-morning .fj-hub-prayers p,
+body.theme-afternoon .fj-hub-prayers p {
   color: #2a1f0e !important;
 }
-body.theme-day .faith-journey-prayers-row p:last-of-type,
-body.theme-morning .faith-journey-prayers-row p:last-of-type,
-body.theme-afternoon .faith-journey-prayers-row p:last-of-type {
+body.theme-day .fj-hub-prayers p:last-of-type,
+body.theme-morning .fj-hub-prayers p:last-of-type,
+body.theme-afternoon .fj-hub-prayers p:last-of-type {
   color: rgba(42, 31, 14, 0.55) !important;
 }
-body.theme-day .faith-journey-prayers-row__arrow,
-body.theme-morning .faith-journey-prayers-row__arrow,
-body.theme-afternoon .faith-journey-prayers-row__arrow {
+body.theme-day .fj-hub-prayers__arrow,
+body.theme-morning .fj-hub-prayers__arrow,
+body.theme-afternoon .fj-hub-prayers__arrow {
   color: rgba(42, 31, 14, 0.45) !important;
+}
+
+/* Evening: streak + prayers CTA match plum hub */
+body.theme-evening .fj-hub-streak,
+body.theme-evening .fj-hub-prayers {
+  background: rgba(60, 20, 80, 0.72) !important;
+  border: 1px solid rgba(212, 168, 67, 0.45) !important;
+  box-shadow: 0 4px 24px rgba(180, 80, 20, 0.2) !important;
+}
+body.theme-evening .fj-hub-streak__line {
+  color: #f0eeea !important;
+}
+body.theme-evening .fj-hub-streak__sub {
+  color: rgba(240, 238, 234, 0.6) !important;
+}
+body.theme-evening .fj-hub-prayers p {
+  color: #f0eeea !important;
+}
+body.theme-evening .fj-hub-prayers p:first-of-type {
+  color: #d4a843 !important;
+}
+body.theme-evening .fj-hub-prayers p:last-of-type {
+  color: rgba(240, 238, 234, 0.65) !important;
+}
+body.theme-evening .fj-hub-prayers__arrow {
+  color: rgba(212, 168, 67, 0.85) !important;
+}
+
+body.theme-evening .fj-hub-streak-dot--loading {
+  background: rgba(240, 238, 234, 0.1) !important;
+  color: rgba(240, 238, 234, 0.4) !important;
+}
+body.theme-evening .fj-hub-streak-dot--today {
+  background: #d4a843 !important;
+  color: #ffffff !important;
+}
+body.theme-evening .fj-hub-streak-dot--done {
+  background: rgba(212, 168, 67, 0.35) !important;
+  color: #f0eeea !important;
+}
+body.theme-evening .fj-hub-streak-dot--idle {
+  background: rgba(240, 238, 234, 0.08) !important;
+  color: rgba(240, 238, 234, 0.35) !important;
 }
 
 /* Prayer page — My Prayers / Prayer Wall (night default stays inline Tailwind; day = cream) */
