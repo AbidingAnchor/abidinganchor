@@ -41,6 +41,8 @@ const PROGRESS_MARKER_OFFSET_DOWN = 65
 const PROGRESS_MARKER_HALO_PAD = 22
 /** Padding below the progress figure (and map content) so the card doesn’t feel cramped. */
 const MAP_VIEWBOX_BOTTOM_PAD = 16
+/** Extra viewBox height at bottom (~display px when map width matches viewBox 320) so figures + halo aren’t clipped. */
+const MAP_VIEWBOX_EXTRA_BOTTOM = 120
 const GEO_Y_MIN = Math.min(...JOURNEY_MAP_GEOMETRY.map((s) => s.y))
 const GEO_Y_MAX = Math.max(...JOURNEY_MAP_GEOMETRY.map((s) => s.y))
 /** Northern end (Rome): center y fraction — extra margin from top edge of parchment. */
@@ -58,7 +60,10 @@ function remapGeoYToViewBox(yGeo, viewBoxH) {
 function computeMapViewBoxHeight() {
   const markerStack =
     NODE_DOT_R + PROGRESS_MARKER_GAP_BELOW_DOT + PROGRESS_MARKER_OFFSET_DOWN + PROGRESS_MARKER_HEIGHT
-  return Math.max(480, Math.ceil((markerStack + MAP_VIEWBOX_BOTTOM_PAD) / (1 - PATH_Y_BOTTOM_FRAC)))
+  return (
+    Math.max(480, Math.ceil((markerStack + MAP_VIEWBOX_BOTTOM_PAD) / (1 - PATH_Y_BOTTOM_FRAC))) +
+    MAP_VIEWBOX_EXTRA_BOTTOM
+  )
 }
 
 /** Labels on the left of the dot when the node is on the right; avoids clipping long names. */

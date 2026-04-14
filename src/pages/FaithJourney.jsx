@@ -488,7 +488,7 @@ export default function FaithJourney() {
           <VerseFlashcards onExit={() => setView('hub')} fillVertical />
         </div>
       ) : view === 'map' ? (
-        <div style={subShellStyle}>
+        <div style={{ ...subShellStyle, paddingTop: '12px' }}>
           <JourneyMap onExit={() => setView('hub')} fillVertical />
         </div>
       ) : (
