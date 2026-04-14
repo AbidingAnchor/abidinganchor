@@ -35,6 +35,8 @@ const PROGRESS_MARKER_HEIGHT = 80
 const PROGRESS_MARKER_GAP_BELOW_DOT = 4
 /** Shifts art up so visible subjects sit ~20–30 units below the dot (PNG has transparent top padding). */
 const PROGRESS_MARKER_IMG_LIFT = 26
+/** Lower the figure block on the map (viewBox units ~px at 1:1 scale). */
+const PROGRESS_MARKER_OFFSET_DOWN = 45
 /** Padding below the progress figure (and map content) so the card doesn’t feel cramped. */
 const MAP_VIEWBOX_BOTTOM_PAD = 16
 const GEO_Y_MIN = Math.min(...JOURNEY_MAP_GEOMETRY.map((s) => s.y))
@@ -52,7 +54,8 @@ function remapGeoYToViewBox(yGeo, viewBoxH) {
 
 /** ViewBox height so lowest stop + figure + padding fit; trail occupies y ∈ [0.30H, 0.72H]. */
 function computeMapViewBoxHeight() {
-  const markerStack = NODE_DOT_R + PROGRESS_MARKER_GAP_BELOW_DOT + PROGRESS_MARKER_HEIGHT
+  const markerStack =
+    NODE_DOT_R + PROGRESS_MARKER_GAP_BELOW_DOT + PROGRESS_MARKER_OFFSET_DOWN + PROGRESS_MARKER_HEIGHT
   return Math.max(480, Math.ceil((markerStack + MAP_VIEWBOX_BOTTOM_PAD) / (1 - PATH_Y_BOTTOM_FRAC)))
 }
 
@@ -69,7 +72,7 @@ function progressMarkerLayout(stop, viewBoxH) {
   const h = PROGRESS_MARKER_HEIGHT
   const w = (PROGRESS_IMG_W / PROGRESS_IMG_H) * h
   const { x, y } = stop
-  const top = y + NODE_DOT_R + PROGRESS_MARKER_GAP_BELOW_DOT
+  const top = y + NODE_DOT_R + PROGRESS_MARKER_GAP_BELOW_DOT + PROGRESS_MARKER_OFFSET_DOWN
   let left = x - w / 2
   const margin = 4
   left = Math.max(margin, Math.min(left, MAP_VIEWBOX_W - w - margin))
