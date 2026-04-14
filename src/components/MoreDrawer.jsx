@@ -26,7 +26,7 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
     <>
       {/* Backdrop */}
       <div
-        onPointerUp={onClose}
+        onClick={onClose}
         style={{
           position: 'fixed',
           inset: 0,
@@ -41,7 +41,6 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
       {/* Bottom Sheet */}
       <div
         onClick={(e) => e.stopPropagation()}
-        onPointerUp={(e) => e.stopPropagation()}
         style={{
           position: 'fixed',
           bottom: 0,
@@ -96,7 +95,7 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
           </h2>
           <button
             type="button"
-            onPointerUp={onClose}
+            onClick={onClose}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
@@ -129,7 +128,7 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
             <div key={option.path}>
               <button
                 type="button"
-                onPointerUp={() => onOptionPress(option.path)}
+                onClick={() => onOptionPress(option.path)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault()

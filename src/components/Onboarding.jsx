@@ -124,7 +124,7 @@ export default function Onboarding({ onComplete }) {
             onClick={handleComplete}
             style={{
               position: 'absolute',
-              top: '20px',
+              top: 'max(calc(env(safe-area-inset-top, 0px) + 10px), 56px)',
               right: '20px',
               zIndex: 10,
               background: 'transparent',

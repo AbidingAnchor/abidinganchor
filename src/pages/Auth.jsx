@@ -141,12 +141,18 @@ export default function Auth() {
       <article 
         className="app-card" 
         style={{ 
-          width: '100%',
+          width: 'min(360px, calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px) - 24px))',
           maxWidth: '360px',
-          position: 'relative',
+          position: 'fixed',
+          top: 'calc(50% + ((env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) / 2))',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 30,
           animation: 'fadeInUp 0.8s ease forwards',
           animationDelay: '0.2s',
-          padding: '24px'
+          padding: '24px',
+          maxHeight: 'calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px)',
+          overflowY: 'auto'
         }}
       >
         {/* Gold shimmer border effect */}
