@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { JOURNEY_MAP_GEOMETRY } from '../data/journeyMapGeometry'
 import { useAuth } from '../context/AuthContext'
 import { userStorageKey } from '../utils/userStorage'
+import JourneyMapGardenScene from './JourneyMapGardenScene'
 
 function readJson(key, fallback) {
   try {
@@ -91,6 +92,7 @@ function JourneyProgressMarker({ stop, viewBoxH }) {
               width: '100%',
               height: '100%',
               objectFit: 'contain',
+              objectPosition: 'bottom center',
               pointerEvents: 'none',
             }}
           />
@@ -220,12 +222,15 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
         </span>
       </div>
 
-      <div className={`glass-panel min-h-0 rounded-2xl p-3 ${fillVertical ? 'flex flex-1 flex-col' : ''}`}>
+      <div
+        className={`relative min-h-0 overflow-hidden rounded-2xl border border-white/15 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] sm:p-3 ${fillVertical ? 'flex flex-1 flex-col' : ''}`}
+      >
+        <JourneyMapGardenScene />
         <svg
           width="100%"
           viewBox={`0 0 ${MAP_VIEWBOX_W} ${mapViewBoxH}`}
           preserveAspectRatio="xMidYMid meet"
-          className={fillVertical ? 'min-h-[240px] flex-1' : ''}
+          className={`relative z-10 ${fillVertical ? 'min-h-[240px] flex-1' : ''}`}
           style={{ display: 'block' }}
         >
           <defs>
@@ -234,8 +239,33 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
               <stop offset="60%" stopColor="#D4A843" stopOpacity="0.55" />
               <stop offset="100%" stopColor="#D4A843" stopOpacity="0.25" />
             </linearGradient>
+            <filter id="journeyMapLabelShadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="1" stdDeviation="1.4" floodColor="rgba(8, 14, 24, 0.85)" floodOpacity="1" />
+            </filter>
           </defs>
 
+          {/* Subtle frosted plane so path, nodes, and labels stay readable over the garden */}
+          <rect
+            x="4"
+            y="4"
+            width={MAP_VIEWBOX_W - 8}
+            height={mapViewBoxH - 8}
+            rx="14"
+            ry="14"
+            fill="rgba(255, 252, 245, 0.09)"
+            stroke="rgba(255, 255, 255, 0.14)"
+            strokeWidth="1"
+          />
+
+          <path
+            d={pathD}
+            fill="none"
+            stroke="rgba(255, 255, 255, 0.22)"
+            strokeWidth="9"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            opacity="0.95"
+          />
           <path
             d={pathD}
             fill="none"
@@ -287,7 +317,11 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
                   y={stop.y + 4}
                   fontSize="8.5"
                   textAnchor={la.textAnchor}
-                  fill={unlocked ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.45)'}
+                  fill={unlocked ? 'rgba(255,255,255,0.98)' : 'rgba(255,255,255,0.52)'}
+                  stroke="rgba(12, 22, 36, 0.55)"
+                  strokeWidth="0.45"
+                  paintOrder="stroke fill"
+                  filter="url(#journeyMapLabelShadow)"
                 >
                   {unlocked ? stop.label : `${t('journeyMap.ui.lockedPrefix')}${stop.label}`}
                 </text>

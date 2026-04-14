@@ -120,16 +120,28 @@ export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertica
 
   return (
     <div
-      className={`glass-panel rounded-2xl p-4 text-white ${fillVertical ? 'flex min-h-0 flex-1 flex-col' : ''}`}
-      style={fillVertical ? { minHeight: '100%' } : undefined}
+      className={`glass-panel rounded-2xl p-4 text-white ${fillVertical ? 'flex min-h-0 w-full max-w-full flex-col' : ''}`}
     >
       <style>
         {`
           .flip-wrap { perspective: 1200px; }
-          .flip-card { transform-style: preserve-3d; transition: transform 520ms ease; }
-          .flip-card.flipped { transform: rotateY(180deg); }
-          .flip-face { backface-visibility: hidden; }
-          .flip-back { transform: rotateY(180deg); }
+          .verse-flip-card {
+            transform-style: preserve-3d;
+            transition: transform 520ms ease;
+            display: block;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+          }
+          .verse-flip-card.flipped { transform: rotateY(180deg); }
+          .verse-flip-card .flip-face {
+            position: absolute;
+            inset: 0;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            border-radius: 1rem;
+          }
+          .verse-flip-card .flip-back { transform: rotateY(180deg); }
           @keyframes check-pop { 0%{transform:scale(0.6);opacity:0} 60%{transform:scale(1.08);opacity:1} 100%{transform:scale(1);opacity:1} }
         `}
       </style>
@@ -170,7 +182,7 @@ export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertica
         </select>
       </div>
 
-      <div className={`flip-wrap relative min-h-0 ${fillVertical ? 'flex flex-1 flex-col' : ''}`}>
+      <div className="flip-wrap relative w-full shrink-0">
         {checkFlash ? (
           <div
             aria-hidden="true"
@@ -192,36 +204,40 @@ export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertica
           </div>
         ) : null}
 
-        <button
-          type="button"
-          onClick={() => setFlipped((f) => !f)}
-          className={`flip-card glass-panel w-full rounded-2xl p-0 text-left ${flipped ? 'flipped' : ''} ${fillVertical ? 'flex flex-1 flex-col' : ''}`}
-          style={
-            fillVertical
-              ? { minHeight: 'min(52vh, 440px)' }
-              : { minHeight: 'clamp(260px, 48vh, 420px)' }
-          }
-        >
-          <div className="flip-face flex min-h-[inherit] flex-col justify-between rounded-2xl p-5 md:p-6">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/70">Tap to flip</p>
-              <p className="mt-3 text-xl font-bold leading-snug md:text-2xl" style={{ color: '#D4A843' }}>
-                {current.ref}
+        {/* Compact card (max 280px); glass-panel picks up day / evening / night from body + index.css */}
+        <div className="relative h-[260px] w-full max-h-[280px]">
+          <button
+            type="button"
+            onClick={() => setFlipped((f) => !f)}
+            className={`verse-flip-card glass-panel h-full w-full rounded-2xl p-0 text-left ${flipped ? 'flipped' : ''}`}
+          >
+            <div className="flip-face flex flex-col justify-between overflow-y-auto p-5 md:p-6">
+              <div className="min-h-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/70">Tap to flip</p>
+                <p className="mt-2 text-lg font-bold leading-snug md:text-xl" style={{ color: '#D4A843' }}>
+                  {current.ref}
+                </p>
+                <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-white/55">Category</p>
+                <p className="mt-0.5 text-sm text-white/90">{current.bookGroup}</p>
+                <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-white/55">Theme</p>
+                <p className="mt-0.5 text-sm text-white/85">{current.theme}</p>
+              </div>
+              <p className="mt-3 shrink-0 text-xs text-white/60">
+                {currentProg ? 'Status: Memorized' : 'Status: Still Learning'}
               </p>
-              <p className="mt-3 text-xs font-semibold uppercase tracking-[0.1em] text-white/55">Category</p>
-              <p className="mt-1 text-sm text-white/90">{current.bookGroup}</p>
-              <p className="mt-4 text-xs font-semibold uppercase tracking-[0.1em] text-white/55">Theme</p>
-              <p className="mt-1 text-sm text-white/85">{current.theme}</p>
             </div>
-            <p className="mt-6 text-xs text-white/60">{currentProg ? 'Status: Memorized' : 'Status: Still Learning'}</p>
-          </div>
-          <div className="flip-face flip-back flex min-h-[inherit] flex-col justify-center rounded-2xl p-5 md:p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/70">Tap to flip back</p>
-            <p className="mt-4 text-base leading-relaxed text-white [font-family:'Lora',serif] italic md:text-lg md:leading-relaxed">
-              {current.text}
-            </p>
-          </div>
-        </button>
+            <div className="flip-face flip-back flex flex-col overflow-hidden p-5 text-center md:p-6">
+              <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2">
+                <p className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/70">
+                  Tap to flip back
+                </p>
+                <p className="min-h-0 w-full max-w-full flex-1 overflow-y-auto text-base leading-relaxed text-white [font-family:'Lora',serif] italic md:text-lg md:leading-relaxed">
+                  {current.text}
+                </p>
+              </div>
+            </div>
+          </button>
+        </div>
       </div>
 
       <div className="mt-3 grid shrink-0 grid-cols-2 gap-2">
