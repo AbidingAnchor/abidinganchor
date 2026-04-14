@@ -873,11 +873,14 @@ body {
   background: rgba(255, 255, 255, 0.06);
 }
 
-.fj-hub-card__title,
-.fj-hub-card__subtitle {
+/* Class names must NOT include "-card" — body.theme-evening [class*="-card"] would
+   treat inner wrappers as separate “cards” and draw borders (looked like underlines). */
+.fj-hub-title,
+.fj-hub-subtitle {
   margin: 0;
   padding: 0;
   border: none !important;
+  border-bottom: none !important;
   border-radius: 0;
   background: transparent !important;
   box-shadow: none !important;
@@ -886,17 +889,20 @@ body {
   -webkit-appearance: none !important;
   text-decoration: none !important;
   display: block;
-  width: auto;
-  max-width: 100%;
 }
-.fj-hub-card__title {
+.fj-hub-copy {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.fj-hub-title {
   font-size: 13px;
   font-weight: 700;
   line-height: 1.3;
   margin-bottom: 2px;
   color: rgba(255, 255, 255, 0.95);
 }
-.fj-hub-card__subtitle {
+.fj-hub-subtitle {
   font-size: 10px;
   line-height: 1.35;
   color: rgba(255, 255, 255, 0.5);
@@ -916,10 +922,10 @@ body.theme-evening .fj-hub-card:not(.fj-hub-card--featured):hover {
   border-color: rgba(212, 168, 67, 0.55) !important;
   box-shadow: 0 6px 28px rgba(200, 85, 35, 0.28) !important;
 }
-body.theme-evening .fj-hub-card__title {
+body.theme-evening .fj-hub-title {
   color: #f0eeea !important;
 }
-body.theme-evening .fj-hub-card__subtitle {
+body.theme-evening .fj-hub-subtitle {
   color: rgba(240, 238, 234, 0.6) !important;
 }
 body.theme-evening .fj-hub-badge:not(.fj-hub-badge--featured) {
@@ -947,17 +953,17 @@ body.theme-afternoon .fj-hub-card:not(.fj-hub-card--featured):hover {
   background: rgba(245, 232, 200, 0.92) !important;
   border-color: rgba(212, 168, 67, 0.45) !important;
 }
-body.theme-day .fj-hub-card__title,
-body.theme-morning .fj-hub-card__title,
-body.theme-afternoon .fj-hub-card__title,
-body.theme-day .fj-hub-card__subtitle,
-body.theme-morning .fj-hub-card__subtitle,
-body.theme-afternoon .fj-hub-card__subtitle {
+body.theme-day .fj-hub-title,
+body.theme-morning .fj-hub-title,
+body.theme-afternoon .fj-hub-title,
+body.theme-day .fj-hub-subtitle,
+body.theme-morning .fj-hub-subtitle,
+body.theme-afternoon .fj-hub-subtitle {
   color: #2a1f0e !important;
 }
-body.theme-day .fj-hub-card__subtitle,
-body.theme-morning .fj-hub-card__subtitle,
-body.theme-afternoon .fj-hub-card__subtitle {
+body.theme-day .fj-hub-subtitle,
+body.theme-morning .fj-hub-subtitle,
+body.theme-afternoon .fj-hub-subtitle {
   color: rgba(42, 31, 14, 0.55) !important;
 }
 body.theme-day .fj-hub-badge,

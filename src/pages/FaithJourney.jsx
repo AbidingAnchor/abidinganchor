@@ -90,9 +90,9 @@ const LearningPathCard = ({ icon, title, subtitle, accentColor, iconBg, featured
     </div>
 
     {/* Title + subtitle (divs — not p — avoids global day/form resets; no faux “input” look) */}
-    <div className="fj-hub-card__text" style={{ flex: 1, minWidth: 0 }}>
-      <div className="fj-hub-card__title">{title}</div>
-      <div className="fj-hub-card__subtitle">{subtitle}</div>
+    <div className="fj-hub-copy" style={{ flex: 1, minWidth: 0 }}>
+      <div className="fj-hub-title">{title}</div>
+      <div className="fj-hub-subtitle">{subtitle}</div>
     </div>
 
     {badge ? (
