@@ -1,5 +1,47 @@
 import { useEffect, useRef } from "react";
 
+// TODO: REMOVE BEFORE LAUNCH — dev-only hour override in source (Settings `devForceTheme` wins when set)
+export const DEV_FORCE_HOUR = null; // 10 = day, 18 = sunset, 21 = night, null = real time
+
+// TODO: REMOVE BEFORE LAUNCH
+export const DEV_THEME_STORAGE_KEY = "devForceTheme";
+
+/**
+ * Effective hour for background theme: localStorage `devForceTheme` overrides DEV_FORCE_HOUR and clock.
+ * TODO: REMOVE BEFORE LAUNCH
+ */
+export function getEffectiveForcedHour() {
+  // TODO: REMOVE BEFORE LAUNCH
+  try {
+    const raw = localStorage.getItem(DEV_THEME_STORAGE_KEY);
+    if (raw !== null && raw !== "" && raw !== "auto") {
+      const n = parseInt(raw, 10);
+      if (Number.isFinite(n)) return n;
+    }
+  } catch {
+    /* ignore */
+  }
+  if (DEV_FORCE_HOUR != null) return DEV_FORCE_HOUR;
+  return undefined;
+}
+
+/** Same rules as BackgroundManager `getBackgroundType`. TODO: REMOVE BEFORE LAUNCH */
+export function getBackgroundTypeForTime(date = new Date()) {
+  // TODO: REMOVE BEFORE LAUNCH
+  const forced = getEffectiveForcedHour();
+  const hours = Number.isFinite(forced) ? forced : date.getHours();
+  const minutes = Number.isFinite(forced) ? 0 : date.getMinutes();
+  const totalMinutes = hours * 60 + minutes;
+
+  const dayStart = 6 * 60;
+  const sunsetStart = 18 * 60;
+  const nightStart = 20 * 60;
+
+  if (totalMinutes >= dayStart && totalMinutes < sunsetStart) return "day";
+  if (totalMinutes >= sunsetStart && totalMinutes < nightStart) return "sunset";
+  return "night";
+}
+
 const SKY_TOP = "#6BB8E8";
 const SKY_MID = "#A8D4F0";
 const SKY_BOTTOM = "#F5E6C8";

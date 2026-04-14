@@ -1,23 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import DayBackground from "./DayBackground";
+import DayBackground, { getBackgroundTypeForTime } from "./DayBackground";
 import SunsetBackground from "./SunsetBackground";
 import CelestialBackground from "./CelestialBackground";
 
 const FADE_DURATION_MS = 800;
 
+// TODO: REMOVE BEFORE LAUNCH — delegates to DayBackground (localStorage devForceTheme + DEV_FORCE_HOUR + clock)
 function getBackgroundType(date = new Date()) {
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  const totalMinutes = hours * 60 + minutes;
-
-  const dayStart = 6 * 60;
-  const sunsetStart = 18 * 60;
-  const nightStart = 20 * 60;
-
-  if (totalMinutes >= dayStart && totalMinutes < sunsetStart) return "day";
-  /* Evening (6–8 PM): warm dark glass cards — see index.css `data-theme="sunset"`. */
-  if (totalMinutes >= sunsetStart && totalMinutes < nightStart) return "sunset";
-  return "night";
+  return getBackgroundTypeForTime(date);
 }
 
 function BackgroundLayer({ type, isVisible }) {
@@ -76,12 +66,17 @@ export default function BackgroundManager() {
       if (!document.hidden) updateBackground();
     };
 
+    // TODO: REMOVE BEFORE LAUNCH — Settings theme preview
+    const handleDevThemeChanged = () => updateBackground();
+
     document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("devForceThemeChanged", handleDevThemeChanged);
 
     return () => {
       clearInterval(interval);
       clearTimeout(fadeTimeout);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("devForceThemeChanged", handleDevThemeChanged);
     };
   }, []);
 

@@ -6,6 +6,11 @@ import { supabase } from '../lib/supabase'
 import { getAvatarUploadExtension } from '../utils/avatarUrl'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import i18n, { LANGUAGE_STORAGE_KEY } from '../i18n.js'
+import {
+  DEV_THEME_STORAGE_KEY,
+  getBackgroundTypeForTime,
+  getEffectiveForcedHour,
+} from '../components/DayBackground.jsx'
 
 const UI_LANG_OPTIONS = [
   { code: 'en', flagIso: 'us', abbr: 'EN', labelKey: 'langEn' },
@@ -14,6 +19,18 @@ const UI_LANG_OPTIONS = [
   { code: 'fr', flagIso: 'fr', abbr: 'FR', labelKey: 'langFr' },
   { code: 'de', flagIso: 'de', abbr: 'DE', labelKey: 'langDe' },
 ]
+
+// TODO: REMOVE BEFORE LAUNCH — dev theme preview (Settings UI + helpers below)
+function readDevThemeChoice() {
+  try {
+    const v = localStorage.getItem(DEV_THEME_STORAGE_KEY)
+    if (v === null || v === '' || v === 'auto') return 'auto'
+    if (v === '10' || v === '18' || v === '21') return v
+  } catch {
+    /* ignore */
+  }
+  return 'auto'
+}
 
 const BIBLE_TRANSLATION_OPTIONS = [
   { value: 'WEB', labelKey: 'bible.web' },
@@ -38,7 +55,39 @@ export default function Settings() {
   const [localUsername, setLocalUsername] = useState('')
   const [dailyReminderEnabled, setDailyReminderEnabled] = useState(false)
   const [reminderTime, setReminderTime] = useState('08:00')
+  const [devThemeChoice, setDevThemeChoice] = useState(readDevThemeChoice)
+  const [devThemeSnap, setDevThemeSnap] = useState(() => getBackgroundTypeForTime())
   const fileInputRef = useRef(null)
+
+  const applyDevThemePreview = useCallback((choice) => {
+    // TODO: REMOVE BEFORE LAUNCH
+    try {
+      if (choice === 'auto') {
+        localStorage.removeItem(DEV_THEME_STORAGE_KEY)
+      } else {
+        localStorage.setItem(DEV_THEME_STORAGE_KEY, choice)
+      }
+    } catch {
+      /* ignore */
+    }
+    setDevThemeChoice(choice)
+    setDevThemeSnap(getBackgroundTypeForTime())
+    window.dispatchEvent(new CustomEvent('devForceThemeChanged'))
+  }, [])
+
+  useEffect(() => {
+    // TODO: REMOVE BEFORE LAUNCH — keep “active theme” label in sync
+    const sync = () => {
+      setDevThemeChoice(readDevThemeChoice())
+      setDevThemeSnap(getBackgroundTypeForTime())
+    }
+    window.addEventListener('devForceThemeChanged', sync)
+    window.addEventListener('storage', sync)
+    return () => {
+      window.removeEventListener('devForceThemeChanged', sync)
+      window.removeEventListener('storage', sync)
+    }
+  }, [])
 
   useEffect(() => {
     if (!user?.id) return
@@ -638,6 +687,89 @@ export default function Settings() {
                   >
                     {abbr}
                   </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* TODO: REMOVE BEFORE LAUNCH */}
+        <div
+          className="glass-panel"
+          style={{
+            borderRadius: '16px',
+            padding: '16px 20px',
+            border: '2px dashed rgba(212, 168, 67, 0.45)',
+            background: 'linear-gradient(145deg, rgba(212, 168, 67, 0.08), rgba(80, 40, 120, 0.12))',
+            boxShadow: 'inset 0 0 0 1px rgba(255, 255, 255, 0.06)',
+          }}
+        >
+          <p
+            style={{
+              color: '#F0D78C',
+              fontSize: '15px',
+              fontWeight: 700,
+              marginBottom: '6px',
+              letterSpacing: '0.02em',
+            }}
+          >
+            🛠 Theme Preview (Dev Only)
+          </p>
+          <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '12px', marginBottom: '12px', lineHeight: 1.45 }}>
+            Temporary — remove before launch. Overrides sky theme for testing.
+          </p>
+          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '13px', marginBottom: '12px' }}>
+            Active:{' '}
+            <strong style={{ color: '#F0D78C' }}>
+              {devThemeSnap === 'day' ? 'Day' : devThemeSnap === 'sunset' ? 'Sunset' : 'Night'}
+            </strong>
+            <span style={{ color: 'rgba(255,255,255,0.45)', fontWeight: 400 }}>
+              {' '}
+              (
+              {(() => {
+                const f = getEffectiveForcedHour()
+                return Number.isFinite(f) ? `forced hour ${f}` : 'real clock'
+              })()}
+              )
+            </span>
+          </p>
+          <div
+            role="group"
+            aria-label="Theme preview"
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '8px',
+              alignItems: 'stretch',
+            }}
+          >
+            {[
+              { key: '10', label: '🌅 Day' },
+              { key: '18', label: '🌆 Sunset' },
+              { key: '21', label: '🌙 Night' },
+              { key: 'auto', label: '⏰ Auto' },
+            ].map(({ key, label }) => {
+              const active = devThemeChoice === key
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => applyDevThemePreview(key)}
+                  style={{
+                    flex: '1 1 calc(50% - 8px)',
+                    minWidth: '120px',
+                    padding: '10px 12px',
+                    borderRadius: '12px',
+                    border: active ? '2px solid #D4A843' : '1px solid rgba(255,255,255,0.2)',
+                    background: active ? 'rgba(212,168,67,0.22)' : 'rgba(0,0,0,0.25)',
+                    color: 'var(--text-primary)',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'background 0.15s ease, border-color 0.15s ease',
+                  }}
+                >
+                  {label}
                 </button>
               )
             })}
