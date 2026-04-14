@@ -199,7 +199,7 @@
   color: white !important;
 }
 
-/* ── Homepage tiles only: beat day-theme / Tailwind bleed (do not target .glass-panel app-wide) ── */
+/* ── Homepage tiles: dark glass (sunset/night); day sky uses parchment in index.css (body.theme-day*) ── */
 .home-page .home-gold-glass,
 .home-page .home-tool-tile {
   background: rgba(15, 20, 45, 0.9) !important;
@@ -215,32 +215,108 @@
   border-color: rgba(212, 168, 67, 0.42) !important;
 }
 
-/* Day theme: global p/span recolor must not wash out card copy */
-[data-theme="day"] .app-card p,
-[data-theme="day"] .glass-panel p,
-[data-theme="day"] .glass-card p,
-[data-theme="day"] .home-gold-glass p,
-[data-theme="day"] .glass:not(.glass-nav-bar) p {
-  color: rgba(255, 255, 255, 0.92) !important;
-}
-[data-theme="day"] .home-gold-glass p[style*="#D4A843"],
-[data-theme="day"] .home-gold-glass p[style*="212, 168, 67"] {
-  color: #d4a843 !important;
-}
-[data-theme="day"] .app-card span:not([class*="emoji"]),
-[data-theme="day"] .glass-panel span:not([class*="emoji"]),
-[data-theme="day"] .home-gold-glass span:not([class*="emoji"]),
-[data-theme="day"] .glass:not(.glass-nav-bar) span:not([class*="emoji"]) {
-  color: rgba(255, 255, 255, 0.88) !important;
-}
-[data-theme="day"] .home-gold-glass .daily-encounter-action-btn,
-[data-theme="day"] .home-gold-glass .daily-encounter-action-label {
-  color: rgba(255, 255, 255, 0.95) !important;
+/* Day sky — parchment card copy (beats global [data-theme="day"] navy rules) */
+body.theme-day .app-card p,
+body.theme-morning .app-card p,
+body.theme-afternoon .app-card p,
+body.theme-day .glass-panel p,
+body.theme-morning .glass-panel p,
+body.theme-afternoon .glass-panel p,
+body.theme-day .glass-card p,
+body.theme-morning .glass-card p,
+body.theme-afternoon .glass-card p,
+body.theme-day .home-gold-glass p,
+body.theme-morning .home-gold-glass p,
+body.theme-afternoon .home-gold-glass p,
+body.theme-day .glass:not(.glass-nav-bar) p,
+body.theme-morning .glass:not(.glass-nav-bar) p,
+body.theme-afternoon .glass:not(.glass-nav-bar) p {
+  color: #2a1f0e !important;
 }
 
-[data-theme="day"] .app-card.text-white,
-[data-theme="day"] .glass-panel.text-white,
-[data-theme="day"] .glass-card.text-white,
-[data-theme="day"] .glass.text-white {
-  color: #fff !important;
+body.theme-day .home-gold-glass p[style*="#D4A843"],
+body.theme-morning .home-gold-glass p[style*="#D4A843"],
+body.theme-afternoon .home-gold-glass p[style*="#D4A843"],
+body.theme-day .home-gold-glass p[style*="212, 168, 67"],
+body.theme-morning .home-gold-glass p[style*="212, 168, 67"],
+body.theme-afternoon .home-gold-glass p[style*="212, 168, 67"] {
+  color: #d4a843 !important;
+}
+
+body.theme-day .app-card span:not([class*="emoji"]),
+body.theme-morning .app-card span:not([class*="emoji"]),
+body.theme-afternoon .app-card span:not([class*="emoji"]),
+body.theme-day .glass-panel span:not([class*="emoji"]),
+body.theme-morning .glass-panel span:not([class*="emoji"]),
+body.theme-afternoon .glass-panel span:not([class*="emoji"]),
+body.theme-day .home-gold-glass span:not([class*="emoji"]),
+body.theme-morning .home-gold-glass span:not([class*="emoji"]),
+body.theme-afternoon .home-gold-glass span:not([class*="emoji"]),
+body.theme-day .glass:not(.glass-nav-bar) span:not([class*="emoji"]),
+body.theme-morning .glass:not(.glass-nav-bar) span:not([class*="emoji"]),
+body.theme-afternoon .glass:not(.glass-nav-bar) span:not([class*="emoji"]) {
+  color: rgba(42, 31, 14, 0.85) !important;
+}
+
+body.theme-day .home-gold-glass .daily-encounter-action-btn,
+body.theme-morning .home-gold-glass .daily-encounter-action-btn,
+body.theme-afternoon .home-gold-glass .daily-encounter-action-btn,
+body.theme-day .home-gold-glass .daily-encounter-action-label,
+body.theme-morning .home-gold-glass .daily-encounter-action-label,
+body.theme-afternoon .home-gold-glass .daily-encounter-action-label {
+  color: #2a1f0e !important;
+}
+
+body.theme-day .app-card.text-white,
+body.theme-morning .app-card.text-white,
+body.theme-afternoon .app-card.text-white,
+body.theme-day .glass-panel.text-white,
+body.theme-morning .glass-panel.text-white,
+body.theme-afternoon .glass-panel.text-white,
+body.theme-day .glass-card.text-white,
+body.theme-morning .glass-card.text-white,
+body.theme-afternoon .glass-card.text-white,
+body.theme-day .glass.text-white,
+body.theme-morning .glass.text-white,
+body.theme-afternoon .glass.text-white {
+  color: #2a1f0e !important;
+}
+
+body.theme-day .glass-panel h1,
+body.theme-morning .glass-panel h1,
+body.theme-afternoon .glass-panel h1,
+body.theme-day .glass-panel h2,
+body.theme-morning .glass-panel h2,
+body.theme-afternoon .glass-panel h2,
+body.theme-day .glass-panel h3,
+body.theme-morning .glass-panel h3,
+body.theme-afternoon .glass-panel h3,
+body.theme-day .glass-panel h4,
+body.theme-morning .glass-panel h4,
+body.theme-afternoon .glass-panel h4 {
+  color: #2a1f0e !important;
+}
+
+body.theme-day .glass-panel [class*="section-title"],
+body.theme-morning .glass-panel [class*="section-title"],
+body.theme-afternoon .glass-panel [class*="section-title"],
+body.theme-day .glass-panel [class*="gold"],
+body.theme-morning .glass-panel [class*="gold"],
+body.theme-afternoon .glass-panel [class*="gold"],
+body.theme-day .glass-panel [style*="#D4A843"],
+body.theme-morning .glass-panel [style*="#D4A843"],
+body.theme-afternoon .glass-panel [style*="#D4A843"],
+body.theme-day .glass-panel [style*="D4A843"],
+body.theme-morning .glass-panel [style*="D4A843"],
+body.theme-afternoon .glass-panel [style*="D4A843"] {
+  color: #d4a843 !important;
+}
+
+body.theme-day .glass-panel label,
+body.theme-morning .glass-panel label,
+body.theme-afternoon .glass-panel label,
+body.theme-day .glass-panel small,
+body.theme-morning .glass-panel small,
+body.theme-afternoon .glass-panel small {
+  color: rgba(42, 31, 14, 0.65) !important;
 }

@@ -58,7 +58,7 @@ function drawSkyGradient(ctx, w, h) {
 /** Conic god-rays: bright wedges radiating from the sun (angle 0 = right; -π/2 = up). */
 function drawGodRays(ctx, w, h, sunX, sunY) {
   ctx.save();
-  ctx.globalAlpha = 0.14;
+  ctx.globalAlpha = 0.1;
   const g = ctx.createConicGradient(-Math.PI / 2, sunX, sunY);
   const stops = [
     [0, "rgba(255,255,255,0.33)"],
@@ -164,10 +164,11 @@ function drawCloud(ctx, cx, cy, scale, blurPx, shadowOff) {
 function drawGroundHaze(ctx, w, h) {
   const y0 = h * 0.85;
   const g = ctx.createLinearGradient(0, y0, 0, h);
+  /* Low-opacity haze so the sky stays bright (was muddy at ~0.21) */
   g.addColorStop(0, "rgba(255, 220, 170, 0)");
-  g.addColorStop(0.35, "rgba(255, 210, 150, 0.09)");
-  g.addColorStop(0.7, "rgba(245, 190, 120, 0.16)");
-  g.addColorStop(1, "rgba(235, 175, 95, 0.21)");
+  g.addColorStop(0.35, "rgba(255, 210, 150, 0.04)");
+  g.addColorStop(0.7, "rgba(245, 190, 120, 0.08)");
+  g.addColorStop(1, "rgba(235, 175, 95, 0.12)");
   ctx.fillStyle = g;
   ctx.fillRect(0, y0, w, h - y0);
 }
@@ -217,7 +218,8 @@ export default function DayBackground() {
         const nx = 0.05 + Math.random() * 0.9;
         const ny = 0.12 + Math.random() * 0.48;
         const scale = 0.55 + Math.random() * 0.75;
-        const blurPx = 5 + Math.random() * 7;
+        /* Softer blur = crisper clouds on HiDPI canvases */
+        const blurPx = 3 + Math.random() * 4;
         const driftAmp = 18 + Math.random() * 22;
         const driftSpeed = 0.00012 + Math.random() * 0.0001;
         const phase = Math.random() * Math.PI * 2;
@@ -238,7 +240,7 @@ export default function DayBackground() {
     const resize = () => {
       width = window.innerWidth;
       height = window.innerHeight;
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      dpr = window.devicePixelRatio || 1;
       canvas.width = Math.floor(width * dpr);
       canvas.height = Math.floor(height * dpr);
       canvas.style.width = `${width}px`;
