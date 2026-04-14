@@ -16,9 +16,13 @@ const BIBLE_FONT_MAX = 24
 const BIBLE_FONT_DEFAULT = 18
 const BIBLE_FONT_STEP = 2
 
-/** Verse scroll sits between App header (~56px) + fixed chapter bar (~60px) and bottom nav (~80px). */
-const BIBLE_SCROLL_PAD_TOP = 'calc(56px + 60px)'
-const BIBLE_SCROLL_PAD_BOTTOM = '80px'
+/** Layout zones (viewport-fixed). Zone 1 = app header, Zone 5 = tab bar — defined in App; not styled here. */
+const APP_BAR_HEIGHT_PX = 56
+const CHAPTER_ZONE_HEIGHT_PX = 90
+const BOTTOM_CHROME_NAV_PX = 60
+const BOTTOM_TAB_BAR_PX = 60
+const BIBLE_SCROLL_TOP_PX = APP_BAR_HEIGHT_PX + CHAPTER_ZONE_HEIGHT_PX
+const BIBLE_SCROLL_BOTTOM_PX = BOTTOM_CHROME_NAV_PX + BOTTOM_TAB_BAR_PX
 
 function clampBibleFontSize(n) {
   if (!Number.isFinite(n)) return BIBLE_FONT_DEFAULT
@@ -342,38 +346,43 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
 
   if (!open) return null
 
+  const navBtnStyle = {
+    background: 'none',
+    border: '1px solid rgba(212,168,67,0.4)',
+    borderRadius: '16px',
+    color: '#D4A843',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    padding: '6px 14px',
+    lineHeight: 1.2,
+  }
+
   return (
-    <div
-      style={{
-        position: 'relative',
-        zIndex: 10,
-        display: 'flex',
-        flexDirection: 'column',
-        flex: 1,
-        minHeight: 0,
-        width: '100%',
-        alignSelf: 'stretch',
-        background: 'transparent',
-        /* Pull flush toward tab bar: parent uses large pb (e.g. pb-32); leave ~8px breathing room */
-        marginBottom: 'calc(8px - 8rem)',
-      }}
-    >
-      {/* Top Bar */}
+    <div style={{ position: 'relative', zIndex: 10, width: '100%', minHeight: '100dvh', background: 'transparent' }}>
+      {/*
+        ZONE 1 — App bar (logo, Read title, settings): fixed in App — do not style here.
+        ZONE 2 — Chapter header + Read/Listen (fixed below app bar)
+      */}
       <div
-        className="glass-nav-bar"
         style={{
-        position: 'fixed',
-        top: '60px',
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        padding: '12px 20px',
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
-      }}
+          position: 'fixed',
+          top: APP_BAR_HEIGHT_PX,
+          left: 0,
+          right: 0,
+          height: CHAPTER_ZONE_HEIGHT_PX,
+          zIndex: 90,
+          background: 'rgba(15, 20, 45, 0.95)',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          boxSizing: 'border-box',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: '6px 20px 8px',
+        }}
       >
-        <div style={{ maxWidth: '680px', margin: '0 auto' }}>
-          {/* Row 1: Book selector | Chapter selector | Translation */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
+        <div style={{ maxWidth: '680px', margin: '0 auto', width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
             <button
               type="button"
               onClick={() => setShowBookPicker(true)}
@@ -381,15 +390,14 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                 background: 'none',
                 border: 'none',
                 color: 'var(--text-primary)',
-                fontSize: '18px',
+                fontSize: '17px',
                 fontWeight: 700,
                 cursor: 'pointer',
-                padding: '4px 12px',
+                padding: '2px 8px',
               }}
             >
               {selectedBook ? bookDisplayName(selectedBook) : t('bible.loading')}
             </button>
-
             <button
               type="button"
               onClick={() => setShowChapterPicker(true)}
@@ -397,31 +405,30 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                 background: 'none',
                 border: 'none',
                 color: 'var(--text-primary)',
-                fontSize: '18px',
+                fontSize: '17px',
                 fontWeight: 700,
                 cursor: 'pointer',
-                padding: '4px 12px',
+                padding: '2px 8px',
               }}
             >
               {t('bible.chapter', { n: chapter })}
             </button>
-
             {showEnglishBibleVersions ? (
               <button
                 ref={translationButtonRef}
                 type="button"
-                onClick={() => setShowTranslationPicker((open) => !open)}
+                onClick={() => setShowTranslationPicker((o) => !o)}
                 style={{
                   background: 'rgba(10, 16, 40, 0.88)',
                   border: '1px solid rgba(212,168,67,0.38)',
                   borderRadius: '999px',
                   color: '#F5E6C8',
-                  fontSize: '12px',
+                  fontSize: '11px',
                   fontWeight: 700,
                   cursor: 'pointer',
-                  padding: '6px 12px',
+                  padding: '5px 10px',
                   letterSpacing: '0.04em',
-                  boxShadow: '0 8px 20px rgba(0,0,0,0.25)',
+                  boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
                 }}
                 aria-expanded={showTranslationPicker}
                 aria-haspopup="listbox"
@@ -429,263 +436,234 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                 {HAS_API_BIBLE ? uiLang.toUpperCase() : selectedTranslation.label} ▾
               </button>
             ) : (
-              <span style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(212,168,67,0.85)', padding: '6px 8px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(212,168,67,0.85)', padding: '4px 6px' }}>
                 {getBibleSlug ? String(getBibleSlug).toUpperCase() : ''}
               </span>
             )}
           </div>
         </div>
-      </div>
-
-      {/* Read | Listen toggle - in normal document flow */}
-      {onModeChange && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 'fit-content',
-            marginTop: '12px',
-            marginLeft: 'auto',
-            marginRight: 'auto',
-            marginBottom: '12px',
-            position: 'relative',
-            zIndex: 1,
-            flexShrink: 0,
-          }}
-        >
-          <div className="glass" style={{
-            borderRadius: '50px',
-            padding: '4px',
-            display: 'flex',
-            gap: '4px',
-            border: '1px solid var(--glass-border)'
-          }}>
-            <button
-              type="button"
-              onClick={() => onModeChange('read')}
+        {onModeChange ? (
+          <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '2px' }}>
+            <div
+              className="glass"
               style={{
-                background: mode === 'read' ? 'var(--gold)' : 'transparent',
-                color: mode === 'read' ? 'white' : 'var(--text-secondary)',
-                border: 'none',
                 borderRadius: '50px',
-                padding: '6px 20px',
-                fontSize: '14px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
+                padding: '3px',
+                display: 'flex',
+                gap: '4px',
+                border: '1px solid var(--glass-border)',
               }}
             >
-              {t('bible.read')}
-            </button>
-            <button
-              type="button"
-              onClick={() => onModeChange('listen')}
-              style={{
-                background: mode === 'listen' ? 'var(--gold)' : 'transparent',
-                color: mode === 'listen' ? 'white' : 'var(--text-secondary)',
-                border: 'none',
-                borderRadius: '50px',
-                padding: '6px 20px',
-                fontSize: '14px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
-            >
-              {t('bible.listen')}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Verse text only — scrolls between fixed headers and bottom chapter bar */}
-      <div
-        style={{
-          flex: 1,
-          minHeight: 0,
-          overflowY: 'auto',
-          WebkitOverflowScrolling: 'touch',
-          paddingTop: BIBLE_SCROLL_PAD_TOP,
-          paddingLeft: '20px',
-          paddingRight: '20px',
-          paddingBottom: mode === 'listen' ? '160px' : BIBLE_SCROLL_PAD_BOTTOM,
-          maxWidth: '680px',
-          margin: '0 auto',
-          width: '100%',
-          boxSizing: 'border-box',
-        }}
-      >
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px' }}>
-            <div style={{ fontSize: '32px', marginBottom: '16px' }}>✝</div>
-            <p style={{ color: 'var(--text-secondary)' }}>{t('bible.loading')}</p>
-          </div>
-        ) : (
-          <div
-            style={{
-              padding: '12px 4px 8px',
-              color: 'var(--text-primary)',
-              fontSize: `${fontSize}px`,
-              lineHeight: '1.8',
-              fontFamily: 'Lora, serif',
-            }}
-          >
-            {verses.map((v) => (
-              <p
-                key={v.verse}
+              <button
+                type="button"
+                onClick={() => onModeChange('read')}
                 style={{
-                  marginBottom: '1.2rem',
-                  textAlign: 'justify',
+                  background: mode === 'read' ? 'var(--gold)' : 'transparent',
+                  color: mode === 'read' ? 'white' : 'var(--text-secondary)',
+                  border: 'none',
+                  borderRadius: '50px',
+                  padding: '5px 16px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
                 }}
               >
-                <sup
-                  style={{
-                    color: 'var(--gold)',
-                    fontSize: '0.75em',
-                    fontWeight: 600,
-                    marginRight: '4px',
-                    verticalAlign: 'super',
-                  }}
-                >
-                  {v.verse}
-                </sup>
-                {v.text}
-              </p>
-            ))}
+                {t('bible.read')}
+              </button>
+              <button
+                type="button"
+                onClick={() => onModeChange('listen')}
+                style={{
+                  background: mode === 'listen' ? 'var(--gold)' : 'transparent',
+                  color: mode === 'listen' ? 'white' : 'var(--text-secondary)',
+                  border: 'none',
+                  borderRadius: '50px',
+                  padding: '5px 16px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                {t('bible.listen')}
+              </button>
+            </div>
           </div>
+        ) : (
+          <div style={{ minHeight: '4px' }} aria-hidden />
         )}
       </div>
 
-      {/* Chapter nav + font size — pinned to bottom of column (above app tab bar), not inside verse scroll */}
+      {/* ZONE 3 — Scrollable Bible text only */}
       <div
-        className="glass-panel"
         style={{
-          flexShrink: 0,
-          background: 'rgba(15, 20, 45, 0.75)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
+          position: 'fixed',
+          top: BIBLE_SCROLL_TOP_PX,
+          bottom: BIBLE_SCROLL_BOTTOM_PX,
+          left: 0,
+          right: 0,
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
           padding: '16px 20px',
-          display: 'flex',
-          alignItems: 'center',
-          width: '100%',
-          maxWidth: '680px',
-          margin: '0 auto',
+          zIndex: 40,
           boxSizing: 'border-box',
-          borderTop: '1px solid rgba(255,255,255,0.08)',
         }}
       >
-        <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'flex-start', minWidth: 0 }}>
-          <button
-            type="button"
-            onClick={goToPreviousChapter}
-            disabled={chapter === 1 || loading}
-            style={{
-              background: 'none',
-              border: '1px solid rgba(212,168,67,0.4)',
-              borderRadius: '20px',
-              color: '#D4A843',
-              fontSize: '14px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              padding: '10px 20px',
-              opacity: chapter === 1 || loading ? 0.3 : 1,
-            }}
-          >
-            {t('bible.previous')}
-          </button>
+        <div style={{ maxWidth: '680px', margin: '0 auto', width: '100%' }}>
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <div style={{ fontSize: '32px', marginBottom: '16px' }}>✝</div>
+              <p style={{ color: 'var(--text-secondary)' }}>{t('bible.loading')}</p>
+            </div>
+          ) : (
+            <div
+              style={{
+                color: 'var(--text-primary)',
+                fontSize: `${fontSize}px`,
+                lineHeight: '1.8',
+                fontFamily: 'Lora, serif',
+              }}
+            >
+              {verses.map((v) => (
+                <p key={v.verse} style={{ marginBottom: '1.2rem', textAlign: 'justify' }}>
+                  <sup
+                    style={{
+                      color: 'var(--gold)',
+                      fontSize: '0.75em',
+                      fontWeight: 600,
+                      marginRight: '4px',
+                      verticalAlign: 'super',
+                    }}
+                  >
+                    {v.verse}
+                  </sup>
+                  {v.text}
+                </p>
+              ))}
+            </div>
+          )}
         </div>
+      </div>
+
+      {/* ZONE 4 — Chapter / font nav (fixed above bottom tab bar). ZONE 5 — tab bar: fixed in App. */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: BOTTOM_TAB_BAR_PX,
+          left: 0,
+          right: 0,
+          height: BOTTOM_CHROME_NAV_PX,
+          zIndex: 90,
+          background: 'rgba(15, 20, 45, 0.95)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          borderTop: '1px solid rgba(255,255,255,0.1)',
+          boxSizing: 'border-box',
+          display: 'flex',
+          alignItems: 'center',
+          padding: '0 16px',
+        }}
+      >
         <div
           style={{
-            flex: '0 0 auto',
+            maxWidth: '680px',
+            margin: '0 auto',
+            width: '100%',
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
-            padding: '0 8px',
+            justifyContent: 'space-between',
+            gap: '8px',
           }}
-          aria-label="Bible text size"
         >
-          <button
-            type="button"
-            onClick={() => {
-              setFontSize((s) => {
-                const next = clampBibleFontSize(s - BIBLE_FONT_STEP)
-                try {
-                  localStorage.setItem('bibleFontSize', String(next))
-                } catch {
-                  /* ignore */
-                }
-                return next
-              })
-            }}
-            disabled={fontSize <= BIBLE_FONT_MIN}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#D4A843',
-              fontSize: '15px',
-              fontWeight: 700,
-              cursor: fontSize <= BIBLE_FONT_MIN ? 'not-allowed' : 'pointer',
-              padding: '4px 6px',
-              opacity: fontSize <= BIBLE_FONT_MIN ? 0.35 : 1,
-            }}
-          >
-            A-
-          </button>
+          <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'flex-start', minWidth: 0 }}>
+            <button
+              type="button"
+              onClick={goToPreviousChapter}
+              disabled={chapter === 1 || loading}
+              style={{
+                ...navBtnStyle,
+                opacity: chapter === 1 || loading ? 0.35 : 1,
+                cursor: chapter === 1 || loading ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {t('bible.previous')}
+            </button>
+          </div>
           <div
-            style={{
-              width: '1px',
-              height: '16px',
-              background: 'rgba(255,255,255,0.2)',
-            }}
-          />
-          <button
-            type="button"
-            onClick={() => {
-              setFontSize((s) => {
-                const next = clampBibleFontSize(s + BIBLE_FONT_STEP)
-                try {
-                  localStorage.setItem('bibleFontSize', String(next))
-                } catch {
-                  /* ignore */
-                }
-                return next
-              })
-            }}
-            disabled={fontSize >= BIBLE_FONT_MAX}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--gold)',
-              fontSize: '15px',
-              fontWeight: 700,
-              cursor: fontSize >= BIBLE_FONT_MAX ? 'not-allowed' : 'pointer',
-              padding: '4px 6px',
-              opacity: fontSize >= BIBLE_FONT_MAX ? 0.35 : 1,
-            }}
+            style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: '8px', padding: '0 4px' }}
+            aria-label="Bible text size"
           >
-            A+
-          </button>
-        </div>
-        <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'flex-end', minWidth: 0 }}>
-          <button
-            type="button"
-            onClick={goToNextChapter}
-            disabled={chapter === maxChapter || loading}
-            style={{
-              background: 'none',
-              border: '1px solid rgba(212,168,67,0.4)',
-              borderRadius: '20px',
-              color: '#D4A843',
-              fontSize: '14px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              padding: '10px 20px',
-              opacity: chapter === maxChapter || loading ? 0.3 : 1,
-            }}
-          >
-            {t('bible.next')}
-          </button>
+            <button
+              type="button"
+              onClick={() => {
+                setFontSize((s) => {
+                  const next = clampBibleFontSize(s - BIBLE_FONT_STEP)
+                  try {
+                    localStorage.setItem('bibleFontSize', String(next))
+                  } catch {
+                    /* ignore */
+                  }
+                  return next
+                })
+              }}
+              disabled={fontSize <= BIBLE_FONT_MIN}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#D4A843',
+                fontSize: '14px',
+                fontWeight: 700,
+                cursor: fontSize <= BIBLE_FONT_MIN ? 'not-allowed' : 'pointer',
+                padding: '4px 6px',
+                opacity: fontSize <= BIBLE_FONT_MIN ? 0.35 : 1,
+              }}
+            >
+              A-
+            </button>
+            <div style={{ width: '1px', height: '14px', background: 'rgba(255,255,255,0.2)' }} />
+            <button
+              type="button"
+              onClick={() => {
+                setFontSize((s) => {
+                  const next = clampBibleFontSize(s + BIBLE_FONT_STEP)
+                  try {
+                    localStorage.setItem('bibleFontSize', String(next))
+                  } catch {
+                    /* ignore */
+                  }
+                  return next
+                })
+              }}
+              disabled={fontSize >= BIBLE_FONT_MAX}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--gold)',
+                fontSize: '14px',
+                fontWeight: 700,
+                cursor: fontSize >= BIBLE_FONT_MAX ? 'not-allowed' : 'pointer',
+                padding: '4px 6px',
+                opacity: fontSize >= BIBLE_FONT_MAX ? 0.35 : 1,
+              }}
+            >
+              A+
+            </button>
+          </div>
+          <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'flex-end', minWidth: 0 }}>
+            <button
+              type="button"
+              onClick={goToNextChapter}
+              disabled={chapter === maxChapter || loading}
+              style={{
+                ...navBtnStyle,
+                opacity: chapter === maxChapter || loading ? 0.35 : 1,
+                cursor: chapter === maxChapter || loading ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {t('bible.next')}
+            </button>
+          </div>
         </div>
       </div>
 
