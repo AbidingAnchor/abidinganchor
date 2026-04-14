@@ -156,7 +156,7 @@ export default function DailyEncounterCard({
 
         <div
           className={[
-            'rounded-xl border px-3 py-3 mb-2 transition-all duration-500',
+            'daily-encounter-presence-box rounded-xl border px-3 py-3 mb-2 transition-all duration-500',
             presence.justCompleted
               ? 'border-[#D4A843]/55 bg-[rgba(212,168,67,0.07)] shadow-[0_0_24px_rgba(212,168,67,0.18)]'
               : 'border-[#c9b896]/55 bg-[rgba(28,24,18,0.04)]',

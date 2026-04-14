@@ -199,9 +199,9 @@
   color: white !important;
 }
 
-/* ── Homepage tiles: dark glass (sunset/night); day sky uses parchment in index.css (body.theme-day*) ── */
-.home-page .home-gold-glass,
-.home-page .home-tool-tile {
+/* ── Homepage tiles: cool navy glass for NIGHT only; sunset uses plum glass in index.css (body.theme-evening) ── */
+body.theme-night .home-page .home-gold-glass,
+body.theme-night .home-page .home-tool-tile {
   background: rgba(15, 20, 45, 0.9) !important;
   backdrop-filter: blur(14px) !important;
   -webkit-backdrop-filter: blur(14px) !important;
@@ -209,8 +209,8 @@
   color: rgba(255, 255, 255, 0.95) !important;
 }
 
-.home-page .home-gold-glass:hover,
-.home-page .home-tool-tile:hover {
+body.theme-night .home-page .home-gold-glass:hover,
+body.theme-night .home-page .home-tool-tile:hover {
   background: rgba(22, 28, 58, 0.95) !important;
   border-color: rgba(212, 168, 67, 0.42) !important;
 }

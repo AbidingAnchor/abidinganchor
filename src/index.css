@@ -1669,6 +1669,96 @@ body.theme-afternoon .home-tool-tile * {
   --text-secondary: rgba(42, 31, 14, 0.65);
 }
 
+/* ── EVENING / SUNSET: plum glass + warm amber glow (distinct from night navy; day & night rules unchanged above) ── */
+body.theme-evening {
+  --card-text: #f0eeea;
+  --card-text-muted: rgba(240, 238, 234, 0.65);
+  --section-title: #d4a843;
+  --card-parchment: rgba(60, 20, 80, 0.72);
+  --card-parchment-hover: rgba(78, 32, 100, 0.82);
+  --card-parchment-ink: #f0eeea;
+  --card-parchment-ink-muted: rgba(240, 238, 234, 0.65);
+  --text-primary: #f0eeea;
+  --text-secondary: rgba(240, 238, 234, 0.65);
+  --verse-text: #f0eeea;
+  --label-text: rgba(240, 238, 234, 0.65);
+  --streak-text: #f0eeea;
+  --heading-text: #f0eeea;
+}
+
+body.theme-evening .glass-card,
+body.theme-evening .stat-card,
+body.theme-evening .tool-card,
+body.theme-evening .home-hero,
+body.theme-evening .streak-card,
+body.theme-evening .glass-panel,
+body.theme-evening .home-gold-glass,
+body.theme-evening .home-tool-tile,
+body.theme-evening .app-card,
+body.theme-evening [class*="-card"],
+body.theme-evening [class*="card-"] {
+  background: rgba(60, 20, 80, 0.72) !important;
+  border: 1px solid rgba(212, 168, 67, 0.45) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  box-shadow: 0 4px 24px rgba(180, 80, 20, 0.2) !important;
+  color: #f0eeea !important;
+  --text-primary: #f0eeea;
+  --text-secondary: rgba(240, 238, 234, 0.65);
+  --verse-text: #f0eeea;
+  --heading-text: #f0eeea;
+  --label-text: rgba(240, 238, 234, 0.65);
+  --streak-text: #f0eeea;
+  --card-parchment-ink: #f0eeea;
+  --card-parchment-ink-muted: rgba(240, 238, 234, 0.65);
+}
+
+body.theme-evening .glass-card:hover,
+body.theme-evening .stat-card:hover,
+body.theme-evening .tool-card:hover,
+body.theme-evening .home-hero:hover,
+body.theme-evening .streak-card:hover,
+body.theme-evening .glass-panel:hover,
+body.theme-evening .home-gold-glass:hover,
+body.theme-evening .home-tool-tile:hover,
+body.theme-evening .app-card:hover,
+body.theme-evening [class*="-card"]:hover,
+body.theme-evening [class*="card-"]:hover {
+  background: rgba(72, 28, 95, 0.78) !important;
+  border-color: rgba(212, 168, 67, 0.55) !important;
+  box-shadow: 0 6px 28px rgba(200, 85, 35, 0.28) !important;
+}
+
+/* Warm white default on card chrome; inline/accent colors on copy stay intact */
+body.theme-evening .home-gold-glass .daily-encounter-action-btn {
+  background: rgba(80, 30, 100, 0.6) !important;
+  border: 1px solid rgba(212, 168, 67, 0.3) !important;
+  color: #f0eeea !important;
+}
+
+body.theme-evening .home-gold-glass .daily-encounter-action-btn:hover {
+  background: rgba(95, 38, 118, 0.72) !important;
+  border-color: rgba(212, 168, 67, 0.45) !important;
+  box-shadow: 0 0 18px rgba(212, 168, 67, 0.2) !important;
+}
+
+body.theme-evening .home-gold-glass .daily-encounter-action-label {
+  color: #f0eeea !important;
+}
+
+body.theme-evening .daily-encounter-presence-box {
+  background: rgba(80, 30, 100, 0.5) !important;
+  border-color: rgba(212, 168, 67, 0.25) !important;
+}
+
+body.theme-evening .daily-encounter-presence-box p.text-sm.font-semibold {
+  color: #d4a843 !important;
+}
+
+body.theme-evening .daily-encounter-presence-box p.text-xs {
+  color: rgba(240, 238, 234, 0.75) !important;
+}
+
 /* Force nav text visible in all themes */
 [data-theme="day"] nav span {
   color: var(--nav-text) !important;
