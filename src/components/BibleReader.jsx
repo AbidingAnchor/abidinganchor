@@ -790,7 +790,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                 width: 200,
                 boxSizing: 'border-box',
                 zIndex: 10020,
-                background: 'rgba(8, 20, 50, 0.85)',
+                background: 'rgba(255, 255, 255, 0.15)',
                 border: '1px solid #D4A843',
                 borderRadius: '12px',
                 padding: '10px 8px 8px',
@@ -799,9 +799,9 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                 overflowX: 'hidden',
                 pointerEvents: 'auto',
                 boxShadow: '0 18px 40px rgba(0,0,0,0.45)',
-                color: 'white',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
+                color: 'inherit',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
               }}
               role="listbox"
               aria-label={t('bible.translation')}
@@ -847,9 +847,9 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                             setShowTranslationPicker(false)
                           }}
                           style={{
-                            background: active ? 'rgba(212, 168, 67, 0.16)' : 'rgba(255,255,255,0.02)',
-                            border: active ? '1px solid rgba(212, 168, 67, 0.55)' : '1px solid transparent',
-                            borderRadius: '12px',
+                            background: active ? 'rgba(212, 168, 67, 0.2)' : 'rgba(255,255,255,0.02)',
+                            border: active ? '1px solid #D4A843' : '1px solid transparent',
+                            borderRadius: '8px',
                             color: '#F8F5EC',
                             cursor: 'pointer',
                             padding: '10px 10px',
