@@ -206,7 +206,7 @@ function AppShell() {
               flex: 1,
               display: 'flex',
               flexDirection: 'column',
-              paddingTop: showHeader ? '56px' : '0px',
+              paddingTop: showHeader ? 'calc(56px + env(safe-area-inset-top, 0px))' : '0px',
               paddingBottom: '80px',
               background: 'transparent',
             }}

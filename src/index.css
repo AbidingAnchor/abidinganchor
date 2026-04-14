@@ -229,6 +229,10 @@ body {
   scroll-behavior: smooth;
 }
 
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
 body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
