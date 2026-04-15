@@ -34,7 +34,7 @@ export default function Support() {
   return (
     <div style={{ position:'relative', zIndex: 10, minHeight:'100vh', 
       overflow:'hidden', fontFamily:'sans-serif' }}>
-      <div className="content-scroll" style={{ padding:'0 16px', paddingTop:'200px', paddingBottom:'120px', maxWidth:'680px', margin:'0 auto', width:'100%' }}>
+      <div className="content-scroll" style={{ padding:'0 16px', paddingTop:'60px', paddingBottom:'120px', maxWidth:'680px', margin:'0 auto', width:'100%' }}>
 
         <h1 style={{ textAlign:'center', color:'#fff', 
           fontSize:'26px', fontWeight:'bold', margin:'0 0 6px',
@@ -99,35 +99,6 @@ export default function Support() {
               style={{ border: '1px solid rgba(212,168,67,0.6)', borderRadius: '10px', padding: '10px 12px', background: notificationsEnabled ? 'rgba(40,120,70,0.4)' : '#D4A843', color: notificationsEnabled ? '#fff' : '#1a1a1a', fontWeight: 700, fontSize: '13px' }}
             >
               {notificationsEnabled ? 'Notifications On ✅' : 'Enable Daily Notifications 🔔'}
-            </button>
-          </article>
-        </section>
-
-        <section style={{ marginBottom: '14px' }}>
-          <h2 style={{ color: '#D4A843', fontSize: '13px', fontWeight: 700, margin: '0 0 8px', letterSpacing: '0.06em' }}>
-            Join the Community
-          </h2>
-          <article className="glass-panel" style={{ borderRadius: '16px', padding: '14px 16px' }}>
-            <p style={{ color: 'rgba(255,255,255,0.95)', fontSize: '12px', margin: '0 0 12px', lineHeight: '1.6' }}>
-              Connect with other believers, share prayer requests, and grow together in faith.
-            </p>
-            <button
-              type="button"
-              onClick={() => window.open('https://discord.gg/nZcZRkUMJh', '_blank')}
-              style={{ 
-                background: 'linear-gradient(135deg, #D4A843 0%, #F4D03F 100%)',
-                color: '#0d1f4e',
-                border: 'none',
-                borderRadius: '50px',
-                padding: '12px 24px',
-                fontWeight: 600,
-                fontSize: '13px',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 4px 15px rgba(212,168,67,0.3)'
-              }}
-            >
-              Join our Discord
             </button>
           </article>
         </section>
