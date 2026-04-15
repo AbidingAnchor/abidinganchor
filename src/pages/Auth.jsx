@@ -144,6 +144,19 @@ export default function Auth() {
     }}>
       {/* Title */}
       <div style={{ textAlign: 'center', marginTop: '8px', marginBottom: '16px', animation: 'fadeInDown 0.8s ease forwards' }}>
+        <img
+          src="/NewLogo.png"
+          alt="Abiding Anchor logo"
+          style={{
+            width: '136px',
+            height: '136px',
+            objectFit: 'contain',
+            display: 'block',
+            margin: '0 auto 10px auto',
+            filter: 'drop-shadow(0 0 15px rgba(212, 175, 55, 0.6))',
+            mixBlendMode: 'lighten',
+          }}
+        />
         <h1 style={{ fontSize: '22px', letterSpacing: '0.15em', 
           color: '#D4A843', margin: '0 0 4px 0', fontWeight: 300,
           textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
@@ -321,9 +334,20 @@ export default function Auth() {
         {success ? <p className="mt-2 text-gold text-sm">{success}</p> : null}
       </article>
 
-      {/* Bottom - pushed to bottom with marginTop auto */}
-      <div style={{ marginTop: '40px', textAlign: 'center', 
-        paddingBottom: '30px', paddingTop: '20px', animation: 'fadeInUp 0.8s ease forwards', animationDelay: '0.4s' }}>
+      {/* Bottom content */}
+      <div style={{
+        marginTop: '8px',
+        width: '100%',
+        maxWidth: '400px',
+        textAlign: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        paddingBottom: '30px',
+        paddingTop: '0',
+        animation: 'fadeInUp 0.8s ease forwards',
+        animationDelay: '0.4s'
+      }}>
         {/* Bible verse */}
         <p style={{ 
           fontSize: '13px', 
@@ -350,7 +374,7 @@ export default function Auth() {
         </p>
 
         {/* Feature pills */}
-        <div style={{ marginTop: '16px' }}>
+        <div style={{ marginTop: '16px', width: '100%' }}>
           <p style={{ 
             fontSize: '12px', 
             color: 'rgba(255,255,255,0.6)',
