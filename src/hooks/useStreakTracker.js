@@ -166,7 +166,12 @@ export async function syncWeeklyActiveDays(userId) {
 
 /**
  * Loads `weekly_active_days` + `last_active_date` from Supabase on mount and when profile streak
- * fields change (after refresh), so the Home card is not stuck at 0 when Auth context omits arrays.
+ * fields change, so the Home card is not stuck at 0 when Auth context omits arrays.
+ *
+ * Calls `syncWeeklyActiveDays` before fetching so today's day is always written first — this
+ * prevents the race where the hook reads stale DB state before the app-open sync has finished.
+ * A midnight timer (`todayKey`) ensures the effect re-runs when the calendar day rolls over so
+ * the flame updates without requiring a manual page refresh.
  *
  * @param {string | undefined} userId
  * @returns {{ activeDays: string[] }}
@@ -174,6 +179,16 @@ export async function syncWeeklyActiveDays(userId) {
 export function useStreakTracker(userId) {
   const { profile } = useAuth()
   const [activeDays, setActiveDays] = useState([])
+  const [todayKey, setTodayKey] = useState(() => getLocalDateKey())
+
+  // Re-trigger the streak effect when the calendar day rolls over (e.g. app open across midnight)
+  useEffect(() => {
+    const now = new Date()
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+    const ms = midnight.getTime() - now.getTime()
+    const timer = setTimeout(() => setTodayKey(getLocalDateKey()), ms)
+    return () => clearTimeout(timer)
+  }, [todayKey])
 
   useEffect(() => {
     if (!userId) {
@@ -192,6 +207,11 @@ export function useStreakTracker(userId) {
     }
 
     ;(async () => {
+      // Sync today's day into weekly_active_days before reading so the fetch always
+      // reflects the current calendar day, even on first mount before the app-open
+      // sync has had a chance to run.
+      await syncWeeklyActiveDays(userId)
+
       const { data, error } = await supabase
         .from('profiles')
         .select('weekly_active_days, last_active_date')
@@ -209,7 +229,7 @@ export function useStreakTracker(userId) {
     return () => {
       cancelled = true
     }
-  }, [userId, profile?.id, profile?.weekly_active_days, profile?.last_active_date])
+  }, [userId, profile?.id, profile?.weekly_active_days, profile?.last_active_date, todayKey])
 
   return { activeDays }
 }

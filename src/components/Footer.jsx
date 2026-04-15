@@ -30,6 +30,26 @@ export default function Footer() {
       <Link to="/legal" style={{ color: '#D4A843', textDecoration: 'none' }}>
         {t('footer.legal')}
       </Link>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          marginTop: '12px',
+        }}
+      >
+        <a
+          href="https://www.producthunt.com/products/abiding-anchor?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-abiding-anchor"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img
+            alt="Abiding Anchor on Product Hunt"
+            width="250"
+            height="54"
+            src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1124085&theme=light&t=1776230155188"
+          />
+        </a>
+      </div>
     </footer>
   )
 }

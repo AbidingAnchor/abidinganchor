@@ -175,9 +175,9 @@ export default function Onboarding({ onComplete }) {
           {/* Screen 1 - Welcome */}
           {screen === 1 && (
             <div>
-              <img 
-                src="/images/GoldCross.png"
-                alt="Cross"
+              <img
+                src="/NewLogo.png"
+                alt="AbidingAnchor"
                 style={{
                   width: '80px',
                   height: '80px',
