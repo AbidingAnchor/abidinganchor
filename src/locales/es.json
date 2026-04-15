@@ -253,6 +253,8 @@
     "shareAsImage": "Compartir como imagen",
     "dailyStreak": "Racha diaria",
     "dayStreak": "Racha de {{n}} días",
+    "streakSubZero": "Sigue buscándole de todo corazón. 🙏",
+    "presenceCtaSaving": "Guardando…",
     "toolsHeading": "HERRAMIENTAS",
     "toolBibleVideos": "Videos bíblicos",
     "toolBibleVideosSub": "Mira y crece en la Palabra",

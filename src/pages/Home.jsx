@@ -17,6 +17,7 @@ import { getJournalEntries, saveToJournal, getJournalWeekActiveDayShortNames } f
 import SaveToast from '../components/SaveToast'
 import FirstJournalEntryCelebration from '../components/FirstJournalEntryCelebration'
 import { useAuth } from '../context/AuthContext'
+import { supabase } from '../lib/supabase'
 import { userStorageKey } from '../utils/userStorage'
 
 function Home({ onOpenWorship, worshipStatus }) {
@@ -31,7 +32,10 @@ function Home({ onOpenWorship, worshipStatus }) {
   const [journalCount, setJournalCount] = useState(0)
   const [suppressPersonalWelcome, setSuppressPersonalWelcome] = useState(false)
   const [presenceJustCompleted, setPresenceJustCompleted] = useState(false)
+  const [presenceCtaSyncing, setPresenceCtaSyncing] = useState(false)
   const presenceGlowTimerRef = useRef(null)
+  const streakSyncInFlightRef = useRef(false)
+  const presenceCtaBusyRef = useRef(false)
 
   const presenceVm = useMemo(() => {
     if (!user?.id) return { completedToday: false, currentStreak: 0 }
@@ -41,9 +45,11 @@ function Home({ onOpenWorship, worshipStatus }) {
         profile.last_active_date != null && profile.last_active_date !== ''
           ? String(profile.last_active_date).slice(0, 10)
           : null
+      let streak = Number(profile.reading_streak) || 0
+      if (last === today) streak = Math.max(streak, 1)
       return {
         completedToday: last === today,
-        currentStreak: Number(profile.reading_streak) || 0,
+        currentStreak: streak,
       }
     }
     return getPresenceViewModel(syncPresenceState(user.id))
@@ -54,12 +60,51 @@ function Home({ onOpenWorship, worshipStatus }) {
     return WEEK_DAY_SHORT.filter((d) => set.has(d))
   }, [profileWeekActiveDays, journalWeekActiveDays])
 
+  /** Consecutive-day streak from profile; if `last_active_date` is today, show at least 1. */
+  const dailyStreakCount = useMemo(() => {
+    const today = getLocalDateKey()
+    const last =
+      profile?.last_active_date != null && profile?.last_active_date !== ''
+        ? String(profile.last_active_date).slice(0, 10)
+        : null
+    let n = Number(profile?.reading_streak) || 0
+    if (last === today) n = Math.max(n, 1)
+    return n
+  }, [profile?.reading_streak, profile?.last_active_date])
+
   const syncStreakToSupabase = useCallback(async () => {
-    if (!user?.id) return
-    await syncWeeklyActiveDays(user.id)
-    await applyDailyStreakOnAppOpen(user.id)
-    const row = await refreshProfile()
-    if (row) alignPresenceLocalWithProfile(user.id, row)
+    if (!user?.id) return null
+    if (streakSyncInFlightRef.current) return null
+    streakSyncInFlightRef.current = true
+    try {
+      await syncWeeklyActiveDays(user.id)
+      const streakResult = await applyDailyStreakOnAppOpen(user.id)
+      const { data: row, error } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
+      if (error) {
+        console.warn('sync streak profile fetch:', error)
+        await refreshProfile()
+        return { streakResult, merged: null }
+      }
+      const today = getLocalDateKey()
+      const last = row?.last_active_date != null ? String(row.last_active_date).slice(0, 10) : null
+      let rs = Number(row?.reading_streak) || 0
+      if (streakResult?.ok) {
+        rs = Math.max(rs, Number(streakResult.currentStreak) || 0)
+      }
+      if (last === today) {
+        rs = Math.max(rs, 1)
+      }
+      const merged = row ? { ...row, reading_streak: rs } : null
+      if (merged) {
+        await refreshProfile(merged)
+        alignPresenceLocalWithProfile(user.id, merged)
+      } else {
+        await refreshProfile()
+      }
+      return { streakResult, merged }
+    } finally {
+      streakSyncInFlightRef.current = false
+    }
   }, [user?.id, refreshProfile])
 
   const finishPresenceGlow = useCallback(() => {
@@ -67,26 +112,40 @@ function Home({ onOpenWorship, worshipStatus }) {
     presenceGlowTimerRef.current = setTimeout(() => setPresenceJustCompleted(false), 4200)
   }, [])
 
-  const handlePresenceComplete = useCallback(() => {
+  const handlePresenceComplete = useCallback(async () => {
     if (!user?.id) return
     const today = getLocalDateKey()
     const lastDb = profile?.last_active_date ? String(profile.last_active_date).slice(0, 10) : null
     if (lastDb === today) return
-    ;(async () => {
-      await syncStreakToSupabase()
+    if (presenceCtaBusyRef.current) return
+    presenceCtaBusyRef.current = true
+    setPresenceCtaSyncing(true)
+    try {
+      const result = await syncStreakToSupabase()
+      if (result == null) return
       setPresenceJustCompleted(true)
       finishPresenceGlow()
-    })().catch((err) => console.warn('presence streak sync:', err))
+    } catch (err) {
+      console.warn('presence streak sync:', err)
+    } finally {
+      presenceCtaBusyRef.current = false
+      setPresenceCtaSyncing(false)
+    }
   }, [user?.id, profile?.last_active_date, syncStreakToSupabase, finishPresenceGlow])
 
-  const markPresenceFromEngagement = useCallback(() => {
+  const markPresenceFromEngagement = useCallback(async () => {
     if (!user?.id) return
     const today = getLocalDateKey()
     const lastDb = profile?.last_active_date ? String(profile.last_active_date).slice(0, 10) : null
     if (lastDb === today || isCompletedToday(syncPresenceState(user.id))) return
-    syncStreakToSupabase().catch((err) => console.warn('presence streak sync:', err))
-    setPresenceJustCompleted(true)
-    finishPresenceGlow()
+    try {
+      const result = await syncStreakToSupabase()
+      if (result == null) return
+      setPresenceJustCompleted(true)
+      finishPresenceGlow()
+    } catch (err) {
+      console.warn('presence streak sync:', err)
+    }
   }, [user?.id, profile?.last_active_date, syncStreakToSupabase, finishPresenceGlow])
 
   useEffect(() => {
@@ -346,13 +405,14 @@ function Home({ onOpenWorship, worshipStatus }) {
                 completedToday: presenceVm.completedToday,
                 currentStreak: presenceVm.currentStreak,
                 justCompleted: presenceJustCompleted,
+                ctaSyncing: presenceCtaSyncing,
               }}
               onPresenceComplete={handlePresenceComplete}
             />
 
             <DailyStreakCard
               activeDays={mergedWeekActiveDays}
-              consecutiveStreak={Number(profile?.reading_streak) || 0}
+              consecutiveStreak={dailyStreakCount}
             />
 
             <div style={{ marginBottom: '28px', animation: 'fadeInUp 0.6s ease forwards', animationDelay: '0.3s' }}>

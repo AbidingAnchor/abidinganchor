@@ -8,8 +8,8 @@ import { useTranslation } from 'react-i18next'
  * @param {() => void} props.onAskAi
  * @param {() => void} props.onShareImage
  * @param {() => void} props.onQuickSave
- * @param {{ completedToday: boolean, currentStreak: number, justCompleted?: boolean }} props.presence
- * @param {() => void} props.onPresenceComplete
+ * @param {{ completedToday: boolean, currentStreak: number, justCompleted?: boolean, ctaSyncing?: boolean }} props.presence
+ * @param {() => void | Promise<void>} props.onPresenceComplete
  */
 export default function DailyEncounterCard({
   encounter,
@@ -18,7 +18,7 @@ export default function DailyEncounterCard({
   onAskAi,
   onShareImage,
   onQuickSave,
-  presence = { completedToday: false, currentStreak: 0, justCompleted: false },
+  presence = { completedToday: false, currentStreak: 0, justCompleted: false, ctaSyncing: false },
   onPresenceComplete = () => {},
 }) {
   const { t } = useTranslation()
@@ -180,10 +180,20 @@ export default function DailyEncounterCard({
             <>
               <button
                 type="button"
-                onClick={onPresenceComplete}
-                className="w-full rounded-lg border border-[#D4A843]/45 bg-[rgba(255,255,255,0.1)] py-2.5 px-3 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition hover:border-[#D4A843]/65 hover:bg-[rgba(212,168,67,0.18)] hover:shadow-[0_0_18px_rgba(212,168,67,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D4A843]/40"
+                disabled={presence.ctaSyncing}
+                aria-busy={presence.ctaSyncing ? 'true' : undefined}
+                onClick={() => {
+                  if (presence.ctaSyncing) return
+                  void Promise.resolve(onPresenceComplete()).catch(() => {})
+                }}
+                className={[
+                  'w-full rounded-lg border py-2.5 px-3 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D4A843]/40',
+                  presence.ctaSyncing
+                    ? 'cursor-wait border-[#D4A843]/75 bg-[linear-gradient(180deg,rgba(212,168,67,0.42),rgba(212,168,67,0.2))] shadow-[0_0_20px_rgba(212,168,67,0.25)] opacity-95'
+                    : 'border-[#D4A843]/45 bg-[rgba(255,255,255,0.1)] hover:border-[#D4A843]/65 hover:bg-[rgba(212,168,67,0.18)] hover:shadow-[0_0_18px_rgba(212,168,67,0.2)]',
+                ].join(' ')}
               >
-                {t('home.presenceCta')}
+                {presence.ctaSyncing ? t('home.presenceCtaSaving') : t('home.presenceCta')}
               </button>
               <p className="text-[10px] text-center text-white/55 mt-2 mb-0 leading-snug">{t('home.presenceSubtleHint')}</p>
             </>
