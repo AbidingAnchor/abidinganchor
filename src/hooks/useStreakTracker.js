@@ -83,10 +83,23 @@ export function parseWeeklyActiveDaysRow(row) {
     }
   }
 
-  if (arr.length > 0) return arr
-
+  // Always check last_active_date against today's *local* calendar date so the
+  // current day's dot lights up even when weekly_active_days hasn't been synced
+  // for today yet. Using getLocalDateKey() (local) + getShortDayName() (local
+  // getDay()) avoids the UTC-midnight offset that would place the flame on the
+  // wrong day for users in non-UTC timezones.
   const last = profileLastActiveDateKey(row.last_active_date)
-  if (last && last === getLocalDateKey()) {
+  const todayLocal = getLocalDateKey()
+
+  if (arr.length > 0) {
+    if (last && last === todayLocal) {
+      const todayShort = getShortDayName()
+      if (!arr.includes(todayShort)) return [...arr, todayShort]
+    }
+    return arr
+  }
+
+  if (last && last === todayLocal) {
     return [getShortDayName()]
   }
 
