@@ -1,5 +1,10 @@
 import { useTranslation } from 'react-i18next'
 
+/**
+ * Full-viewport overlay while auth/session resolves. Background is transparent so
+ * BackgroundManager’s themed sky (day / sunset / night) shows through — same
+ * theme as the rest of the app via html[data-theme] and body.theme-*.
+ */
 export default function LoadingScreen() {
   useTranslation()
   return (
@@ -7,11 +12,11 @@ export default function LoadingScreen() {
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 100000,
+        zIndex: 10040,
         minHeight: '100dvh',
         width: '100%',
         margin: 0,
-        background: '#000000',
+        background: 'transparent',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -20,12 +25,13 @@ export default function LoadingScreen() {
           'max(16px, env(safe-area-inset-top, 0px)) 20px max(16px, env(safe-area-inset-bottom, 0px))',
         boxSizing: 'border-box',
         overflow: 'hidden',
+        pointerEvents: 'none',
       }}
     >
       <style>{`
         @keyframes loading-logo-pulse {
           0%, 100% { opacity: 1; }
-          50% { opacity: 0.82; }
+          50% { opacity: 0.88; }
         }
       `}</style>
       <div
@@ -34,16 +40,17 @@ export default function LoadingScreen() {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          maxWidth: 'min(92vw, 320px)',
+          maxWidth: 'min(92vw, 280px)',
+          pointerEvents: 'auto',
         }}
       >
         <img
           src="/NewLogo.png"
           alt="Abiding Anchor"
           style={{
-            width: 'min(72vw, 260px)',
+            width: 'clamp(180px, 48vw, 200px)',
             height: 'auto',
-            maxHeight: 'min(42vh, 280px)',
+            maxHeight: 'min(36vh, 220px)',
             objectFit: 'contain',
             display: 'block',
             margin: '0 auto',
@@ -52,12 +59,13 @@ export default function LoadingScreen() {
         />
         <p
           style={{
-            color: '#D4A843',
-            margin: '16px 0 0',
+            color: 'var(--gold, #D4A843)',
+            margin: '14px 0 0',
             fontWeight: 700,
             letterSpacing: '0.08em',
             fontSize: 'clamp(13px, 3.5vw, 16px)',
             lineHeight: 1.4,
+            textShadow: '0 1px 14px rgba(0,0,0,0.45)',
           }}
         >
           Abiding in His Word...
