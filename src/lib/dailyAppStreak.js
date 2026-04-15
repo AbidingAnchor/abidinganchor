@@ -19,6 +19,12 @@ export async function applyDailyStreakOnAppOpen(userId) {
     .eq('id', userId)
     .maybeSingle()
 
+  console.log('[dailyAppStreak] profiles SELECT reading_streak,last_active_date,…', {
+    userId,
+    error: error ?? null,
+    data: profile ?? null,
+  })
+
   if (error) {
     console.warn('dailyAppStreak fetch:', error)
     return { ok: false, currentStreak: 0 }
@@ -65,7 +71,7 @@ export async function applyDailyStreakOnAppOpen(userId) {
     streakStartDate = today
   }
 
-  const { error: updateError } = await supabase
+  const { data: updatedRows, error: updateError } = await supabase
     .from('profiles')
     .update({
       reading_streak: next,
@@ -74,9 +80,23 @@ export async function applyDailyStreakOnAppOpen(userId) {
       streak_start_date: streakStartDate,
     })
     .eq('id', userId)
+    .select('id, reading_streak, last_active_date')
+
+  console.log('[dailyAppStreak] profiles UPDATE streak fields', {
+    userId,
+    next,
+    today,
+    error: updateError ?? null,
+    returnedRows: updatedRows ?? null,
+  })
 
   if (updateError) {
     console.warn('dailyAppStreak update:', updateError)
+    return { ok: false, currentStreak: prev }
+  }
+
+  if (!updatedRows?.length) {
+    console.warn('[dailyAppStreak] UPDATE returned 0 rows (check RLS or row id)', { userId })
     return { ok: false, currentStreak: prev }
   }
 

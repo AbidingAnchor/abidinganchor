@@ -357,6 +357,8 @@
     "dayStreak": "{{n}} Day Streak",
     "streakSubZero": "Keep seeking Him with all your heart. 🙏",
     "presenceCtaSaving": "Saving…",
+    "presenceSaveFailed": "Could not save your check-in. Check your connection and try again.",
+    "presenceSaveFailedDetail": "We could not update your streak (permissions or server). Please try again in a moment.",
     "toolsHeading": "TOOLS",
     "toolBibleVideos": "Bible Videos",
     "toolBibleVideosSub": "Watch & grow in the Word",

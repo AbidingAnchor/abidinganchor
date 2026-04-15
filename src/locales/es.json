@@ -255,6 +255,8 @@
     "dayStreak": "Racha de {{n}} días",
     "streakSubZero": "Sigue buscándole de todo corazón. 🙏",
     "presenceCtaSaving": "Guardando…",
+    "presenceSaveFailed": "No se pudo guardar tu registro. Comprueba la conexión e inténtalo de nuevo.",
+    "presenceSaveFailedDetail": "No pudimos actualizar tu racha (permisos o servidor). Inténtalo de nuevo en un momento.",
     "toolsHeading": "HERRAMIENTAS",
     "toolBibleVideos": "Videos bíblicos",
     "toolBibleVideosSub": "Mira y crece en la Palabra",

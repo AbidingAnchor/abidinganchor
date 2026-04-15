@@ -255,6 +255,8 @@
     "dayStreak": "Sequência de {{n}} dias",
     "streakSubZero": "Continue buscando-O de todo o seu coração. 🙏",
     "presenceCtaSaving": "Salvando…",
+    "presenceSaveFailed": "Não foi possível salvar seu check-in. Verifique a conexão e tente de novo.",
+    "presenceSaveFailedDetail": "Não foi possível atualizar sua sequência (permissões ou servidor). Tente novamente em instantes.",
     "toolsHeading": "FERRAMENTAS",
     "toolBibleVideos": "Vídeos bíblicos",
     "toolBibleVideosSub": "Assista e cresça na Palavra",

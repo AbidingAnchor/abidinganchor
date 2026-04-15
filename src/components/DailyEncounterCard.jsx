@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next'
  * @param {() => void} props.onAskAi
  * @param {() => void} props.onShareImage
  * @param {() => void} props.onQuickSave
- * @param {{ completedToday: boolean, currentStreak: number, justCompleted?: boolean, ctaSyncing?: boolean }} props.presence
+ * @param {{ completedToday: boolean, currentStreak: number, justCompleted?: boolean, ctaSyncing?: boolean, saveError?: string | null }} props.presence
  * @param {() => void | Promise<void>} props.onPresenceComplete
  */
 export default function DailyEncounterCard({
@@ -18,7 +18,7 @@ export default function DailyEncounterCard({
   onAskAi,
   onShareImage,
   onQuickSave,
-  presence = { completedToday: false, currentStreak: 0, justCompleted: false, ctaSyncing: false },
+  presence = { completedToday: false, currentStreak: 0, justCompleted: false, ctaSyncing: false, saveError: null },
   onPresenceComplete = () => {},
 }) {
   const { t } = useTranslation()
@@ -195,6 +195,11 @@ export default function DailyEncounterCard({
               >
                 {presence.ctaSyncing ? t('home.presenceCtaSaving') : t('home.presenceCta')}
               </button>
+              {presence.saveError ? (
+                <p role="alert" className="text-xs text-center text-red-300 mt-2 mb-0 leading-snug">
+                  {presence.saveError}
+                </p>
+              ) : null}
               <p className="text-[10px] text-center text-white/55 mt-2 mb-0 leading-snug">{t('home.presenceSubtleHint')}</p>
             </>
           )}

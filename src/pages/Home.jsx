@@ -20,6 +20,24 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { userStorageKey } from '../utils/userStorage'
 
+/** Race a promise against a timeout so streak sync cannot hang indefinitely on stalled requests. */
+const STREAK_SYNC_TIMEOUT_MS = 45_000
+
+function withAsyncTimeout(promise, ms, label) {
+  return new Promise((resolve, reject) => {
+    const id = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
+    Promise.resolve(promise)
+      .then((v) => {
+        clearTimeout(id)
+        resolve(v)
+      })
+      .catch((e) => {
+        clearTimeout(id)
+        reject(e)
+      })
+  })
+}
+
 function Home({ onOpenWorship, worshipStatus }) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
@@ -33,8 +51,10 @@ function Home({ onOpenWorship, worshipStatus }) {
   const [suppressPersonalWelcome, setSuppressPersonalWelcome] = useState(false)
   const [presenceJustCompleted, setPresenceJustCompleted] = useState(false)
   const [presenceCtaSyncing, setPresenceCtaSyncing] = useState(false)
+  const [presenceSaveError, setPresenceSaveError] = useState(null)
   const presenceGlowTimerRef = useRef(null)
-  const streakSyncInFlightRef = useRef(false)
+  /** Reuse one in-flight sync promise so concurrent callers await the same work (no silent `null`). */
+  const streakSyncPromiseRef = useRef(null)
   const presenceCtaBusyRef = useRef(false)
 
   const presenceVm = useMemo(() => {
@@ -73,38 +93,128 @@ function Home({ onOpenWorship, worshipStatus }) {
   }, [profile?.reading_streak, profile?.last_active_date])
 
   const syncStreakToSupabase = useCallback(async () => {
-    if (!user?.id) return null
-    if (streakSyncInFlightRef.current) return null
-    streakSyncInFlightRef.current = true
-    try {
-      await syncWeeklyActiveDays(user.id)
-      const streakResult = await applyDailyStreakOnAppOpen(user.id)
-      const { data: row, error } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
-      if (error) {
-        console.warn('sync streak profile fetch:', error)
-        await refreshProfile()
-        return { streakResult, merged: null }
-      }
-      const today = getLocalDateKey()
-      const last = row?.last_active_date != null ? String(row.last_active_date).slice(0, 10) : null
-      let rs = Number(row?.reading_streak) || 0
-      if (streakResult?.ok) {
-        rs = Math.max(rs, Number(streakResult.currentStreak) || 0)
-      }
-      if (last === today) {
-        rs = Math.max(rs, 1)
-      }
-      const merged = row ? { ...row, reading_streak: rs } : null
-      if (merged) {
-        await refreshProfile(merged)
-        alignPresenceLocalWithProfile(user.id, merged)
-      } else {
-        await refreshProfile()
-      }
-      return { streakResult, merged }
-    } finally {
-      streakSyncInFlightRef.current = false
+    const uid = user?.id
+    if (!uid) {
+      console.log('[presence-check-in] syncStreakToSupabase: abort — user id is null/undefined')
+      return { ok: false, code: 'no_user', message: 'Not signed in' }
     }
+    if (streakSyncPromiseRef.current) {
+      console.log('[presence-check-in] syncStreakToSupabase: awaiting in-flight sync for user', uid)
+      return streakSyncPromiseRef.current
+    }
+
+    const run = async () => {
+      console.log('[presence-check-in] ========== streak sync START ==========', {
+        userId: uid,
+        table: 'public.profiles',
+        ops: 'SELECT/UPDATE (RLS: own row only)',
+      })
+      try {
+        console.log('[presence-check-in] step 1: syncWeeklyActiveDays', { userId: uid })
+        const w = await withAsyncTimeout(syncWeeklyActiveDays(uid), STREAK_SYNC_TIMEOUT_MS, 'syncWeeklyActiveDays')
+        console.log('[presence-check-in] step 1 response:', w)
+
+        console.log('[presence-check-in] step 2: applyDailyStreakOnAppOpen (profiles SELECT + conditional UPDATE)', {
+          userId: uid,
+        })
+        const streakResult = await withAsyncTimeout(
+          applyDailyStreakOnAppOpen(uid),
+          STREAK_SYNC_TIMEOUT_MS,
+          'applyDailyStreakOnAppOpen',
+        )
+        console.log('[presence-check-in] step 2 response (data from function, not raw PostgREST):', streakResult)
+
+        console.log('[presence-check-in] step 3: Supabase query', {
+          description: "from('profiles').select('*').eq('id', userId).maybeSingle()",
+          userId: uid,
+        })
+        const { data: row, error: selectError } = await withAsyncTimeout(
+          supabase.from('profiles').select('*').eq('id', uid).maybeSingle(),
+          STREAK_SYNC_TIMEOUT_MS,
+          'profiles.select merge read',
+        )
+        console.log('[presence-check-in] step 3 PostgREST response:', { data: row, error: selectError })
+
+        if (selectError) {
+          console.warn('[presence-check-in] step 3 select error — calling refreshProfile()', selectError)
+          await withAsyncTimeout(refreshProfile(), STREAK_SYNC_TIMEOUT_MS, 'refreshProfile after select error')
+          return {
+            ok: false,
+            code: 'select_error',
+            message: selectError.message || String(selectError),
+            streakResult,
+            merged: null,
+          }
+        }
+
+        if (!row) {
+          console.warn('[presence-check-in] step 3: no profile row returned for user', uid)
+          await withAsyncTimeout(refreshProfile(), STREAK_SYNC_TIMEOUT_MS, 'refreshProfile no row')
+          return { ok: false, code: 'no_profile_row', message: 'Profile row not found' }
+        }
+
+        if (streakResult && streakResult.ok === false) {
+          console.warn(
+            '[presence-check-in] applyDailyStreakOnAppOpen reported ok:false (RLS, network, or UPDATE rejected)',
+            streakResult,
+          )
+        }
+
+        const today = getLocalDateKey()
+        const last = row.last_active_date != null ? String(row.last_active_date).slice(0, 10) : null
+
+        if (streakResult?.ok === false && last !== today) {
+          console.warn('[presence-check-in] streak apply failed and last_active_date is not today — treating as failure', {
+            last,
+            today,
+          })
+          return {
+            ok: false,
+            code: 'streak_apply_failed',
+            message: 'Could not update your streak in the database.',
+            streakResult,
+          }
+        }
+
+        let rs = Number(row.reading_streak) || 0
+        if (streakResult?.ok) {
+          rs = Math.max(rs, Number(streakResult.currentStreak) || 0)
+        }
+        if (last === today) {
+          rs = Math.max(rs, 1)
+        }
+        const merged = { ...row, reading_streak: rs }
+
+        console.log('[presence-check-in] step 4: refreshProfile(merged) — updating React state without second network round-trip', {
+          reading_streak: merged.reading_streak,
+          last_active_date: merged.last_active_date,
+        })
+        await refreshProfile(merged)
+        alignPresenceLocalWithProfile(uid, merged)
+
+        console.log('[presence-check-in] ========== streak sync DONE (ok) ==========')
+        return { ok: true, streakResult, merged }
+      } catch (e) {
+        console.error('[presence-check-in] ========== streak sync FAILED ==========', e)
+        try {
+          await refreshProfile()
+        } catch (refreshErr) {
+          console.warn('[presence-check-in] refreshProfile after failure also failed', refreshErr)
+        }
+        return {
+          ok: false,
+          code: 'exception',
+          message: e?.message || String(e),
+          error: e,
+        }
+      }
+    }
+
+    const p = run().finally(() => {
+      streakSyncPromiseRef.current = null
+    })
+    streakSyncPromiseRef.current = p
+    return p
   }, [user?.id, refreshProfile])
 
   const finishPresenceGlow = useCallback(() => {
@@ -113,25 +223,52 @@ function Home({ onOpenWorship, worshipStatus }) {
   }, [])
 
   const handlePresenceComplete = useCallback(async () => {
-    if (!user?.id) return
+    console.log('[presence-check-in] handlePresenceComplete (I showed up today) invoked', {
+      userId: user?.id ?? null,
+      profileLastActive: profile?.last_active_date ?? null,
+    })
+    if (!user?.id) {
+      console.warn('[presence-check-in] handlePresenceComplete: no user id — abort')
+      setPresenceSaveError(t('home.presenceSaveFailed'))
+      return
+    }
     const today = getLocalDateKey()
     const lastDb = profile?.last_active_date ? String(profile.last_active_date).slice(0, 10) : null
-    if (lastDb === today) return
-    if (presenceCtaBusyRef.current) return
+    if (lastDb === today) {
+      console.log('[presence-check-in] handlePresenceComplete: already checked in today (last_active_date) — no-op', {
+        lastDb,
+        today,
+      })
+      return
+    }
+    if (presenceCtaBusyRef.current) {
+      console.log('[presence-check-in] handlePresenceComplete: busy ref set — ignoring duplicate click')
+      return
+    }
     presenceCtaBusyRef.current = true
+    setPresenceSaveError(null)
     setPresenceCtaSyncing(true)
     try {
       const result = await syncStreakToSupabase()
-      if (result == null) return
+      console.log('[presence-check-in] handlePresenceComplete: sync result', result)
+      if (!result?.ok) {
+        const msg =
+          result?.code === 'streak_apply_failed'
+            ? t('home.presenceSaveFailedDetail')
+            : result?.message || t('home.presenceSaveFailed')
+        setPresenceSaveError(msg)
+        return
+      }
       setPresenceJustCompleted(true)
       finishPresenceGlow()
     } catch (err) {
-      console.warn('presence streak sync:', err)
+      console.error('[presence-check-in] handlePresenceComplete unexpected throw', err)
+      setPresenceSaveError(err?.message || t('home.presenceSaveFailed'))
     } finally {
       presenceCtaBusyRef.current = false
       setPresenceCtaSyncing(false)
     }
-  }, [user?.id, profile?.last_active_date, syncStreakToSupabase, finishPresenceGlow])
+  }, [user?.id, profile?.last_active_date, syncStreakToSupabase, finishPresenceGlow, t])
 
   const markPresenceFromEngagement = useCallback(async () => {
     if (!user?.id) return
@@ -140,11 +277,11 @@ function Home({ onOpenWorship, worshipStatus }) {
     if (lastDb === today || isCompletedToday(syncPresenceState(user.id))) return
     try {
       const result = await syncStreakToSupabase()
-      if (result == null) return
+      if (!result?.ok) return
       setPresenceJustCompleted(true)
       finishPresenceGlow()
     } catch (err) {
-      console.warn('presence streak sync:', err)
+      console.warn('[presence-check-in] markPresenceFromEngagement:', err)
     }
   }, [user?.id, profile?.last_active_date, syncStreakToSupabase, finishPresenceGlow])
 
@@ -406,6 +543,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                 currentStreak: presenceVm.currentStreak,
                 justCompleted: presenceJustCompleted,
                 ctaSyncing: presenceCtaSyncing,
+                saveError: presenceSaveError,
               }}
               onPresenceComplete={handlePresenceComplete}
             />

@@ -255,6 +255,8 @@
     "dayStreak": "Série de {{n}} jours",
     "streakSubZero": "Continuez à Le chercher de tout votre cœur. 🙏",
     "presenceCtaSaving": "Enregistrement…",
+    "presenceSaveFailed": "Impossible d’enregistrer votre présence. Vérifiez la connexion et réessayez.",
+    "presenceSaveFailedDetail": "Impossible de mettre à jour votre série (droits ou serveur). Réessayez dans un instant.",
     "toolsHeading": "OUTILS",
     "toolBibleVideos": "Vidéos bibliques",
     "toolBibleVideosSub": "Regardez et grandissez dans la Parole",

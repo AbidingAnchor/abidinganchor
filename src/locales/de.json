@@ -251,6 +251,8 @@
     "dayStreak": "{{n}}-Tage-Serie",
     "streakSubZero": "Suchen Sie Ihn weiter von ganzem Herzen. 🙏",
     "presenceCtaSaving": "Wird gespeichert…",
+    "presenceSaveFailed": "Check-in konnte nicht gespeichert werden. Verbindung prüfen und erneut versuchen.",
+    "presenceSaveFailedDetail": "Serie konnte nicht aktualisiert werden (Berechtigung oder Server). Bitte kurz warten und erneut versuchen.",
     "toolsHeading": "WERKZEUGE",
     "toolBibleVideos": "Bibelvideos",
     "toolBibleVideosSub": "Sehen & im Wort wachsen",
