@@ -111,35 +111,46 @@ export default function Support() {
           { amount:'$25', label:'A Ministry Partner', 
             desc:'Funds new features & spreading the Word' },
         ].map(tier => (
-          <a key={tier.amount}
+          <a
+            key={tier.amount}
             href={BMAC_LINK}
             target="_blank"
             rel="noopener noreferrer"
             className="glass-panel"
-            style={{ borderRadius:'16px',
-              padding:'14px 18px', marginBottom:'10px',
-              cursor:'pointer', display:'flex',
-              alignItems:'center', gap:'14px',
-              textDecoration:'none',
-              background: 'rgba(255, 255, 255, 0.4)',
-              border: '1px solid #D4A843',
-              color: '#1a1a2e',
-            }}>
-            <div style={{ background:'#D4A843',
-              border:'1px solid #D4A843',
-              borderRadius:'12px', padding:'8px 14px',
-              minWidth:'52px', textAlign:'center' }}>
-              <div style={{ color:'#1a1a2e', fontSize:'18px',
-                fontWeight:'bold' }}>{tier.amount}</div>
+            style={{
+              borderRadius: '16px',
+              padding: '14px 18px',
+              marginBottom: '10px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '14px',
+              textDecoration: 'none',
+            }}
+          >
+            <div
+              style={{
+                background: '#D4A843',
+                border: '1px solid rgba(212, 168, 67, 0.95)',
+                borderRadius: '12px',
+                padding: '8px 14px',
+                minWidth: '52px',
+                textAlign: 'center',
+              }}
+            >
+              <div style={{ color: '#141824', fontSize: '18px', fontWeight: 'bold' }}>{tier.amount}</div>
             </div>
-            <div style={{ flex:1 }}>
-              <div style={{ color:'#1a1a2e', fontSize:'14px',
-                fontWeight:'600' }}>{tier.label}</div>
-              <div style={{ color:'#1a1a2e',
-                fontSize:'12px', marginTop:'2px' }}>{tier.desc}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ color: 'rgba(255, 255, 255, 0.95)', fontSize: '14px', fontWeight: 600 }}>
+                {tier.label}
+              </div>
+              <div style={{ color: 'rgba(255, 255, 255, 0.62)', fontSize: '12px', marginTop: '2px' }}>
+                {tier.desc}
+              </div>
             </div>
-            <div style={{ color:'#1a1a2e',
-              fontSize:'20px' }}>›</div>
+            <div style={{ color: 'rgba(212, 168, 67, 0.85)', fontSize: '20px', lineHeight: 1 }} aria-hidden>
+              ›
+            </div>
           </a>
         ))}
 
