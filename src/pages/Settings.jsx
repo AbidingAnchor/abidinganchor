@@ -432,7 +432,17 @@ export default function Settings() {
   const hasAvatarImage = Boolean(avatarPreviewUrl || localAvatarUrl || profile?.avatar_url)
 
   return (
-    <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '110px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
+    <div
+      className="content-scroll"
+      style={{
+        padding: '0 16px',
+        paddingTop: '8px',
+        paddingBottom: '110px',
+        maxWidth: '680px',
+        margin: '0 auto',
+        width: '100%',
+      }}
+    >
       <style>{`
         @keyframes settings-avatar-spin {
           to { transform: rotate(360deg); }
