@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { getViewportCoverSize } from "../utils/viewportCover";
 
 export default function CelestialBackground() {
   const canvasRef = useRef(null);
@@ -10,8 +11,9 @@ export default function CelestialBackground() {
     const STAR_COUNT = 140;
 
     const resize = () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+      const { w, h } = getViewportCoverSize();
+      width = canvas.width = w;
+      height = canvas.height = h;
       stars = Array.from({ length: STAR_COUNT }).map(() => ({
         x: Math.random() * width,
         y: Math.random() * height,
@@ -37,8 +39,10 @@ export default function CelestialBackground() {
     resize();
     draw();
     window.addEventListener("resize", resize);
+    window.visualViewport?.addEventListener("resize", resize);
     return () => {
       window.removeEventListener("resize", resize);
+      window.visualViewport?.removeEventListener("resize", resize);
       cancelAnimationFrame(animId);
     };
   }, []);

@@ -207,7 +207,7 @@ function AppShell() {
               display: 'flex',
               flexDirection: 'column',
               paddingTop: showHeader ? '56px' : '0px',
-              paddingBottom: '80px',
+              paddingBottom: showNav ? '80px' : '0px',
               background: 'transparent',
             }}
           >

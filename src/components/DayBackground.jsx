@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { getViewportCoverSize } from "../utils/viewportCover";
 
 // TODO: REMOVE BEFORE LAUNCH — dev-only hour override in source (Settings `devForceTheme` wins when set)
 export const DEV_FORCE_HOUR = null; // 10 = day, 18 = sunset, 21 = night, null = real time
@@ -246,8 +247,9 @@ export default function DayBackground() {
     };
 
     const resize = () => {
-      width = window.innerWidth;
-      height = window.innerHeight;
+      const { w, h } = getViewportCoverSize();
+      width = w;
+      height = h;
       dpr = window.devicePixelRatio || 1;
       canvas.width = Math.floor(width * dpr);
       canvas.height = Math.floor(height * dpr);
@@ -293,10 +295,12 @@ export default function DayBackground() {
     resize();
     animationFrameId = requestAnimationFrame(draw);
     window.addEventListener("resize", resize);
+    window.visualViewport?.addEventListener("resize", resize);
 
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener("resize", resize);
+      window.visualViewport?.removeEventListener("resize", resize);
     };
   }, []);
 

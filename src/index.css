@@ -159,7 +159,8 @@ body.theme-afternoon {
   --card-parchment-hover: var(--more-menu-item-hover);
   --card-parchment-ink: var(--card-text);
   --card-parchment-ink-muted: var(--card-text-muted);
-  --nav-bg: var(--modal-bg);
+  /* Match header + bottom tab bar to glass cards (was --modal-bg, slightly more opaque) */
+  --nav-bg: var(--card-bg);
   --text-primary: var(--card-text);
   --text-secondary: var(--card-text-muted);
   --text-muted: rgba(42, 31, 14, 0.45);

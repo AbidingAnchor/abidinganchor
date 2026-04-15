@@ -110,7 +110,9 @@ export default function BackgroundManager() {
   }, []);
 
   return (
-    <div className="fixed inset-0 -z-50 pointer-events-none overflow-hidden">
+    <div
+      className="fixed inset-0 -z-50 pointer-events-none overflow-hidden min-h-[100dvh] h-[100dvh] w-full bg-[#0a1432]"
+    >
       {previousBg && <BackgroundLayer type={previousBg} isVisible={false} />}
       <BackgroundLayer type={currentBg} isVisible />
       {/* Lighten bottom scrim on day sky so canvas stays crisp (sunset/night keep depth) */}

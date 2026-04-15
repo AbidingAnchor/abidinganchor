@@ -509,6 +509,9 @@ export default function Settings() {
         maxWidth: '680px',
         margin: '0 auto',
         width: '100%',
+        minHeight: '100dvh',
+        boxSizing: 'border-box',
+        background: 'var(--card-bg)',
       }}
     >
       <style>{`

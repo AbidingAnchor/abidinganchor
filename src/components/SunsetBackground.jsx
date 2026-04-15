@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { getViewportCoverSize } from "../utils/viewportCover";
 
 export default function SunsetBackground() {
   const canvasRef = useRef(null);
@@ -39,8 +40,9 @@ export default function SunsetBackground() {
     };
 
     const resize = () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+      const { w, h } = getViewportCoverSize();
+      width = canvas.width = w;
+      height = canvas.height = h;
       createScene();
     };
 
@@ -101,10 +103,12 @@ export default function SunsetBackground() {
     resize();
     draw();
     window.addEventListener("resize", resize);
+    window.visualViewport?.addEventListener("resize", resize);
 
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener("resize", resize);
+      window.visualViewport?.removeEventListener("resize", resize);
     };
   }, []);
 

@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+
+const MIN_AUTH_SCALE = 0.58
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
@@ -15,6 +17,10 @@ export default function Auth() {
   const [loading, setLoading] = useState(false)
   const [currentVerseIndex, setCurrentVerseIndex] = useState(0)
   const [opacity, setOpacity] = useState(1)
+
+  const outerFitRef = useRef(null)
+  const innerFitRef = useRef(null)
+  const [fit, setFit] = useState({ scale: 1, clipPx: null })
 
   const verses = [
     { text: 'He is like a tree planted by streams of water', reference: 'Psalm 1:3' },
@@ -34,6 +40,71 @@ export default function Auth() {
     }, 4200)
     return () => clearInterval(interval)
   }, [verses.length])
+
+  useEffect(() => {
+    const html = document.documentElement
+    const body = document.body
+    const prevHtmlOverflow = html.style.overflow
+    const prevBodyOverflow = body.style.overflow
+    const prevBodyOverscroll = body.style.overscrollBehavior
+    const prevHtmlOverscroll = html.style.overscrollBehavior
+    const prevHtmlBg = html.style.backgroundColor
+    const prevBodyBg = body.style.backgroundColor
+    html.style.overflow = 'hidden'
+    body.style.overflow = 'hidden'
+    body.style.overscrollBehavior = 'none'
+    html.style.overscrollBehavior = 'none'
+    html.style.backgroundColor = '#0a1432'
+    body.style.backgroundColor = '#0a1432'
+    return () => {
+      html.style.overflow = prevHtmlOverflow
+      body.style.overflow = prevBodyOverflow
+      body.style.overscrollBehavior = prevBodyOverscroll
+      html.style.overscrollBehavior = prevHtmlOverscroll
+      html.style.backgroundColor = prevHtmlBg
+      body.style.backgroundColor = prevBodyBg
+    }
+  }, [])
+
+  const recalcFit = useCallback(() => {
+    const outer = outerFitRef.current
+    const inner = innerFitRef.current
+    if (!outer || !inner) return
+    const available = outer.clientHeight
+    if (available <= 0) return
+    const needed = inner.scrollHeight
+    if (needed <= available + 2) {
+      setFit((prev) =>
+        prev.scale === 1 && prev.clipPx == null ? prev : { scale: 1, clipPx: null },
+      )
+      return
+    }
+    const scale = Math.max(MIN_AUTH_SCALE, available / needed)
+    const clipPx = Math.min(available, Math.ceil(needed * scale))
+    setFit((prev) =>
+      prev.scale === scale && prev.clipPx === clipPx ? prev : { scale, clipPx },
+    )
+  }, [])
+
+  useLayoutEffect(() => {
+    recalcFit()
+    const outer = outerFitRef.current
+    const inner = innerFitRef.current
+    if (!outer || !inner) return
+    const ro = new ResizeObserver(() => recalcFit())
+    ro.observe(outer)
+    ro.observe(inner)
+    window.addEventListener('resize', recalcFit)
+    const vv = window.visualViewport
+    vv?.addEventListener('resize', recalcFit)
+    vv?.addEventListener('scroll', recalcFit)
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', recalcFit)
+      vv?.removeEventListener('resize', recalcFit)
+      vv?.removeEventListener('scroll', recalcFit)
+    }
+  }, [recalcFit, error, success, loading])
 
   if (user) return <Navigate to="/" replace />
 
@@ -66,6 +137,25 @@ export default function Auth() {
     setLoading(false)
   }
 
+  const pad = 'max(8px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) max(8px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px))'
+  const gapCol = 'clamp(4px, 1.4vmin, 12px)'
+  const logoSize = 'clamp(72px, min(24vw, 20dvh), 200px)'
+  const titleSize = 'clamp(0.85rem, 4.2vmin, 2.25rem)'
+  const taglineSize = 'clamp(11px, 2.8vmin, 13px)'
+  const modalPad = 'clamp(10px, 3.2vmin, 26px)'
+  const h2Size = 'clamp(1.05rem, 3.8vmin, 1.5rem)'
+  const inputPad = 'clamp(10px, 2.8vmin, 14px)'
+  const inputFont = 'clamp(14px, 3.5vmin, 16px)'
+  const formGap = 'clamp(8px, 2.2vmin, 16px)'
+  const verseSize = 'clamp(10px, 2.9vmin, 13px)'
+  const refSize = 'clamp(9px, 2.5vmin, 11px)'
+  const pillFont = 'clamp(8px, 2.4vmin, 11px)'
+  const pillPadV = 'clamp(4px, 1.2vmin, 6px)'
+  const pillPadH = 'clamp(6px, 1.8vmin, 10px)'
+  const freeSize = 'clamp(10px, 2.6vmin, 12px)'
+
+  const isScaled = fit.clipPx != null && fit.scale < 1
+
   return (
     <div
       style={{
@@ -74,15 +164,18 @@ export default function Auth() {
         left: 0,
         right: 0,
         bottom: 0,
-        width: '100vw',
-        height: '100vh',
+        width: '100%',
+        height: '100dvh',
         minHeight: '100vh',
+        maxHeight: '100dvh',
         overflow: 'hidden',
+        overscrollBehavior: 'none',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         background: 'transparent',
+        zIndex: 20,
       }}
     >
       <div
@@ -90,235 +183,308 @@ export default function Auth() {
           position: 'relative',
           zIndex: 1,
           width: '100%',
-          minHeight: '100vh',
+          height: '100%',
           maxWidth: '560px',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '12px',
-          padding: '16px 20px',
+          alignItems: 'stretch',
+          minHeight: 0,
+          padding: pad,
           boxSizing: 'border-box',
+          overflow: 'hidden',
         }}
       >
         <div
+          ref={outerFitRef}
           style={{
-            maxWidth: '100%',
+            flex: 1,
+            minHeight: 0,
+            maxHeight: '100%',
             width: '100%',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
-            textAlign: 'center',
-            gap: '10px',
+            position: 'relative',
           }}
         >
-          <img
-            src="/Logo.png"
-            alt="Abiding Anchor logo"
-            style={{
-              width: '200px',
-              height: '200px',
-              objectFit: 'contain',
-              filter: 'drop-shadow(0 0 15px rgba(212, 175, 55, 0.6))',
-              animation: 'logoFloat 4s ease-in-out infinite',
-            }}
-          />
-          <h1
-            style={{
-              margin: '-10px 0 -2px',
-              color: '#D4A843',
-              fontSize: '36px',
-              letterSpacing: '0.22em',
-              fontFamily: "'Cinzel', 'Times New Roman', serif",
-              fontWeight: 600,
-              textAlign: 'center',
-              textShadow: '0 2px 12px rgba(0,0,0,0.35)',
-            }}
-          >
-            ABIDING ANCHOR
-          </h1>
-          <p
-            style={{
-              margin: '0 0 6px',
-              color: 'rgba(255,255,255,0.68)',
-              fontSize: '13px',
-              letterSpacing: '0.02em',
-              textAlign: 'center',
-            }}
-          >
-            Your private space to grow in faith
-          </p>
-
-        </div>
-
-        <article
-          style={{
-            width: '100%',
-            maxWidth: '480px',
-            borderRadius: '16px',
-            padding: '26px',
-            boxSizing: 'border-box',
-            background: 'rgba(255,255,255,0.05)',
-            border: '0.5px solid rgba(212,168,67,0.8)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            boxShadow: '0 0 24px rgba(212,168,67,0.18), 0 10px 40px rgba(0,0,0,0.35)',
-          }}
-        >
-          <h2
-            style={{
-              margin: '0 0 4px',
-              color: '#D4A843',
-              fontSize: '24px',
-              textAlign: 'center',
-              fontWeight: 700,
-              letterSpacing: '0.05em',
-            }}
-          >
-            Sign In
-          </h2>
-          <form onSubmit={handleSignIn} className="grid gap-4">
-            <input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
-              type="email"
-              className="app-input"
-              style={{
-                borderRadius: '12px',
-                padding: '14px',
-                fontSize: '16px',
-                background: 'rgba(0,0,0,0.15)',
-                color: 'white',
-                border: '0.5px solid rgba(212,175,55,0.4)',
-              }}
-              autoCapitalize="none"
-              autoCorrect="off"
-              autoComplete="email"
-              spellCheck={false}
-            />
-            <input
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              type="password"
-              className="app-input"
-              style={{
-                borderRadius: '12px',
-                padding: '14px',
-                fontSize: '16px',
-                background: 'rgba(0,0,0,0.15)',
-                color: 'white',
-                border: '0.5px solid rgba(212,175,55,0.4)',
-              }}
-            />
-            <button
-              type="submit"
-              className="btn-primary w-full"
-              disabled={loading}
-              style={{ padding: '14px', fontSize: '16px' }}
-            >
-              {loading ? 'Please wait...' : 'Sign In'}
-            </button>
-            <button
-              type="button"
-              className="btn-primary w-full"
-              disabled={loading}
-              onClick={handleCreateAccount}
-              style={{ padding: '14px', fontSize: '16px' }}
-            >
-              Create Free Account
-            </button>
-          </form>
-
-          {error ? <p className="mt-3 text-[#ffb3b3] text-sm">{error}</p> : null}
-          {success ? <p className="mt-3 text-gold text-sm">{success}</p> : null}
-        </article>
-
-        <div
-          style={{
-            width: '100%',
-            maxWidth: '480px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-          }}
-        >
-          <p
-            style={{
-              fontSize: '13px',
-              fontStyle: 'italic',
-              color: 'rgba(255,255,255,0.82)',
-              lineHeight: '1.5',
-              margin: '10px 0 0',
-              textAlign: 'center',
-              opacity,
-              transition: 'opacity 0.45s ease',
-            }}
-          >
-            "{verses[currentVerseIndex].text}"
-          </p>
-          <p
-            style={{
-              fontSize: '11px',
-              color: 'rgba(212,168,67,0.9)',
-              margin: '2px 0 0',
-              letterSpacing: '0.05em',
-              textAlign: 'center',
-              opacity,
-              transition: 'opacity 0.45s ease',
-            }}
-          >
-            {verses[currentVerseIndex].reference}
-          </p>
-
           <div
             style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              justifyContent: 'center',
-              gap: '8px',
-              marginTop: '10px',
+              width: '100%',
+              maxHeight: '100%',
+              minHeight: 0,
+              height: isScaled ? fit.clipPx : 'auto',
+              overflow: 'hidden',
+              position: 'relative',
+              flexShrink: 0,
             }}
           >
-            {['Bible Reader', 'Guided Prayers', 'Daily Streak', 'AI Companion'].map((pill) => (
-              <span
-                key={pill}
+            <div
+              style={{
+                position: isScaled ? 'absolute' : 'relative',
+                top: isScaled ? 0 : undefined,
+                left: isScaled ? '50%' : undefined,
+                transform: isScaled ? `translateX(-50%) scale(${fit.scale})` : 'none',
+                transformOrigin: 'top center',
+                width: '100%',
+                maxWidth: '480px',
+                marginLeft: isScaled ? undefined : 'auto',
+                marginRight: isScaled ? undefined : 'auto',
+                boxSizing: 'border-box',
+              }}
+            >
+              <div
+                ref={innerFitRef}
                 style={{
-                  padding: '6px 10px',
-                  borderRadius: '999px',
-                  background: 'rgba(255,255,255,0.12)',
-                  border: '1px solid rgba(255,255,255,0.22)',
-                  color: 'rgba(255,255,255,0.88)',
-                  fontSize: '11px',
-                  fontWeight: 500,
-                  letterSpacing: '0.01em',
-                  lineHeight: 1,
+                  width: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: gapCol,
+                  boxSizing: 'border-box',
                 }}
               >
-                {pill}
-              </span>
-            ))}
-          </div>
+                <div
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    textAlign: 'center',
+                    gap: 'clamp(2px, 1vmin, 10px)',
+                    flexShrink: 0,
+                  }}
+                >
+                  <img
+                    src="/Logo.png"
+                    alt="Abiding Anchor logo"
+                    style={{
+                      width: logoSize,
+                      height: logoSize,
+                      maxWidth: '100%',
+                      objectFit: 'contain',
+                      flexShrink: 0,
+                      filter: 'drop-shadow(0 0 15px rgba(212, 175, 55, 0.6))',
+                      animation: 'authLogoFloat 4s ease-in-out infinite',
+                    }}
+                  />
+                  <h1
+                    style={{
+                      margin: 0,
+                      padding: '0 4px',
+                      color: '#D4A843',
+                      fontSize: titleSize,
+                      letterSpacing: 'clamp(0.06em, 1.5vw, 0.22em)',
+                      fontFamily: "'Cinzel', 'Times New Roman', serif",
+                      fontWeight: 600,
+                      textAlign: 'center',
+                      lineHeight: 1.12,
+                      textShadow: '0 2px 12px rgba(0,0,0,0.35)',
+                    }}
+                  >
+                    ABIDING ANCHOR
+                  </h1>
+                  <p
+                    style={{
+                      margin: 0,
+                      padding: '0 8px',
+                      color: 'rgba(255,255,255,0.68)',
+                      fontSize: taglineSize,
+                      letterSpacing: '0.02em',
+                      textAlign: 'center',
+                      lineHeight: 1.35,
+                    }}
+                  >
+                    Your private space to grow in faith
+                  </p>
+                </div>
 
-          <p
-            style={{
-              margin: '8px 0 0',
-              color: 'rgba(255,255,255,0.62)',
-              fontSize: '12px',
-              textAlign: 'center',
-            }}
-          >
-            Free forever. Built as a ministry. 🙏
-          </p>
+                <article
+                  style={{
+                    width: '100%',
+                    maxWidth: '480px',
+                    borderRadius: 'clamp(12px, 3vmin, 16px)',
+                    padding: modalPad,
+                    boxSizing: 'border-box',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '0.5px solid rgba(212,168,67,0.8)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    boxShadow: '0 0 24px rgba(212,168,67,0.18), 0 10px 40px rgba(0,0,0,0.35)',
+                    flexShrink: 0,
+                  }}
+                >
+                  <h2
+                    style={{
+                      margin: '0 0 4px',
+                      color: '#D4A843',
+                      fontSize: h2Size,
+                      textAlign: 'center',
+                      fontWeight: 700,
+                      letterSpacing: '0.05em',
+                    }}
+                  >
+                    Sign In
+                  </h2>
+                  <form
+                    onSubmit={handleSignIn}
+                    className="grid w-full"
+                    style={{ gap: formGap }}
+                  >
+                    <input
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Email"
+                      type="email"
+                      className="app-input w-full"
+                      style={{
+                        borderRadius: '12px',
+                        padding: inputPad,
+                        fontSize: inputFont,
+                        background: 'rgba(0,0,0,0.15)',
+                        color: 'white',
+                        border: '0.5px solid rgba(212,175,55,0.4)',
+                      }}
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      autoComplete="email"
+                      spellCheck={false}
+                    />
+                    <input
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Password"
+                      type="password"
+                      className="app-input w-full"
+                      style={{
+                        borderRadius: '12px',
+                        padding: inputPad,
+                        fontSize: inputFont,
+                        background: 'rgba(0,0,0,0.15)',
+                        color: 'white',
+                        border: '0.5px solid rgba(212,175,55,0.4)',
+                      }}
+                    />
+                    <button
+                      type="submit"
+                      className="btn-primary w-full"
+                      disabled={loading}
+                      style={{ padding: inputPad, fontSize: inputFont }}
+                    >
+                      {loading ? 'Please wait...' : 'Sign In'}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-primary w-full"
+                      disabled={loading}
+                      onClick={handleCreateAccount}
+                      style={{ padding: inputPad, fontSize: inputFont }}
+                    >
+                      Create Free Account
+                    </button>
+                  </form>
+
+                  {error ? (
+                    <p className="mt-3 text-[#ffb3b3] text-sm leading-snug">{error}</p>
+                  ) : null}
+                  {success ? (
+                    <p className="mt-3 text-gold text-sm leading-snug">{success}</p>
+                  ) : null}
+                </article>
+
+                <div
+                  style={{
+                    width: '100%',
+                    maxWidth: '480px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    textAlign: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <p
+                    style={{
+                      fontSize: verseSize,
+                      fontStyle: 'italic',
+                      color: 'rgba(255,255,255,0.82)',
+                      lineHeight: 1.45,
+                      margin: 'clamp(2px, 0.8vmin, 10px) 0 0',
+                      padding: '0 6px',
+                      textAlign: 'center',
+                      opacity,
+                      transition: 'opacity 0.45s ease',
+                    }}
+                  >
+                    &ldquo;{verses[currentVerseIndex].text}&rdquo;
+                  </p>
+                  <p
+                    style={{
+                      fontSize: refSize,
+                      color: 'rgba(212,168,67,0.9)',
+                      margin: '2px 0 0',
+                      letterSpacing: '0.05em',
+                      textAlign: 'center',
+                      opacity,
+                      transition: 'opacity 0.45s ease',
+                    }}
+                  >
+                    {verses[currentVerseIndex].reference}
+                  </p>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      justifyContent: 'center',
+                      gap: 'clamp(4px, 1.2vmin, 8px)',
+                      marginTop: 'clamp(4px, 1.2vmin, 10px)',
+                    }}
+                  >
+                    {['Bible Reader', 'Guided Prayers', 'Daily Streak', 'AI Companion'].map(
+                      (pill) => (
+                        <span
+                          key={pill}
+                          style={{
+                            padding: `${pillPadV} ${pillPadH}`,
+                            borderRadius: '999px',
+                            background: 'rgba(255,255,255,0.12)',
+                            border: '1px solid rgba(255,255,255,0.22)',
+                            color: 'rgba(255,255,255,0.88)',
+                            fontSize: pillFont,
+                            fontWeight: 500,
+                            letterSpacing: '0.01em',
+                            lineHeight: 1,
+                          }}
+                        >
+                          {pill}
+                        </span>
+                      ),
+                    )}
+                  </div>
+
+                  <p
+                    style={{
+                      margin: 'clamp(4px, 1vmin, 8px) 0 0',
+                      color: 'rgba(255,255,255,0.62)',
+                      fontSize: freeSize,
+                      textAlign: 'center',
+                      padding: '0 6px',
+                      lineHeight: 1.35,
+                    }}
+                  >
+                    Free forever. Built as a ministry. {'\u{1F64F}'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <style>{`
-        @keyframes logoFloat {
+        @keyframes authLogoFloat {
           0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-7px); }
+          50% { transform: translateY(-5px); }
         }
       `}</style>
     </div>
