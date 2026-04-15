@@ -5,8 +5,12 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { userStorageKey } from '../utils/userStorage'
 import { getAvatarUploadExtension } from '../utils/avatarUrl'
-import { LocalNotifications } from '@capacitor/local-notifications'
 import i18n, { LANGUAGE_STORAGE_KEY } from '../i18n.js'
+import {
+  cancelDailyReminderSchedules,
+  ensureLocalNotificationsReady,
+  scheduleLocalNotificationsSafe,
+} from '../services/notifications'
 
 const UI_LANG_OPTIONS = [
   { code: 'en', flagIso: 'us', abbr: 'EN', labelKey: 'langEn' },
@@ -207,12 +211,18 @@ export default function Settings() {
 
   const scheduleNotifications = useCallback(async (timeOverride) => {
     try {
-      await LocalNotifications.cancel()
+      await cancelDailyReminderSchedules()
+
+      const granted = await ensureLocalNotificationsReady()
+      if (!granted) {
+        console.warn('Reminders not scheduled: notification permission denied or unavailable')
+        return
+      }
 
       const timeStr = timeOverride ?? reminderTime
       const [hours, minutes] = timeStr.split(':').map(Number)
       const notifications = []
-      
+
       for (let day = 0; day < 7; day++) {
         const now = new Date()
         const scheduledDate = new Date(
@@ -223,11 +233,11 @@ export default function Settings() {
           minutes,
           0
         )
-        
+
         if (scheduledDate <= now) {
           scheduledDate.setDate(scheduledDate.getDate() + 7)
         }
-        
+
         notifications.push({
           id: day + 1,
           title: i18n.t('settings.notificationTitle'),
@@ -245,8 +255,8 @@ export default function Settings() {
           },
         })
       }
-      
-      await LocalNotifications.schedule({ notifications })
+
+      await scheduleLocalNotificationsSafe({ notifications })
     } catch (error) {
       console.error('Error scheduling notifications:', error)
     }
@@ -260,7 +270,11 @@ export default function Settings() {
     if (newValue) {
       await scheduleNotifications()
     } else {
-      await LocalNotifications.cancel()
+      try {
+        await cancelDailyReminderSchedules()
+      } catch (e) {
+        console.error('Error canceling reminders:', e)
+      }
     }
   }
 
