@@ -150,72 +150,6 @@ export default function Auth() {
             Your private space to grow in faith
           </p>
 
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              justifyContent: 'center',
-              gap: '8px',
-              marginTop: '4px',
-            }}
-          >
-            {['Bible Reader', 'Guided Prayers', 'Daily Streak', 'AI Companion'].map((pill) => (
-              <span
-                key={pill}
-                style={{
-                  padding: '6px 10px',
-                  borderRadius: '999px',
-                  background: 'rgba(255,255,255,0.12)',
-                  border: '1px solid rgba(255,255,255,0.22)',
-                  color: 'rgba(255,255,255,0.88)',
-                  fontSize: '11px',
-                  fontWeight: 500,
-                  letterSpacing: '0.01em',
-                  lineHeight: 1,
-                }}
-              >
-                {pill}
-              </span>
-            ))}
-          </div>
-
-          <p
-            style={{
-              fontSize: '13px',
-              fontStyle: 'italic',
-              color: 'rgba(255,255,255,0.82)',
-              lineHeight: '1.5',
-              margin: '10px 0 0',
-              textAlign: 'center',
-              opacity,
-              transition: 'opacity 0.45s ease',
-            }}
-          >
-            "{verses[currentVerseIndex].text}"
-          </p>
-          <p
-            style={{
-              fontSize: '11px',
-              color: 'rgba(212,168,67,0.9)',
-              margin: '2px 0 0',
-              letterSpacing: '0.05em',
-              textAlign: 'center',
-              opacity,
-              transition: 'opacity 0.45s ease',
-            }}
-          >
-            {verses[currentVerseIndex].reference}
-          </p>
-          <p
-            style={{
-              margin: '6px 0 0',
-              color: 'rgba(255,255,255,0.62)',
-              fontSize: '12px',
-              textAlign: 'center',
-            }}
-          >
-            Free forever. Built as a ministry. 🙏
-          </p>
         </div>
 
         <article
@@ -301,6 +235,85 @@ export default function Auth() {
           {error ? <p className="mt-3 text-[#ffb3b3] text-sm">{error}</p> : null}
           {success ? <p className="mt-3 text-gold text-sm">{success}</p> : null}
         </article>
+
+        <div
+          style={{
+            width: '100%',
+            maxWidth: '480px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+          }}
+        >
+          <p
+            style={{
+              fontSize: '13px',
+              fontStyle: 'italic',
+              color: 'rgba(255,255,255,0.82)',
+              lineHeight: '1.5',
+              margin: '10px 0 0',
+              textAlign: 'center',
+              opacity,
+              transition: 'opacity 0.45s ease',
+            }}
+          >
+            "{verses[currentVerseIndex].text}"
+          </p>
+          <p
+            style={{
+              fontSize: '11px',
+              color: 'rgba(212,168,67,0.9)',
+              margin: '2px 0 0',
+              letterSpacing: '0.05em',
+              textAlign: 'center',
+              opacity,
+              transition: 'opacity 0.45s ease',
+            }}
+          >
+            {verses[currentVerseIndex].reference}
+          </p>
+
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              gap: '8px',
+              marginTop: '10px',
+            }}
+          >
+            {['Bible Reader', 'Guided Prayers', 'Daily Streak', 'AI Companion'].map((pill) => (
+              <span
+                key={pill}
+                style={{
+                  padding: '6px 10px',
+                  borderRadius: '999px',
+                  background: 'rgba(255,255,255,0.12)',
+                  border: '1px solid rgba(255,255,255,0.22)',
+                  color: 'rgba(255,255,255,0.88)',
+                  fontSize: '11px',
+                  fontWeight: 500,
+                  letterSpacing: '0.01em',
+                  lineHeight: 1,
+                }}
+              >
+                {pill}
+              </span>
+            ))}
+          </div>
+
+          <p
+            style={{
+              margin: '8px 0 0',
+              color: 'rgba(255,255,255,0.62)',
+              fontSize: '12px',
+              textAlign: 'center',
+            }}
+          >
+            Free forever. Built as a ministry. 🙏
+          </p>
+        </div>
       </div>
       <style>{`
         @keyframes logoFloat {
