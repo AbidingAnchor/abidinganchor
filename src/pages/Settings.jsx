@@ -7,10 +7,16 @@ import { userStorageKey } from '../utils/userStorage'
 import { getAvatarUploadExtension } from '../utils/avatarUrl'
 import i18n, { LANGUAGE_STORAGE_KEY } from '../i18n.js'
 import {
-  cancelDailyReminderSchedules,
-  ensureLocalNotificationsReady,
-  scheduleLocalNotificationsSafe,
-} from '../services/notifications'
+  cancelUniversalReminder,
+  persistReminderToSupabase,
+  readReminderFromSupabase,
+  readReminderLocal,
+  requestUniversalNotificationPermission,
+  scheduleUniversalReminder,
+  sendTestNotification,
+  writeReminderLocal,
+} from '../services/universalNotifications'
+import { getNotificationPlatform } from '../utils/notificationPlatform'
 
 const UI_LANG_OPTIONS = [
   { code: 'en', flagIso: 'us', abbr: 'EN', labelKey: 'langEn' },
@@ -54,6 +60,10 @@ export default function Settings() {
   const [reminderTime, setReminderTime] = useState('08:00')
   const [draftReminderTime, setDraftReminderTime] = useState('08:00')
   const [reminderTimeConfirmOpen, setReminderTimeConfirmOpen] = useState(false)
+  const [reminderToastText, setReminderToastText] = useState('')
+  const [reminderToastVisible, setReminderToastVisible] = useState(false)
+  const [reminderPermissionMessage, setReminderPermissionMessage] = useState('')
+  const [testNotifRunning, setTestNotifRunning] = useState(false)
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false)
   const [feedbackType, setFeedbackType] = useState('suggestion')
   const [feedbackText, setFeedbackText] = useState('')
@@ -64,7 +74,9 @@ export default function Settings() {
   const [deleteAccountSubmitting, setDeleteAccountSubmitting] = useState(false)
   const [deleteAccountError, setDeleteAccountError] = useState('')
   const feedbackSuccessTimerRef = useRef(null)
+  const reminderToastTimerRef = useRef(null)
   const fileInputRef = useRef(null)
+  const notifPlatform = getNotificationPlatform()
 
   const openFeedbackModal = () => {
     setFeedbackType('suggestion')
@@ -84,6 +96,16 @@ export default function Settings() {
     setFeedbackSuccess(false)
     setFeedbackSubmitError('')
   }
+
+  const showReminderToast = useCallback((message) => {
+    setReminderToastText(message)
+    setReminderToastVisible(true)
+    if (reminderToastTimerRef.current) clearTimeout(reminderToastTimerRef.current)
+    reminderToastTimerRef.current = setTimeout(() => {
+      setReminderToastVisible(false)
+      reminderToastTimerRef.current = null
+    }, 2200)
+  }, [])
 
   const submitFeedback = async () => {
     const webhook = import.meta.env.VITE_DISCORD_FEEDBACK_WEBHOOK_URL
@@ -145,6 +167,7 @@ export default function Settings() {
   useEffect(() => {
     return () => {
       if (feedbackSuccessTimerRef.current) clearTimeout(feedbackSuccessTimerRef.current)
+      if (reminderToastTimerRef.current) clearTimeout(reminderToastTimerRef.current)
     }
   }, [])
 
@@ -190,15 +213,18 @@ export default function Settings() {
   // Load daily reminder preferences from localStorage (per user)
   useEffect(() => {
     if (!user?.id) return
-    const savedEnabled = localStorage.getItem(userStorageKey(user.id, 'daily-reminder-enabled'))
-    const savedTime = localStorage.getItem(userStorageKey(user.id, 'reminder-time'))
+    const localPrefs = readReminderLocal(user.id)
+    setDailyReminderEnabled(localPrefs.enabled)
+    setReminderTime(localPrefs.time)
 
-    if (savedEnabled !== null) {
-      setDailyReminderEnabled(savedEnabled === 'true')
-    }
-    if (savedTime) {
-      setReminderTime(savedTime)
-    }
+    readReminderFromSupabase(user.id).then((cloudPrefs) => {
+      if (!cloudPrefs) return
+      setDailyReminderEnabled(cloudPrefs.enabled)
+      setReminderTime(cloudPrefs.time)
+      writeReminderLocal(user.id, cloudPrefs)
+    }).catch((error) => {
+      console.warn('Unable to read reminder preferences from Supabase:', error)
+    })
   }, [user?.id])
 
   useEffect(() => {
@@ -211,67 +237,43 @@ export default function Settings() {
 
   const scheduleNotifications = useCallback(async (timeOverride) => {
     try {
-      await cancelDailyReminderSchedules()
-
-      const granted = await ensureLocalNotificationsReady()
-      if (!granted) {
-        console.warn('Reminders not scheduled: notification permission denied or unavailable')
-        return
-      }
-
       const timeStr = timeOverride ?? reminderTime
-      const [hours, minutes] = timeStr.split(':').map(Number)
-      const notifications = []
-
-      for (let day = 0; day < 7; day++) {
-        const now = new Date()
-        const scheduledDate = new Date(
-          now.getFullYear(),
-          now.getMonth(),
-          now.getDate() + day,
-          hours,
-          minutes,
-          0
-        )
-
-        if (scheduledDate <= now) {
-          scheduledDate.setDate(scheduledDate.getDate() + 7)
-        }
-
-        notifications.push({
-          id: day + 1,
-          title: i18n.t('settings.notificationTitle'),
-          body: i18n.t(`settings.notify${day}`),
-          schedule: {
-            at: scheduledDate,
-            repeats: true,
-            every: 'day',
-          },
-          sound: 'default',
-          smallIcon: 'ic_stat_icon_config_sample',
-          largeIcon: 'ic_launcher',
-          extra: {
-            route: '/journal',
-          },
-        })
-      }
-
-      await scheduleLocalNotificationsSafe({ notifications })
+      await scheduleUniversalReminder({ time: timeStr, userId: user?.id })
+      setReminderPermissionMessage('')
+      showReminderToast(`Reminder set for ${formatTimeForReminderConfirm(timeStr)} ✓`)
     } catch (error) {
       console.error('Error scheduling notifications:', error)
+      setReminderPermissionMessage('Please enable notifications in your device settings to receive reminders.')
     }
-  }, [reminderTime])
+  }, [reminderTime, user?.id])
 
   const handleDailyReminderToggle = async () => {
     const newValue = !dailyReminderEnabled
     setDailyReminderEnabled(newValue)
-    if (user?.id) localStorage.setItem(userStorageKey(user.id, 'daily-reminder-enabled'), newValue.toString())
-    
+    if (user?.id) {
+      writeReminderLocal(user.id, { enabled: newValue, time: reminderTime })
+      await persistReminderToSupabase(user.id, { enabled: newValue, time: reminderTime })
+    }
+
     if (newValue) {
+      const permission = await requestUniversalNotificationPermission({ userGesture: true })
+      if (permission === 'gesture-required') {
+        setReminderPermissionMessage('Tap again to allow notifications. iOS requires a user action to grant permission.')
+        setDailyReminderEnabled(false)
+        if (user?.id) writeReminderLocal(user.id, { enabled: false, time: reminderTime })
+        return
+      }
+      if (permission !== 'granted') {
+        setReminderPermissionMessage('Please enable notifications in your device settings to receive reminders.')
+        setDailyReminderEnabled(false)
+        if (user?.id) writeReminderLocal(user.id, { enabled: false, time: reminderTime })
+        return
+      }
       await scheduleNotifications()
     } else {
       try {
-        await cancelDailyReminderSchedules()
+        await cancelUniversalReminder()
+        setReminderPermissionMessage('')
       } catch (e) {
         console.error('Error canceling reminders:', e)
       }
@@ -295,16 +297,39 @@ export default function Settings() {
   const confirmReminderTime = async () => {
     const next = draftReminderTime
     setReminderTime(next)
-    if (user?.id) localStorage.setItem(userStorageKey(user.id, 'reminder-time'), next)
+    if (user?.id) {
+      writeReminderLocal(user.id, { enabled: dailyReminderEnabled, time: next })
+      await persistReminderToSupabase(user.id, { enabled: dailyReminderEnabled, time: next })
+    }
     setReminderTimeConfirmOpen(false)
     if (dailyReminderEnabled) {
       await scheduleNotifications(next)
+    } else {
+      showReminderToast(`Reminder set for ${formatTimeForReminderConfirm(next)} ✓`)
     }
   }
 
   const cancelReminderTimeConfirm = () => {
     setDraftReminderTime(reminderTime)
     setReminderTimeConfirmOpen(false)
+  }
+
+  const handleSendTestNotification = async () => {
+    setTestNotifRunning(true)
+    try {
+      const permission = await requestUniversalNotificationPermission({ userGesture: true })
+      if (permission !== 'granted') {
+        setReminderPermissionMessage('Please enable notifications in your device settings to receive reminders.')
+        return
+      }
+      const sent = await sendTestNotification()
+      if (sent) showReminderToast('Test notification sent ✓')
+    } catch (error) {
+      console.error('Failed to send test notification:', error)
+      setReminderPermissionMessage('Please enable notifications in your device settings to receive reminders.')
+    } finally {
+      setTestNotifRunning(false)
+    }
   }
 
   const handleSignOut = async () => {
@@ -877,6 +902,32 @@ export default function Settings() {
               }} />
             </button>
           </div>
+
+          {notifPlatform.isIos && !notifPlatform.isStandalonePwa ? (
+            <p
+              style={{
+                marginBottom: '10px',
+                color: '#D4A843',
+                fontSize: '13px',
+                lineHeight: 1.4,
+              }}
+            >
+              Add to Home Screen for notifications to work.
+            </p>
+          ) : null}
+
+          {reminderPermissionMessage ? (
+            <p
+              style={{
+                marginBottom: '10px',
+                color: '#fbbf24',
+                fontSize: '13px',
+                lineHeight: 1.4,
+              }}
+            >
+              {reminderPermissionMessage}
+            </p>
+          ) : null}
           
           {dailyReminderEnabled && (
             <div>
@@ -930,6 +981,27 @@ export default function Settings() {
               />
             </div>
           )}
+
+          <button
+            type="button"
+            onClick={handleSendTestNotification}
+            disabled={testNotifRunning}
+            style={{
+              marginTop: dailyReminderEnabled ? '12px' : '0',
+              width: '100%',
+              borderRadius: '12px',
+              border: '1px solid rgba(212,168,67,0.55)',
+              background: 'rgba(212,168,67,0.16)',
+              color: '#f8e8bb',
+              padding: '10px 12px',
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: testNotifRunning ? 'wait' : 'pointer',
+              opacity: testNotifRunning ? 0.75 : 1,
+            }}
+          >
+            {testNotifRunning ? 'Sending test notification...' : 'Send Test Notification'}
+          </button>
         </div>
 
         {/* Replay Tutorial */}
@@ -1094,6 +1166,31 @@ export default function Settings() {
           {t('settings.deleteAccount')}
         </button>
       </section>
+
+      <div
+        aria-live="polite"
+        style={{
+          position: 'fixed',
+          left: '50%',
+          bottom: '96px',
+          transform: `translateX(-50%) translateY(${reminderToastVisible ? '0' : '10px'})`,
+          opacity: reminderToastVisible ? 1 : 0,
+          transition: 'opacity 0.2s ease, transform 0.2s ease',
+          pointerEvents: 'none',
+          zIndex: 10060,
+          background: '#D4A843',
+          color: '#0a1432',
+          fontWeight: 700,
+          fontSize: '14px',
+          borderRadius: '999px',
+          padding: '10px 16px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.28)',
+          border: '1px solid rgba(255,255,255,0.35)',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {reminderToastText}
+      </div>
 
       {feedbackModalOpen ? (
         <div

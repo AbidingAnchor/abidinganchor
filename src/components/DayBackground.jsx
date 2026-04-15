@@ -28,6 +28,13 @@ export function getEffectiveForcedHour() {
 
 /** Same rules as BackgroundManager `getBackgroundType`. TODO: REMOVE BEFORE LAUNCH */
 export function getBackgroundTypeForTime(date = new Date()) {
+  // Temporary localhost override for design work: always render daytime sky.
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    if (host === "localhost" || host === "127.0.0.1") {
+      return "day";
+    }
+  }
   // TODO: REMOVE BEFORE LAUNCH
   const forced = getEffectiveForcedHour();
   const hours = Number.isFinite(forced) ? forced : date.getHours();

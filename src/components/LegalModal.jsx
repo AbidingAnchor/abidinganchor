@@ -1,5 +1,4 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { scheduleLocalNotification } from '../utils/notifications'
 
 const LEGACY_KEY = 'abidinganchor-legal-agreed'
 const LEGAL_ACCEPTED_KEY = 'legalAccepted'
@@ -17,10 +16,6 @@ export default function LegalModal({ onAgreed }) {
   const handleAgree = () => {
     localStorage.setItem(LEGAL_ACCEPTED_KEY, 'true')
     localStorage.setItem(LEGACY_KEY, 'true')
-    // Trigger notification setup if permission is already granted
-    if (Notification.permission === 'granted') {
-      scheduleLocalNotification()
-    }
     // Navigate to onboarding after agreeing to ToS
     if (onAgreed) {
       onAgreed()
