@@ -895,8 +895,15 @@ export default function Settings() {
                     box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
                   }
                   .settings-reminder-time-input::-webkit-calendar-picker-indicator {
-                    filter: invert(0.92) sepia(1) saturate(4) hue-rotate(5deg);
-                    opacity: 0.85;
+                    cursor: pointer;
+                    opacity: 1;
+                    width: 24px;
+                    height: 24px;
+                    filter: none;
+                    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23D4A843' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E");
+                    background-size: contain;
+                    background-repeat: no-repeat;
+                    background-position: center;
                   }
                   .settings-reminder-time-input::-webkit-datetime-edit-fields-wrapper { padding: 0; }
                   .settings-reminder-time-input::-webkit-datetime-edit-text { color: rgba(255,255,255,0.55); padding: 0 3px; }
