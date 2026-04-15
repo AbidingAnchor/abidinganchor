@@ -3,20 +3,13 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { getAvatarUploadExtension } from '../utils/avatarUrl'
+import UsernameInput from '../components/UsernameInput'
+import { normalizeUsername, checkUsernameTaken, hasProfanityInUsername } from '../utils/usernameAvailability'
 
 const BIO_MAX = 150
 const USERNAME_CHANGE_LIMIT = 3
 const USERNAME_RESET_WINDOW_DAYS = 90
 const USERNAME_RESET_WINDOW_MS = USERNAME_RESET_WINDOW_DAYS * 24 * 60 * 60 * 1000
-const BANNED_USERNAME_WORDS = ['fuck', 'shit', 'bitch', 'asshole', 'bastard', 'nigger', 'slut', 'whore', 'dick', 'pussy']
-
-function hasProfanity(value = '') {
-  const normalizedParts = value
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .filter(Boolean)
-  return normalizedParts.some((part) => BANNED_USERNAME_WORDS.includes(part))
-}
 
 function startOfResetWindow(dateLike) {
   const dt = dateLike ? new Date(dateLike) : new Date()
@@ -182,9 +175,20 @@ export default function EditProfile() {
   const handleSaveProfile = async () => {
     if (!user?.id || saving) return
     const nextUsername = username.trim()
-    if (nextUsername && hasProfanity(nextUsername)) {
+    if (nextUsername && hasProfanityInUsername(nextUsername)) {
       setProfileError('Please choose an appropriate username.')
       return
+    }
+    if (nextUsername) {
+      const { taken, error: availErr } = await checkUsernameTaken(supabase, nextUsername, user.id)
+      if (availErr) {
+        setProfileError('Could not verify username. Try again.')
+        return
+      }
+      if (taken) {
+        setProfileError('Username already taken')
+        return
+      }
     }
     try {
       setProfileError('')
@@ -222,7 +226,7 @@ export default function EditProfile() {
       if (didUsernameChange && reachedUsernameLimit) return
 
       const payload = {
-        username: nextUsername || null,
+        username: nextUsername ? normalizeUsername(nextUsername) : null,
         bio: bio.trim() || null,
         favorite_verse: favoriteVerse.trim() || null,
       }
@@ -360,18 +364,18 @@ export default function EditProfile() {
         </div>
 
         <div className="glass-panel" style={{ borderRadius: '16px', padding: '20px' }}>
-          <label style={{ color: 'var(--text-primary)', display: 'block', fontSize: '14px', marginBottom: '8px' }}>Username / Display name</label>
-          <input
-            type="text"
+          <UsernameInput
             value={username}
-            onChange={(e) => {
-              setUsername(e.target.value)
+            onChange={(v) => {
+              setUsername(v)
               if (profileError) setProfileError('')
             }}
-            placeholder="Your display name"
-            className="glass-input-field"
+            excludeUserId={user?.id}
             disabled={reachedUsernameLimit}
-            style={{ width: '100%', borderRadius: '12px', padding: '12px', marginBottom: '16px' }}
+            placeholder="Your display name"
+            labelText="Username / Display name"
+            emptyAllowsSubmit
+            inputStyle={{ width: '100%', marginBottom: 0 }}
           />
           {profileError ? (
             <p style={{ color: '#fca5a5', fontSize: '12px', marginTop: '-8px', marginBottom: '12px' }}>

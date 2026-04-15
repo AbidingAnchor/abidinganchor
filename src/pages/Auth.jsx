@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import UsernameInput from '../components/UsernameInput'
+import { checkUsernameTaken, hasProfanityInUsername, normalizeUsername } from '../utils/usernameAvailability'
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
@@ -16,6 +18,8 @@ export default function Auth() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [signUpConsent, setSignUpConsent] = useState(false)
+  const [signUpUsername, setSignUpUsername] = useState('')
+  const [usernameFieldState, setUsernameFieldState] = useState({ status: 'idle', canSave: false, normalized: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState('')
@@ -69,6 +73,16 @@ export default function Auth() {
         return setError('You must be at least 13 years old to create an account. AbidingAnchor is not directed at children under 13.')
       }
       if (!signUpConsent) return setError('Please provide consent to continue.')
+      const un = normalizeUsername(signUpUsername)
+      if (!un || un.length < 2) return setError('Please choose a username (at least 2 characters).')
+      if (hasProfanityInUsername(signUpUsername)) return setError('Please choose an appropriate username.')
+      if (usernameFieldState.status === 'checking') return setError('Please wait while we verify your username.')
+      if (!usernameFieldState.canSave || usernameFieldState.status === 'taken') {
+        return setError('Username already taken or invalid. Pick another or choose a suggestion.')
+      }
+      const { taken, error: takenErr } = await checkUsernameTaken(supabase, signUpUsername, undefined)
+      if (takenErr) return setError('Could not verify username. Try again.')
+      if (taken) return setError('Username already taken.')
     }
     setLoading(true)
     if (mode === 'signin') {
@@ -79,12 +93,19 @@ export default function Auth() {
       setLoading(false)
       return
     }
-    const { error: signUpError, usedEmailFallback } = await signUp(cleanEmail, password, fullName.trim())
+    const { data: signUpData, error: signUpError, usedEmailFallback } = await signUp(cleanEmail, password, fullName.trim())
     if (signUpError) {
       setError(signUpError.message)
+    } else {
+      const uid = signUpData?.user?.id
+      const un = normalizeUsername(signUpUsername)
+      if (uid && un) {
+        const { error: profileErr } = await supabase.from('profiles').update({ username: un }).eq('id', uid)
+        if (profileErr && import.meta.env.DEV) console.warn('Set username on signup:', profileErr)
+      }
+      if (usedEmailFallback) setSuccess('Account created and signed in. You can continue now. 🙏')
+      else setSuccess('Check your email to confirm your account 🙏')
     }
-    else if (usedEmailFallback) setSuccess('Account created and signed in. You can continue now. 🙏')
-    else setSuccess('Check your email to confirm your account 🙏')
     setLoading(false)
   }
 
@@ -187,6 +208,18 @@ export default function Auth() {
               <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full Name" className="app-input" style={{ borderRadius: '12px', padding: '12px' }} />
               <label className="text-white/[0.65] text-sm">Date of Birth</label>
               <input value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} type="date" className="app-input" style={{ borderRadius: '12px', padding: '12px' }} />
+              <UsernameInput
+                value={signUpUsername}
+                onChange={setSignUpUsername}
+                excludeUserId={undefined}
+                placeholder="Choose a unique username"
+                labelText="Username"
+                showLabel
+                inputClassName="app-input"
+                inputStyle={{ borderRadius: '12px', padding: '12px' }}
+                emptyAllowsSubmit={false}
+                onAvailabilityChange={setUsernameFieldState}
+              />
             </>
           ) : null}
           <input 
@@ -217,7 +250,25 @@ export default function Auth() {
               <span>I consent to AbidingAnchor storing my spiritual journal and prayer data securely in the cloud to enable sync across my devices.</span>
             </label>
           ) : null}
-          <button type="submit" className="btn-primary w-full" disabled={loading || (mode === 'signup' && !signUpConsent)} style={{ opacity: loading || (mode === 'signup' && !signUpConsent) ? 0.55 : 1 }}>
+          <button
+            type="submit"
+            className="btn-primary w-full"
+            disabled={
+              loading ||
+              (mode === 'signup' &&
+                (!signUpConsent ||
+                  !usernameFieldState.canSave ||
+                  usernameFieldState.status === 'checking'))
+            }
+            style={{
+              opacity:
+                loading ||
+                (mode === 'signup' &&
+                  (!signUpConsent || !usernameFieldState.canSave || usernameFieldState.status === 'checking'))
+                  ? 0.55
+                  : 1,
+            }}
+          >
             {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Account'}
           </button>
         </form>
@@ -225,7 +276,15 @@ export default function Auth() {
         <div className="mt-4 flex justify-between items-center">
           <button
             type="button"
-            onClick={() => { setMode((m) => (m === 'signin' ? 'signup' : 'signin')); setError(''); setSuccess(''); setSignUpConsent(false); setDateOfBirth('') }}
+            onClick={() => {
+              setMode((m) => (m === 'signin' ? 'signup' : 'signin'))
+              setError('')
+              setSuccess('')
+              setSignUpConsent(false)
+              setDateOfBirth('')
+              setSignUpUsername('')
+              setUsernameFieldState({ status: 'idle', canSave: false, normalized: '' })
+            }}
             className={mode === 'signin' ? 'btn-primary' : 'btn-secondary'}
             style={mode === 'signin' ? {
               width: '100%',

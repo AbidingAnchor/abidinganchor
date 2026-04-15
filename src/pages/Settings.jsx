@@ -433,11 +433,10 @@ export default function Settings() {
 
   return (
     <div
-      className="content-scroll"
+      className="content-scroll content-scroll--nav-clear"
       style={{
         padding: '0 16px',
         paddingTop: '8px',
-        paddingBottom: '110px',
         maxWidth: '680px',
         margin: '0 auto',
         width: '100%',
