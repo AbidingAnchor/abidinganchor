@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { readingPlans } from '../data/readingPlans'
 import { useAuth } from '../context/AuthContext'
 import { userStorageKey } from '../utils/userStorage'
+import { getLocalCalendarDateKey } from '../utils/localCalendarDate'
 
 function readStore(storageKey) {
   try {
@@ -16,13 +17,13 @@ function saveStore(storageKey, v) {
 }
 
 function todayKey() {
-  return new Date().toISOString().slice(0, 10)
+  return getLocalCalendarDateKey()
 }
 
 function yesterdayKey() {
   const d = new Date()
   d.setDate(d.getDate() - 1)
-  return d.toISOString().slice(0, 10)
+  return getLocalCalendarDateKey(d)
 }
 
 export default function ReadingPlans() {

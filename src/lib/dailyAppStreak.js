@@ -3,27 +3,8 @@
  * Uses local calendar dates (same idea as presence streak). Idempotent per day.
  */
 import { supabase } from './supabase'
-import { calendarDaysBetween, getLocalDateKey, getYesterdayDateKey } from './presenceStreak'
-
-/**
- * Normalize Postgres date / ISO string to YYYY-MM-DD for comparisons.
- * @param {unknown} raw
- * @returns {string | null}
- */
-function normalizeDateKey(raw) {
-  if (raw == null || raw === '') return null
-  const s = String(raw).trim()
-  if (!s) return null
-  const ymd = s.slice(0, 10)
-  if (/^\d{4}-\d{2}-\d{2}$/.test(ymd)) return ymd
-  try {
-    const d = new Date(s)
-    if (Number.isNaN(d.getTime())) return null
-    return getLocalDateKey(d)
-  } catch {
-    return null
-  }
-}
+import { getLocalCalendarDateKey } from '../utils/localCalendarDate'
+import { calendarDaysBetween, getYesterdayDateKey, profileLastActiveDateKey } from './presenceStreak'
 
 function parseStreak(v) {
   const n = Number(v)
@@ -38,7 +19,7 @@ function parseStreak(v) {
 export async function applyDailyStreakOnAppOpen(userId) {
   if (!userId) return { ok: false, currentStreak: 0 }
 
-  const today = getLocalDateKey()
+  const today = getLocalCalendarDateKey()
   const { data: profile, error } = await supabase
     .from('profiles')
     .select('reading_streak, last_active_date, longest_streak, streak_start_date')
@@ -63,7 +44,7 @@ export async function applyDailyStreakOnAppOpen(userId) {
   }
   if (!profile) return { ok: false, currentStreak: 0 }
 
-  let last = normalizeDateKey(profile.last_active_date)
+  let last = profileLastActiveDateKey(profile.last_active_date)
   const prevStreak = parseStreak(profile.reading_streak)
 
   // Future calendar date in DB (UTC mismatch, bad row): ignore for streak — treat as no prior day.

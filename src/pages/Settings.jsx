@@ -48,6 +48,8 @@ export default function Settings() {
   const [localUsername, setLocalUsername] = useState('')
   const [dailyReminderEnabled, setDailyReminderEnabled] = useState(false)
   const [reminderTime, setReminderTime] = useState('08:00')
+  const [draftReminderTime, setDraftReminderTime] = useState('08:00')
+  const [reminderTimeConfirmOpen, setReminderTimeConfirmOpen] = useState(false)
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false)
   const [feedbackType, setFeedbackType] = useState('suggestion')
   const [feedbackText, setFeedbackText] = useState('')
@@ -143,13 +145,13 @@ export default function Settings() {
   }, [])
 
   useEffect(() => {
-    if (!feedbackModalOpen && !deleteAccountModalOpen) return
+    if (!feedbackModalOpen && !deleteAccountModalOpen && !reminderTimeConfirmOpen) return
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
       document.body.style.overflow = prev
     }
-  }, [feedbackModalOpen, deleteAccountModalOpen])
+  }, [feedbackModalOpen, deleteAccountModalOpen, reminderTimeConfirmOpen])
 
   useEffect(() => {
     if (!user?.id) return
@@ -195,11 +197,20 @@ export default function Settings() {
     }
   }, [user?.id])
 
-  const scheduleNotifications = useCallback(async () => {
+  useEffect(() => {
+    setDraftReminderTime(reminderTime)
+  }, [reminderTime])
+
+  useEffect(() => {
+    if (!dailyReminderEnabled) setReminderTimeConfirmOpen(false)
+  }, [dailyReminderEnabled])
+
+  const scheduleNotifications = useCallback(async (timeOverride) => {
     try {
       await LocalNotifications.cancel()
 
-      const [hours, minutes] = reminderTime.split(':').map(Number)
+      const timeStr = timeOverride ?? reminderTime
+      const [hours, minutes] = timeStr.split(':').map(Number)
       const notifications = []
       
       for (let day = 0; day < 7; day++) {
@@ -253,14 +264,33 @@ export default function Settings() {
     }
   }
 
-  const handleTimeChange = async (e) => {
-    const newTime = e.target.value
-    setReminderTime(newTime)
-    if (user?.id) localStorage.setItem(userStorageKey(user.id, 'reminder-time'), newTime)
-    
+  const formatTimeForReminderConfirm = (hhmm) => {
+    const parts = hhmm.split(':').map(Number)
+    const h = parts[0] ?? 8
+    const m = parts[1] ?? 0
+    const d = new Date()
+    d.setHours(h, m, 0, 0)
+    return d.toLocaleTimeString(i18nHook.language, { hour: 'numeric', minute: '2-digit' })
+  }
+
+  const handleReminderTimeInputChange = (e) => {
+    setDraftReminderTime(e.target.value)
+    setReminderTimeConfirmOpen(true)
+  }
+
+  const confirmReminderTime = async () => {
+    const next = draftReminderTime
+    setReminderTime(next)
+    if (user?.id) localStorage.setItem(userStorageKey(user.id, 'reminder-time'), next)
+    setReminderTimeConfirmOpen(false)
     if (dailyReminderEnabled) {
-      await scheduleNotifications()
+      await scheduleNotifications(next)
     }
+  }
+
+  const cancelReminderTimeConfirm = () => {
+    setDraftReminderTime(reminderTime)
+    setReminderTimeConfirmOpen(false)
   }
 
   const handleSignOut = async () => {
@@ -836,23 +866,46 @@ export default function Settings() {
           
           {dailyReminderEnabled && (
             <div>
+              <style>
+                {`
+                  .settings-reminder-time-input {
+                    color-scheme: dark;
+                    width: 100%;
+                    border-radius: 12px;
+                    padding: 12px 14px;
+                    font-size: 16px;
+                    cursor: pointer;
+                    background: rgba(12, 20, 38, 0.96);
+                    border: 1px solid rgba(212, 168, 67, 0.4);
+                    color: #ffffff;
+                    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+                  }
+                  .settings-reminder-time-input::-webkit-calendar-picker-indicator {
+                    filter: invert(0.92) sepia(1) saturate(4) hue-rotate(5deg);
+                    opacity: 0.85;
+                  }
+                  .settings-reminder-time-input::-webkit-datetime-edit-fields-wrapper { padding: 0; }
+                  .settings-reminder-time-input::-webkit-datetime-edit-text { color: rgba(255,255,255,0.55); padding: 0 3px; }
+                  .settings-reminder-time-input::-webkit-datetime-edit-hour-field,
+                  .settings-reminder-time-input::-webkit-datetime-edit-minute-field,
+                  .settings-reminder-time-input::-webkit-datetime-edit-ampm-field {
+                    color: #ffffff;
+                  }
+                  .settings-reminder-time-input:focus {
+                    outline: none;
+                    border-color: rgba(212, 168, 67, 0.65);
+                    box-shadow: 0 0 0 2px rgba(212, 168, 67, 0.2);
+                  }
+                `}
+              </style>
               <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', marginBottom: '8px' }}>
                 {t('settings.reminderTime')}
               </p>
               <input
                 type="time"
-                value={reminderTime}
-                onChange={handleTimeChange}
-                style={{
-                  width: '100%',
-                  borderRadius: '12px',
-                  padding: '12px',
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid ' + (dailyReminderEnabled ? 'rgba(212,168,67,0.4)' : 'rgba(255,255,255,0.12)'),
-                  color: 'var(--text-primary)',
-                  fontSize: '16px',
-                  cursor: 'pointer'
-                }}
+                className="settings-reminder-time-input"
+                value={draftReminderTime}
+                onChange={handleReminderTimeInputChange}
               />
             </div>
           )}
@@ -1142,6 +1195,69 @@ export default function Settings() {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      ) : null}
+
+      {reminderTimeConfirmOpen ? (
+        <div
+          className="fixed inset-0 z-[10050] flex items-center justify-center p-4"
+          style={{ background: 'var(--glass-scrim)' }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="settings-reminder-confirm-title"
+        >
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default border-0"
+            style={{ background: 'transparent' }}
+            aria-label={t('common.close')}
+            onClick={cancelReminderTimeConfirm}
+          />
+          <div
+            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
+            style={{
+              background: 'var(--modal-bg)',
+              border: '1px solid rgba(212, 168, 67, 0.35)',
+              boxShadow: 'var(--glass-shadow)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-5 pb-6 pt-5">
+              <h2
+                id="settings-reminder-confirm-title"
+                className="m-0 text-lg font-semibold leading-snug"
+                style={{ color: 'var(--gold, #D4A843)' }}
+              >
+                {t('settings.reminderConfirmTitle', {
+                  time: formatTimeForReminderConfirm(draftReminderTime),
+                })}
+              </h2>
+              <button
+                type="button"
+                onClick={confirmReminderTime}
+                className="mt-5 w-full rounded-xl border py-3 text-base font-semibold transition"
+                style={{
+                  border: '1px solid rgba(212, 168, 67, 0.55)',
+                  background: '#D4A843',
+                  color: '#0a1432',
+                }}
+              >
+                {t('settings.reminderConfirm')}
+              </button>
+              <button
+                type="button"
+                onClick={cancelReminderTimeConfirm}
+                className="mt-3 w-full rounded-xl border py-3 text-base font-medium transition"
+                style={{
+                  borderColor: 'var(--glass-border)',
+                  background: 'transparent',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                {t('settings.reminderCancel')}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}

@@ -16,20 +16,13 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import { getLocalDateKey, profileLastActiveDateKey } from '../lib/presenceStreak'
+
+/** Re-export for callers that imported from this hook */
+export { getLocalDateKey }
 
 /** Canonical order for UI (Mon → Sun); must match stored short names */
 export const WEEK_DAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-
-/**
- * Local calendar YYYY-MM-DD
- * @param {Date} [d]
- */
-export function getLocalDateKey(d = new Date()) {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
 
 /**
  * Most recent Saturday (00:00 local) as YYYY-MM-DD — week anchor for resets.
@@ -92,7 +85,7 @@ export function parseWeeklyActiveDaysRow(row) {
 
   if (arr.length > 0) return arr
 
-  const last = row.last_active_date != null ? String(row.last_active_date).slice(0, 10) : null
+  const last = profileLastActiveDateKey(row.last_active_date)
   if (last && last === getLocalDateKey()) {
     return [getShortDayName()]
   }
@@ -123,7 +116,7 @@ export async function syncWeeklyActiveDays(userId) {
   }
   if (!row) return { ok: false }
 
-  const prevLast = row.last_active_date ? String(row.last_active_date).slice(0, 10) : null
+  const prevLast = profileLastActiveDateKey(row.last_active_date)
   const satKey = getMostRecentSaturdayDateKey()
   const shortDay = getShortDayName()
   const raw = row.weekly_active_days

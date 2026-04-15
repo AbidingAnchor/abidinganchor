@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { VERSE_FLASHCARDS, FLASHCARD_FILTER_OPTIONS } from '../data/verseFlashcards'
 import { useAuth } from '../context/AuthContext'
 import { userStorageKey } from '../utils/userStorage'
@@ -62,10 +62,21 @@ export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertica
   const [idx, setIdx] = useState(0)
   const [flipped, setFlipped] = useState(false)
   const [checkFlash, setCheckFlash] = useState(false)
+  const [filterMenuOpen, setFilterMenuOpen] = useState(false)
+  const filterMenuRef = useRef(null)
 
   useEffect(() => {
     setProgress(readProgress(progressKey))
   }, [progressKey])
+
+  useEffect(() => {
+    if (!filterMenuOpen) return
+    const onDoc = (e) => {
+      if (filterMenuRef.current && !filterMenuRef.current.contains(e.target)) setFilterMenuOpen(false)
+    }
+    document.addEventListener('mousedown', onDoc)
+    return () => document.removeEventListener('mousedown', onDoc)
+  }, [filterMenuOpen])
 
   const filtered = useMemo(
     () => VERSE_FLASHCARDS.filter((v) => matchesFilter(v, category)),
@@ -143,6 +154,11 @@ export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertica
           }
           .verse-flip-card .flip-back { transform: rotateY(180deg); }
           @keyframes check-pop { 0%{transform:scale(0.6);opacity:0} 60%{transform:scale(1.08);opacity:1} 100%{transform:scale(1);opacity:1} }
+          .verse-flashcard-filter-scroll { scrollbar-width: thin; scrollbar-color: rgba(212,168,67,0.5) rgba(255,255,255,0.06); }
+          .verse-flashcard-filter-scroll::-webkit-scrollbar { width: 6px; }
+          .verse-flashcard-filter-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 4px; }
+          .verse-flashcard-filter-scroll::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.45); border-radius: 4px; }
+          .verse-flashcard-filter-option:hover { background: rgba(212, 168, 67, 0.12) !important; }
         `}
       </style>
 
@@ -165,21 +181,58 @@ export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertica
             </p>
           </div>
         </div>
-        <select
-          value={category}
-          onChange={(e) => {
-            setCategory(e.target.value)
-            setIdx(0)
-            setFlipped(false)
-          }}
-          className="glass-input-field w-full rounded-lg px-2 py-2 text-xs text-white sm:max-w-[200px]"
-        >
-          {FLASHCARD_FILTER_OPTIONS.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+        <div className="relative w-full sm:max-w-[220px]" ref={filterMenuRef}>
+          <button
+            type="button"
+            onClick={() => setFilterMenuOpen((o) => !o)}
+            className="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-white sm:max-w-[220px]"
+            style={{
+              background: 'rgba(15, 23, 41, 0.92)',
+              border: '1px solid rgba(212, 168, 67, 0.35)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+            }}
+            aria-expanded={filterMenuOpen}
+            aria-haspopup="listbox"
+          >
+            <span className="truncate">{category}</span>
+            <span className="shrink-0 text-[#D4A843]/90" aria-hidden>
+              ▼
+            </span>
+          </button>
+          {filterMenuOpen ? (
+            <ul
+              className="verse-flashcard-filter-scroll absolute right-0 top-full z-30 mt-1 max-h-[min(280px,50vh)] w-full min-w-[200px] overflow-y-auto rounded-lg py-1 shadow-xl sm:max-w-[220px]"
+              role="listbox"
+              style={{
+                background: 'rgba(12, 20, 38, 0.98)',
+                border: '1px solid rgba(212, 168, 67, 0.35)',
+                boxShadow: '0 12px 40px rgba(0,0,0,0.45)',
+              }}
+            >
+              {FLASHCARD_FILTER_OPTIONS.map((c) => (
+                <li key={c} role="option" aria-selected={c === category}>
+                  <button
+                    type="button"
+                    className="verse-flashcard-filter-option w-full px-3 py-2.5 text-left text-xs text-white transition-colors"
+                    style={
+                      c === category
+                        ? { background: 'rgba(212, 168, 67, 0.22)', color: '#fff' }
+                        : { background: 'transparent' }
+                    }
+                    onClick={() => {
+                      setCategory(c)
+                      setIdx(0)
+                      setFlipped(false)
+                      setFilterMenuOpen(false)
+                    }}
+                  >
+                    {c}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
       </div>
 
       <div className="flip-wrap relative w-full shrink-0">

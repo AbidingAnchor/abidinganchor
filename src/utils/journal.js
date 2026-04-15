@@ -1,9 +1,10 @@
 import { supabase } from '../lib/supabase'
 import { userStorageKey } from './userStorage'
-import { getLocalDateKey, WEEK_DAY_SHORT } from '../hooks/useStreakTracker'
+import { getLocalCalendarDateKey } from './localCalendarDate'
+import { WEEK_DAY_SHORT } from '../hooks/useStreakTracker'
 
 function localYmdFromDate(d) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  return getLocalCalendarDateKey(d)
 }
 
 function normalizeActivityYmd(value) {
@@ -23,11 +24,11 @@ function localCalendarYmdFromCreatedAt(value) {
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
     const [y, m, d] = s.split('-').map(Number)
     if (!y || !m || !d) return ''
-    return getLocalDateKey(new Date(y, m - 1, d, 12, 0, 0, 0))
+    return getLocalCalendarDateKey(new Date(y, m - 1, d, 12, 0, 0, 0))
   }
   const t = new Date(s)
   if (Number.isNaN(t.getTime())) return ''
-  return getLocalDateKey(t)
+  return getLocalCalendarDateKey(t)
 }
 
 function isPlainDateOnlyString(value) {
@@ -52,13 +53,13 @@ function getJournalMondayWeekContext() {
   const allowed = new Set()
   for (let i = 0; i < 7; i++) {
     const dt = new Date(y, m, d + i, 12, 0, 0, 0)
-    const ymdKey = getLocalDateKey(dt)
+    const ymdKey = getLocalCalendarDateKey(dt)
     byShort[WEEK_DAY_SHORT[i]] = ymdKey
     allowed.add(ymdKey)
   }
   const startMs = new Date(y, m, d, 0, 0, 0, 0).getTime()
   const endMs = new Date(y, m, d + 7, 0, 0, 0, 0).getTime()
-  return { monYmd: getLocalDateKey(new Date(y, m, d)), byShort, allowed, startMs, endMs }
+  return { monYmd: getLocalCalendarDateKey(new Date(y, m, d)), byShort, allowed, startMs, endMs }
 }
 
 /**
@@ -210,7 +211,7 @@ export async function logJournalWritingDay(userId, activityYmd) {
 function addDaysToYmdString(ymd, deltaDays) {
   const [y, m, d] = ymd.split('-').map(Number)
   const next = new Date(y, m - 1, d + deltaDays, 12, 0, 0, 0)
-  return getLocalDateKey(next)
+  return getLocalCalendarDateKey(next)
 }
 
 /**
@@ -251,7 +252,7 @@ export async function fetchJournalActivityLocalYmds(userId) {
 export function computeWritingStreakFromActivityDates(ymdStrings) {
   const dates = new Set((ymdStrings || []).map((s) => normalizeActivityYmd(s)).filter(Boolean))
   if (dates.size === 0) return 0
-  const today = getLocalDateKey(new Date())
+  const today = getLocalCalendarDateKey(new Date())
   let cursor = today
   if (!dates.has(cursor)) {
     cursor = addDaysToYmdString(today, -1)

@@ -11,6 +11,7 @@
  */
 
 import { userStorageKey } from '../utils/userStorage'
+import { getLocalCalendarDateKey } from '../utils/localCalendarDate'
 
 const HISTORY_CAP = 120
 
@@ -29,15 +30,35 @@ function defaultState() {
 }
 
 /**
- * Calendar day in the user’s local timezone (not UTC).
+ * Local calendar YYYY-MM-DD — delegates to {@link getLocalCalendarDateKey} (same as Home greeting / theme).
  * @param {Date} [d]
  * @returns {string}
  */
 export function getLocalDateKey(d = new Date()) {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
+  return getLocalCalendarDateKey(d)
+}
+
+/**
+ * Normalizes profiles.last_active_date from Supabase for comparison with {@link getLocalDateKey} ("today").
+ * Plain Postgres `date` strings (YYYY-MM-DD only) are used as stored calendar dates.
+ * ISO strings with a time/timezone are converted to the user's local calendar day (avoids UTC `.slice(0,10)` bugs).
+ * @param {unknown} raw
+ * @returns {string | null}
+ */
+export function profileLastActiveDateKey(raw) {
+  if (raw == null || raw === '') return null
+  const s = String(raw).trim()
+  if (!s) return null
+  if (s.includes('T') || /^\d{4}-\d{2}-\d{2}\s/.test(s)) {
+    const d = new Date(s)
+    if (Number.isNaN(d.getTime())) return null
+    return getLocalDateKey(d)
+  }
+  const head = s.slice(0, 10)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(head)) return head
+  const d = new Date(s)
+  if (Number.isNaN(d.getTime())) return null
+  return getLocalDateKey(d)
 }
 
 /**
@@ -217,10 +238,7 @@ export function getPresenceViewModel(state) {
 export function alignPresenceLocalWithProfile(userId, profile) {
   if (!userId || !profile) return
   const today = getLocalDateKey()
-  const last =
-    profile.last_active_date != null && profile.last_active_date !== ''
-      ? String(profile.last_active_date).slice(0, 10)
-      : null
+  const last = profileLastActiveDateKey(profile.last_active_date)
   const prev = loadPresenceState(userId)
   const history = [...(prev.completionHistory || [])]
   if (last === today && !history.includes(today)) {

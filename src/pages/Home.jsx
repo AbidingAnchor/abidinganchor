@@ -2,10 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { getDailyEncounter } from '../utils/dailyEncounter'
+import { getLocalCalendarDateKey } from '../utils/localCalendarDate'
 import {
   alignPresenceLocalWithProfile,
-  getLocalDateKey,
   getPresenceViewModel,
+  profileLastActiveDateKey,
   syncPresenceState,
   isCompletedToday,
 } from '../lib/presenceStreak'
@@ -63,11 +64,8 @@ function Home({ onOpenWorship, worshipStatus }) {
   const presenceVm = useMemo(() => {
     if (!user?.id) return { completedToday: false, currentStreak: 0 }
     if (profile?.id === user.id) {
-      const today = getLocalDateKey()
-      const last =
-        profile.last_active_date != null && profile.last_active_date !== ''
-          ? String(profile.last_active_date).slice(0, 10)
-          : null
+      const today = getLocalCalendarDateKey()
+      const last = profileLastActiveDateKey(profile.last_active_date)
       let streak = Number(profile.reading_streak) || 0
       if (last === today) streak = Math.max(streak, 1)
       if (presenceOptimisticDone && last !== today) streak = Math.max(streak, 1)
@@ -86,11 +84,8 @@ function Home({ onOpenWorship, worshipStatus }) {
 
   /** Consecutive-day streak from profile; if `last_active_date` is today (or optimistic check-in), show at least 1. */
   const dailyStreakCount = useMemo(() => {
-    const today = getLocalDateKey()
-    const last =
-      profile?.last_active_date != null && profile?.last_active_date !== ''
-        ? String(profile.last_active_date).slice(0, 10)
-        : null
+    const today = getLocalCalendarDateKey()
+    const last = profileLastActiveDateKey(profile?.last_active_date)
     let n = Number(profile?.reading_streak) || 0
     if (last === today) n = Math.max(n, 1)
     if (presenceOptimisticDone && profile?.id === user?.id && last !== today) n = Math.max(n, 1)
@@ -166,8 +161,8 @@ function Home({ onOpenWorship, worshipStatus }) {
           )
         }
 
-        const today = getLocalDateKey()
-        const last = row.last_active_date != null ? String(row.last_active_date).slice(0, 10) : null
+        const today = getLocalCalendarDateKey()
+        const last = profileLastActiveDateKey(row.last_active_date)
 
         if (streakResult?.ok === false && last !== today) {
           console.warn('[presence-check-in] streak apply failed and last_active_date is not today — treating as failure', {
@@ -238,8 +233,8 @@ function Home({ onOpenWorship, worshipStatus }) {
       setPresenceSaveError(t('home.presenceSaveFailed'))
       return
     }
-    const today = getLocalDateKey()
-    const lastDb = profile?.last_active_date ? String(profile.last_active_date).slice(0, 10) : null
+    const today = getLocalCalendarDateKey()
+    const lastDb = profileLastActiveDateKey(profile?.last_active_date)
     if (lastDb === today) {
       console.log('[presence-check-in] handlePresenceComplete: already checked in today (last_active_date) — no-op', {
         lastDb,
@@ -284,19 +279,16 @@ function Home({ onOpenWorship, worshipStatus }) {
   }, [user?.id])
 
   useEffect(() => {
-    const today = getLocalDateKey()
-    const last = profile?.last_active_date ? String(profile.last_active_date).slice(0, 10) : null
+    const today = getLocalCalendarDateKey()
+    const last = profileLastActiveDateKey(profile?.last_active_date)
     if (last === today) setPresenceOptimisticDone(false)
   }, [profile?.last_active_date])
 
   /** Repair legacy rows where last_active_date is today but reading_streak was never incremented. */
   useEffect(() => {
     if (!user?.id || !profile || profile.id !== user.id) return
-    const today = getLocalDateKey()
-    const last =
-      profile.last_active_date != null && profile.last_active_date !== ''
-        ? String(profile.last_active_date).slice(0, 10)
-        : null
+    const today = getLocalCalendarDateKey()
+    const last = profileLastActiveDateKey(profile.last_active_date)
     const rs = Number(profile.reading_streak) || 0
     if (last !== today || rs !== 0) return
     const key = `${user.id}:${today}`
@@ -307,8 +299,8 @@ function Home({ onOpenWorship, worshipStatus }) {
 
   const markPresenceFromEngagement = useCallback(async () => {
     if (!user?.id) return
-    const today = getLocalDateKey()
-    const lastDb = profile?.last_active_date ? String(profile.last_active_date).slice(0, 10) : null
+    const today = getLocalCalendarDateKey()
+    const lastDb = profileLastActiveDateKey(profile?.last_active_date)
     if (lastDb === today || isCompletedToday(syncPresenceState(user.id))) return
     try {
       const result = await syncStreakToSupabase()
@@ -514,6 +506,7 @@ function Home({ onOpenWorship, worshipStatus }) {
     return () => { active = false }
   }, [user?.id, toastTrigger])
 
+  // Presence streak + last_active_date use getLocalCalendarDateKey() — same local Date as this (not UTC).
   const hour = new Date().getHours()
   let timeGreeting = ''
   let timeEmoji = ''

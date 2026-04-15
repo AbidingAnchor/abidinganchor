@@ -41,7 +41,6 @@ export default function EditProfile() {
 
       setLocalAvatarUrl(data.avatar_url || null)
       setUsername(data.username || '')
-      setInitialUsername(data.username || '')
       setUsernameChanges(Number(data.username_changes) || 0)
       setBio(data.bio || '')
       setFavoriteVerse(data.favorite_verse || '')

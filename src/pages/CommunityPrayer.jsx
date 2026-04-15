@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
+import { getLocalCalendarDateKey } from '../utils/localCalendarDate'
 import { useAuth } from '../context/AuthContext'
 import { userStorageKey } from '../utils/userStorage'
 
@@ -93,7 +94,7 @@ export default function CommunityPrayer() {
 
   const loadActiveUsersCount = useCallback(async () => {
     try {
-      const today = new Date().toISOString().slice(0, 10)
+      const today = getLocalCalendarDateKey()
       const { data, error } = await supabase
         .from('profiles')
         .select('id', { count: 'exact', head: true })

@@ -1,9 +1,9 @@
 import { supabase } from '../lib/supabase'
 import { applyDailyStreakOnAppOpen } from '../lib/dailyAppStreak'
-import { getLocalDateKey } from '../lib/presenceStreak'
+import { getLocalCalendarDateKey } from './localCalendarDate'
 
 function todayString(date = new Date()) {
-  return getLocalDateKey(date)
+  return getLocalCalendarDateKey(date)
 }
 
 export async function getStreak() {
