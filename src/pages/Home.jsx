@@ -50,12 +50,15 @@ function Home({ onOpenWorship, worshipStatus }) {
   const [journalCount, setJournalCount] = useState(0)
   const [suppressPersonalWelcome, setSuppressPersonalWelcome] = useState(false)
   const [presenceJustCompleted, setPresenceJustCompleted] = useState(false)
+  /** True while a check-in is in flight so the CTA shows the completed state immediately. */
+  const [presenceOptimisticDone, setPresenceOptimisticDone] = useState(false)
   const [presenceCtaSyncing, setPresenceCtaSyncing] = useState(false)
   const [presenceSaveError, setPresenceSaveError] = useState(null)
   const presenceGlowTimerRef = useRef(null)
   /** Reuse one in-flight sync promise so concurrent callers await the same work (no silent `null`). */
   const streakSyncPromiseRef = useRef(null)
   const presenceCtaBusyRef = useRef(false)
+  const legacyStreakRepairKeyRef = useRef('')
 
   const presenceVm = useMemo(() => {
     if (!user?.id) return { completedToday: false, currentStreak: 0 }
@@ -67,20 +70,21 @@ function Home({ onOpenWorship, worshipStatus }) {
           : null
       let streak = Number(profile.reading_streak) || 0
       if (last === today) streak = Math.max(streak, 1)
+      if (presenceOptimisticDone && last !== today) streak = Math.max(streak, 1)
       return {
-        completedToday: last === today,
+        completedToday: last === today || presenceOptimisticDone,
         currentStreak: streak,
       }
     }
     return getPresenceViewModel(syncPresenceState(user.id))
-  }, [user?.id, profile?.id, profile?.last_active_date, profile?.reading_streak, profile])
+  }, [user?.id, profile?.id, profile?.last_active_date, profile?.reading_streak, profile, presenceOptimisticDone])
 
   const mergedWeekActiveDays = useMemo(() => {
     const set = new Set([...profileWeekActiveDays, ...journalWeekActiveDays])
     return WEEK_DAY_SHORT.filter((d) => set.has(d))
   }, [profileWeekActiveDays, journalWeekActiveDays])
 
-  /** Consecutive-day streak from profile; if `last_active_date` is today, show at least 1. */
+  /** Consecutive-day streak from profile; if `last_active_date` is today (or optimistic check-in), show at least 1. */
   const dailyStreakCount = useMemo(() => {
     const today = getLocalDateKey()
     const last =
@@ -89,8 +93,9 @@ function Home({ onOpenWorship, worshipStatus }) {
         : null
     let n = Number(profile?.reading_streak) || 0
     if (last === today) n = Math.max(n, 1)
+    if (presenceOptimisticDone && profile?.id === user?.id && last !== today) n = Math.max(n, 1)
     return n
-  }, [profile?.reading_streak, profile?.last_active_date])
+  }, [profile?.reading_streak, profile?.last_active_date, profile?.id, user?.id, presenceOptimisticDone])
 
   const syncStreakToSupabase = useCallback(async () => {
     const uid = user?.id
@@ -136,6 +141,7 @@ function Home({ onOpenWorship, worshipStatus }) {
         console.log('[presence-check-in] step 3 PostgREST response:', { data: row, error: selectError })
 
         if (selectError) {
+          console.error('[presence-check-in] step 3 select error (full)', JSON.stringify(selectError, null, 2), selectError)
           console.warn('[presence-check-in] step 3 select error — calling refreshProfile()', selectError)
           await withAsyncTimeout(refreshProfile(), STREAK_SYNC_TIMEOUT_MS, 'refreshProfile after select error')
           return {
@@ -247,11 +253,13 @@ function Home({ onOpenWorship, worshipStatus }) {
     }
     presenceCtaBusyRef.current = true
     setPresenceSaveError(null)
+    setPresenceOptimisticDone(true)
     setPresenceCtaSyncing(true)
     try {
       const result = await syncStreakToSupabase()
       console.log('[presence-check-in] handlePresenceComplete: sync result', result)
       if (!result?.ok) {
+        setPresenceOptimisticDone(false)
         const msg =
           result?.code === 'streak_apply_failed'
             ? t('home.presenceSaveFailedDetail')
@@ -262,6 +270,7 @@ function Home({ onOpenWorship, worshipStatus }) {
       setPresenceJustCompleted(true)
       finishPresenceGlow()
     } catch (err) {
+      setPresenceOptimisticDone(false)
       console.error('[presence-check-in] handlePresenceComplete unexpected throw', err)
       setPresenceSaveError(err?.message || t('home.presenceSaveFailed'))
     } finally {
@@ -269,6 +278,32 @@ function Home({ onOpenWorship, worshipStatus }) {
       setPresenceCtaSyncing(false)
     }
   }, [user?.id, profile?.last_active_date, syncStreakToSupabase, finishPresenceGlow, t])
+
+  useEffect(() => {
+    setPresenceOptimisticDone(false)
+  }, [user?.id])
+
+  useEffect(() => {
+    const today = getLocalDateKey()
+    const last = profile?.last_active_date ? String(profile.last_active_date).slice(0, 10) : null
+    if (last === today) setPresenceOptimisticDone(false)
+  }, [profile?.last_active_date])
+
+  /** Repair legacy rows where last_active_date is today but reading_streak was never incremented. */
+  useEffect(() => {
+    if (!user?.id || !profile || profile.id !== user.id) return
+    const today = getLocalDateKey()
+    const last =
+      profile.last_active_date != null && profile.last_active_date !== ''
+        ? String(profile.last_active_date).slice(0, 10)
+        : null
+    const rs = Number(profile.reading_streak) || 0
+    if (last !== today || rs !== 0) return
+    const key = `${user.id}:${today}`
+    if (legacyStreakRepairKeyRef.current === key) return
+    legacyStreakRepairKeyRef.current = key
+    void syncStreakToSupabase()
+  }, [user?.id, profile?.id, profile?.last_active_date, profile?.reading_streak, syncStreakToSupabase])
 
   const markPresenceFromEngagement = useCallback(async () => {
     if (!user?.id) return

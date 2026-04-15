@@ -97,18 +97,20 @@ async function ensureProfile(user) {
     }
 
     const isNewProfile = !existingProfile
-    const today = new Date().toISOString().split('T')[0]
     const baseRow = {
       id: user.id,
       email: user.email ?? '',
       full_name: user.user_metadata?.full_name ?? user.user_metadata?.name ?? '',
       bible_version: 'KJV',
-      last_active_date: today,
       onboarding_complete: existingProfile?.onboarding_complete ?? false,
     }
-    /** Fresh accounts must not inherit another session’s client state; DB defaults anchor Genesis 1. */
+    /**
+     * New rows: no last_active_date until the first daily check-in (local calendar).
+     * Do not set last_active_date on upsert for existing users — streak + presence own that column.
+     */
     const newUserDefaults = isNewProfile
       ? {
+          last_active_date: null,
           reading_streak: 0,
           journal_streak: 0,
           prayer_streak: 0,

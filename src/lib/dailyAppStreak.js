@@ -6,6 +6,32 @@ import { supabase } from './supabase'
 import { calendarDaysBetween, getLocalDateKey, getYesterdayDateKey } from './presenceStreak'
 
 /**
+ * Normalize Postgres date / ISO string to YYYY-MM-DD for comparisons.
+ * @param {unknown} raw
+ * @returns {string | null}
+ */
+function normalizeDateKey(raw) {
+  if (raw == null || raw === '') return null
+  const s = String(raw).trim()
+  if (!s) return null
+  const ymd = s.slice(0, 10)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(ymd)) return ymd
+  try {
+    const d = new Date(s)
+    if (Number.isNaN(d.getTime())) return null
+    return getLocalDateKey(d)
+  } catch {
+    return null
+  }
+}
+
+function parseStreak(v) {
+  const n = Number(v)
+  if (!Number.isFinite(n)) return 0
+  return Math.max(0, Math.floor(n))
+}
+
+/**
  * @param {string} userId
  * @returns {Promise<{ ok: boolean, currentStreak: number, skipped?: boolean }>}
  */
@@ -26,43 +52,55 @@ export async function applyDailyStreakOnAppOpen(userId) {
   })
 
   if (error) {
-    console.warn('dailyAppStreak fetch:', error)
+    console.error('[dailyAppStreak] profiles SELECT failed (exact error)', {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      raw: error,
+    })
     return { ok: false, currentStreak: 0 }
   }
   if (!profile) return { ok: false, currentStreak: 0 }
 
-  const last = profile.last_active_date ? String(profile.last_active_date).slice(0, 10) : null
+  let last = normalizeDateKey(profile.last_active_date)
+  const prevStreak = parseStreak(profile.reading_streak)
 
+  // Future calendar date in DB (UTC mismatch, bad row): ignore for streak — treat as no prior day.
   if (last && last > today) {
+    console.warn('[dailyAppStreak] last_active_date is after local today — ignoring for streak math', {
+      last,
+      today,
+      prevStreak,
+    })
+    last = null
+  }
+
+  // Already counted today with a non-zero streak — idempotent skip (no second UPDATE).
+  if (last === today && prevStreak >= 1) {
     return {
       ok: true,
       skipped: true,
-      currentStreak: Number(profile.reading_streak) || 0,
+      currentStreak: prevStreak,
     }
   }
 
-  if (last === today) {
-    return {
-      ok: true,
-      skipped: true,
-      currentStreak: Number(profile.reading_streak) || 0,
-    }
-  }
-
-  const prev = Number(profile.reading_streak) || 0
+  // Same calendar day but streak still 0 (legacy / partial row): must UPDATE, not skip.
   const yesterday = getYesterdayDateKey(today)
   let next = 1
 
   if (last === yesterday) {
-    next = prev + 1
+    next = Math.max(1, prevStreak + 1)
   } else if (!last) {
     next = 1
+  } else if (last === today) {
+    next = Math.max(1, prevStreak + 1)
   } else {
     const gap = calendarDaysBetween(last, today)
-    next = gap >= 2 ? 1 : prev + 1
+    next = gap >= 2 ? 1 : Math.max(1, prevStreak + 1)
   }
 
-  const longestStreak = Math.max(Number(profile.longest_streak) || 0, next)
+  const longestStreak = Math.max(parseStreak(profile.longest_streak), next)
 
   let streakStartDate = profile.streak_start_date || today
   if (next === 1 && last && calendarDaysBetween(last, today) >= 2) {
@@ -91,14 +129,26 @@ export async function applyDailyStreakOnAppOpen(userId) {
   })
 
   if (updateError) {
-    console.warn('dailyAppStreak update:', updateError)
-    return { ok: false, currentStreak: prev }
+    console.error('[dailyAppStreak] profiles UPDATE failed (exact error)', {
+      message: updateError.message,
+      code: updateError.code,
+      details: updateError.details,
+      hint: updateError.hint,
+      raw: updateError,
+    })
+    return { ok: false, currentStreak: prevStreak }
   }
 
   if (!updatedRows?.length) {
-    console.warn('[dailyAppStreak] UPDATE returned 0 rows (check RLS or row id)', { userId })
-    return { ok: false, currentStreak: prev }
+    console.error('[dailyAppStreak] UPDATE returned 0 rows (RLS denied, missing row, or id mismatch)', {
+      userId,
+      hint: 'Check profiles UPDATE policy and that auth.uid() = id',
+    })
+    return { ok: false, currentStreak: prevStreak }
   }
 
-  return { ok: true, currentStreak: next }
+  const written = updatedRows[0]
+  const outStreak = Math.max(parseStreak(written.reading_streak), next, 1)
+
+  return { ok: true, currentStreak: outStreak }
 }

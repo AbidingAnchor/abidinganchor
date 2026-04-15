@@ -170,11 +170,7 @@ export default function DailyEncounterCard({
           {presence.completedToday ? (
             <div className="text-center">
               <p className="text-sm font-semibold text-[#8B6200] mb-1">{t('home.presenceDoneLine')}</p>
-              <p className="text-xs text-white/75 mb-0">
-                {presence.justCompleted
-                  ? t('home.presenceStreakSaved')
-                  : t('home.presenceComeBack')}
-              </p>
+              <p className="text-xs text-white/75 mb-0">{t('home.presenceComeBack')}</p>
             </div>
           ) : (
             <>
