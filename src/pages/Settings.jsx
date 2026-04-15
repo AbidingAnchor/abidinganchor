@@ -934,16 +934,21 @@ export default function Settings() {
               <style>
                 {`
                   .settings-reminder-time-input {
-                    color-scheme: dark;
+                    color-scheme: light;
                     width: 100%;
                     border-radius: 12px;
                     padding: 12px 14px;
                     font-size: 16px;
                     cursor: pointer;
-                    background: rgba(12, 20, 38, 0.96);
-                    border: 1px solid rgba(212, 168, 67, 0.4);
-                    color: #ffffff;
-                    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+                    background: rgba(255, 255, 255, 0.9);
+                    border: 1px solid rgba(24, 38, 69, 0.75);
+                    color: #142447;
+                    box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
+                    -webkit-text-fill-color: #142447;
+                  }
+                  .settings-reminder-time-input::placeholder {
+                    color: rgba(20, 36, 71, 0.72);
+                    opacity: 1;
                   }
                   .settings-reminder-time-input::-webkit-calendar-picker-indicator {
                     cursor: pointer;
@@ -957,16 +962,16 @@ export default function Settings() {
                     background-position: center;
                   }
                   .settings-reminder-time-input::-webkit-datetime-edit-fields-wrapper { padding: 0; }
-                  .settings-reminder-time-input::-webkit-datetime-edit-text { color: rgba(255,255,255,0.55); padding: 0 3px; }
+                  .settings-reminder-time-input::-webkit-datetime-edit-text { color: rgba(20, 36, 71, 0.7); padding: 0 3px; }
                   .settings-reminder-time-input::-webkit-datetime-edit-hour-field,
                   .settings-reminder-time-input::-webkit-datetime-edit-minute-field,
                   .settings-reminder-time-input::-webkit-datetime-edit-ampm-field {
-                    color: #ffffff;
+                    color: #142447;
                   }
                   .settings-reminder-time-input:focus {
                     outline: none;
-                    border-color: rgba(212, 168, 67, 0.65);
-                    box-shadow: 0 0 0 2px rgba(212, 168, 67, 0.2);
+                    border-color: rgba(24, 38, 69, 0.95);
+                    box-shadow: 0 0 0 2px rgba(24, 38, 69, 0.2);
                   }
                 `}
               </style>
@@ -990,9 +995,9 @@ export default function Settings() {
               marginTop: dailyReminderEnabled ? '12px' : '0',
               width: '100%',
               borderRadius: '12px',
-              border: '1px solid rgba(212,168,67,0.55)',
-              background: 'rgba(212,168,67,0.16)',
-              color: '#f8e8bb',
+              border: '1px solid #D4AF37',
+              background: '#D4AF37',
+              color: '#1a1a1a',
               padding: '10px 12px',
               fontSize: '14px',
               fontWeight: 600,
