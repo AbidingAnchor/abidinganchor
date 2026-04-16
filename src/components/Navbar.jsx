@@ -65,7 +65,11 @@ export default function Navbar() {
     }
   }, [profile?.avatar_url])
 
-  const displayName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email || ''
+  const profileFirst =
+    profile?.full_name?.trim()?.split(/\s+/)?.[0] ||
+    user?.user_metadata?.full_name?.trim()?.split(/\s+/)?.[0] ||
+    ''
+  const displayName = profileFirst || ''
   const rawAvatarUrl =
     localAvatarUrl ??
     profile?.avatar_url ??
@@ -92,60 +96,56 @@ export default function Navbar() {
         }}
       >
         {/* Profile avatar */}
-        {displayName ? (
-          <div
-            key={localAvatarUrl || 'no-avatar'}
+        <div
+          key={localAvatarUrl || 'no-avatar'}
+          style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '50%',
+            background: '#D4A843',
+            position: 'relative',
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 2px 8px rgba(212,168,67,0.3)',
+            border: rawAvatarUrl ? '2px solid rgba(212,168,67,0.4)' : 'none',
+          }}
+        >
+          <span
             style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: '#D4A843',
-              position: 'relative',
-              overflow: 'hidden',
+              position: 'absolute',
+              inset: 0,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(212,168,67,0.3)',
-              border: rawAvatarUrl ? '2px solid rgba(212,168,67,0.4)' : 'none',
+              color: '#fff',
+              fontSize: '14px',
+              fontWeight: 600,
+              zIndex: 0,
             }}
           >
-            <span
+            {(displayName || '?').charAt(0).toUpperCase()}
+          </span>
+          {rawAvatarUrl ? (
+            <img
+              src={localAvatarUrl || profile?.avatar_url}
+              alt="Profile"
+              onError={(e) => {
+                e.target.style.display = 'none'
+              }}
               style={{
                 position: 'absolute',
                 inset: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#fff',
-                fontSize: '14px',
-                fontWeight: 600,
-                zIndex: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                borderRadius: '50%',
+                zIndex: 1,
               }}
-            >
-              {displayName.charAt(0).toUpperCase()}
-            </span>
-            {rawAvatarUrl ? (
-              <img
-                src={localAvatarUrl || profile?.avatar_url}
-                alt="Profile"
-                onError={(e) => {
-                  e.target.style.display = 'none'
-                }}
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  borderRadius: '50%',
-                  zIndex: 1,
-                }}
-              />
-            ) : null}
-          </div>
-        ) : (
-          <div style={{ width: '36px' }} />
-        )}
+            />
+          ) : null}
+        </div>
 
         {/* Title */}
         <h1

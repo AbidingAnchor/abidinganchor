@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { clearAbidingAnchorUserStorage, setActiveStorageUserId, userStorageKey } from '../utils/userStorage'
+import { profileFullNameFromUser } from '../utils/profileDisplay'
 
 const AuthContext = createContext({})
 
@@ -100,7 +101,7 @@ async function ensureProfile(user) {
     const baseRow = {
       id: user.id,
       email: user.email ?? '',
-      full_name: user.user_metadata?.full_name ?? user.user_metadata?.name ?? '',
+      full_name: profileFullNameFromUser(user),
       bible_version: 'KJV',
       onboarding_complete: existingProfile?.onboarding_complete ?? false,
     }
@@ -256,13 +257,25 @@ export function AuthProvider({ children }) {
 
   const signUp = async (email, password, fullName) => {
     try {
+      const trimmedName = typeof fullName === 'string' ? fullName.trim() : ''
+      if (!trimmedName) {
+        return { data: null, error: { message: 'Display name is required.' }, usedEmailFallback: false }
+      }
+      const emailNorm = email.trim().toLowerCase()
+      if (trimmedName.toLowerCase() === emailNorm) {
+        return {
+          data: null,
+          error: { message: 'Display name cannot be your email address.' },
+          usedEmailFallback: false,
+        }
+      }
       const emailRedirectTo =
         typeof window !== 'undefined' ? `${window.location.origin}/` : undefined
       const { data, error } = await supabase.auth.signUp({
-        email: email.trim().toLowerCase(),
+        email: emailNorm,
         password,
         options: {
-          data: { full_name: fullName },
+          data: { full_name: trimmedName },
           ...(emailRedirectTo ? { emailRedirectTo } : {}),
         },
       })

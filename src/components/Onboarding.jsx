@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { userStorageKey } from '../utils/userStorage'
+import { initialDisplayNameFromAuth } from '../utils/profileDisplay'
 
 const GROWTH_GOALS = [
   { id: 'prayer', icon: '🙏', label: 'Deeper Prayer Life' },
@@ -36,9 +37,7 @@ const APP_TOUR_FEATURES = [
 export default function Onboarding({ onComplete }) {
   const { user, profile } = useAuth()
   const [screen, setScreen] = useState(1)
-  const [displayName, setDisplayName] = useState(
-    () => profile?.full_name || user?.user_metadata?.full_name || user?.user_metadata?.name || '',
-  )
+  const [displayName, setDisplayName] = useState(() => initialDisplayNameFromAuth(user, profile))
   const [dateOfBirth, setDateOfBirth] = useState(() => profile?.date_of_birth || '')
   const [selectedGoals, setSelectedGoals] = useState([])
   const [faithDuration, setFaithDuration] = useState('')

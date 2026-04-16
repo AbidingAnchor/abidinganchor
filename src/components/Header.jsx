@@ -58,7 +58,11 @@ export default function Header() {
     loadAvatar()
   }, [user?.id, refreshProfile])
 
-  const displayName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email || ''
+  const profileFirst =
+    profile?.full_name?.trim()?.split(/\s+/)?.[0] ||
+    user?.user_metadata?.full_name?.trim()?.split(/\s+/)?.[0] ||
+    ''
+  const displayName = profileFirst || ''
   const rawAvatarUrl = useMemo(
     () =>
       localAvatarUrl ??
@@ -87,8 +91,7 @@ export default function Header() {
       }}
     >
       {/* Profile avatar (settings trigger) */}
-      {displayName ? (
-        <button
+      <button
           type="button"
           onClick={() => navigate('/settings')}
           aria-label={t('header.settings')}
@@ -123,7 +126,7 @@ export default function Header() {
               zIndex: 0,
             }}
           >
-            {displayName.charAt(0).toUpperCase()}
+            {(displayName || '?').charAt(0).toUpperCase()}
           </span>
           {rawAvatarUrl ? (
             <img
@@ -144,9 +147,6 @@ export default function Header() {
             />
           ) : null}
         </button>
-      ) : (
-        <div style={{ width: '36px' }} />
-      )}
 
       {/* Title */}
       <h1

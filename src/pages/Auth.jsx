@@ -11,8 +11,10 @@ function isValidEmail(email) {
 
 export default function Auth() {
   const { user, signIn, signUp } = useAuth()
+  const [authView, setAuthView] = useState('signIn')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [displayName, setDisplayName] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
@@ -105,7 +107,7 @@ export default function Auth() {
       vv?.removeEventListener('resize', recalcFit)
       vv?.removeEventListener('scroll', recalcFit)
     }
-  }, [recalcFit, error, success, loading])
+  }, [recalcFit, error, success, loading, authView, displayName])
 
   if (user) return <Navigate to="/" replace />
 
@@ -124,15 +126,24 @@ export default function Auth() {
     setLoading(false)
   }
 
-  const handleCreateAccount = async () => {
+  const handleSignUp = async (event) => {
+    event.preventDefault()
     setError('')
     setSuccess('')
+    const name = displayName.trim()
     if (!cleanEmail) return setError('Email is required.')
     if (!isValidEmail(cleanEmail)) return setError('Please enter a valid email address.')
     if (!password.trim()) return setError('Password is required.')
     if (password.length < 6) return setError('Password must be at least 6 characters.')
+    if (!name) return setError('Please choose a display name.')
+    if (name.toLowerCase() === cleanEmail) {
+      return setError('Display name cannot be your email address.')
+    }
+    if (name.includes('@')) {
+      return setError('Display name cannot look like an email address.')
+    }
     setLoading(true)
-    const { error: signUpError, usedEmailFallback } = await signUp(cleanEmail, password, '')
+    const { error: signUpError, usedEmailFallback } = await signUp(cleanEmail, password, name)
     if (signUpError) setError(formatAuthErrorMessage(signUpError))
     else if (usedEmailFallback) {
       setSuccess('')
@@ -331,65 +342,160 @@ export default function Auth() {
                       letterSpacing: '0.05em',
                     }}
                   >
-                    Sign In
+                    {authView === 'signIn' ? 'Sign In' : 'Create account'}
                   </h2>
-                  <form
-                    onSubmit={handleSignIn}
-                    className="grid w-full"
-                    style={{ gap: formGap }}
-                  >
-                    <input
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Email"
-                      type="email"
-                      className="app-input w-full"
-                      style={{
-                        borderRadius: '12px',
-                        padding: inputPad,
-                        fontSize: inputFont,
-                        background: 'rgba(0,0,0,0.15)',
-                        color: 'white',
-                        border: '0.5px solid rgba(212,175,55,0.4)',
-                      }}
-                      autoCapitalize="none"
-                      autoCorrect="off"
-                      autoComplete="email"
-                      spellCheck={false}
-                    />
-                    <input
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Password"
-                      type="password"
-                      className="app-input w-full"
-                      style={{
-                        borderRadius: '12px',
-                        padding: inputPad,
-                        fontSize: inputFont,
-                        background: 'rgba(0,0,0,0.15)',
-                        color: 'white',
-                        border: '0.5px solid rgba(212,175,55,0.4)',
-                      }}
-                    />
-                    <button
-                      type="submit"
-                      className="btn-primary w-full"
-                      disabled={loading}
-                      style={{ padding: inputPad, fontSize: inputFont }}
+                  {authView === 'signIn' ? (
+                    <form
+                      onSubmit={handleSignIn}
+                      className="grid w-full"
+                      style={{ gap: formGap }}
                     >
-                      {loading ? 'Please wait...' : 'Sign In'}
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-primary w-full"
-                      disabled={loading}
-                      onClick={handleCreateAccount}
-                      style={{ padding: inputPad, fontSize: inputFont }}
+                      <input
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Email"
+                        type="email"
+                        className="app-input w-full"
+                        style={{
+                          borderRadius: '12px',
+                          padding: inputPad,
+                          fontSize: inputFont,
+                          background: 'rgba(0,0,0,0.15)',
+                          color: 'white',
+                          border: '0.5px solid rgba(212,175,55,0.4)',
+                        }}
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        autoComplete="email"
+                        spellCheck={false}
+                      />
+                      <input
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Password"
+                        type="password"
+                        className="app-input w-full"
+                        style={{
+                          borderRadius: '12px',
+                          padding: inputPad,
+                          fontSize: inputFont,
+                          background: 'rgba(0,0,0,0.15)',
+                          color: 'white',
+                          border: '0.5px solid rgba(212,175,55,0.4)',
+                        }}
+                        autoComplete="current-password"
+                      />
+                      <button
+                        type="submit"
+                        className="btn-primary w-full"
+                        disabled={loading}
+                        style={{ padding: inputPad, fontSize: inputFont }}
+                      >
+                        {loading ? 'Please wait...' : 'Sign In'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-primary w-full"
+                        disabled={loading}
+                        onClick={() => {
+                          setError('')
+                          setSuccess('')
+                          setAuthView('signUp')
+                        }}
+                        style={{ padding: inputPad, fontSize: inputFont }}
+                      >
+                        Create Free Account
+                      </button>
+                    </form>
+                  ) : (
+                    <form
+                      onSubmit={handleSignUp}
+                      className="grid w-full"
+                      style={{ gap: formGap }}
                     >
-                      Create Free Account
-                    </button>
-                  </form>
+                      <input
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Email"
+                        type="email"
+                        className="app-input w-full"
+                        style={{
+                          borderRadius: '12px',
+                          padding: inputPad,
+                          fontSize: inputFont,
+                          background: 'rgba(0,0,0,0.15)',
+                          color: 'white',
+                          border: '0.5px solid rgba(212,175,55,0.4)',
+                        }}
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        autoComplete="email"
+                        spellCheck={false}
+                      />
+                      <input
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Password"
+                        type="password"
+                        className="app-input w-full"
+                        style={{
+                          borderRadius: '12px',
+                          padding: inputPad,
+                          fontSize: inputFont,
+                          background: 'rgba(0,0,0,0.15)',
+                          color: 'white',
+                          border: '0.5px solid rgba(212,175,55,0.4)',
+                        }}
+                        autoComplete="new-password"
+                      />
+                      <input
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        placeholder="Display name"
+                        type="text"
+                        className="app-input w-full"
+                        style={{
+                          borderRadius: '12px',
+                          padding: inputPad,
+                          fontSize: inputFont,
+                          background: 'rgba(0,0,0,0.15)',
+                          color: 'white',
+                          border: '0.5px solid rgba(212,175,55,0.4)',
+                        }}
+                        autoCapitalize="words"
+                        autoCorrect="off"
+                        autoComplete="nickname"
+                        spellCheck={false}
+                      />
+                      <button
+                        type="submit"
+                        className="btn-primary w-full"
+                        disabled={loading}
+                        style={{ padding: inputPad, fontSize: inputFont }}
+                      >
+                        {loading ? 'Please wait...' : 'Create account'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-primary w-full"
+                        disabled={loading}
+                        onClick={() => {
+                          setError('')
+                          setSuccess('')
+                          setAuthView('signIn')
+                        }}
+                        style={{
+                          padding: inputPad,
+                          fontSize: inputFont,
+                          background: 'transparent',
+                          border: '1px solid rgba(212,175,55,0.45)',
+                          color: 'rgba(255,255,255,0.9)',
+                        }}
+                      >
+                        Back to sign in
+                      </button>
+                    </form>
+                  )}
 
                   {error ? (
                     <p className="mt-3 text-[#ffb3b3] text-sm leading-snug">{error}</p>

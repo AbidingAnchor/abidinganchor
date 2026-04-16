@@ -526,7 +526,7 @@ function Home({ onOpenWorship, worshipStatus }) {
   const friendFallback = t('home.friendFallback')
   const firstName = suppressPersonalWelcome
     ? friendFallback
-    : (profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || friendFallback)
+    : (profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || friendFallback)
 
   return (
     <>
