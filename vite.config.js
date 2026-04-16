@@ -13,6 +13,9 @@ export default defineConfig({
       filename: 'sw.js',
       injectRegister: false,
       manifest: false,
+      workbox: {
+        maximumFileSizeToCacheInBytes: 50 * 1024 * 1024,
+      },
       devOptions: {
         enabled: true,
       },
