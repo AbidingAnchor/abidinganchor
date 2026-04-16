@@ -23,6 +23,31 @@ function isValidUUID(str) {
 }
 
 /**
+ * Email confirmation / magic-link redirects often include ?code=… (PKCE).
+ * Exchange it for a session before the first getSession() so boot + RLS work.
+ */
+async function syncSessionFromAuthRedirectUrl() {
+  if (typeof window === 'undefined') return
+  try {
+    const url = new URL(window.location.href)
+    const code = url.searchParams.get('code')
+    if (!code) return
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    if (error && !String(error.message || '').toLowerCase().includes('already')) {
+      console.error('exchangeCodeForSession:', error.message)
+    }
+    ;['code', 'error', 'error_description', 'error_code', 'state'].forEach((k) =>
+      url.searchParams.delete(k),
+    )
+    const qs = url.searchParams.toString()
+    const path = `${url.pathname}${qs ? `?${qs}` : ''}${url.hash}`
+    window.history.replaceState(window.history.state, '', path)
+  } catch (err) {
+    console.error('syncSessionFromAuthRedirectUrl:', err)
+  }
+}
+
+/**
  * After ensureProfile (which never writes avatar_url), loads the full profile
  * row from the DB — including avatar_url — via SELECT only. No per-step
  * timeout on this SELECT; fetchProfileWithTimeout still caps total wait time.
@@ -170,7 +195,20 @@ export function AuthProvider({ children }) {
 
     const boot = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
+        await syncSessionFromAuthRedirectUrl()
+        let {
+          data: { session },
+        } = await supabase.auth.getSession()
+        if (!session?.user && typeof window !== 'undefined') {
+          const h = window.location.hash || ''
+          const q = window.location.search || ''
+          if (/access_token|refresh_token|code=/.test(`${q}${h}`)) {
+            await new Promise((r) => setTimeout(r, 150))
+            ;({
+              data: { session },
+            } = await supabase.auth.getSession())
+          }
+        }
         const nextUser = session?.user ?? null
         if (!active) return
         setUser(nextUser)
@@ -213,32 +251,36 @@ export function AuthProvider({ children }) {
     boot()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_, session) => {
+      async (event, session) => {
+        if (event === 'TOKEN_REFRESHED') return
+
         const nextUser = session?.user ?? null
         setUser(nextUser)
         try {
-          if (nextUser) {
-            let nextProfile = null
-            try {
-              nextProfile = await fetchProfileWithTimeout(nextUser)
-            } catch (err) {
-              console.error('onAuthStateChange profile fetch:', err)
-              nextProfile = null
-            }
-            if (nextProfile?.is_banned) {
-              setSuspendedInfo({ bannedAt: nextProfile?.banned_at || null })
-              setUser(null)
-              setProfile(null)
-              profileSyncedUserIds.clear()
-              clearAbidingAnchorUserStorage()
-              await supabase.auth.signOut()
-              return
-            }
-            setSuspendedInfo(null)
-            setProfile(nextProfile)
-          } else {
+          if (!nextUser) {
             setProfile(null)
+            setLoading(false)
+            return
           }
+          setLoading(true)
+          let nextProfile = null
+          try {
+            nextProfile = await fetchProfileWithTimeout(nextUser)
+          } catch (err) {
+            console.error('onAuthStateChange profile fetch:', err)
+            nextProfile = null
+          }
+          if (nextProfile?.is_banned) {
+            setSuspendedInfo({ bannedAt: nextProfile?.banned_at || null })
+            setUser(null)
+            setProfile(null)
+            profileSyncedUserIds.clear()
+            clearAbidingAnchorUserStorage()
+            await supabase.auth.signOut()
+            return
+          }
+          setSuspendedInfo(null)
+          setProfile(nextProfile)
         } catch (err) {
           console.error('onAuthStateChange:', err)
           setProfile(null)

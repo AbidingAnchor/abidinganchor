@@ -1,6 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import LoadingScreen from '../components/LoadingScreen'
 import { formatAuthErrorMessage } from '../utils/authErrors'
 
 const MIN_AUTH_SCALE = 0.58
@@ -10,7 +11,7 @@ function isValidEmail(email) {
 }
 
 export default function Auth() {
-  const { user, signIn, signUp } = useAuth()
+  const { user, profile, loading: authLoading, signIn, signUp } = useAuth()
   const [authView, setAuthView] = useState('signIn')
   const [signInEmail, setSignInEmail] = useState('')
   const [signInPassword, setSignInPassword] = useState('')
@@ -122,7 +123,11 @@ export default function Auth() {
     signUpConfirmPassword,
   ])
 
-  if (user) return <Navigate to="/" replace />
+  if (user) {
+    if (authLoading) return <LoadingScreen />
+    const onboarded = profile?.onboarding_complete === true
+    return <Navigate to={onboarded ? '/' : '/onboarding'} replace />
+  }
 
   const cleanSignInEmail = signInEmail.trim().toLowerCase()
   const cleanSignUpEmail = signUpEmail.trim().toLowerCase()
