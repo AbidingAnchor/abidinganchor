@@ -1,8 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { userStorageKey } from '../utils/userStorage'
-import LoadingScreen, { LOADING_SCREEN_MAX_MS } from '../components/LoadingScreen'
+import LoadingScreen from '../components/LoadingScreen'
 import { formatAuthErrorMessage } from '../utils/authErrors'
 
 const MIN_AUTH_SCALE = 0.58
@@ -11,11 +10,8 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
 }
 
-const AUTH_SESSION_POLL_MS = 3000
-
 export default function Auth() {
-  const { user, profile, loading: authLoading, signIn, signUp, syncAuthFromStoredSession } = useAuth()
-  const [authLoaderBypass, setAuthLoaderBypass] = useState(false)
+  const { user, profile, loading: authLoading, signIn, signUp } = useAuth()
   const [authView, setAuthView] = useState('signIn')
   const [signInEmail, setSignInEmail] = useState('')
   const [signInPassword, setSignInPassword] = useState('')
@@ -127,75 +123,9 @@ export default function Auth() {
     signUpConfirmPassword,
   ])
 
-  /**
-   * Email confirm often opens in another tab. Poll storage as a fallback; on PC, `storage`
-   * fires when another tab writes Supabase session to localStorage so we sync immediately.
-   */
-  useEffect(() => {
-    if (user) return undefined
-    let cancelled = false
-    const tick = async () => {
-      if (cancelled) return
-      try {
-        await syncAuthFromStoredSession()
-      } catch {
-        /* ignore */
-      }
-    }
-    void tick()
-    const id = window.setInterval(tick, AUTH_SESSION_POLL_MS)
-
-    const onStorage = (event) => {
-      if (cancelled) return
-      if (event.storageArea !== localStorage) return
-      if (event.key != null && !String(event.key).includes('-auth-token')) return
-      void tick()
-    }
-    window.addEventListener('storage', onStorage)
-
-    return () => {
-      cancelled = true
-      window.clearInterval(id)
-      window.removeEventListener('storage', onStorage)
-    }
-  }, [user, syncAuthFromStoredSession])
-
-  useEffect(() => {
-    if (!authLoading) setAuthLoaderBypass(false)
-  }, [authLoading])
-
-  const onAuthLoaderTimeout = useCallback(() => setAuthLoaderBypass(true), [])
-
   if (user) {
-    if (authLoading && !authLoaderBypass) {
-      return (
-        <LoadingScreen
-          maxDisplayMs={LOADING_SCREEN_MAX_MS}
-          onTimeout={onAuthLoaderTimeout}
-          active
-        />
-      )
-    }
-    if (authLoading && authLoaderBypass) {
-      return <Navigate to="/" replace />
-    }
-    if (!profile) {
-      try {
-        if (localStorage.getItem(userStorageKey(user.id, 'onboarding-complete')) === 'true') {
-          return <Navigate to="/" replace />
-        }
-      } catch {
-        /* fall through to onboarding */
-      }
-      return <Navigate to="/onboarding" replace />
-    }
-    let onboarded = profile.onboarding_complete === true
-    try {
-      onboarded =
-        onboarded || localStorage.getItem(userStorageKey(user.id, 'onboarding-complete')) === 'true'
-    } catch {
-      /* keep profile flag only */
-    }
+    if (authLoading) return <LoadingScreen />
+    const onboarded = profile?.onboarding_complete === true
     return <Navigate to={onboarded ? '/' : '/onboarding'} replace />
   }
 

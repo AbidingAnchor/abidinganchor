@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { userStorageKey } from '../utils/userStorage'
-import { initialDisplayNameFromAuth, profileFullNameFromUser } from '../utils/profileDisplay'
+import { initialDisplayNameFromAuth } from '../utils/profileDisplay'
 
 const GROWTH_GOALS = [
   { id: 'prayer', icon: '🙏', label: 'Deeper Prayer Life' },
@@ -34,10 +34,8 @@ const APP_TOUR_FEATURES = [
   { icon: '👥', title: 'Community', description: 'Pray with and for others' },
 ]
 
-const ONBOARDING_PROFILE_REFETCH_MS = 5000
-
 export default function Onboarding({ onComplete }) {
-  const { user, profile, refreshProfile, mergeProfile } = useAuth()
+  const { user, profile } = useAuth()
   const [screen, setScreen] = useState(1)
   const [displayName, setDisplayName] = useState(() => initialDisplayNameFromAuth(user, profile))
   const [dateOfBirth, setDateOfBirth] = useState(() => profile?.date_of_birth || '')
@@ -61,161 +59,6 @@ export default function Onboarding({ onComplete }) {
         ? (prev || []).filter(id => id !== goalId)
         : [...(prev || []), goalId]
     )
-  }
-
-  const persistOnboardingToSupabase = async () => {
-    if (!user?.id) return null
-
-    const recommendations = getRecommendations()
-    const cleanName =
-      displayName.trim() ||
-      profileFullNameFromUser(user) ||
-      (typeof user.email === 'string' ? user.email.split('@')[0] : '') ||
-      'Friend'
-
-    const payload = {
-      full_name: cleanName,
-      date_of_birth: dateOfBirth || null,
-      growth_goals: selectedGoals,
-      faith_duration: faithDuration || null,
-      daily_commitment: dailyCommitment || null,
-      recommended_path: recommendations.path,
-      recommended_reading_plan: recommendations.readingPlan,
-      recommended_study_depth: recommendations.studyDepth,
-      onboarding_complete: true,
-    }
-
-    const insertRow = {
-      id: user.id,
-      email: user.email ?? '',
-      bible_version: 'KJV',
-      last_active_date: null,
-      reading_streak: 0,
-      journal_streak: 0,
-      prayer_streak: 0,
-      prayer_total_minutes: 0,
-      longest_streak: 0,
-      last_book: 'GEN',
-      last_chapter: 'GEN.1',
-      weekly_active_days: [],
-      ...payload,
-    }
-
-    const updateReturning = async (body) => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .update(body)
-        .eq('id', user.id)
-        .select('onboarding_complete')
-      if (error) return { ok: false, error }
-      const row = data?.[0]
-      const applied = Array.isArray(data) && data.length > 0
-      return {
-        ok: applied && row?.onboarding_complete === true,
-        error: applied ? null : { message: 'no rows updated' },
-      }
-    }
-
-    const tryUpdate = async (body) => {
-      let r = await updateReturning(body)
-      if (
-        !r.ok &&
-        String(r.error?.message || '')
-          .toLowerCase()
-          .includes('date_of_birth')
-      ) {
-        const { date_of_birth: _ignored, ...fallbackPayload } = body
-        r = await updateReturning(fallbackPayload)
-      }
-      return r
-    }
-
-    const tryInsert = async (row) => {
-      const { error } = await supabase.from('profiles').insert(row)
-      return error
-    }
-
-    let r = await tryUpdate(payload)
-    if (r.ok) {
-      /* verified in DB */
-    } else {
-      let insErr = await tryInsert(insertRow)
-      if (
-        insErr &&
-        String(insErr.message || '')
-          .toLowerCase()
-          .includes('date_of_birth')
-      ) {
-        const { date_of_birth: _ignored, ...fallbackRow } = insertRow
-        insErr = await tryInsert(fallbackRow)
-      }
-      if (
-        insErr &&
-        String(insErr.message || '')
-          .toLowerCase()
-          .includes('duplicate')
-      ) {
-        r = await tryUpdate(payload)
-      } else if (insErr) {
-        console.error('Onboarding profile insert:', insErr)
-      } else {
-        r = { ok: true }
-      }
-    }
-
-    const { data: verify } = await supabase
-      .from('profiles')
-      .select('onboarding_complete')
-      .eq('id', user.id)
-      .maybeSingle()
-
-    if (verify?.onboarding_complete !== true) {
-      const flagOnly = { onboarding_complete: true }
-      r = await tryUpdate(flagOnly)
-      if (!r.ok) {
-        const minimalInsert = {
-          id: user.id,
-          email: user.email ?? '',
-          bible_version: 'KJV',
-          full_name: cleanName,
-          onboarding_complete: true,
-          last_active_date: null,
-          reading_streak: 0,
-          journal_streak: 0,
-          prayer_streak: 0,
-          prayer_total_minutes: 0,
-          longest_streak: 0,
-          last_book: 'GEN',
-          last_chapter: 'GEN.1',
-          weekly_active_days: [],
-        }
-        const lastErr = await tryInsert(minimalInsert)
-        if (lastErr && !String(lastErr.message || '').toLowerCase().includes('duplicate')) {
-          console.error('Onboarding minimal profile insert:', lastErr)
-        }
-      }
-    }
-
-    const fetchFullRow = () =>
-      supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
-
-    const rowResult = await Promise.race([
-      fetchFullRow(),
-      new Promise((resolve) => {
-        setTimeout(
-          () => resolve({ __onboardingRefetchTimedOut: true }),
-          ONBOARDING_PROFILE_REFETCH_MS,
-        )
-      }),
-    ])
-
-    if (rowResult && rowResult.__onboardingRefetchTimedOut) {
-      return { ...insertRow }
-    }
-    const { data: fullRow, error: fullErr } = rowResult
-    if (fullErr) console.error('Onboarding profile refetch:', fullErr)
-    if (fullRow && fullRow.onboarding_complete === true) return fullRow
-    return { ...insertRow }
   }
 
   const getRecommendations = () => {
@@ -249,32 +92,34 @@ export default function Onboarding({ onComplete }) {
   }
 
   const handleComplete = async () => {
-    if (user?.id) {
-      try {
-        localStorage.setItem(userStorageKey(user.id, 'onboarding-complete'), 'true')
-      } catch (err) {
-        console.error('Onboarding local flag error:', err)
-      }
-    }
-
     setLoading(true)
     try {
-      const savedRow = await persistOnboardingToSupabase()
-      if (savedRow && typeof mergeProfile === 'function') {
-        mergeProfile(savedRow)
+      if (user?.id) {
+        localStorage.setItem(userStorageKey(user.id, 'onboarding-complete'), 'true')
       }
-      if (typeof refreshProfile === 'function') {
-        await refreshProfile()
+      
+      // Save to Supabase profile
+      if (user?.id) {
+        const recommendations = getRecommendations()
+        const payload = {
+          full_name: displayName.trim(),
+          date_of_birth: dateOfBirth || null,
+          growth_goals: selectedGoals,
+          faith_duration: faithDuration || null,
+          daily_commitment: dailyCommitment || null,
+          recommended_path: recommendations.path,
+          recommended_reading_plan: recommendations.readingPlan,
+          recommended_study_depth: recommendations.studyDepth,
+          onboarding_complete: true,
+        }
+        const { error } = await supabase.from('profiles').update(payload).eq('id', user.id)
+        if (error?.message?.toLowerCase().includes('date_of_birth')) {
+          const { date_of_birth: _ignored, ...fallbackPayload } = payload
+          await supabase.from('profiles').update(fallbackPayload).eq('id', user.id)
+        }
       }
     } catch (error) {
       console.error('Onboarding save error:', error)
-      try {
-        if (typeof refreshProfile === 'function') {
-          await refreshProfile()
-        }
-      } catch (refreshErr) {
-        console.error('Onboarding refreshProfile after error:', refreshErr)
-      }
     } finally {
       setLoading(false)
       onComplete()

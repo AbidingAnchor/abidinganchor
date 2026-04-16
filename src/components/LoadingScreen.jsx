@@ -1,32 +1,12 @@
-import { memo, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import logoSrc from '../assets/NewLogo.png'
-
-/** Max time a gated route may show the loader before forcing progress (see App.jsx). */
-export const LOADING_SCREEN_MAX_MS = 3000
 
 /**
  * Full-viewport overlay while auth/session resolves. Background is transparent so
  * BackgroundManager’s themed sky (day / sunset / night) shows through — same
  * theme as the rest of the app via html[data-theme] and body.theme-*.
- *
- * Logo stays visually stable: no React state tied to image load (avoids flash on re-render).
- *
- * @param {number} [maxDisplayMs] When set with onTimeout, fires once after this many ms.
- * @param {() => void} [onTimeout] Called when maxDisplayMs elapses.
- * @param {boolean} [active=true] When false, the timeout is cleared.
  */
-function LoadingScreen({ maxDisplayMs, onTimeout, active = true }) {
+export default function LoadingScreen() {
   useTranslation()
-  const onTimeoutRef = useRef(onTimeout)
-  onTimeoutRef.current = onTimeout
-
-  useEffect(() => {
-    if (!active || maxDisplayMs == null || maxDisplayMs <= 0) return undefined
-    const t = window.setTimeout(() => onTimeoutRef.current?.(), maxDisplayMs)
-    return () => window.clearTimeout(t)
-  }, [active, maxDisplayMs])
-
   return (
     <div
       style={{
@@ -66,11 +46,8 @@ function LoadingScreen({ maxDisplayMs, onTimeout, active = true }) {
         }}
       >
         <img
-          src={logoSrc}
+          src="/NewLogo.png"
           alt="Abiding Anchor"
-          decoding="async"
-          fetchPriority="high"
-          loading="eager"
           style={{
             width: 'clamp(180px, 48vw, 200px)',
             height: 'auto',
@@ -98,5 +75,3 @@ function LoadingScreen({ maxDisplayMs, onTimeout, active = true }) {
     </div>
   )
 }
-
-export default memo(LoadingScreen)

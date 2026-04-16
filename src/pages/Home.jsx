@@ -19,6 +19,7 @@ import SaveToast from '../components/SaveToast'
 import FirstJournalEntryCelebration from '../components/FirstJournalEntryCelebration'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import { userStorageKey } from '../utils/userStorage'
 
 /** Race a promise against a timeout so streak sync cannot hang indefinitely on stalled requests. */
 const STREAK_SYNC_TIMEOUT_MS = 45_000
@@ -41,7 +42,7 @@ function withAsyncTimeout(promise, ms, label) {
 function Home({ onOpenWorship, worshipStatus }) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
-  const { user, profile, refreshProfile } = useAuth()
+  const { user, profile, loading, refreshProfile } = useAuth()
   const { activeDays: profileWeekActiveDays } = useStreakTracker(user?.id)
   const [journalWeekActiveDays, setJournalWeekActiveDays] = useState([])
   const [dailyEncounter, setDailyEncounter] = useState(() => getDailyEncounter())
@@ -314,6 +315,17 @@ function Home({ onOpenWorship, worshipStatus }) {
   useEffect(() => {
     if (profile) setSuppressPersonalWelcome(false)
   }, [profile])
+
+  useEffect(() => {
+    if (user?.id && profile && !loading) {
+      const onboardingLocal =
+        user?.id && localStorage.getItem(userStorageKey(user.id, 'onboarding-complete')) === 'true'
+      const isComplete = profile.onboarding_complete === true || onboardingLocal
+      if (!isComplete) {
+        navigate('/onboarding')
+      }
+    }
+  }, [user?.id, profile, loading, navigate])
 
   useEffect(() => {
     let timeoutId

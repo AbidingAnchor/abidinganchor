@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { clearAbidingAnchorUserStorage, setActiveStorageUserId, userStorageKey } from '../utils/userStorage'
 import { profileFullNameFromUser } from '../utils/profileDisplay'
@@ -66,36 +66,14 @@ async function loadProfileRow(user) {
   return data ?? null
 }
 
-/** Client fallback when DB profile fetch times out — keeps routing unblocked (e.g. post email confirm). */
-function createFallbackProfile(user) {
-  if (!user?.id) return null
-  return {
-    id: user.id,
-    email: user.email ?? '',
-    full_name: profileFullNameFromUser(user),
-    bible_version: 'KJV',
-    onboarding_complete: false,
-    last_active_date: null,
-    reading_streak: 0,
-    journal_streak: 0,
-    prayer_streak: 0,
-    prayer_total_minutes: 0,
-    longest_streak: 0,
-    last_book: 'GEN',
-    last_chapter: 'GEN.1',
-    weekly_active_days: [],
-    is_banned: false,
-  }
-}
-
 /**
- * Full profile sync: ensure row exists, then fetch. Hard cap PROFILE_FETCH_TIMEOUT_MS
- * for the whole operation so a hung Supabase request cannot block the app.
+ * Full profile sync: ensure row exists, then fetch. Entire operation is capped
+ * at PROFILE_FETCH_TIMEOUT_MS so a hung Supabase request cannot block the app.
  */
 async function fetchProfileWithTimeout(user) {
   if (!user?.id) return null
   try {
-    const result = await Promise.race([
+    return await Promise.race([
       (async () => {
         try {
           await Promise.race([
@@ -110,13 +88,13 @@ async function fetchProfileWithTimeout(user) {
         } catch {
           // Timeout or ensureProfile failure — still try to load an existing row
         }
+        // Separate SELECT: full profile (avatar_url comes from DB only, never from upsert)
         return loadProfileRow(user)
       })(),
       new Promise((resolve) => {
         setTimeout(() => resolve(null), PROFILE_FETCH_TIMEOUT_MS)
       }),
     ])
-    return result
   } catch (err) {
     console.error('fetchProfileWithTimeout:', err)
     return null
@@ -190,8 +168,6 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null)
   const [suspendedInfo, setSuspendedInfo] = useState(null)
   const [loading, setLoading] = useState(true)
-  /** Avoid resume sync racing the initial boot `getSession()` / profile hydrate. */
-  const initialBootDoneRef = useRef(false)
 
   useEffect(() => {
     setActiveStorageUserId(user?.id ?? null)
@@ -215,7 +191,7 @@ export function AuthProvider({ children }) {
     // Last-resort unblock if getSession() or anything before finally hangs
     const loadingWatchdog = setTimeout(() => {
       if (active) setLoading(false)
-    }, PROFILE_FETCH_TIMEOUT_MS + 800)
+    }, PROFILE_FETCH_TIMEOUT_MS + 1000)
 
     const boot = async () => {
       try {
@@ -244,7 +220,6 @@ export function AuthProvider({ children }) {
             console.error('Boot profile fetch:', err)
             nextProfile = null
           }
-          if (!nextProfile) nextProfile = createFallbackProfile(nextUser)
           if (!active) return
           if (nextProfile?.is_banned) {
             setSuspendedInfo({ bannedAt: nextProfile?.banned_at || null })
@@ -268,7 +243,6 @@ export function AuthProvider({ children }) {
         }
       } finally {
         if (active) {
-          initialBootDoneRef.current = true
           clearTimeout(loadingWatchdog)
           setLoading(false)
         }
@@ -296,7 +270,6 @@ export function AuthProvider({ children }) {
             console.error('onAuthStateChange profile fetch:', err)
             nextProfile = null
           }
-          if (!nextProfile) nextProfile = createFallbackProfile(nextUser)
           if (nextProfile?.is_banned) {
             setSuspendedInfo({ bannedAt: nextProfile?.banned_at || null })
             setUser(null)
@@ -380,123 +353,22 @@ export function AuthProvider({ children }) {
     }
     if (!user?.id) return null
     try {
-      const result = await Promise.race([
-        supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
-        new Promise((resolve) => {
-          setTimeout(() => resolve({ __profileRefreshTimedOut: true }), PROFILE_FETCH_TIMEOUT_MS)
-        }),
-      ])
-      if (result && result.__profileRefreshTimedOut) {
-        return null
-      }
-      const { data, error } = result
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle()
       if (error) {
         console.error('Profile refresh error:', error)
         return null
       }
-      if (data) setProfile(data)
+      setProfile(data ?? null)
       return data ?? null
     } catch (error) {
       console.error('Profile refresh error:', error)
       return null
     }
   }, [user?.id])
-
-  /** Merge server-shaped fields into profile state (e.g. immediately after onboarding save). */
-  const mergeProfile = useCallback((patch) => {
-    if (!user?.id || !patch || typeof patch !== 'object') return
-    setProfile((prev) => {
-      const base =
-        prev && prev.id === user.id ? prev : createFallbackProfile(user)
-      if (!base) return prev
-      return { ...base, ...patch, id: user.id }
-    })
-  }, [user?.id])
-
-  /**
-   * Re-read session from storage (e.g. after email confirm in another mobile tab)
-   * and hydrate user + profile in React state.
-   */
-  const syncAuthFromStoredSession = useCallback(async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    const nextUser = session?.user ?? null
-    if (!nextUser) return false
-
-    setUser(nextUser)
-    setLoading(true)
-    try {
-      let nextProfile = null
-      try {
-        nextProfile = await fetchProfileWithTimeout(nextUser)
-      } catch (err) {
-        console.error('syncAuthFromStoredSession profile fetch:', err)
-        nextProfile = null
-      }
-      if (!nextProfile) nextProfile = createFallbackProfile(nextUser)
-      if (nextProfile?.is_banned) {
-        setSuspendedInfo({ bannedAt: nextProfile?.banned_at || null })
-        setUser(null)
-        setProfile(null)
-        profileSyncedUserIds.clear()
-        clearAbidingAnchorUserStorage()
-        await supabase.auth.signOut()
-        return false
-      }
-      setSuspendedInfo(null)
-      setProfile(nextProfile)
-      return true
-    } catch (err) {
-      console.error('syncAuthFromStoredSession:', err)
-      setProfile(null)
-      return false
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  /**
-   * After the first boot, re-read the persisted session when the user returns to the app
-   * (tab focus, window focus, or bfcache restore) so e.g. email confirmation or sign-in
-   * completed elsewhere is picked up without waiting for a manual refresh.
-   */
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof document === 'undefined') return undefined
-
-    let debounceTimer = null
-    const scheduleSyncFromResume = () => {
-      if (!initialBootDoneRef.current) return
-      if (debounceTimer != null) window.clearTimeout(debounceTimer)
-      debounceTimer = window.setTimeout(() => {
-        debounceTimer = null
-        void syncAuthFromStoredSession()
-      }, 80)
-    }
-
-    const onVisibilityChange = () => {
-      if (document.visibilityState === 'visible') scheduleSyncFromResume()
-    }
-
-    const onFocus = () => {
-      scheduleSyncFromResume()
-    }
-
-    const onPageShow = (event) => {
-      if (event.persisted) scheduleSyncFromResume()
-    }
-
-    document.addEventListener('visibilitychange', onVisibilityChange)
-    window.addEventListener('focus', onFocus)
-    window.addEventListener('pageshow', onPageShow)
-
-    return () => {
-      if (debounceTimer != null) window.clearTimeout(debounceTimer)
-      document.removeEventListener('visibilitychange', onVisibilityChange)
-      window.removeEventListener('focus', onFocus)
-      window.removeEventListener('pageshow', onPageShow)
-    }
-  }, [syncAuthFromStoredSession])
 
   const value = useMemo(
     () => ({
@@ -508,10 +380,8 @@ export function AuthProvider({ children }) {
       signIn,
       signOut,
       refreshProfile,
-      mergeProfile,
-      syncAuthFromStoredSession,
     }),
-    [user, profile, suspendedInfo, loading, refreshProfile, mergeProfile, syncAuthFromStoredSession],
+    [user, profile, suspendedInfo, loading, refreshProfile],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
