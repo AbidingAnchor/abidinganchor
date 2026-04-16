@@ -43,15 +43,26 @@ import { syncWeeklyActiveDays } from './hooks/useStreakTracker'
 const LEGAL_ACCEPTED_KEY = 'legalAccepted'
 const GA_MEASUREMENT_ID = 'G-1VXQ7114R7'
 
+function readOnboardingCompleteLocal(userId) {
+  if (!userId) return false
+  try {
+    return localStorage.getItem(userStorageKey(userId, 'onboarding-complete')) === 'true'
+  } catch {
+    return false
+  }
+}
+
 function ProtectedRoute({ children }) {
   const { user, profile, loading, suspendedInfo } = useAuth()
   if (loading) return <LoadingScreen />
   if (suspendedInfo) return null
   if (!user) return <Navigate to="/auth" replace />
-  if (!profile) return <Navigate to="/onboarding" replace />
+  if (!profile) {
+    if (readOnboardingCompleteLocal(user.id)) return <LoadingScreen />
+    return <Navigate to="/onboarding" replace />
+  }
   try {
-    const onboardingLocal =
-      localStorage.getItem(userStorageKey(user.id, 'onboarding-complete')) === 'true'
+    const onboardingLocal = readOnboardingCompleteLocal(user.id)
     const isOnboarded = profile.onboarding_complete === true || onboardingLocal
     if (!isOnboarded) return <Navigate to="/onboarding" replace />
   } catch {

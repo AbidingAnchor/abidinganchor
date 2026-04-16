@@ -161,7 +161,16 @@ export default function Auth() {
 
   if (user) {
     if (authLoading) return <LoadingScreen />
-    if (!profile) return <Navigate to="/onboarding" replace />
+    if (!profile) {
+      try {
+        if (localStorage.getItem(userStorageKey(user.id, 'onboarding-complete')) === 'true') {
+          return <Navigate to="/" replace />
+        }
+      } catch {
+        /* fall through to onboarding */
+      }
+      return <Navigate to="/onboarding" replace />
+    }
     let onboarded = profile.onboarding_complete === true
     try {
       onboarded =

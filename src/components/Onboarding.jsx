@@ -35,7 +35,7 @@ const APP_TOUR_FEATURES = [
 ]
 
 export default function Onboarding({ onComplete }) {
-  const { user, profile } = useAuth()
+  const { user, profile, refreshProfile } = useAuth()
   const [screen, setScreen] = useState(1)
   const [displayName, setDisplayName] = useState(() => initialDisplayNameFromAuth(user, profile))
   const [dateOfBirth, setDateOfBirth] = useState(() => profile?.date_of_birth || '')
@@ -92,13 +92,16 @@ export default function Onboarding({ onComplete }) {
   }
 
   const handleComplete = async () => {
+    if (user?.id) {
+      try {
+        localStorage.setItem(userStorageKey(user.id, 'onboarding-complete'), 'true')
+      } catch (err) {
+        console.error('Onboarding local flag error:', err)
+      }
+    }
+
     setLoading(true)
     try {
-      if (user?.id) {
-        localStorage.setItem(userStorageKey(user.id, 'onboarding-complete'), 'true')
-      }
-      
-      // Save to Supabase profile
       if (user?.id) {
         const recommendations = getRecommendations()
         const payload = {
@@ -117,6 +120,7 @@ export default function Onboarding({ onComplete }) {
           const { date_of_birth: _ignored, ...fallbackPayload } = payload
           await supabase.from('profiles').update(fallbackPayload).eq('id', user.id)
         }
+        await refreshProfile()
       }
     } catch (error) {
       console.error('Onboarding save error:', error)
