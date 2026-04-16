@@ -1,21 +1,31 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { memo, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import logoSrc from '../assets/NewLogo.png'
+
+/** Max time a gated route may show the loader before forcing progress (see App.jsx). */
+export const LOADING_SCREEN_MAX_MS = 3000
 
 /**
  * Full-viewport overlay while auth/session resolves. Background is transparent so
  * BackgroundManager’s themed sky (day / sunset / night) shows through — same
  * theme as the rest of the app via html[data-theme] and body.theme-*.
+ *
+ * Logo stays visually stable: no React state tied to image load (avoids flash on re-render).
+ *
+ * @param {number} [maxDisplayMs] When set with onTimeout, fires once after this many ms.
+ * @param {() => void} [onTimeout] Called when maxDisplayMs elapses.
+ * @param {boolean} [active=true] When false, the timeout is cleared.
  */
-export default function LoadingScreen() {
+function LoadingScreen({ maxDisplayMs, onTimeout, active = true }) {
   useTranslation()
-  const [logoReady, setLogoReady] = useState(false)
-  const imgRef = useRef(null)
+  const onTimeoutRef = useRef(onTimeout)
+  onTimeoutRef.current = onTimeout
 
-  useLayoutEffect(() => {
-    const el = imgRef.current
-    if (el?.complete && el.naturalWidth > 0) setLogoReady(true)
-  }, [])
+  useEffect(() => {
+    if (!active || maxDisplayMs == null || maxDisplayMs <= 0) return undefined
+    const t = window.setTimeout(() => onTimeoutRef.current?.(), maxDisplayMs)
+    return () => window.clearTimeout(t)
+  }, [active, maxDisplayMs])
 
   return (
     <div
@@ -56,12 +66,11 @@ export default function LoadingScreen() {
         }}
       >
         <img
-          ref={imgRef}
           src={logoSrc}
           alt="Abiding Anchor"
           decoding="async"
           fetchPriority="high"
-          onLoad={() => setLogoReady(true)}
+          loading="eager"
           style={{
             width: 'clamp(180px, 48vw, 200px)',
             height: 'auto',
@@ -69,9 +78,7 @@ export default function LoadingScreen() {
             objectFit: 'contain',
             display: 'block',
             margin: '0 auto',
-            opacity: logoReady ? 1 : 0,
-            transition: 'opacity 0.2s ease',
-            animation: logoReady ? 'loading-logo-pulse 2.2s ease-in-out infinite' : 'none',
+            animation: 'loading-logo-pulse 2.2s ease-in-out infinite',
           }}
         />
         <p
@@ -91,3 +98,5 @@ export default function LoadingScreen() {
     </div>
   )
 }
+
+export default memo(LoadingScreen)

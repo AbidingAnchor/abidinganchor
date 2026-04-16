@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Routes, Route, useLocation, useNavigate } from 'react-router-dom'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ReactGA from 'react-ga4'
 import Home from './pages/Home'
 import ReadingPlan from './pages/ReadingPlan'
@@ -34,7 +34,7 @@ import Auth from './pages/Auth'
 import ResetPassword from './pages/ResetPassword'
 import { useAuth } from './context/AuthContext'
 import { userStorageKey } from './utils/userStorage'
-import LoadingScreen from './components/LoadingScreen'
+import LoadingScreen, { LOADING_SCREEN_MAX_MS } from './components/LoadingScreen'
 import BackgroundManager from './components/BackgroundManager'
 import { useWorshipPlaybackState } from './lib/worshipGlobalAudio'
 import { applyDailyStreakOnAppOpen } from './lib/dailyAppStreak'
@@ -54,11 +54,26 @@ function readOnboardingCompleteLocal(userId) {
 
 function ProtectedRoute({ children }) {
   const { user, profile, loading, suspendedInfo } = useAuth()
-  if (loading) return <LoadingScreen />
+  const [loaderBypass, setLoaderBypass] = useState(false)
+  const waiting =
+    !!loading || (!!user && !profile && readOnboardingCompleteLocal(user.id))
+
+  useEffect(() => {
+    if (!waiting) setLoaderBypass(false)
+  }, [waiting])
+
+  const onLoaderTimeout = useCallback(() => setLoaderBypass(true), [])
+
+  if (waiting && !loaderBypass) {
+    return (
+      <LoadingScreen maxDisplayMs={LOADING_SCREEN_MAX_MS} onTimeout={onLoaderTimeout} active />
+    )
+  }
+
   if (suspendedInfo) return null
   if (!user) return <Navigate to="/auth" replace />
   if (!profile) {
-    if (readOnboardingCompleteLocal(user.id)) return <LoadingScreen />
+    if (readOnboardingCompleteLocal(user.id)) return children
     return <Navigate to="/onboarding" replace />
   }
   try {
@@ -74,7 +89,22 @@ function ProtectedRoute({ children }) {
 function OnboardingRoute() {
   const { user, loading, profile, suspendedInfo } = useAuth()
   const navigate = useNavigate()
-  if (loading) return <LoadingScreen />
+  const [loaderBypass, setLoaderBypass] = useState(false)
+
+  useEffect(() => {
+    if (!loading) setLoaderBypass(false)
+  }, [loading])
+
+  const onLoaderTimeout = useCallback(() => setLoaderBypass(true), [])
+
+  if (loading && !loaderBypass) {
+    return (
+      <LoadingScreen maxDisplayMs={LOADING_SCREEN_MAX_MS} onTimeout={onLoaderTimeout} active />
+    )
+  }
+  if (loading && loaderBypass) {
+    return <Navigate to="/" replace />
+  }
   if (suspendedInfo) return null
   if (!user) return <Navigate to="/auth" replace />
   if (profile?.onboarding_complete) return <Navigate to="/" replace />

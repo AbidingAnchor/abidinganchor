@@ -2,7 +2,7 @@ import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { userStorageKey } from '../utils/userStorage'
-import LoadingScreen from '../components/LoadingScreen'
+import LoadingScreen, { LOADING_SCREEN_MAX_MS } from '../components/LoadingScreen'
 import { formatAuthErrorMessage } from '../utils/authErrors'
 
 const MIN_AUTH_SCALE = 0.58
@@ -15,6 +15,7 @@ const AUTH_SESSION_POLL_MS = 3000
 
 export default function Auth() {
   const { user, profile, loading: authLoading, signIn, signUp, syncAuthFromStoredSession } = useAuth()
+  const [authLoaderBypass, setAuthLoaderBypass] = useState(false)
   const [authView, setAuthView] = useState('signIn')
   const [signInEmail, setSignInEmail] = useState('')
   const [signInPassword, setSignInPassword] = useState('')
@@ -159,8 +160,25 @@ export default function Auth() {
     }
   }, [user, syncAuthFromStoredSession])
 
+  useEffect(() => {
+    if (!authLoading) setAuthLoaderBypass(false)
+  }, [authLoading])
+
+  const onAuthLoaderTimeout = useCallback(() => setAuthLoaderBypass(true), [])
+
   if (user) {
-    if (authLoading) return <LoadingScreen />
+    if (authLoading && !authLoaderBypass) {
+      return (
+        <LoadingScreen
+          maxDisplayMs={LOADING_SCREEN_MAX_MS}
+          onTimeout={onAuthLoaderTimeout}
+          active
+        />
+      )
+    }
+    if (authLoading && authLoaderBypass) {
+      return <Navigate to="/" replace />
+    }
     if (!profile) {
       try {
         if (localStorage.getItem(userStorageKey(user.id, 'onboarding-complete')) === 'true') {
