@@ -33,6 +33,7 @@ import Onboarding from './components/Onboarding'
 import Auth from './pages/Auth'
 import ResetPassword from './pages/ResetPassword'
 import { useAuth } from './context/AuthContext'
+import { userStorageKey } from './utils/userStorage'
 import LoadingScreen from './components/LoadingScreen'
 import BackgroundManager from './components/BackgroundManager'
 import { useWorshipPlaybackState } from './lib/worshipGlobalAudio'
@@ -43,10 +44,19 @@ const LEGAL_ACCEPTED_KEY = 'legalAccepted'
 const GA_MEASUREMENT_ID = 'G-1VXQ7114R7'
 
 function ProtectedRoute({ children }) {
-  const { user, loading, suspendedInfo } = useAuth()
+  const { user, profile, loading, suspendedInfo } = useAuth()
   if (loading) return <LoadingScreen />
   if (suspendedInfo) return null
   if (!user) return <Navigate to="/auth" replace />
+  if (!profile) return <LoadingScreen />
+  try {
+    const onboardingLocal =
+      localStorage.getItem(userStorageKey(user.id, 'onboarding-complete')) === 'true'
+    const isOnboarded = profile.onboarding_complete === true || onboardingLocal
+    if (!isOnboarded) return <Navigate to="/onboarding" replace />
+  } catch {
+    if (profile.onboarding_complete !== true) return <Navigate to="/onboarding" replace />
+  }
   return children
 }
 

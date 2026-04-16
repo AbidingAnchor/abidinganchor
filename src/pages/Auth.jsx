@@ -1,6 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { userStorageKey } from '../utils/userStorage'
 import LoadingScreen from '../components/LoadingScreen'
 import { formatAuthErrorMessage } from '../utils/authErrors'
 
@@ -159,8 +160,14 @@ export default function Auth() {
   }, [user, syncAuthFromStoredSession])
 
   if (user) {
-    if (authLoading) return <LoadingScreen />
-    const onboarded = profile?.onboarding_complete === true
+    if (authLoading || !profile) return <LoadingScreen />
+    let onboarded = profile.onboarding_complete === true
+    try {
+      onboarded =
+        onboarded || localStorage.getItem(userStorageKey(user.id, 'onboarding-complete')) === 'true'
+    } catch {
+      /* keep profile flag only */
+    }
     return <Navigate to={onboarded ? '/' : '/onboarding'} replace />
   }
 
