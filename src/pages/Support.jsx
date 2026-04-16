@@ -1,21 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import {
+  SUPPORT_BMAC_LINK,
+  SUPPORT_PAGE_GOLD,
+  SUPPORT_ROADMAP_ITEMS,
+} from '../data/supportPageConstants'
 import { supabase } from '../lib/supabase'
+import { parseMinistryTransparencyStats } from '../utils/parseMinistryTransparencyStats'
 import { userStorageKey } from '../utils/userStorage'
-
-const BMAC_LINK = 'https://buymeacoffee.com/abidinganchor'
-const GOLD = '#D4AF37'
-
-const ROADMAP_ITEMS = [
-  { icon: '\u2705', text: 'Verse Highlighting & Notes', status: 'Completed' },
-  { icon: '\u2705', text: 'Cross References', status: 'Completed' },
-  { icon: '\u2705', text: "Strong's Concordance", status: 'Completed' },
-  { icon: '\uD83D\uDD27', text: 'Offline Bible Mode', status: 'In Progress' },
-  { icon: '\uD83D\uDD27', text: 'AssemblyAI Guided Prayer Karaoke', status: 'In Progress' },
-  { icon: '\uD83D\uDD1C', text: 'Waffles Onboarding Companion', status: 'Coming Soon' },
-  { icon: '\uD83D\uDD1C', text: 'Push Notification Devotionals', status: 'Coming Soon' },
-]
 
 export default function Support() {
   const { user } = useAuth()
@@ -25,12 +18,15 @@ export default function Support() {
   const [transparencyLoading, setTransparencyLoading] = useState(true)
 
   useEffect(() => {
-    setNotificationsEnabled(localStorage.getItem(userStorageKey(user?.id, 'support-browser-notifications')) === 'enabled')
+    setNotificationsEnabled(
+      localStorage.getItem(userStorageKey(user?.id, 'support-browser-notifications')) === 'enabled',
+    )
   }, [user?.id])
 
   useEffect(() => {
     let cancelled = false
-    const load = async () => {
+
+    async function loadTransparencyStats() {
       setTransparencyLoading(true)
       try {
         const { data, error } = await supabase.rpc('get_ministry_transparency_stats')
@@ -38,20 +34,11 @@ export default function Support() {
         if (error) {
           setAiPrayersCount(0)
           setUsersReachedCount(0)
-        } else {
-          const stats = data != null && typeof data === 'object' && !Array.isArray(data)
-            ? data
-            : Array.isArray(data)
-              ? data[0]
-              : null
-          const ai =
-            stats && typeof stats === 'object'
-              ? (stats.ai_answers ?? stats.ai_prayers_answered)
-              : undefined
-          const users = stats && typeof stats === 'object' ? stats.users_reached : undefined
-          setAiPrayersCount(Number(ai ?? 0))
-          setUsersReachedCount(Number(users ?? 0))
+          return
         }
+        const { aiPrayers, usersReached } = parseMinistryTransparencyStats(data)
+        setAiPrayersCount(aiPrayers)
+        setUsersReachedCount(usersReached)
       } catch {
         if (!cancelled) {
           setAiPrayersCount(0)
@@ -61,7 +48,8 @@ export default function Support() {
         if (!cancelled) setTransparencyLoading(false)
       }
     }
-    void load()
+
+    void loadTransparencyStats()
     return () => {
       cancelled = true
     }
@@ -75,7 +63,7 @@ export default function Support() {
     const permission = await Notification.requestPermission()
     if (permission === 'granted') {
       new Notification('AbidingAnchor', {
-        body: 'You will now receive daily verse notifications! 🙏',
+        body: 'You will now receive daily verse notifications! \uD83D\uDE4F',
         icon: '/icon-192x192.png',
       })
       localStorage.setItem(userStorageKey(user?.id, 'support-browser-notifications'), 'enabled')
@@ -85,12 +73,14 @@ export default function Support() {
     }
   }
 
+  const gold = SUPPORT_PAGE_GOLD
+
   return (
-    <div style={{ position:'relative', zIndex: 10, minHeight:'100vh', 
+    <div style={{ position:'relative', zIndex: 10, minHeight:'100vh',
       overflow:'hidden', fontFamily:'sans-serif' }}>
       <div className="content-scroll" style={{ padding:'0 16px', paddingTop:'60px', paddingBottom:'120px', maxWidth:'680px', margin:'0 auto', width:'100%' }}>
 
-        <h1 style={{ textAlign:'center', color:'#fff', 
+        <h1 style={{ textAlign:'center', color:'#fff',
           fontSize:'26px', fontWeight:'bold', margin:'0 0 6px',
           textShadow:'0 2px 8px rgba(0,60,120,0.4)',
           fontFamily:'Georgia, serif' }}>
@@ -108,17 +98,17 @@ export default function Support() {
             textAlign:'center', margin:0, fontFamily:'Georgia,serif',
             fontStyle:'italic',
             textShadow:'0 1px 4px rgba(0,60,120,0.3)' }}>
-            "AbidingAnchor was built as an act of worship to Jesus Christ. 
-            Every verse, every prayer, every word of Scripture in 
-            this app is a free gift — because the gospel belongs 
-            to everyone. If AbidingAnchor has drawn you closer to God, 
-            please consider supporting this mission so it can 
-            keep growing and reach more hearts around the world."
+            &quot;AbidingAnchor was built as an act of worship to Jesus Christ.
+            Every verse, every prayer, every word of Scripture in
+            this app is a free gift — because the gospel belongs
+            to everyone. If AbidingAnchor has drawn you closer to God,
+            please consider supporting this mission so it can
+            keep growing and reach more hearts around the world.&quot;
           </p>
           <p style={{ textAlign:'center', color:'rgba(255,220,100,0.9)',
             fontSize:'12px', marginTop:'12px', fontWeight:'600',
             letterSpacing:'0.06em' }}>
-            — Built in Jesus' name 🙏
+            — Built in Jesus&apos; name {'\uD83D\uDE4F'}
           </p>
         </div>
 
@@ -129,9 +119,9 @@ export default function Support() {
           <p style={{ color:'rgba(255,255,255,0.9)', fontSize:'13px',
             fontFamily:'Georgia,serif', fontStyle:'italic',
             lineHeight:'1.7', margin:'0 0 6px' }}>
-            "Each one must give as he has decided in his heart, 
-            not reluctantly or under compulsion, for God loves 
-            a cheerful giver."
+            &quot;Each one must give as he has decided in his heart,
+            not reluctantly or under compulsion, for God loves
+            a cheerful giver.&quot;
           </p>
           <p style={{ color:'rgba(255,220,80,0.9)', fontSize:'11px',
             fontWeight:'700', letterSpacing:'0.08em', margin:0 }}>
@@ -152,22 +142,22 @@ export default function Support() {
               onClick={handleNotifications}
               style={{ border: '1px solid rgba(212,168,67,0.6)', borderRadius: '10px', padding: '10px 12px', background: notificationsEnabled ? 'rgba(40,120,70,0.4)' : '#D4A843', color: notificationsEnabled ? '#fff' : '#1a1a1a', fontWeight: 700, fontSize: '13px' }}
             >
-              {notificationsEnabled ? 'Notifications On ✅' : 'Enable Daily Notifications 🔔'}
+              {notificationsEnabled ? 'Notifications On \u2705' : 'Enable Daily Notifications \uD83D\uDD14'}
             </button>
           </article>
         </section>
 
         {[
-          { amount:'$3', label:'A Small Blessing', 
+          { amount:'$3', label:'A Small Blessing',
             desc:'Covers one day of server costs' },
-          { amount:'$10', label:'A Faithful Gift', 
+          { amount:'$10', label:'A Faithful Gift',
             desc:'Helps keep the app running for a week' },
-          { amount:'$25', label:'A Ministry Partner', 
+          { amount:'$25', label:'A Ministry Partner',
             desc:'Funds new features & spreading the Word' },
         ].map(tier => (
           <a
             key={tier.amount}
-            href={BMAC_LINK}
+            href={SUPPORT_BMAC_LINK}
             target="_blank"
             rel="noopener noreferrer"
             className="glass-panel"
@@ -248,7 +238,7 @@ export default function Support() {
           >
             {[
               {
-                value: transparencyLoading ? '…' : (aiPrayersCount ?? 0).toLocaleString(),
+                value: transparencyLoading ? '...' : (aiPrayersCount ?? 0).toLocaleString(),
                 label: 'AI Prayers Answered',
                 sub: 'Companion replies',
               },
@@ -272,7 +262,7 @@ export default function Support() {
                 ),
               },
               {
-                value: transparencyLoading ? '…' : (usersReachedCount ?? 0).toLocaleString(),
+                value: transparencyLoading ? '...' : (usersReachedCount ?? 0).toLocaleString(),
                 label: 'Users Reached',
                 sub: 'Profiles in community',
               },
@@ -287,7 +277,7 @@ export default function Support() {
                   border: '1px solid rgba(212, 175, 55, 0.2)',
                 }}
               >
-                <div style={{ color: GOLD, fontSize: '22px', fontWeight: 800, lineHeight: 1.15, fontVariantNumeric: 'tabular-nums' }}>
+                <div style={{ color: gold, fontSize: '22px', fontWeight: 800, lineHeight: 1.15, fontVariantNumeric: 'tabular-nums' }}>
                   {card.value}
                 </div>
                 <div style={{ color: 'var(--text-primary, #eee)', fontSize: '11px', fontWeight: 700, marginTop: '8px', letterSpacing: '0.04em' }}>
@@ -302,7 +292,7 @@ export default function Support() {
 
           <h3
             style={{
-              color: GOLD,
+              color: gold,
               fontSize: '12px',
               fontWeight: 700,
               letterSpacing: '0.08em',
@@ -313,7 +303,7 @@ export default function Support() {
             What We&apos;re Building Next
           </h3>
           <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {ROADMAP_ITEMS.map((item) => (
+            {SUPPORT_ROADMAP_ITEMS.map((item) => (
               <li
                 key={item.text}
                 style={{
@@ -343,7 +333,7 @@ export default function Support() {
           </ul>
         </section>
 
-        <a href={BMAC_LINK}
+        <a href={SUPPORT_BMAC_LINK}
           target="_blank"
           rel="noopener noreferrer"
           style={{ width:'100%', padding:'16px',
@@ -352,15 +342,15 @@ export default function Support() {
             fontSize:'16px', fontWeight:'700', cursor:'pointer',
             marginTop:'8px', letterSpacing:'0.02em',
             textDecoration:'none', display:'block', textAlign:'center' }}>
-          Buy Me a Coffee ☕
+          Buy Me a Coffee {'\u2615'}
         </a>
 
-        <p style={{ textAlign:'center', 
+        <p style={{ textAlign:'center',
           color:'rgba(255,255,255,0.55)', fontSize:'11px',
           marginTop:'16px', lineHeight:'1.6' }}>
-          You'll be taken to Buy Me a Coffee to complete your gift.
+          You&apos;ll be taken to Buy Me a Coffee to complete your gift.
           All donations go directly to maintaining and growing AbidingAnchor.
-          Thank you for being part of this mission. 🙏
+          Thank you for being part of this mission. {'\uD83D\uDE4F'}
         </p>
 
         <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
