@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -59,6 +60,7 @@ const ROLE_STYLES = {
 export default function PrayerWall() {
   const { t } = useTranslation()
   const { user, profile, signOut } = useAuth()
+  const navigate = useNavigate()
   const [prayers, setPrayers] = useState([])
   const [loading, setLoading] = useState(true)
   const [showShareModal, setShowShareModal] = useState(false)
@@ -137,7 +139,7 @@ export default function PrayerWall() {
       if (userIds.length > 0) {
         const { data: profileRows, error: profileError } = await supabase
           .from('profiles')
-          .select('id, username, role')
+          .select('id, username, role, avatar_url')
           .in('id', userIds)
         if (profileError) throw profileError
         profilesById = (profileRows || []).reduce((acc, row) => {
@@ -152,10 +154,12 @@ export default function PrayerWall() {
           ? {
               username: profilesById[row.user_id].username || 'Anonymous',
               role: profilesById[row.user_id].role || 'user',
+              avatar_url: profilesById[row.user_id].avatar_url || null,
             }
           : {
               username: 'Anonymous',
               role: 'user',
+              avatar_url: null,
             },
       }))
 
@@ -427,6 +431,8 @@ export default function PrayerWall() {
       nameColor: roleStyle.nameColor,
       badgeLabel: roleStyle.badgeLabel,
       badgeStyle: roleStyle.badgeStyle,
+      avatarUrl: prayer?.profiles?.avatar_url || null,
+      userId: prayer?.user_id || null,
     }
   }
 
@@ -502,9 +508,42 @@ export default function PrayerWall() {
                     {poster.badgeLabel}
                   </span>
                 ) : null}
-                <p className="text-sm font-semibold" style={{ color: poster.nameColor }}>
-                  {poster.name}
-                </p>
+                <button
+                  type="button"
+                  onClick={() => poster.userId && navigate(`/profile/${poster.userId}`)}
+                  className="flex items-center gap-2 rounded-lg border border-transparent px-1 py-0.5 transition hover:border-white/10"
+                  style={{ background: 'transparent' }}
+                  aria-label={`Open ${poster.name}'s profile`}
+                >
+                  {poster.avatarUrl ? (
+                    <img
+                      src={poster.avatarUrl}
+                      alt=""
+                      aria-hidden
+                      style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <span
+                      aria-hidden
+                      style={{
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        display: 'grid',
+                        placeItems: 'center',
+                        background: 'rgba(212,168,67,0.2)',
+                        color: '#D4A843',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                      }}
+                    >
+                      {(poster.name?.[0] || 'A').toUpperCase()}
+                    </span>
+                  )}
+                  <p className="text-sm font-semibold" style={{ color: poster.nameColor, margin: 0 }}>
+                    {poster.name}
+                  </p>
+                </button>
               </div>
               <p className="text-white text-base mb-4 leading-relaxed">
                 {prayer.content}

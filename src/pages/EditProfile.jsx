@@ -268,6 +268,26 @@ export default function EditProfile() {
             <div>
               <p style={{ color: 'var(--text-primary)', fontSize: '18px', fontWeight: 700, marginBottom: '4px' }}>{displayName}</p>
               <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>{userEmail}</p>
+              {profile?.is_supporter ? (
+                <div
+                  style={{
+                    marginTop: '8px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: 'rgba(212,175,55,0.18)',
+                    border: '1px solid #D4AF37',
+                    borderRadius: '999px',
+                    padding: '4px 10px',
+                    color: '#D4AF37',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                  }}
+                >
+                  <span aria-hidden>⚓</span>
+                  <span>Ministry Supporter</span>
+                </div>
+              ) : null}
               {uploadStatus === 'success' ? (
                 <p style={{ color: '#4ade80', fontSize: '12px', marginTop: '4px' }}>{t('settings.profilePhotoSaved')}</p>
               ) : null}
@@ -348,13 +368,13 @@ export default function EditProfile() {
           </p>
 
           <label style={{ color: 'var(--text-primary)', display: 'block', fontSize: '14px', marginBottom: '8px', marginTop: '10px' }}>Favorite verse</label>
-          <input
-            type="text"
+          <textarea
             value={favoriteVerse}
             onChange={(e) => setFavoriteVerse(e.target.value)}
-            placeholder="John 3:16"
+            placeholder="John 3:16 - For God so loved the world..."
+            rows={3}
             className="glass-input-field"
-            style={{ width: '100%', borderRadius: '12px', padding: '12px' }}
+            style={{ width: '100%', borderRadius: '12px', padding: '12px', resize: 'vertical' }}
           />
 
           <button

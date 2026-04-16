@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import LoadingScreen from '../components/LoadingScreen'
 import { formatAuthErrorMessage } from '../utils/authErrors'
+import { supabase } from '../lib/supabase'
 
 const MIN_AUTH_SCALE = 0.58
 
@@ -24,6 +25,8 @@ export default function Auth() {
   const [loading, setLoading] = useState(false)
   const [currentVerseIndex, setCurrentVerseIndex] = useState(0)
   const [opacity, setOpacity] = useState(1)
+  const [latestUpdates, setLatestUpdates] = useState([])
+  const [showDesktopUpdates, setShowDesktopUpdates] = useState(() => window.innerWidth >= 768)
 
   const outerFitRef = useRef(null)
   const innerFitRef = useRef(null)
@@ -47,6 +50,33 @@ export default function Auth() {
     }, 4200)
     return () => clearInterval(interval)
   }, [verses.length])
+
+  useEffect(() => {
+    let active = true
+    const loadUpdates = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('app_updates')
+          .select('id, version, title, features, created_at')
+          .order('created_at', { ascending: false })
+          .limit(3)
+        if (error) throw error
+        if (active) setLatestUpdates(data || [])
+      } catch {
+        if (active) setLatestUpdates([])
+      }
+    }
+    loadUpdates()
+    return () => {
+      active = false
+    }
+  }, [])
+
+  useEffect(() => {
+    const onResize = () => setShowDesktopUpdates(window.innerWidth >= 768)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
 
   useEffect(() => {
     const html = document.documentElement
@@ -546,6 +576,36 @@ export default function Auth() {
                     <p className="mt-3 text-gold text-sm leading-snug">{success}</p>
                   ) : null}
                 </article>
+
+                {showDesktopUpdates && latestUpdates.length > 0 ? (
+                  <aside
+                    style={{
+                      width: '100%',
+                      maxWidth: '480px',
+                      borderRadius: '14px',
+                      padding: '12px 14px',
+                      background: 'rgba(212,168,67,0.08)',
+                      border: '1px solid rgba(212,168,67,0.35)',
+                      boxShadow: '0 8px 22px rgba(0,0,0,0.2)',
+                    }}
+                  >
+                    <p style={{ margin: 0, color: '#D4AF37', fontSize: '12px', fontWeight: 700, letterSpacing: '0.04em' }}>
+                      What&apos;s New
+                    </p>
+                    <div style={{ marginTop: '8px', display: 'grid', gap: '8px' }}>
+                      {latestUpdates.map((update) => (
+                        <div key={update.id} style={{ borderTop: '1px solid rgba(212,168,67,0.22)', paddingTop: '8px' }}>
+                          <p style={{ margin: 0, color: 'rgba(255,255,255,0.95)', fontSize: '13px', fontWeight: 700 }}>
+                            v{update.version} - {update.title}
+                          </p>
+                          <p style={{ margin: '4px 0 0', color: 'rgba(212,168,67,0.92)', fontSize: '12px' }}>
+                            {(update.features || []).slice(0, 3).join(' • ')}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </aside>
+                ) : null}
 
                 <div
                   style={{

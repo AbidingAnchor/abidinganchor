@@ -55,6 +55,7 @@ function Home({ onOpenWorship, worshipStatus }) {
   const [presenceOptimisticDone, setPresenceOptimisticDone] = useState(false)
   const [presenceCtaSyncing, setPresenceCtaSyncing] = useState(false)
   const [presenceSaveError, setPresenceSaveError] = useState(null)
+  const [latestUpdate, setLatestUpdate] = useState(null)
   const presenceGlowTimerRef = useRef(null)
   /** Reuse one in-flight sync promise so concurrent callers await the same work (no silent `null`). */
   const streakSyncPromiseRef = useRef(null)
@@ -342,6 +343,37 @@ function Home({ onOpenWorship, worshipStatus }) {
   }, [refreshProfile])
 
   useEffect(() => {
+    let active = true
+    const loadLatestUpdate = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('app_updates')
+          .select('id, version, title, description, features, created_at')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        if (error) throw error
+        if (!active || !data) return
+        const dismissedKey = `app-update-dismissed-${data.id}`
+        const dismissed = localStorage.getItem(dismissedKey) === 'true'
+        setLatestUpdate(dismissed ? null : data)
+      } catch {
+        if (active) setLatestUpdate(null)
+      }
+    }
+    loadLatestUpdate()
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const dismissLatestUpdate = useCallback(() => {
+    if (!latestUpdate?.id) return
+    localStorage.setItem(`app-update-dismissed-${latestUpdate.id}`, 'true')
+    setLatestUpdate(null)
+  }, [latestUpdate?.id])
+
+  useEffect(() => {
     return () => {
       if (presenceGlowTimerRef.current) clearTimeout(presenceGlowTimerRef.current)
     }
@@ -575,6 +607,55 @@ function Home({ onOpenWorship, worshipStatus }) {
               }}
               onPresenceComplete={handlePresenceComplete}
             />
+
+            {latestUpdate ? (
+              <article
+                className="home-gold-glass"
+                style={{
+                  borderRadius: '16px',
+                  padding: '16px',
+                  border: '1px solid rgba(212,175,55,0.55)',
+                  marginTop: '12px',
+                  marginBottom: '12px',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
+                  <p style={{ margin: 0, color: '#D4AF37', fontSize: '14px', fontWeight: 700 }}>
+                    What&apos;s New ✨
+                  </p>
+                  <button
+                    type="button"
+                    onClick={dismissLatestUpdate}
+                    style={{
+                      background: 'transparent',
+                      border: '1px solid rgba(212,175,55,0.4)',
+                      color: 'var(--text-secondary)',
+                      borderRadius: '999px',
+                      padding: '4px 10px',
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Dismiss
+                  </button>
+                </div>
+                <p style={{ margin: '8px 0 0', color: 'var(--text-primary)', fontWeight: 700 }}>
+                  v{latestUpdate.version} - {latestUpdate.title}
+                </p>
+                {latestUpdate.description ? (
+                  <p style={{ margin: '6px 0 0', color: 'var(--text-secondary)', fontSize: '13px' }}>
+                    {latestUpdate.description}
+                  </p>
+                ) : null}
+                <ul style={{ margin: '10px 0 0', paddingLeft: '18px' }}>
+                  {(latestUpdate.features || []).map((feature) => (
+                    <li key={feature} style={{ color: '#D4AF37', fontSize: '13px', marginBottom: '4px' }}>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            ) : null}
 
             <DailyStreakCard
               activeDays={mergedWeekActiveDays}

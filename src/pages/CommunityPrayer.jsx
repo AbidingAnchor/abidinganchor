@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
 import { getLocalCalendarDateKey } from '../utils/localCalendarDate'
@@ -24,6 +24,7 @@ function timeAgo(iso) {
 export default function CommunityPrayer() {
   const { t } = useTranslation()
   const { user, profile } = useAuth()
+  const navigate = useNavigate()
   const [tab, setTab] = useState('wall')
   const [filterCat, setFilterCat] = useState('All')
   const [prayers, setPrayers] = useState([])
@@ -52,7 +53,26 @@ export default function CommunityPrayer() {
       }
       const { data: rows, error } = await q
       if (error) throw error
-      setPrayers(rows || [])
+      const wallRows = rows || []
+      const authorIds = [...new Set(wallRows.map((row) => row.user_id).filter(Boolean))]
+      let profilesById = {}
+      if (authorIds.length > 0) {
+        const { data: profileRows, error: profileError } = await supabase
+          .from('profiles')
+          .select('id, username, full_name, avatar_url')
+          .in('id', authorIds)
+        if (profileError) throw profileError
+        profilesById = (profileRows || []).reduce((acc, row) => {
+          acc[row.id] = row
+          return acc
+        }, {})
+      }
+      setPrayers(
+        wallRows.map((row) => ({
+          ...row,
+          author_profile: profilesById[row.user_id] || null,
+        })),
+      )
 
       const ids = (rows || []).map((r) => r.id)
       if (ids.length === 0) {
@@ -201,7 +221,8 @@ export default function CommunityPrayer() {
   const displayAuthor = (p) => {
     if (p.is_anonymous) return 'Anonymous'
     const n = p.display_name?.trim()
-    return n || 'Anonymous'
+    const profileName = p.author_profile?.username?.trim() || p.author_profile?.full_name?.trim()
+    return n || profileName || 'Anonymous'
   }
 
   return (
@@ -335,7 +356,41 @@ export default function CommunityPrayer() {
                     <span className="text-xs text-secondary">{timeAgo(p.created_at)}</span>
                   </div>
                   <p className="text-body leading-relaxed text-primary">{p.content}</p>
-                  <p className="mt-2 text-xs font-medium text-gold-accent">{displayAuthor(p)}</p>
+                  <button
+                    type="button"
+                    className="mt-2 flex items-center gap-2 rounded-lg border border-transparent p-0 text-xs font-medium text-gold-accent transition hover:border-white/10"
+                    style={{ background: 'transparent' }}
+                    onClick={() => !p.is_anonymous && p.user_id && navigate(`/profile/${p.user_id}`)}
+                    disabled={p.is_anonymous || !p.user_id}
+                    aria-label={p.is_anonymous ? 'Anonymous profile hidden' : `Open ${displayAuthor(p)} profile`}
+                  >
+                    {p.author_profile?.avatar_url && !p.is_anonymous ? (
+                      <img
+                        src={p.author_profile.avatar_url}
+                        alt=""
+                        aria-hidden
+                        style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <span
+                        aria-hidden
+                        style={{
+                          width: '20px',
+                          height: '20px',
+                          borderRadius: '50%',
+                          display: 'grid',
+                          placeItems: 'center',
+                          background: 'rgba(212,168,67,0.18)',
+                          color: '#D4A843',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                        }}
+                      >
+                        {(displayAuthor(p)?.[0] || 'A').toUpperCase()}
+                      </span>
+                    )}
+                    <span>{displayAuthor(p)}</span>
+                  </button>
                   <p className="mt-2 text-xs text-secondary">
                     {cnt === 0 ? 'No prayers yet' : `${cnt} ${cnt === 1 ? 'person has' : 'people have'} prayed`}
                   </p>

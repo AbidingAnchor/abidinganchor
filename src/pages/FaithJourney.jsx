@@ -287,7 +287,7 @@ export default function FaithJourney() {
                       : 'idle'
                 return (
                   <div
-                    key={day}
+                    key={`${day}-${i}`}
                     className={`fj-hub-streak-dot fj-hub-streak-dot--${dotState}`}
                   >
                     {day}

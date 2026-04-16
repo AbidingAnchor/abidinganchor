@@ -141,10 +141,10 @@ export default function Support() {
               <div style={{ color: '#141824', fontSize: '18px', fontWeight: 'bold' }}>{tier.amount}</div>
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ color: 'rgba(255, 255, 255, 0.95)', fontSize: '14px', fontWeight: 600 }}>
+              <div className="support-tier-label" style={{ color: 'rgba(255, 255, 255, 0.95)', fontSize: '14px', fontWeight: 600 }}>
                 {tier.label}
               </div>
-              <div style={{ color: 'rgba(255, 255, 255, 0.62)', fontSize: '12px', marginTop: '2px' }}>
+              <div className="support-tier-desc" style={{ color: 'rgba(255, 255, 255, 0.62)', fontSize: '12px', marginTop: '2px' }}>
                 {tier.desc}
               </div>
             </div>

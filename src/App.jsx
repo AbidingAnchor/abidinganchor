@@ -17,6 +17,7 @@ import FastingTracker from './pages/FastingTracker'
 import Support from './pages/Support'
 import CommunityPrayer from './pages/CommunityPrayer'
 import Friends from './pages/Friends'
+import PublicProfile from './pages/PublicProfile'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsOfService from './pages/TermsOfService'
 import Legal from './pages/Legal'
@@ -258,6 +259,7 @@ function AppShell() {
               <Route path="/ai-companion" element={<ProtectedRoute><AICompanion /></ProtectedRoute>} />
               <Route path="/faith-journey" element={<ProtectedRoute><FaithJourney /></ProtectedRoute>} />
               <Route path="/community-prayer" element={<ProtectedRoute><CommunityPrayer /></ProtectedRoute>} />
+              <Route path="/profile/:userId" element={<ProtectedRoute><PublicProfile /></ProtectedRoute>} />
               <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
               <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />

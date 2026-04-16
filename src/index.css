@@ -2117,3 +2117,14 @@ body.theme-afternoon .community-prayer-filters .community-filter-btn:not(.commun
   color: var(--card-text) !important;
   border: 1px solid rgba(212, 168, 67, 0.35) !important;
 }
+
+/* Support page — donation tier text contrast on daytime sky themes */
+body.theme-day .support-tier-label,
+body.theme-day .support-tier-desc,
+body.theme-morning .support-tier-label,
+body.theme-morning .support-tier-desc,
+body.theme-afternoon .support-tier-label,
+body.theme-afternoon .support-tier-desc {
+  color: #1a1a1a !important;
+}
+

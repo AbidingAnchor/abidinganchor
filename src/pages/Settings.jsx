@@ -43,6 +43,7 @@ const FEEDBACK_TYPES = [
 ]
 
 const FEEDBACK_MAX_LEN = 500
+const BIO_MAX = 150
 
 export default function Settings() {
   const { t, i18n: i18nHook } = useTranslation()
@@ -56,6 +57,10 @@ export default function Settings() {
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState(null)
   const [localAvatarUrl, setLocalAvatarUrl] = useState(null)
   const [localUsername, setLocalUsername] = useState('')
+  const [bio, setBio] = useState('')
+  const [favoriteVerse, setFavoriteVerse] = useState('')
+  const [profileSaving, setProfileSaving] = useState(false)
+  const [profileSaveMessage, setProfileSaveMessage] = useState('')
   const [dailyReminderEnabled, setDailyReminderEnabled] = useState(false)
   const [reminderTime, setReminderTime] = useState('08:00')
   const [draftReminderTime, setDraftReminderTime] = useState('08:00')
@@ -185,14 +190,44 @@ export default function Settings() {
     const loadAvatar = async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('avatar_url, username')
+        .select('avatar_url, username, bio, favorite_verse')
         .eq('id', user.id)
         .maybeSingle()
       if (data?.avatar_url) setLocalAvatarUrl(data.avatar_url)
       setLocalUsername(data?.username || '')
+      setBio(data?.bio || '')
+      setFavoriteVerse(data?.favorite_verse || '')
     }
     loadAvatar()
   }, [user?.id])
+
+  const handleSaveProfileDetails = async () => {
+    if (!user?.id || profileSaving) return
+    setProfileSaving(true)
+    setProfileSaveMessage('')
+    try {
+      const payload = {
+        bio: bio.trim() || null,
+        favorite_verse: favoriteVerse.trim() || null,
+      }
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(payload)
+        .eq('id', user.id)
+        .select()
+        .single()
+      if (error) throw error
+      await refreshProfile(data)
+      setProfileSaveMessage('Profile details saved.')
+      setTimeout(() => setProfileSaveMessage(''), 2200)
+    } catch (error) {
+      console.error('Profile details save error:', error)
+      setProfileSaveMessage('Could not save profile details.')
+      setTimeout(() => setProfileSaveMessage(''), 2200)
+    } finally {
+      setProfileSaving(false)
+    }
+  }
 
   useEffect(() => {
     if (
@@ -618,6 +653,26 @@ export default function Settings() {
               <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>
                 {userEmail}
               </p>
+              {profile?.is_supporter ? (
+                <div
+                  style={{
+                    marginTop: '8px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: 'rgba(212,175,55,0.18)',
+                    border: '1px solid #D4AF37',
+                    borderRadius: '999px',
+                    padding: '4px 10px',
+                    color: '#D4AF37',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                  }}
+                >
+                  <span aria-hidden>⚓</span>
+                  <span>Ministry Supporter</span>
+                </div>
+              ) : null}
               {uploadStatus === 'success' && (
                 <p style={{ color: '#4ade80', fontSize: '12px', marginTop: '4px' }}>
                   {t('settings.profilePhotoSaved')}
@@ -771,6 +826,125 @@ export default function Settings() {
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="glass-panel" style={{ borderRadius: '16px', padding: '20px' }}>
+          <p style={{ color: 'var(--text-primary)', fontSize: '16px', fontWeight: 600, marginBottom: '10px' }}>
+            Public Profile Details
+          </p>
+          <label style={{ color: 'var(--text-primary)', display: 'block', fontSize: '14px', marginBottom: '8px' }}>Bio</label>
+          <textarea
+            value={bio}
+            onChange={(e) => setBio(e.target.value.slice(0, BIO_MAX))}
+            placeholder="Share a short testimony or introduction"
+            rows={3}
+            className="glass-input-field"
+            style={{ width: '100%', borderRadius: '12px', padding: '12px', resize: 'none' }}
+          />
+          <p style={{ textAlign: 'right', color: 'rgba(255,255,255,0.6)', fontSize: '12px', marginTop: '6px' }}>
+            {bio.length}/{BIO_MAX}
+          </p>
+
+          <label style={{ color: 'var(--text-primary)', display: 'block', fontSize: '14px', marginBottom: '8px', marginTop: '10px' }}>
+            Favorite verse
+          </label>
+          <textarea
+            value={favoriteVerse}
+            onChange={(e) => setFavoriteVerse(e.target.value)}
+            placeholder="John 3:16 - For God so loved the world..."
+            rows={3}
+            className="glass-input-field"
+            style={{ width: '100%', borderRadius: '12px', padding: '12px', resize: 'vertical' }}
+          />
+
+          <button
+            type="button"
+            onClick={handleSaveProfileDetails}
+            disabled={profileSaving}
+            style={{
+              width: '100%',
+              marginTop: '14px',
+              border: 'none',
+              borderRadius: '12px',
+              padding: '11px 14px',
+              background: '#D4AF37',
+              color: '#1a1a1a',
+              fontWeight: 700,
+              cursor: profileSaving ? 'not-allowed' : 'pointer',
+              opacity: profileSaving ? 0.75 : 1,
+            }}
+          >
+            {profileSaving ? 'Saving...' : 'Save Profile Details'}
+          </button>
+          {profileSaveMessage ? (
+            <p style={{ marginTop: '8px', marginBottom: 0, color: 'var(--text-secondary)', fontSize: '13px' }}>{profileSaveMessage}</p>
+          ) : null}
+        </div>
+
+        {/* Support the Ministry */}
+        <div
+          className="glass-panel"
+          style={{
+            borderRadius: '16px',
+            padding: '20px',
+            border: '1px solid rgba(212,175,55,0.45)',
+            boxShadow: '0 10px 30px rgba(212,175,55,0.14)',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              marginBottom: '10px',
+            }}
+          >
+            <div
+              style={{
+                width: '34px',
+                height: '34px',
+                borderRadius: '10px',
+                background: 'rgba(212,175,55,0.20)',
+                border: '1px solid #D4AF37',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '18px',
+              }}
+              aria-hidden
+            >
+              ⚓
+            </div>
+            <p style={{ margin: 0, color: '#D4AF37', fontSize: '18px', fontWeight: 700 }}>
+              Keep the Ministry Free
+            </p>
+          </div>
+          <p style={{ margin: '0 0 14px', color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.5 }}>
+            Every contribution helps keep Abiding Anchor free and ad-free for believers worldwide.
+          </p>
+          {profile?.is_supporter ? (
+            <p style={{ margin: 0, color: '#D4AF37', fontSize: '14px', fontWeight: 700 }}>
+              Thank you for supporting the ministry! 🙏
+            </p>
+          ) : (
+            <button
+              type="button"
+              onClick={() => window.open('https://abidinganchor.com/support', '_blank', 'noopener,noreferrer')}
+              style={{
+                background: '#D4AF37',
+                color: '#1a1a1a',
+                border: 'none',
+                borderRadius: '14px',
+                padding: '12px 14px',
+                fontSize: '14px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                width: '100%',
+              }}
+            >
+              Sponsor a Verse
+            </button>
+          )}
         </div>
 
         {/* App language */}
