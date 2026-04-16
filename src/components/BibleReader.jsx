@@ -783,6 +783,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
               aria-hidden
             />
             <div
+              className="read-translation-picker"
               style={{
                 position: 'fixed',
                 top: `max(${translationDropdownRect.top}px, calc(env(safe-area-inset-top, 0px) + 8px))`,
@@ -790,16 +791,16 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                 width: 200,
                 boxSizing: 'border-box',
                 zIndex: 10020,
-                background: 'rgba(255, 255, 255, 0.15)',
-                border: '1px solid #D4A843',
+                background: 'var(--glass-bg)',
+                border: '1px solid var(--glass-border-hover)',
                 borderRadius: '12px',
                 padding: '10px 8px 8px',
                 maxHeight: 'min(200px, calc(100dvh - env(safe-area-inset-top, 0px) - 16px))',
                 overflowY: 'auto',
                 overflowX: 'hidden',
                 pointerEvents: 'auto',
-                boxShadow: '0 18px 40px rgba(0,0,0,0.45)',
-                color: 'inherit',
+                boxShadow: 'var(--glass-shadow)',
+                color: 'var(--text-primary)',
                 backdropFilter: 'blur(12px)',
                 WebkitBackdropFilter: 'blur(12px)',
               }}
@@ -808,6 +809,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
               onClick={(e) => e.stopPropagation()}
             >
               <p
+                className="read-translation-picker__title"
                 style={{
                   color: 'var(--text-primary)',
                   fontSize: '11px',
@@ -819,7 +821,15 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
               >
                 {t('bible.translation')}
               </p>
-              <p style={{ color: 'rgba(245,230,200,0.55)', fontSize: '10px', margin: '0 6px 8px', lineHeight: 1.35 }}>
+              <p
+                className="read-translation-picker__note"
+                style={{
+                  color: 'var(--text-muted)',
+                  fontSize: '10px',
+                  margin: '0 6px 8px',
+                  lineHeight: 1.35,
+                }}
+              >
                 {HAS_API_BIBLE ? t('bible.apiFollowsAppLanguage') : t('bible.publicDomainNote')}
               </p>
               {!HAS_API_BIBLE ? (
@@ -834,7 +844,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                           padding: 0,
                           borderBottom:
                             index < translationOptions.length - 1
-                              ? '1px solid rgba(255, 255, 255, 0.05)'
+                              ? '1px solid var(--glass-border)'
                               : 'none',
                         }}
                       >
@@ -847,10 +857,10 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                             setShowTranslationPicker(false)
                           }}
                           style={{
-                            background: active ? 'rgba(212, 168, 67, 0.2)' : 'rgba(255,255,255,0.02)',
-                            border: active ? '1px solid #D4A843' : '1px solid transparent',
+                            background: active ? 'var(--glass-bg-hover)' : 'transparent',
+                            border: active ? '1px solid var(--glass-border-hover)' : '1px solid transparent',
                             borderRadius: '8px',
-                            color: '#F8F5EC',
+                            color: 'var(--text-primary)',
                             cursor: 'pointer',
                             padding: '10px 10px',
                             textAlign: 'left',
@@ -859,10 +869,28 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                             transition: 'background 0.15s ease',
                           }}
                         >
-                          <span style={{ fontSize: '14px', fontWeight: 700, color: active ? '#D4A843' : '#F8F5EC', display: 'block' }}>
+                          <span
+                            className="read-translation-picker__label"
+                            style={{
+                              fontSize: '14px',
+                              fontWeight: 700,
+                              color: active ? '#D4A843' : 'var(--text-primary)',
+                              display: 'block',
+                            }}
+                          >
                             {opt.label}
                           </span>
-                          <span style={{ fontSize: '11px', fontWeight: 500, color: 'rgba(245,230,200,0.58)', display: 'block', marginTop: '2px', lineHeight: 1.3 }}>
+                          <span
+                            className="read-translation-picker__sublabel"
+                            style={{
+                              fontSize: '11px',
+                              fontWeight: 500,
+                              color: 'var(--text-secondary)',
+                              display: 'block',
+                              marginTop: '2px',
+                              lineHeight: 1.3,
+                            }}
+                          >
                             {opt.subtitle}
                           </span>
                         </button>
@@ -873,11 +901,12 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
               ) : null}
               <button
                 type="button"
+                className="read-translation-picker__close"
                 onClick={() => setShowTranslationPicker(false)}
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: 'rgba(245,230,200,0.65)',
+                  color: 'var(--text-muted)',
                   fontSize: '12px',
                   cursor: 'pointer',
                   marginTop: '6px',

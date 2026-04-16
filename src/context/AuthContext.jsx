@@ -256,10 +256,15 @@ export function AuthProvider({ children }) {
 
   const signUp = async (email, password, fullName) => {
     try {
+      const emailRedirectTo =
+        typeof window !== 'undefined' ? `${window.location.origin}/` : undefined
       const { data, error } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password,
-        options: { data: { full_name: fullName } },
+        options: {
+          data: { full_name: fullName },
+          ...(emailRedirectTo ? { emailRedirectTo } : {}),
+        },
       })
       if (!error) return { data, error: null, usedEmailFallback: false }
       if (!isConfirmationEmailSendError(error.message)) return { data, error, usedEmailFallback: false }

@@ -87,6 +87,26 @@
   opacity: 1 !important;
 }
 
+/* Read translation picker (portaled; class must not include "bible" — day [class*="bible"] rule) */
+[data-theme="day"] .read-translation-picker__title {
+  color: var(--text-primary) !important;
+}
+[data-theme="day"] .read-translation-picker__note {
+  color: var(--text-muted) !important;
+}
+[data-theme="day"] .read-translation-picker button[aria-selected="true"] .read-translation-picker__label {
+  color: #d4a843 !important;
+}
+[data-theme="day"] .read-translation-picker button[aria-selected="false"] .read-translation-picker__label {
+  color: var(--text-primary) !important;
+}
+[data-theme="day"] .read-translation-picker__sublabel {
+  color: var(--text-secondary) !important;
+}
+[data-theme="day"] .read-translation-picker__close {
+  color: var(--text-muted) !important;
+}
+
 /* Labels and small text */
 [data-theme="day"] label,
 [data-theme="day"] small,

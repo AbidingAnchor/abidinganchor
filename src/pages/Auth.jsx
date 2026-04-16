@@ -1,6 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { formatAuthErrorMessage } from '../utils/authErrors'
 
 const MIN_AUTH_SCALE = 0.58
 
@@ -119,7 +120,7 @@ export default function Auth() {
     if (!password.trim()) return setError('Password is required.')
     setLoading(true)
     const { error: signInError } = await signIn(cleanEmail, password)
-    if (signInError) setError(signInError.message)
+    if (signInError) setError(formatAuthErrorMessage(signInError))
     setLoading(false)
   }
 
@@ -131,9 +132,15 @@ export default function Auth() {
     if (!password.trim()) return setError('Password is required.')
     if (password.length < 6) return setError('Password must be at least 6 characters.')
     setLoading(true)
-    const { error: signUpError } = await signUp(cleanEmail, password, '')
-    if (signUpError) setError(signUpError.message)
-    else setSuccess('Check your email to confirm your account.')
+    const { error: signUpError, usedEmailFallback } = await signUp(cleanEmail, password, '')
+    if (signUpError) setError(formatAuthErrorMessage(signUpError))
+    else if (usedEmailFallback) {
+      setSuccess('')
+    } else {
+      setSuccess(
+        'We sent a confirmation link to your email. Please check your inbox and confirm your account before signing in.',
+      )
+    }
     setLoading(false)
   }
 
