@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 /**
@@ -7,6 +8,29 @@ import { useTranslation } from 'react-i18next'
  */
 export default function LoadingScreen() {
   useTranslation()
+  const [logoLoaded, setLogoLoaded] = useState(false)
+
+  useEffect(() => {
+    let alive = true
+    const img = new Image()
+    img.src = '/NewLogo.png'
+    if (img.complete) {
+      if (alive) setLogoLoaded(true)
+      return () => {
+        alive = false
+      }
+    }
+    img.onload = () => {
+      if (alive) setLogoLoaded(true)
+    }
+    img.onerror = () => {
+      if (alive) setLogoLoaded(true)
+    }
+    return () => {
+      alive = false
+    }
+  }, [])
+
   return (
     <div
       style={{
@@ -48,6 +72,8 @@ export default function LoadingScreen() {
         <img
           src="/NewLogo.png"
           alt="Abiding Anchor"
+          onLoad={() => setLogoLoaded(true)}
+          onError={() => setLogoLoaded(true)}
           style={{
             width: 'clamp(180px, 48vw, 200px)',
             height: 'auto',
@@ -56,6 +82,8 @@ export default function LoadingScreen() {
             display: 'block',
             margin: '0 auto',
             animation: 'loading-logo-pulse 2.2s ease-in-out infinite',
+            opacity: logoLoaded ? 1 : 0,
+            transition: 'opacity 220ms ease',
           }}
         />
         <p

@@ -124,22 +124,26 @@ drop policy if exists "personal_prayers_insert_own" on public.personal_prayers;
 drop policy if exists "personal_prayers_update_own" on public.personal_prayers;
 drop policy if exists "personal_prayers_delete_own" on public.personal_prayers;
 
+drop policy if exists "personal_prayers_select_own" on public.personal_prayers;
 create policy "personal_prayers_select_own"
   on public.personal_prayers for select
   to authenticated
   using (auth.uid() = user_id);
 
+drop policy if exists "personal_prayers_insert_own" on public.personal_prayers;
 create policy "personal_prayers_insert_own"
   on public.personal_prayers for insert
   to authenticated
   with check (auth.uid() = user_id);
 
+drop policy if exists "personal_prayers_update_own" on public.personal_prayers;
 create policy "personal_prayers_update_own"
   on public.personal_prayers for update
   to authenticated
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
+drop policy if exists "personal_prayers_delete_own" on public.personal_prayers;
 create policy "personal_prayers_delete_own"
   on public.personal_prayers for delete
   to authenticated
@@ -156,16 +160,19 @@ drop policy if exists "Users delete own community prayers" on public.community_p
 drop policy if exists "Users update own community prayers" on public.community_prayers;
 drop policy if exists "Authenticated select community prayers" on public.community_prayers;
 
+drop policy if exists "community_prayers_select_wall" on public.community_prayers;
 create policy "community_prayers_select_wall"
   on public.community_prayers for select
   to authenticated
   using (true);
 
+drop policy if exists "community_prayers_insert_own" on public.community_prayers;
 create policy "community_prayers_insert_own"
   on public.community_prayers for insert
   to authenticated
   with check (auth.uid() = user_id);
 
+drop policy if exists "community_prayers_delete_own" on public.community_prayers;
 create policy "community_prayers_delete_own"
   on public.community_prayers for delete
   to authenticated
@@ -211,16 +218,19 @@ drop policy if exists "Anyone can view prayers" on public.prayer_wall;
 drop policy if exists "Owner can delete own prayer" on public.prayer_wall;
 drop policy if exists "Anyone can update praying_count" on public.prayer_wall;
 
+drop policy if exists "prayer_wall_select_authenticated" on public.prayer_wall;
 create policy "prayer_wall_select_authenticated"
   on public.prayer_wall for select
   to authenticated
   using (true);
 
+drop policy if exists "prayer_wall_insert_own" on public.prayer_wall;
 create policy "prayer_wall_insert_own"
   on public.prayer_wall for insert
   to authenticated
   with check (auth.uid() = user_id);
 
+drop policy if exists "prayer_wall_delete_own_or_mod" on public.prayer_wall;
 create policy "prayer_wall_delete_own_or_mod"
   on public.prayer_wall for delete
   to authenticated
@@ -285,11 +295,13 @@ alter table public.reports enable row level security;
 drop policy if exists "Users can insert reports" on public.reports;
 drop policy if exists "Admins can view reports" on public.reports;
 
+drop policy if exists "reports_insert_own" on public.reports;
 create policy "reports_insert_own"
   on public.reports for insert
   to authenticated
   with check (auth.uid() = reported_by);
 
+drop policy if exists "reports_select_own" on public.reports;
 create policy "reports_select_own"
   on public.reports for select
   to authenticated
