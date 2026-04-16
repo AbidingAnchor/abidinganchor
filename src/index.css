@@ -295,6 +295,11 @@ body {
   padding-bottom: 0 !important;
 }
 
+/* Seek & Find (Search): height follows content; shell clears bottom nav */
+.content-scroll.search-page {
+  padding-bottom: 0 !important;
+}
+
 /* Long pages: bottom nav is 72px fixed + safe area — ensure scrollable content clears it */
 .content-scroll.content-scroll--nav-clear {
   padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
