@@ -13,8 +13,9 @@ export default defineConfig({
       filename: 'sw.js',
       injectRegister: false,
       manifest: false,
-      workbox: {
+      injectManifest: {
         maximumFileSizeToCacheInBytes: 50 * 1024 * 1024,
+        globIgnores: ['**/crossReferences*.js'],
       },
       devOptions: {
         enabled: true,
