@@ -255,7 +255,8 @@ body {
   overflow-x: hidden;
   margin: 0;
   padding: 0;
-  background: transparent;
+  background-color: #0d1f4e;
+  overscroll-behavior-y: contain;
   scroll-behavior: smooth;
 }
 
