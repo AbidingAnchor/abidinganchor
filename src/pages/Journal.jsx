@@ -20,7 +20,7 @@ import { WEEK_DAY_SHORT } from '../hooks/useStreakTracker'
 import FirstJournalEntryCelebration from '../components/FirstJournalEntryCelebration'
 
 const ACCENT_GOLD = '#c9922a'
-const JOURNAL_MOUNT_DELAY_MS = 950
+const JOURNAL_MOUNT_DELAY_MS = 600
 
 function getPromptForEntryDate(iso, prompts) {
   if (!prompts?.length) return { prompt: '', verse: '' }

@@ -41,6 +41,11 @@ import { syncWeeklyActiveDays } from './hooks/useStreakTracker'
 
 const LEGAL_ACCEPTED_KEY = 'legalAccepted'
 const GA_MEASUREMENT_ID = 'G-1VXQ7114R7'
+const APP_STAGGER_DELAY_MS = 300
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
 
 function ProtectedRoute({ children }) {
   const { user, loading, suspendedInfo } = useAuth()
@@ -153,9 +158,15 @@ function AppShell() {
     let cancelled = false
     let timeoutId
     const run = async () => {
+      // First ensure profile state settles, then run non-critical streak sync in stages.
+      await refreshProfile()
+      if (cancelled) return
+      await wait(APP_STAGGER_DELAY_MS)
+      if (cancelled) return
       await syncWeeklyActiveDays(user.id)
       await applyDailyStreakOnAppOpen(user.id)
-      if (!cancelled) await refreshProfile()
+      if (cancelled) return
+      await wait(APP_STAGGER_DELAY_MS)
     }
     run()
     const onVis = () => {

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { getCachedSession, supabase } from '../lib/supabase'
 import { clearAbidingAnchorUserStorage } from '../utils/userStorage'
 
 function captureRecoveryHintFromUrl() {
@@ -70,7 +70,7 @@ export default function ResetPassword() {
     const finalize = async (stage) => {
       if (cancelled || recoverySeenRef.current) return
 
-      const { data: { session } } = await supabase.auth.getSession()
+      const session = await getCachedSession({ forceRefresh: true })
       if (cancelled || recoverySeenRef.current) return
 
       const hasQueryRecovery =

@@ -12,3 +12,39 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
   },
 })
+
+let cachedSession = null
+let cachedSessionPromise = null
+
+/**
+ * Centralized session getter to avoid concurrent auth lock contention.
+ */
+export async function getCachedSession({ forceRefresh = false } = {}) {
+  if (!forceRefresh && cachedSession !== null) {
+    return cachedSession
+  }
+  if (cachedSessionPromise) {
+    return cachedSessionPromise
+  }
+  cachedSessionPromise = supabase.auth
+    .getSession()
+    .then(({ data, error }) => {
+      if (error) throw error
+      cachedSession = data?.session ?? null
+      return cachedSession
+    })
+    .finally(() => {
+      cachedSessionPromise = null
+    })
+  return cachedSessionPromise
+}
+
+export function clearCachedSession() {
+  cachedSession = null
+}
+
+if (typeof window !== 'undefined') {
+  supabase.auth.onAuthStateChange((_event, session) => {
+    cachedSession = session ?? null
+  })
+}

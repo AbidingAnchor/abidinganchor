@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { clearCachedSession, getCachedSession, supabase } from '../lib/supabase'
 import { clearAbidingAnchorUserStorage, setActiveStorageUserId, userStorageKey } from '../utils/userStorage'
 import { profileFullNameFromUser } from '../utils/profileDisplay'
 
@@ -12,8 +12,7 @@ function isValidUUID(str) {
 }
 
 /**
- * Email confirmation / magic-link redirects often include ?code=… (PKCE).
- * Exchange it for a session before the first getSession() so boot + RLS work.
+ * Handles auth redirects and normalizes URL query params.
  */
 async function syncSessionFromAuthRedirectUrl() {
   if (typeof window === 'undefined') return
@@ -31,6 +30,7 @@ async function syncSessionFromAuthRedirectUrl() {
     const qs = url.searchParams.toString()
     const path = `${url.pathname}${qs ? `?${qs}` : ''}${url.hash}`
     window.history.replaceState(window.history.state, '', path)
+    await getCachedSession({ forceRefresh: true })
   } catch (err) {
     console.error('syncSessionFromAuthRedirectUrl:', err)
   }
@@ -185,17 +185,13 @@ export function AuthProvider({ children }) {
     const boot = async () => {
       try {
         await syncSessionFromAuthRedirectUrl()
-        let {
-          data: { session },
-        } = await supabase.auth.getSession()
+        let session = await getCachedSession()
         if (!session?.user && typeof window !== 'undefined') {
           const h = window.location.hash || ''
           const q = window.location.search || ''
           if (/access_token|refresh_token|code=/.test(`${q}${h}`)) {
             await new Promise((r) => setTimeout(r, 150))
-            ;({
-              data: { session },
-            } = await supabase.auth.getSession())
+            session = await getCachedSession({ forceRefresh: true })
           }
         }
         const nextUser = session?.user ?? null
@@ -324,6 +320,7 @@ export function AuthProvider({ children }) {
     profileSyncedUserIds.clear()
     setSuspendedInfo(null)
     clearAbidingAnchorUserStorage()
+    clearCachedSession()
     await supabase.auth.signOut()
   }
 
