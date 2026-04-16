@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
 import { supabase } from '../lib/supabase'
 import { userStorageKey } from '../utils/userStorage'
 import { initialDisplayNameFromAuth } from '../utils/profileDisplay'
@@ -36,6 +37,7 @@ const APP_TOUR_FEATURES = [
 
 export default function Onboarding({ onComplete }) {
   const { user, profile, refreshProfile } = useAuth()
+  const themeSky = useThemeBackgroundType()
   const [screen, setScreen] = useState(1)
   const [displayName, setDisplayName] = useState(() => initialDisplayNameFromAuth(user, profile))
   const [dateOfBirth, setDateOfBirth] = useState(() => profile?.date_of_birth || '')
@@ -54,8 +56,8 @@ export default function Onboarding({ onComplete }) {
   }, [displayName, dateOfBirth])
 
   const onboardingTheme = useMemo(() => {
-    const hour = new Date().getHours()
-    if (hour >= 6 && hour < 17) {
+    const sky = themeSky
+    if (sky === 'day') {
       return {
         mode: 'day',
         cardBg: 'rgba(245,237,214,0.85)',
@@ -67,7 +69,7 @@ export default function Onboarding({ onComplete }) {
         optionBorder: '1px solid rgba(122, 98, 55, 0.22)',
       }
     }
-    if (hour >= 17 && hour < 21) {
+    if (sky === 'sunset') {
       return {
         mode: 'evening',
         cardBg: 'rgba(82,57,104,0.78)',
@@ -89,7 +91,7 @@ export default function Onboarding({ onComplete }) {
       optionBg: 'rgba(255,255,255,0.05)',
       optionBorder: '1px solid rgba(255,255,255,0.10)',
     }
-  }, [])
+  }, [themeSky])
 
   const toggleGoal = (goalId) => {
     setSelectedGoals(prev => 

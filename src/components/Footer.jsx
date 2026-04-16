@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
-export default function Footer() {
+export default function Footer({ compact = false }) {
   const { t } = useTranslation()
   return (
     <footer
@@ -9,11 +9,12 @@ export default function Footer() {
       style={{
         position: 'static',
         width: '100%',
-        marginTop: 'auto',
+        marginTop: compact ? 0 : 'auto',
+        marginBottom: 0,
         textAlign: 'center',
         fontSize: '12px',
         color: 'rgba(255,255,255,0.4)',
-        padding: '10px 10px 88px',
+        padding: compact ? '20px 0 0' : '10px 10px 88px',
         borderTop: '1px solid rgba(255,255,255,0.06)',
       }}
     >
@@ -35,18 +36,22 @@ export default function Footer() {
           display: 'flex',
           justifyContent: 'center',
           marginTop: '12px',
+          marginBottom: 0,
+          lineHeight: 0,
         }}
       >
         <a
           href="https://www.producthunt.com/products/abiding-anchor?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-abiding-anchor"
           target="_blank"
           rel="noopener noreferrer"
+          style={{ lineHeight: 0, display: 'inline-block' }}
         >
           <img
             alt="Abiding Anchor on Product Hunt"
             width="250"
             height="54"
             src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1124085&theme=light&t=1776230155188"
+            style={{ display: 'block' }}
           />
         </a>
       </div>

@@ -5,13 +5,12 @@ import DayBackground, {
 } from "./DayBackground";
 import SunsetBackground from "./SunsetBackground";
 import CelestialBackground from "./CelestialBackground";
+import {
+  THEME_PREFERENCE_CHANGED_EVENT,
+  THEME_PREFERENCE_STORAGE_KEY,
+} from "../utils/themePreferenceStorage";
 
 const FADE_DURATION_MS = 800;
-
-// TODO: REMOVE BEFORE LAUNCH — delegates to DayBackground (localStorage devForceTheme + DEV_FORCE_HOUR + clock)
-function getBackgroundType(date = new Date()) {
-  return getBackgroundTypeForTime(date);
-}
 
 const BODY_SKY_CLASSES = [
   "theme-day",
@@ -63,7 +62,7 @@ function BackgroundLayer({ type, isVisible }) {
 
 export default function BackgroundManager() {
   const [currentBg, setCurrentBg] = useState(() => {
-    const initial = getBackgroundType();
+    const initial = getBackgroundTypeForTime(new Date());
     document.documentElement.setAttribute("data-theme", initial);
     syncBodySkyClasses(initial);
     return initial;
@@ -74,7 +73,7 @@ export default function BackgroundManager() {
     let fadeTimeout;
 
     const updateBackground = () => {
-      const nextBg = getBackgroundType();
+      const nextBg = getBackgroundTypeForTime(new Date());
       syncBodySkyClasses(nextBg);
       setCurrentBg((prevBg) => {
         if (prevBg !== nextBg) {
@@ -95,17 +94,26 @@ export default function BackgroundManager() {
       if (!document.hidden) updateBackground();
     };
 
+    const onThemePreferenceChanged = () => updateBackground();
+    const onStorage = (e) => {
+      if (e.key === THEME_PREFERENCE_STORAGE_KEY || e.key === null) updateBackground();
+    };
+
     // TODO: REMOVE BEFORE LAUNCH — Settings theme preview
     const handleDevThemeChanged = () => updateBackground();
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("devForceThemeChanged", handleDevThemeChanged);
+    window.addEventListener(THEME_PREFERENCE_CHANGED_EVENT, onThemePreferenceChanged);
+    window.addEventListener("storage", onStorage);
 
     return () => {
       clearInterval(interval);
       clearTimeout(fadeTimeout);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("devForceThemeChanged", handleDevThemeChanged);
+      window.removeEventListener(THEME_PREFERENCE_CHANGED_EVENT, onThemePreferenceChanged);
+      window.removeEventListener("storage", onStorage);
     };
   }, []);
 

@@ -20,7 +20,7 @@ export default function BottomNav() {
     () => [
       { labelKey: 'nav.search', path: '/search', icon: '🔍' },
       { labelKey: 'nav.journey', path: '/faith-journey', icon: '✨' },
-      { labelKey: 'nav.community', path: '/community-prayer', icon: '🤝' },
+      { labelKey: 'nav.community', path: '/testimony-wall', icon: '📜' },
       { labelKey: 'nav.create', path: '/share-card', icon: '🕊️' },
       { labelKey: 'nav.settings', path: '/settings', icon: '⚙️' },
     ],

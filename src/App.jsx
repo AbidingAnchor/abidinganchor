@@ -16,6 +16,7 @@ import ReadingPlans from './pages/ReadingPlans'
 import FastingTracker from './pages/FastingTracker'
 import Support from './pages/Support'
 import CommunityPrayer from './pages/CommunityPrayer'
+import TestimonyWall from './pages/TestimonyWall'
 import Friends from './pages/Friends'
 import PublicProfile from './pages/PublicProfile'
 import PrivacyPolicy from './pages/PrivacyPolicy'
@@ -137,12 +138,7 @@ function AppShell() {
     location.pathname !== '/onboarding'
   const showFooter =
     !loading &&
-    location.pathname !== '/auth' &&
-    location.pathname !== '/reset-password' &&
-    location.pathname !== '/onboarding' &&
-    location.pathname !== '/read' &&
-    location.pathname !== '/reading-plan' &&
-    location.pathname !== '/worship'
+    (location.pathname === '/auth' || location.pathname === '/reset-password')
   const showHeader =
     !loading &&
     location.pathname !== '/auth' &&
@@ -259,6 +255,7 @@ function AppShell() {
               <Route path="/ai-companion" element={<ProtectedRoute><AICompanion /></ProtectedRoute>} />
               <Route path="/faith-journey" element={<ProtectedRoute><FaithJourney /></ProtectedRoute>} />
               <Route path="/community-prayer" element={<ProtectedRoute><CommunityPrayer /></ProtectedRoute>} />
+              <Route path="/testimony-wall" element={<ProtectedRoute><TestimonyWall /></ProtectedRoute>} />
               <Route path="/profile/:userId" element={<ProtectedRoute><PublicProfile /></ProtectedRoute>} />
               <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
               <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />

@@ -18,8 +18,10 @@ import { getJournalEntries, saveToJournal, getJournalWeekActiveDayShortNames } f
 import SaveToast from '../components/SaveToast'
 import FirstJournalEntryCelebration from '../components/FirstJournalEntryCelebration'
 import { useAuth } from '../context/AuthContext'
+import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
 import { supabase } from '../lib/supabase'
 import { userStorageKey } from '../utils/userStorage'
+import Footer from '../components/Footer'
 
 /** Race a promise against a timeout so streak sync cannot hang indefinitely on stalled requests. */
 const STREAK_SYNC_TIMEOUT_MS = 45_000
@@ -43,6 +45,7 @@ function Home({ onOpenWorship, worshipStatus }) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { user, profile, loading, refreshProfile } = useAuth()
+  const skyPeriod = useThemeBackgroundType()
   const { activeDays: profileWeekActiveDays } = useStreakTracker(user?.id)
   const [journalWeekActiveDays, setJournalWeekActiveDays] = useState([])
   const [dailyEncounter, setDailyEncounter] = useState(() => getDailyEncounter())
@@ -542,7 +545,13 @@ function Home({ onOpenWorship, worshipStatus }) {
   const hour = new Date().getHours()
   let timeGreeting = ''
   let timeEmoji = ''
-  if (hour >= 5 && hour < 12) {
+  if (skyPeriod === 'night') {
+    timeGreeting = t('home.greetEvening')
+    timeEmoji = '🌙'
+  } else if (skyPeriod === 'sunset') {
+    timeGreeting = t('home.greetEvening')
+    timeEmoji = '🌇'
+  } else if (hour >= 5 && hour < 12) {
     timeGreeting = t('home.greetMorning')
     timeEmoji = '🌅'
   } else if (hour >= 12 && hour < 18) {
@@ -562,18 +571,23 @@ function Home({ onOpenWorship, worshipStatus }) {
 
   return (
     <>
-      <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: 'transparent', paddingBottom: '120px', paddingTop: '60px' }}>
-        <div
-          className="content-scroll home-page"
-          style={{
-            padding: '0 16px',
-            maxWidth: '680px',
-            margin: '0 auto',
-            width: '100%',
-            background: 'transparent !important'
-          }}
-        >
-          <section style={{ marginBottom: '28px' }}>
+      <div
+        className="content-scroll home-page"
+        style={{
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 'calc(100dvh - 56px - 80px)',
+          padding: '60px 16px 0',
+          maxWidth: '680px',
+          margin: '0 auto',
+          width: '100%',
+          boxSizing: 'border-box',
+          background: 'transparent',
+        }}
+      >
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          <section style={{ marginBottom: 0 }}>
             <div style={{ marginBottom: '20px' }}>
               <p style={{ 
                 color: 'var(--heading-text)', 
@@ -705,22 +719,14 @@ function Home({ onOpenWorship, worshipStatus }) {
                 <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolSupport')}</p>
                 <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('home.toolSupportSub')}</p>
               </Link>
-              <div
-                role="button"
-                tabIndex={0}
+              <Link
+                to="/testimony-wall"
                 className="home-gold-glass home-tool-tile"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    window.open('https://discord.gg/nZcZRkUMJh', '_blank')
-                  }
-                }}
-                onClick={() => window.open('https://discord.gg/nZcZRkUMJh', '_blank')}
               >
-                <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>💬</p>
+                <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>📜</p>
                 <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolCommunity')}</p>
                 <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('home.toolCommunitySub')}</p>
-              </div>
+              </Link>
             </div>
           </div>
 
@@ -792,13 +798,14 @@ function Home({ onOpenWorship, worshipStatus }) {
             </div>
           </div>
         </section>
+        </div>
+        <Footer compact />
         <SaveToast trigger={toastTrigger} />
         <FirstJournalEntryCelebration
           open={showFirstJournalCelebration}
           onClose={() => setShowFirstJournalCelebration(false)}
         />
       </div>
-    </div>
     </>
   )
 }

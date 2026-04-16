@@ -2,6 +2,11 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { clearCachedSession, getCachedSession, supabase } from '../lib/supabase'
 import { clearAbidingAnchorUserStorage, setActiveStorageUserId, userStorageKey } from '../utils/userStorage'
 import { profileFullNameFromUser } from '../utils/profileDisplay'
+import {
+  clearThemePreferenceStorage,
+  emitThemePreferenceChanged,
+  syncThemePreferenceFromProfileRow,
+} from '../utils/themePreferenceStorage'
 
 const AuthContext = createContext({})
 
@@ -9,6 +14,16 @@ const PROFILE_FETCH_TIMEOUT_MS = 5000
 const profileSyncedUserIds = new Set()
 function isValidUUID(str) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+}
+
+function applyThemeStorageForProfile(profile) {
+  if (typeof window === 'undefined') return
+  if (!profile) {
+    clearThemePreferenceStorage()
+    emitThemePreferenceChanged()
+    return
+  }
+  syncThemePreferenceFromProfileRow(profile)
 }
 
 /**
@@ -210,6 +225,7 @@ export function AuthProvider({ children }) {
             setSuspendedInfo({ bannedAt: nextProfile?.banned_at || null })
             setUser(null)
             setProfile(null)
+            applyThemeStorageForProfile(null)
             profileSyncedUserIds.clear()
             clearAbidingAnchorUserStorage()
             await supabase.auth.signOut()
@@ -217,14 +233,17 @@ export function AuthProvider({ children }) {
           }
           setSuspendedInfo(null)
           setProfile(nextProfile)
+          applyThemeStorageForProfile(nextProfile)
         } else {
           setProfile(null)
+          applyThemeStorageForProfile(null)
         }
       } catch (err) {
         console.error('Auth boot error:', err)
         if (active) {
           setUser(null)
           setProfile(null)
+          applyThemeStorageForProfile(null)
         }
       } finally {
         if (active) {
@@ -244,6 +263,7 @@ export function AuthProvider({ children }) {
         try {
           if (!nextUser) {
             setProfile(null)
+            applyThemeStorageForProfile(null)
             setLoading(false)
             return
           }
@@ -259,6 +279,7 @@ export function AuthProvider({ children }) {
             setSuspendedInfo({ bannedAt: nextProfile?.banned_at || null })
             setUser(null)
             setProfile(null)
+            applyThemeStorageForProfile(null)
             profileSyncedUserIds.clear()
             clearAbidingAnchorUserStorage()
             await supabase.auth.signOut()
@@ -266,9 +287,11 @@ export function AuthProvider({ children }) {
           }
           setSuspendedInfo(null)
           setProfile(nextProfile)
+          applyThemeStorageForProfile(nextProfile)
         } catch (err) {
           console.error('onAuthStateChange:', err)
           setProfile(null)
+          applyThemeStorageForProfile(null)
         } finally {
           setLoading(false)
         }
@@ -320,6 +343,8 @@ export function AuthProvider({ children }) {
     profileSyncedUserIds.clear()
     setSuspendedInfo(null)
     clearAbidingAnchorUserStorage()
+    clearThemePreferenceStorage()
+    emitThemePreferenceChanged()
     clearCachedSession()
     await supabase.auth.signOut()
   }
@@ -327,6 +352,7 @@ export function AuthProvider({ children }) {
   const refreshProfile = useCallback(async (serverRow) => {
     if (serverRow && typeof serverRow === 'object') {
       setProfile(serverRow)
+      applyThemeStorageForProfile(serverRow)
       return serverRow
     }
     if (!user?.id) return null
@@ -341,6 +367,7 @@ export function AuthProvider({ children }) {
         return null
       }
       setProfile(data ?? null)
+      if (data) applyThemeStorageForProfile(data)
       return data ?? null
     } catch (error) {
       console.error('Profile refresh error:', error)

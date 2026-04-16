@@ -11,7 +11,7 @@ const tabs = [
   { label: 'Search', path: '/search', icon: '🔍' },
   { label: 'Journey', path: '/faith-journey', icon: '🧭' },
   { label: 'Prayer', path: '/prayer', icon: '🙏' },
-  { label: 'Community', path: '/community-prayer', icon: '🤝' },
+  { label: 'Testimonies', path: '/testimony-wall', icon: '📜' },
   { label: 'Journal', path: '/journal', icon: '📓' },
   { label: 'Create', path: '/share-card', icon: '✨' },
 ]
@@ -29,6 +29,7 @@ export default function Navbar() {
     '/faith-journey': '🧭 Journey',
     '/prayer': '🙏 Prayer Wall',
     '/community-prayer': '🤝 Community',
+    '/testimony-wall': '📜 Testimony Wall',
     '/journal': '📓 Journal',
     '/share-card': '🕊️ Share Your Faith',
     '/memorize': '📖 Memorize',

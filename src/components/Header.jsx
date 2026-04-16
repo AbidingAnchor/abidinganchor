@@ -12,6 +12,7 @@ const HEADER_PATH_TO_KEY = {
   '/faith-journey': 'journey',
   '/prayer': 'prayer',
   '/community-prayer': 'community',
+  '/testimony-wall': 'testimonyWall',
   '/journal': 'journal',
   '/share-card': 'shareCard',
   '/memorize': 'memorize',

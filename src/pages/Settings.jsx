@@ -17,6 +17,11 @@ import {
   writeReminderLocal,
 } from '../services/universalNotifications'
 import { getNotificationPlatform } from '../utils/notificationPlatform'
+import {
+  emitThemePreferenceChanged,
+  normalizeThemePreferenceValue,
+  writeThemePreferenceToStorage,
+} from '../utils/themePreferenceStorage'
 
 const UI_LANG_OPTIONS = [
   { code: 'en', flagIso: 'us', abbr: 'EN', labelKey: 'langEn' },
@@ -45,6 +50,13 @@ const FEEDBACK_TYPES = [
 const FEEDBACK_MAX_LEN = 500
 const BIO_MAX = 150
 
+const THEME_OPTIONS = [
+  { value: 'day', label: '☀️ Day' },
+  { value: 'evening', label: '🌅 Evening' },
+  { value: 'night', label: '🌙 Night' },
+  { value: 'automatic', label: '🔄 Automatic (default)' },
+]
+
 export default function Settings() {
   const { t, i18n: i18nHook } = useTranslation()
   const navigate = useNavigate()
@@ -61,6 +73,9 @@ export default function Settings() {
   const [favoriteVerse, setFavoriteVerse] = useState('')
   const [profileSaving, setProfileSaving] = useState(false)
   const [profileSaveMessage, setProfileSaveMessage] = useState('')
+  const [themePreference, setThemePreference] = useState('automatic')
+  const [themeSaving, setThemeSaving] = useState(false)
+  const [themeSaveError, setThemeSaveError] = useState('')
   const [dailyReminderEnabled, setDailyReminderEnabled] = useState(false)
   const [reminderTime, setReminderTime] = useState('08:00')
   const [draftReminderTime, setDraftReminderTime] = useState('08:00')
@@ -186,6 +201,16 @@ export default function Settings() {
   }, [feedbackModalOpen, deleteAccountModalOpen, reminderTimeConfirmOpen])
 
   useEffect(() => {
+    const raw = profile?.theme_preference
+    const t = typeof raw === 'string' ? raw.trim().toLowerCase() : ''
+    if (['day', 'evening', 'night', 'automatic'].includes(t)) {
+      setThemePreference(t)
+    } else {
+      setThemePreference('automatic')
+    }
+  }, [profile?.theme_preference])
+
+  useEffect(() => {
     if (!user?.id) return
     const loadAvatar = async () => {
       const { data } = await supabase
@@ -200,6 +225,38 @@ export default function Settings() {
     }
     loadAvatar()
   }, [user?.id])
+
+  const handleThemePreferenceSelect = async (value) => {
+    if (!user?.id || themeSaving) return
+    if (value === themePreference) return
+    setThemeSaveError('')
+    setThemeSaving(true)
+    setThemePreference(value)
+    writeThemePreferenceToStorage(value)
+    emitThemePreferenceChanged()
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ theme_preference: value })
+        .eq('id', user.id)
+        .select()
+        .single()
+      if (error) throw error
+      await refreshProfile(data)
+    } catch (e) {
+      console.error('Theme preference save error:', e)
+      setThemeSaveError('Could not save theme.')
+      const raw = profile?.theme_preference
+      const t = typeof raw === 'string' ? raw.trim().toLowerCase() : ''
+      const revert =
+        ['day', 'evening', 'night', 'automatic'].includes(t) ? t : 'automatic'
+      setThemePreference(revert)
+      writeThemePreferenceToStorage(normalizeThemePreferenceValue(revert))
+      emitThemePreferenceChanged()
+    } finally {
+      setThemeSaving(false)
+    }
+  }
 
   const handleSaveProfileDetails = async () => {
     if (!user?.id || profileSaving) return
@@ -826,6 +883,54 @@ export default function Settings() {
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="glass-panel" style={{ borderRadius: '16px', padding: '20px' }}>
+          <p style={{ color: 'var(--text-primary)', fontSize: '16px', fontWeight: 600, marginBottom: '6px' }}>
+            Theme
+          </p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '14px', lineHeight: 1.45 }}>
+            Choose how Abiding Anchor looks. Automatic follows the time of day.
+          </p>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+              gap: '10px',
+            }}
+          >
+            {THEME_OPTIONS.map((opt) => {
+              const selected = themePreference === opt.value
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  disabled={themeSaving}
+                  onClick={() => handleThemePreferenceSelect(opt.value)}
+                  style={{
+                    borderRadius: '14px',
+                    padding: '12px 14px',
+                    textAlign: 'center',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: themeSaving ? 'not-allowed' : 'pointer',
+                    opacity: themeSaving ? 0.75 : 1,
+                    color: 'var(--text-primary)',
+                    background: selected ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.06)',
+                    border: selected ? '2px solid #D4AF37' : '1px solid rgba(255,255,255,0.18)',
+                    boxShadow: selected ? '0 0 0 1px rgba(212,175,55,0.25)' : 'none',
+                  }}
+                >
+                  {opt.label}
+                </button>
+              )
+            })}
+          </div>
+          {themeSaveError ? (
+            <p style={{ marginTop: '10px', marginBottom: 0, color: 'rgba(255,120,120,0.95)', fontSize: '13px' }}>
+              {themeSaveError}
+            </p>
+          ) : null}
         </div>
 
         <div className="glass-panel" style={{ borderRadius: '16px', padding: '20px' }}>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import BibleReader from '../components/BibleReader'
 import { saveToJournal } from '../utils/journal'
 import SaveToast from '../components/SaveToast'
@@ -274,9 +275,10 @@ function Search({ onOpenWorship }) {
   const { user } = useAuth()
   const [searchMode, setSearchMode] = useState('keyword')
   const [searchTerm, setSearchTerm] = useState('')
+  const [aiQuestion, setAiQuestion] = useState('')
+  const [isFocused, setIsFocused] = useState(false)
   const [selectedTopic, setSelectedTopic] = useState('')
   const [testament, setTestament] = useState('new')
-  const [isFocused, setIsFocused] = useState(false)
   const [results, setResults] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [keywordHint, setKeywordHint] = useState('')
@@ -291,16 +293,12 @@ function Search({ onOpenWorship }) {
   const [showFirstJournalCelebration, setShowFirstJournalCelebration] = useState(false)
   const [shareVerse, setShareVerse] = useState(null)
   const [overviewBook, setOverviewBook] = useState(null)
-  const [aiQuestion, setAiQuestion] = useState('')
-  const [aiResponse, setAiResponse] = useState('')
-  const [aiLoading, setAiLoading] = useState(false)
 
   const visibleBooks = testament === 'new' ? books.new : books.old
   const trimmedSearch = searchTerm.trim()
   const isVerseReference = isVerseReferenceQuery(trimmedSearch)
   const keyword = trimmedSearch.toLowerCase()
   const curatedResults = keywordVerses[keyword] ?? []
-  const searchBorderClass = isFocused ? 'border-gold' : 'border-border-gold-light'
 
   // Define style objects that were missing
   const glassCard = {
@@ -420,37 +418,6 @@ function Search({ onOpenWorship }) {
     }
   }
 
-  const handleAskAI = async () => {
-    const question = aiQuestion.trim()
-    if (!question || aiLoading) return
-    
-    setAiLoading(true)
-    setAiResponse('')
-    
-    try {
-      const response = await fetch('/api/ai-companion', {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json'
-        },
-        body: JSON.stringify({
-          messages: [{ role: 'user', content: question }],
-        }),
-      })
-      
-      if (!response.ok) {
-        throw new Error('Unable to get a response. Please try again.')
-      }
-      
-      const data = await response.json()
-      setAiResponse(data.reply || 'No response received.')
-    } catch (_err) {
-      setAiResponse('Sorry, I encountered an error. Please try again.')
-    } finally {
-      setAiLoading(false)
-    }
-  }
-
   return (
     <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
       <div
@@ -485,36 +452,37 @@ function Search({ onOpenWorship }) {
                 <button type="button" onClick={() => setSearchMode('keyword')} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${searchMode === 'keyword' ? 'bg-gold text-primary-purple' : 'text-white'}`}>Search by Keyword</button>
                 <button type="button" onClick={() => setSearchMode('topic')} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${searchMode === 'topic' ? 'bg-gold text-primary-purple' : 'text-white'}`}>Search by Topic</button>
               </div>
-              <label htmlFor="scripture-search" className="glass-panel" style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                borderRadius: '50px',
-                padding: '12px 16px',
-                border: '1px solid rgba(212,168,67,0.25)'
-              }}>
+              {searchMode === 'keyword' ? (
+                <label htmlFor="scripture-search" className="glass-panel" style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  borderRadius: '50px',
+                  padding: '12px 16px',
+                  border: isFocused ? '1px solid rgba(212,168,67,0.55)' : '1px solid rgba(212,168,67,0.25)'
+                }}>
                   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="m20 20-3.5-3.5" />
-                </svg>
-                <input
-                  id="scripture-search"
-                  type="text"
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  onFocus={() => setIsFocused(true)}
-                  onBlur={() => setIsFocused(false)}
-                  placeholder={searchMode === 'topic' ? 'Pick a topic below' : 'Search by reference or keyword (e.g. John 3:16, fear, love)'}
-                  style={{
-                    width: '100%',
-                    background: 'transparent',
-                    color: 'var(--text-primary)',
-                    outline: 'none'
-                  }}
-                  placeholderStyle={{ color: 'rgba(255,255,255,0.5)' }}
-                  disabled={searchMode === 'topic'}
-                />
-              </label>
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m20 20-3.5-3.5" />
+                  </svg>
+                  <input
+                    id="scripture-search"
+                    type="text"
+                    className="search-scripture-input"
+                    value={searchTerm}
+                    onChange={(event) => setSearchTerm(event.target.value)}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    placeholder="Search by reference or keyword (e.g. John 3:16, fear, love)"
+                    style={{
+                      width: '100%',
+                      background: 'transparent',
+                      color: 'var(--text-primary)',
+                      outline: 'none'
+                    }}
+                  />
+                </label>
+              ) : null}
 
               <div
                 className="glass-panel"
@@ -585,7 +553,7 @@ function Search({ onOpenWorship }) {
 
             {searchMode === 'topic' ? (
               <section className="space-y-3">
-                <h2 className="text-section-header">Search Results for "{trimmedSearch}"</h2>
+                <h2 className="text-section-header">Search Results</h2>
                 {selectedTopic ? (
                   <div className="space-y-3">
                     <p className="text-sm font-semibold uppercase tracking-[0.15em] text-accent-gold">Verses on {selectedTopic}</p>
@@ -732,7 +700,6 @@ function Search({ onOpenWorship }) {
               </>
             ) : (
               <>
-              {/* AI Companion Section */}
               <section className="space-y-3">
                 <h2 className="text-section-header" style={{ color: '#D4A843', fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em' }}>
                   ✨ Ask the AI Companion
@@ -742,74 +709,33 @@ function Search({ onOpenWorship }) {
                   borderRadius: '16px',
                   padding: '20px'
                 }}>
-                  <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px', marginBottom: '16px' }}>
-                    Ask anything about Scripture, faith, or what God's Word says about a topic
+                  <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px', marginBottom: '14px', lineHeight: 1.5 }}>
+                    Continue on the AI Companion page — this screen keeps a single search bar at the top for Scripture.
                   </p>
-                  <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-                    <input
-                      type="text"
-                      value={aiQuestion}
-                      onChange={(e) => setAiQuestion(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleAskAI()
-                      }}
-                      placeholder="Type your question here..."
-                      style={{
-                        flex: 1,
-                        background: 'var(--input-bg)',
-                        border: '1px solid rgba(212,168,67,0.3)',
-                        borderRadius: '12px',
-                        padding: '12px 16px',
-                        color: 'var(--text-primary)',
-                        fontSize: '14px',
-                        outline: 'none'
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAskAI}
-                      disabled={aiLoading}
-                      style={{
-                        background: '#D4A843',
-                        color: '#0a1a3e',
-                        border: 'none',
-                        borderRadius: '12px',
-                        padding: '12px 24px',
-                        fontWeight: 600,
-                        fontSize: '14px',
-                        cursor: aiLoading ? 'not-allowed' : 'pointer',
-                        opacity: aiLoading ? 0.6 : 1
-                      }}
-                    >
-                      {aiLoading ? '...' : 'Ask'}
-                    </button>
-                  </div>
-                  {aiResponse && (
-                    <div style={{
-                      background: 'rgba(255,255,255,0.05)',
+                  <input
+                    type="text"
+                    value={aiQuestion}
+                    onChange={(e) => setAiQuestion(e.target.value)}
+                    placeholder="Optional: jot a question for the Companion"
+                    aria-label="Question for AI Companion"
+                    style={{
+                      width: '100%',
+                      marginBottom: '14px',
                       borderRadius: '12px',
-                      padding: '16px',
-                      marginTop: '12px'
-                    }}>
-                      <p style={{ color: 'var(--text-primary)', fontSize: '14px', lineHeight: 1.6, margin: 0 }}>
-                        {aiResponse}
-                      </p>
-                    </div>
-                  )}
-                  {aiLoading && !aiResponse && (
-                    <div style={{
-                      background: 'rgba(255,255,255,0.05)',
-                      borderRadius: '12px',
-                      padding: '16px',
-                      marginTop: '12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}>
-                      <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>Thinking</span>
-                      <span className="animate-pulse" style={{ color: '#D4A843' }}>...</span>
-                    </div>
-                  )}
+                      padding: '10px 14px',
+                      border: '1px solid rgba(212,168,67,0.3)',
+                      background: 'var(--input-bg, rgba(0,0,0,0.2))',
+                      color: 'var(--text-primary)',
+                      fontSize: '14px',
+                      outline: 'none',
+                    }}
+                  />
+                  <Link
+                    to="/ai-companion"
+                    className="inline-flex items-center justify-center rounded-xl border border-gold bg-gold px-4 py-2.5 text-sm font-semibold text-primary-purple no-underline"
+                  >
+                    Open AI Companion
+                  </Link>
                 </div>
               </section>
 

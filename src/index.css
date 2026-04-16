@@ -290,6 +290,11 @@ body {
   background: transparent;
 }
 
+/* Home: footer is last; shell already reserves space for bottom nav — no extra scroll gap */
+.content-scroll.home-page {
+  padding-bottom: 0 !important;
+}
+
 /* Long pages: bottom nav is 72px fixed + safe area — ensure scrollable content clears it */
 .content-scroll.content-scroll--nav-clear {
   padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
@@ -2126,5 +2131,16 @@ body.theme-morning .support-tier-desc,
 body.theme-afternoon .support-tier-label,
 body.theme-afternoon .support-tier-desc {
   color: #1a1a1a !important;
+}
+
+/* Search page — placeholder color via CSS (never pass non-DOM props like placeholderStyle on <input>) */
+.search-scripture-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+body.theme-day .search-scripture-input::placeholder,
+body.theme-morning .search-scripture-input::placeholder,
+body.theme-afternoon .search-scripture-input::placeholder {
+  color: rgba(44, 24, 16, 0.5);
 }
 
