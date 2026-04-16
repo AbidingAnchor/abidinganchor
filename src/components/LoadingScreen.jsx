@@ -1,4 +1,6 @@
+import { useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import logoSrc from '../assets/NewLogo.png'
 
 /**
  * Full-viewport overlay while auth/session resolves. Background is transparent so
@@ -7,6 +9,14 @@ import { useTranslation } from 'react-i18next'
  */
 export default function LoadingScreen() {
   useTranslation()
+  const [logoReady, setLogoReady] = useState(false)
+  const imgRef = useRef(null)
+
+  useLayoutEffect(() => {
+    const el = imgRef.current
+    if (el?.complete && el.naturalWidth > 0) setLogoReady(true)
+  }, [])
+
   return (
     <div
       style={{
@@ -46,8 +56,12 @@ export default function LoadingScreen() {
         }}
       >
         <img
-          src="/NewLogo.png"
+          ref={imgRef}
+          src={logoSrc}
           alt="Abiding Anchor"
+          decoding="async"
+          fetchPriority="high"
+          onLoad={() => setLogoReady(true)}
           style={{
             width: 'clamp(180px, 48vw, 200px)',
             height: 'auto',
@@ -55,7 +69,9 @@ export default function LoadingScreen() {
             objectFit: 'contain',
             display: 'block',
             margin: '0 auto',
-            animation: 'loading-logo-pulse 2.2s ease-in-out infinite',
+            opacity: logoReady ? 1 : 0,
+            transition: 'opacity 0.2s ease',
+            animation: logoReady ? 'loading-logo-pulse 2.2s ease-in-out infinite' : 'none',
           }}
         />
         <p

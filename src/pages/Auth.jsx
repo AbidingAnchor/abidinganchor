@@ -160,7 +160,8 @@ export default function Auth() {
   }, [user, syncAuthFromStoredSession])
 
   if (user) {
-    if (authLoading || !profile) return <LoadingScreen />
+    if (authLoading) return <LoadingScreen />
+    if (!profile) return <Navigate to="/onboarding" replace />
     let onboarded = profile.onboarding_complete === true
     try {
       onboarded =

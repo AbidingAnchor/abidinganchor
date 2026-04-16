@@ -48,7 +48,7 @@ function ProtectedRoute({ children }) {
   if (loading) return <LoadingScreen />
   if (suspendedInfo) return null
   if (!user) return <Navigate to="/auth" replace />
-  if (!profile) return <LoadingScreen />
+  if (!profile) return <Navigate to="/onboarding" replace />
   try {
     const onboardingLocal =
       localStorage.getItem(userStorageKey(user.id, 'onboarding-complete')) === 'true'
