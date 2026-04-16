@@ -35,7 +35,7 @@ const APP_TOUR_FEATURES = [
 ]
 
 export default function Onboarding({ onComplete }) {
-  const { user, profile } = useAuth()
+  const { user, profile, refreshProfile } = useAuth()
   const [screen, setScreen] = useState(1)
   const [displayName, setDisplayName] = useState(() => initialDisplayNameFromAuth(user, profile))
   const [dateOfBirth, setDateOfBirth] = useState(() => profile?.date_of_birth || '')
@@ -48,10 +48,48 @@ export default function Onboarding({ onComplete }) {
   const canContinueProfile = useMemo(() => {
     const cleanName = displayName.trim()
     if (!cleanName) return false
-    if (!dateOfBirth) return false
+    if (!dateOfBirth) return true
     const parsed = new Date(dateOfBirth)
     return Number.isFinite(parsed.getTime())
   }, [displayName, dateOfBirth])
+
+  const onboardingTheme = useMemo(() => {
+    const hour = new Date().getHours()
+    if (hour >= 6 && hour < 17) {
+      return {
+        mode: 'day',
+        cardBg: 'rgba(245,237,214,0.85)',
+        cardBorder: '1px solid rgba(122, 98, 55, 0.30)',
+        cardText: '#2B2115',
+        mutedText: 'rgba(43,33,21,0.72)',
+        subtleText: 'rgba(43,33,21,0.58)',
+        optionBg: 'rgba(255,255,255,0.5)',
+        optionBorder: '1px solid rgba(122, 98, 55, 0.22)',
+      }
+    }
+    if (hour >= 17 && hour < 21) {
+      return {
+        mode: 'evening',
+        cardBg: 'rgba(82,57,104,0.78)',
+        cardBorder: '1px solid rgba(222,168,92,0.40)',
+        cardText: '#F8F2E8',
+        mutedText: 'rgba(248,242,232,0.82)',
+        subtleText: 'rgba(248,242,232,0.68)',
+        optionBg: 'rgba(255,198,122,0.12)',
+        optionBorder: '1px solid rgba(255,210,150,0.24)',
+      }
+    }
+    return {
+      mode: 'night',
+      cardBg: 'rgba(15,20,45,0.75)',
+      cardBorder: '1px solid rgba(255,255,255,0.14)',
+      cardText: '#FFFFFF',
+      mutedText: 'rgba(255,255,255,0.82)',
+      subtleText: 'rgba(255,255,255,0.62)',
+      optionBg: 'rgba(255,255,255,0.05)',
+      optionBorder: '1px solid rgba(255,255,255,0.10)',
+    }
+  }, [])
 
   const toggleGoal = (goalId) => {
     setSelectedGoals(prev => 
@@ -95,6 +133,7 @@ export default function Onboarding({ onComplete }) {
     setLoading(true)
     try {
       if (user?.id) {
+        localStorage.setItem(`onboarding-complete-${user.id}`, 'true')
         localStorage.setItem(userStorageKey(user.id, 'onboarding-complete'), 'true')
       }
       
@@ -117,13 +156,13 @@ export default function Onboarding({ onComplete }) {
           const { date_of_birth: _ignored, ...fallbackPayload } = payload
           await supabase.from('profiles').update(fallbackPayload).eq('id', user.id)
         }
+        await refreshProfile()
       }
     } catch (error) {
       console.error('Onboarding save error:', error)
-    } finally {
-      setLoading(false)
-      onComplete()
     }
+    setLoading(false)
+    onComplete()
   }
 
   return (
@@ -174,14 +213,23 @@ export default function Onboarding({ onComplete }) {
           alignItems: 'center',
           height: 'auto',
           marginTop: '30vh',
-          marginBottom: '40px'
+          marginBottom: '40px',
+          background: onboardingTheme.cardBg,
+          border: onboardingTheme.cardBorder,
+          borderRadius: '20px',
+          padding: '20px 18px',
+          boxShadow: onboardingTheme.mode === 'day'
+            ? '0 12px 40px rgba(85, 62, 22, 0.14)'
+            : '0 14px 45px rgba(0,0,0,0.35)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
         }}>
           {/* Progress Dots */}
           <div style={{
             display: 'flex',
             justifyContent: 'center',
             gap: '8px',
-            marginBottom: '40px'
+            marginBottom: '40px',
           }}>
             {[1, 2, 3, 4, 5, 6, 7].map((s) => (
               <div
@@ -190,7 +238,7 @@ export default function Onboarding({ onComplete }) {
                   width: screen === s ? '24px' : '8px',
                   height: '8px',
                   borderRadius: screen === s ? '20px' : '50%',
-                  background: screen === s ? '#D4A843' : 'rgba(255,255,255,0.15)',
+                  background: screen === s ? '#D4A843' : onboardingTheme.optionBg,
                   transition: 'all 0.3s ease'
                 }}
               />
@@ -214,7 +262,7 @@ export default function Onboarding({ onComplete }) {
                 }}
               />
               <h1 style={{
-                color: '#FFFFFF',
+                color: onboardingTheme.cardText,
                 fontSize: '24px',
                 fontWeight: 700,
                 marginBottom: '12px'
@@ -222,14 +270,14 @@ export default function Onboarding({ onComplete }) {
                 Welcome to AbidingAnchor
               </h1>
               <p style={{
-                color: 'rgba(255,255,255,0.5)',
+                color: onboardingTheme.subtleText,
                 fontSize: '13px',
                 marginBottom: '8px'
               }}>
                 Your personal Bible study companion
               </p>
               <p style={{
-                color: 'rgba(212,168,67,0.6)',
+                color: onboardingTheme.mode === 'day' ? 'rgba(118,82,34,0.75)' : 'rgba(212,168,67,0.82)',
                 fontSize: '11px',
                 fontStyle: 'italic',
                 marginBottom: '32px'
@@ -273,7 +321,7 @@ export default function Onboarding({ onComplete }) {
                 STEP 1 OF 5
               </p>
               <h2 style={{
-                color: '#FFFFFF',
+                color: onboardingTheme.cardText,
                 fontSize: '22px',
                 fontWeight: 700,
                 marginBottom: '24px'
@@ -287,7 +335,7 @@ export default function Onboarding({ onComplete }) {
                 marginBottom: 0,
                 textAlign: 'left',
               }}>
-                <label style={{ color: 'rgba(255,255,255,0.74)', fontSize: '13px', fontWeight: 600 }}>
+                <label style={{ color: onboardingTheme.mutedText, fontSize: '13px', fontWeight: 600 }}>
                   Display name
                   <input
                     type="text"
@@ -301,17 +349,17 @@ export default function Onboarding({ onComplete }) {
                       marginTop: '6px',
                       width: '100%',
                       borderRadius: '12px',
-                      border: '1px solid rgba(255,255,255,0.16)',
-                      background: 'rgba(0,0,0,0.15)',
-                      color: '#fff',
+                      border: onboardingTheme.optionBorder,
+                      background: onboardingTheme.optionBg,
+                      color: onboardingTheme.cardText,
                       fontSize: '15px',
                       padding: '12px 14px',
                       boxSizing: 'border-box',
                     }}
                   />
                 </label>
-                <label style={{ color: 'rgba(255,255,255,0.74)', fontSize: '13px', fontWeight: 600 }}>
-                  Date of birth
+                <label style={{ color: onboardingTheme.mutedText, fontSize: '13px', fontWeight: 600 }}>
+                  Date of birth (optional)
                   <input
                     type="date"
                     value={dateOfBirth}
@@ -324,9 +372,9 @@ export default function Onboarding({ onComplete }) {
                       marginTop: '6px',
                       width: '100%',
                       borderRadius: '12px',
-                      border: '1px solid rgba(255,255,255,0.16)',
-                      background: 'rgba(0,0,0,0.15)',
-                      color: '#fff',
+                      border: onboardingTheme.optionBorder,
+                      background: onboardingTheme.optionBg,
+                      color: onboardingTheme.cardText,
                       fontSize: '15px',
                       padding: '12px 14px',
                       boxSizing: 'border-box',
@@ -341,7 +389,7 @@ export default function Onboarding({ onComplete }) {
                 type="button"
                 onClick={() => {
                   if (!canContinueProfile) {
-                    setFormError('Please provide your display name and date of birth.')
+                    setFormError('Please provide your display name.')
                     return
                   }
                   setFormError('')
@@ -380,7 +428,7 @@ export default function Onboarding({ onComplete }) {
                 STEP 2 OF 5
               </p>
               <h2 style={{
-                color: '#FFFFFF',
+                color: onboardingTheme.cardText,
                 fontSize: '22px',
                 fontWeight: 700,
                 marginBottom: '24px'
@@ -411,8 +459,8 @@ export default function Onboarding({ onComplete }) {
                             WebkitBackdropFilter: 'none',
                           }
                         : {
-                            border: '1px solid rgba(255,255,255,0.08)',
-                            color: '#FFFFFF',
+                            border: onboardingTheme.optionBorder,
+                            color: onboardingTheme.cardText,
                           }),
                       borderRadius: '14px',
                       padding: '12px 16px',
@@ -463,7 +511,7 @@ export default function Onboarding({ onComplete }) {
                 STEP 3 OF 5
               </p>
               <h2 style={{
-                color: '#FFFFFF',
+                color: onboardingTheme.cardText,
                 fontSize: '22px',
                 fontWeight: 700,
                 marginBottom: '24px'
@@ -495,8 +543,8 @@ export default function Onboarding({ onComplete }) {
                             WebkitBackdropFilter: 'none',
                           }
                         : {
-                            border: '1px solid rgba(255,255,255,0.08)',
-                            color: '#FFFFFF',
+                            border: onboardingTheme.optionBorder,
+                            color: onboardingTheme.cardText,
                           }),
                       borderRadius: '14px',
                       padding: '16px 20px',
@@ -549,7 +597,7 @@ export default function Onboarding({ onComplete }) {
                 STEP 4 OF 5
               </p>
               <h2 style={{
-                color: '#FFFFFF',
+                color: onboardingTheme.cardText,
                 fontSize: '22px',
                 fontWeight: 700,
                 marginBottom: '24px'
@@ -581,8 +629,8 @@ export default function Onboarding({ onComplete }) {
                             WebkitBackdropFilter: 'none',
                           }
                         : {
-                            border: '1px solid rgba(255,255,255,0.08)',
-                            color: '#FFFFFF',
+                            border: onboardingTheme.optionBorder,
+                            color: onboardingTheme.cardText,
                           }),
                       borderRadius: '14px',
                       padding: '16px',
@@ -597,7 +645,7 @@ export default function Onboarding({ onComplete }) {
                     <div style={{
                       fontSize: '13px',
                       fontWeight: 400,
-                      color: 'rgba(255,255,255,0.6)',
+                      color: onboardingTheme.subtleText,
                       marginTop: '4px'
                     }}>
                       {commitment.description}
@@ -643,7 +691,7 @@ export default function Onboarding({ onComplete }) {
                 STEP 5 OF 5
               </p>
               <h2 style={{
-                color: '#FFFFFF',
+                color: onboardingTheme.cardText,
                 fontSize: '22px',
                 fontWeight: 700,
                 marginBottom: '24px'
@@ -660,8 +708,8 @@ export default function Onboarding({ onComplete }) {
                   <div
                     key={index}
                     style={{
-                      background: 'rgba(255,255,255,0.04)',
-                      border: '1px solid rgba(255,255,255,0.08)',
+                      background: onboardingTheme.optionBg,
+                      border: onboardingTheme.optionBorder,
                       borderRadius: '14px',
                       padding: '16px',
                       display: 'flex',
@@ -683,7 +731,7 @@ export default function Onboarding({ onComplete }) {
                     </div>
                     <div style={{ textAlign: 'left' }}>
                       <p style={{
-                        color: '#FFFFFF',
+                        color: onboardingTheme.cardText,
                         fontSize: '15px',
                         fontWeight: 600,
                         marginBottom: '4px',
@@ -692,7 +740,7 @@ export default function Onboarding({ onComplete }) {
                         {feature.title}
                       </p>
                       <p style={{
-                        color: 'rgba(255,255,255,0.5)',
+                        color: onboardingTheme.subtleText,
                         fontSize: '13px',
                         margin: 0
                       }}>
@@ -734,7 +782,7 @@ export default function Onboarding({ onComplete }) {
                 Your path is <span style={{ fontStyle: 'italic' }}>ready</span>!
               </h2>
               <p style={{
-                color: 'rgba(255,255,255,0.7)',
+                color: onboardingTheme.mutedText,
                 fontSize: '15px',
                 marginBottom: '32px',
                 lineHeight: '1.6'
@@ -743,8 +791,8 @@ export default function Onboarding({ onComplete }) {
               </p>
 
               <div style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
+                background: onboardingTheme.optionBg,
+                border: onboardingTheme.optionBorder,
                 borderRadius: '16px',
                 padding: '24px',
                 textAlign: 'left',
@@ -752,7 +800,7 @@ export default function Onboarding({ onComplete }) {
               }}>
                 <div style={{ marginBottom: '20px' }}>
                   <p style={{
-                    color: 'rgba(255,255,255,0.5)',
+                    color: onboardingTheme.subtleText,
                     fontSize: '12px',
                     fontWeight: 600,
                     letterSpacing: '0.08em',
@@ -762,7 +810,7 @@ export default function Onboarding({ onComplete }) {
                     Recommended Path
                   </p>
                   <p style={{
-                    color: '#FFFFFF',
+                    color: onboardingTheme.cardText,
                     fontSize: '18px',
                     fontWeight: 700,
                     margin: 0
@@ -773,7 +821,7 @@ export default function Onboarding({ onComplete }) {
 
                 <div style={{ marginBottom: '20px' }}>
                   <p style={{
-                    color: 'rgba(255,255,255,0.5)',
+                    color: onboardingTheme.subtleText,
                     fontSize: '12px',
                     fontWeight: 600,
                     letterSpacing: '0.08em',
@@ -783,7 +831,7 @@ export default function Onboarding({ onComplete }) {
                     Daily Reading Plan
                   </p>
                   <p style={{
-                    color: '#FFFFFF',
+                    color: onboardingTheme.cardText,
                     fontSize: '16px',
                     fontWeight: 600,
                     margin: 0
@@ -794,7 +842,7 @@ export default function Onboarding({ onComplete }) {
 
                 <div>
                   <p style={{
-                    color: 'rgba(255,255,255,0.5)',
+                    color: onboardingTheme.subtleText,
                     fontSize: '12px',
                     fontWeight: 600,
                     letterSpacing: '0.08em',
@@ -804,7 +852,7 @@ export default function Onboarding({ onComplete }) {
                     Study Depth
                   </p>
                   <p style={{
-                    color: '#FFFFFF',
+                    color: onboardingTheme.cardText,
                     fontSize: '16px',
                     fontWeight: 600,
                     margin: 0
@@ -831,7 +879,7 @@ export default function Onboarding({ onComplete }) {
                   width: '100%'
                 }}
               >
-                {loading ? 'Setting up your path...' : 'Start My Journey ✦'}
+                {loading ? 'Setting up your path...' : 'Open Journey'}
               </button>
             </div>
           )}
