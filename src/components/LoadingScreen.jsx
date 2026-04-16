@@ -11,10 +11,11 @@ export default function LoadingScreen() {
     <div
       style={{
         position: 'fixed',
-        inset: 0,
-        zIndex: 10040,
-        minHeight: '100dvh',
+        top: 0,
+        left: 0,
         width: '100%',
+        height: '100dvh',
+        zIndex: 9999,
         margin: 0,
         background: 'transparent',
         display: 'flex',
@@ -22,7 +23,7 @@ export default function LoadingScreen() {
         alignItems: 'center',
         justifyContent: 'center',
         padding:
-          'max(16px, env(safe-area-inset-top, 0px)) 20px max(16px, env(safe-area-inset-bottom, 0px))',
+          'max(16px, env(safe-area-inset-top, 0px)) max(20px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px))',
         boxSizing: 'border-box',
         overflow: 'hidden',
         pointerEvents: 'none',

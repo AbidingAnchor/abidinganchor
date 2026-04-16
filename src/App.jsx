@@ -95,7 +95,7 @@ function SuspendedScreen({ bannedAt }) {
 }
 
 function AppShell() {
-  const { user, refreshProfile, suspendedInfo } = useAuth()
+  const { user, refreshProfile, suspendedInfo, loading } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
   const [worshipVisible, setWorshipVisible] = useState(false)
@@ -115,8 +115,12 @@ function AppShell() {
     [worshipPlayback.isPlaying, worshipPlayback.trackName, worshipVisible],
   )
   const showNav =
-    location.pathname !== '/auth' && location.pathname !== '/reset-password' && location.pathname !== '/onboarding'
+    !loading &&
+    location.pathname !== '/auth' &&
+    location.pathname !== '/reset-password' &&
+    location.pathname !== '/onboarding'
   const showFooter =
+    !loading &&
     location.pathname !== '/auth' &&
     location.pathname !== '/reset-password' &&
     location.pathname !== '/onboarding' &&
@@ -124,7 +128,10 @@ function AppShell() {
     location.pathname !== '/reading-plan' &&
     location.pathname !== '/worship'
   const showHeader =
-    location.pathname !== '/auth' && location.pathname !== '/reset-password' && location.pathname !== '/onboarding'
+    !loading &&
+    location.pathname !== '/auth' &&
+    location.pathname !== '/reset-password' &&
+    location.pathname !== '/onboarding'
 
   const openWorship = (startPlaying = false) => {
     setWorshipVisible(true)
