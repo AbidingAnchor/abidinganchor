@@ -1,17 +1,71 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { supabase } from '../lib/supabase'
 import { userStorageKey } from '../utils/userStorage'
 
 const BMAC_LINK = 'https://buymeacoffee.com/abidinganchor'
+const GOLD = '#D4AF37'
+
+const ROADMAP_ITEMS = [
+  { icon: '\u2705', text: 'Verse Highlighting & Notes', status: 'Completed' },
+  { icon: '\u2705', text: 'Cross References', status: 'Completed' },
+  { icon: '\u2705', text: "Strong's Concordance", status: 'Completed' },
+  { icon: '\uD83D\uDD27', text: 'Offline Bible Mode', status: 'In Progress' },
+  { icon: '\uD83D\uDD27', text: 'AssemblyAI Guided Prayer Karaoke', status: 'In Progress' },
+  { icon: '\uD83D\uDD1C', text: 'Waffles Onboarding Companion', status: 'Coming Soon' },
+  { icon: '\uD83D\uDD1C', text: 'Push Notification Devotionals', status: 'Coming Soon' },
+]
 
 export default function Support() {
   const { user } = useAuth()
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
+  const [aiPrayersCount, setAiPrayersCount] = useState(null)
+  const [usersReachedCount, setUsersReachedCount] = useState(null)
+  const [transparencyLoading, setTransparencyLoading] = useState(true)
 
   useEffect(() => {
     setNotificationsEnabled(localStorage.getItem(userStorageKey(user?.id, 'support-browser-notifications')) === 'enabled')
   }, [user?.id])
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      setTransparencyLoading(true)
+      try {
+        const { data, error } = await supabase.rpc('get_ministry_transparency_stats')
+        if (cancelled) return
+        if (error) {
+          setAiPrayersCount(0)
+          setUsersReachedCount(0)
+        } else {
+          const stats = data != null && typeof data === 'object' && !Array.isArray(data)
+            ? data
+            : Array.isArray(data)
+              ? data[0]
+              : null
+          const ai =
+            stats && typeof stats === 'object'
+              ? (stats.ai_answers ?? stats.ai_prayers_answered)
+              : undefined
+          const users = stats && typeof stats === 'object' ? stats.users_reached : undefined
+          setAiPrayersCount(Number(ai ?? 0))
+          setUsersReachedCount(Number(users ?? 0))
+        }
+      } catch {
+        if (!cancelled) {
+          setAiPrayersCount(0)
+          setUsersReachedCount(0)
+        }
+      } finally {
+        if (!cancelled) setTransparencyLoading(false)
+      }
+    }
+    void load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const handleNotifications = async () => {
     if (!('Notification' in window)) {
@@ -153,6 +207,141 @@ export default function Support() {
             </div>
           </a>
         ))}
+
+        <section
+          className="glass-panel"
+          style={{
+            borderRadius: '20px',
+            padding: '18px 16px',
+            marginBottom: '16px',
+            marginTop: '4px',
+            border: '1px solid rgba(212, 175, 55, 0.28)',
+            background: 'var(--card-bg, rgba(15, 20, 45, 0.88))',
+          }}
+        >
+          <h2
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: 'var(--text-primary, #f5f5f5)',
+              fontSize: '16px',
+              fontWeight: 700,
+              margin: '0 0 14px',
+              fontFamily: 'Georgia, serif',
+              letterSpacing: '0.02em',
+            }}
+          >
+            <span style={{ fontSize: '18px', lineHeight: 1 }} aria-hidden>
+              {'\uD83D\uDCCA'}
+            </span>
+            Ministry Transparency
+          </h2>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
+              gap: '10px',
+              marginBottom: '18px',
+            }}
+          >
+            {[
+              {
+                value: transparencyLoading ? '…' : (aiPrayersCount ?? 0).toLocaleString(),
+                label: 'AI Prayers Answered',
+                sub: 'Companion replies',
+              },
+              {
+                value: '99.9%',
+                label: 'Uptime',
+                sub: (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
+                    <span
+                      style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        background: '#34c759',
+                        boxShadow: '0 0 6px rgba(52, 199, 89, 0.65)',
+                      }}
+                      aria-hidden
+                    />
+                    This Month
+                  </span>
+                ),
+              },
+              {
+                value: transparencyLoading ? '…' : (usersReachedCount ?? 0).toLocaleString(),
+                label: 'Users Reached',
+                sub: 'Profiles in community',
+              },
+            ].map((card) => (
+              <div
+                key={card.label}
+                style={{
+                  borderRadius: '14px',
+                  padding: '12px 10px',
+                  textAlign: 'center',
+                  background: 'rgba(0, 0, 0, 0.22)',
+                  border: '1px solid rgba(212, 175, 55, 0.2)',
+                }}
+              >
+                <div style={{ color: GOLD, fontSize: '22px', fontWeight: 800, lineHeight: 1.15, fontVariantNumeric: 'tabular-nums' }}>
+                  {card.value}
+                </div>
+                <div style={{ color: 'var(--text-primary, #eee)', fontSize: '11px', fontWeight: 700, marginTop: '8px', letterSpacing: '0.04em' }}>
+                  {card.label}
+                </div>
+                <div style={{ color: 'var(--text-secondary, rgba(255,255,255,0.55))', fontSize: '10px', marginTop: '4px', lineHeight: 1.35 }}>
+                  {card.sub}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <h3
+            style={{
+              color: GOLD,
+              fontSize: '12px',
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              margin: '0 0 10px',
+            }}
+          >
+            What We&apos;re Building Next
+          </h3>
+          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {ROADMAP_ITEMS.map((item) => (
+              <li
+                key={item.text}
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '10px',
+                  padding: '10px 12px',
+                  borderRadius: '12px',
+                  background: 'rgba(0, 0, 0, 0.18)',
+                  border: '1px solid rgba(212, 175, 55, 0.15)',
+                  color: 'var(--text-primary, rgba(255,255,255,0.92))',
+                  fontSize: '13px',
+                  lineHeight: 1.45,
+                }}
+              >
+                <span style={{ flexShrink: 0 }} aria-hidden>
+                  {item.icon}
+                </span>
+                <span style={{ flex: 1 }}>
+                  <span style={{ fontWeight: 600 }}>{item.text}</span>
+                  <span style={{ color: 'var(--text-secondary, rgba(255,255,255,0.5))', display: 'block', fontSize: '11px', marginTop: '2px' }}>
+                    {item.status}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
 
         <a href={BMAC_LINK}
           target="_blank"

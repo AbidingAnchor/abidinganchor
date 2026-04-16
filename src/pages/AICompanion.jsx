@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { supabase } from '../lib/supabase'
 import { userStorageKey } from '../utils/userStorage'
 
 const quickPrompts = [
@@ -92,6 +93,9 @@ export default function AICompanion() {
       const aiText = typeof data?.reply === 'string' ? data.reply.trim() : ''
       const safeText = aiText || "I couldn't generate a response right now. Please try again."
       setMessages((prev) => [...prev, { id: `${Date.now()}-assistant`, role: 'assistant', content: safeText }])
+      if (user?.id && aiText) {
+        void supabase.from('ai_logs').insert({ user_id: user.id })
+      }
     } catch (err) {
       if (import.meta.env.DEV) console.error('AI companion request failed:', err)
       const userMessage = 'Something went wrong. Please try again in a moment.'
