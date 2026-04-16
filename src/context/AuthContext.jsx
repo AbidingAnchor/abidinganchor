@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { clearAbidingAnchorUserStorage, setActiveStorageUserId, userStorageKey } from '../utils/userStorage'
 import { profileFullNameFromUser } from '../utils/profileDisplay'
@@ -168,6 +168,8 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null)
   const [suspendedInfo, setSuspendedInfo] = useState(null)
   const [loading, setLoading] = useState(true)
+  /** Avoid resume sync racing the initial boot `getSession()` / profile hydrate. */
+  const initialBootDoneRef = useRef(false)
 
   useEffect(() => {
     setActiveStorageUserId(user?.id ?? null)
@@ -243,6 +245,7 @@ export function AuthProvider({ children }) {
         }
       } finally {
         if (active) {
+          initialBootDoneRef.current = true
           clearTimeout(loadingWatchdog)
           setLoading(false)
         }
@@ -411,6 +414,48 @@ export function AuthProvider({ children }) {
       setLoading(false)
     }
   }, [])
+
+  /**
+   * After the first boot, re-read the persisted session when the user returns to the app
+   * (tab focus, window focus, or bfcache restore) so e.g. email confirmation or sign-in
+   * completed elsewhere is picked up without waiting for a manual refresh.
+   */
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return undefined
+
+    let debounceTimer = null
+    const scheduleSyncFromResume = () => {
+      if (!initialBootDoneRef.current) return
+      if (debounceTimer != null) window.clearTimeout(debounceTimer)
+      debounceTimer = window.setTimeout(() => {
+        debounceTimer = null
+        void syncAuthFromStoredSession()
+      }, 80)
+    }
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') scheduleSyncFromResume()
+    }
+
+    const onFocus = () => {
+      scheduleSyncFromResume()
+    }
+
+    const onPageShow = (event) => {
+      if (event.persisted) scheduleSyncFromResume()
+    }
+
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    window.addEventListener('focus', onFocus)
+    window.addEventListener('pageshow', onPageShow)
+
+    return () => {
+      if (debounceTimer != null) window.clearTimeout(debounceTimer)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      window.removeEventListener('focus', onFocus)
+      window.removeEventListener('pageshow', onPageShow)
+    }
+  }, [syncAuthFromStoredSession])
 
   const value = useMemo(
     () => ({

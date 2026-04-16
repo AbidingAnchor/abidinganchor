@@ -125,7 +125,10 @@ export default function Auth() {
     signUpConfirmPassword,
   ])
 
-  /** Email confirm often opens in another tab; poll storage so this tab picks up the session. */
+  /**
+   * Email confirm often opens in another tab. Poll storage as a fallback; on PC, `storage`
+   * fires when another tab writes Supabase session to localStorage so we sync immediately.
+   */
   useEffect(() => {
     if (user) return undefined
     let cancelled = false
@@ -139,9 +142,19 @@ export default function Auth() {
     }
     void tick()
     const id = window.setInterval(tick, AUTH_SESSION_POLL_MS)
+
+    const onStorage = (event) => {
+      if (cancelled) return
+      if (event.storageArea !== localStorage) return
+      if (event.key != null && !String(event.key).includes('-auth-token')) return
+      void tick()
+    }
+    window.addEventListener('storage', onStorage)
+
     return () => {
       cancelled = true
       window.clearInterval(id)
+      window.removeEventListener('storage', onStorage)
     }
   }, [user, syncAuthFromStoredSession])
 
