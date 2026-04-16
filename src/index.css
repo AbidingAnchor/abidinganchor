@@ -280,6 +280,12 @@ body {
   z-index: 10;
   background: transparent;
   padding-top: env(safe-area-inset-top, 0px);
+  min-height: 100dvh;
+}
+
+/* Legal wall → onboarding: opacity mount (see Onboarding.jsx) */
+.onboarding-root-fade {
+  backface-visibility: hidden;
 }
 
 .content-scroll {

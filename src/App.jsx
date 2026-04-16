@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Routes, Route, useLocation, useNavigate } from 'react-router-dom'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ReactGA from 'react-ga4'
 import Home from './pages/Home'
 import ReadingPlan from './pages/ReadingPlan'
@@ -60,11 +60,17 @@ function ProtectedRoute({ children }) {
 function OnboardingRoute() {
   const { user, loading, profile, suspendedInfo } = useAuth()
   const navigate = useNavigate()
-  if (loading) return <LoadingScreen />
+  const handleOnboardingComplete = useCallback(() => navigate('/'), [navigate])
+
   if (suspendedInfo) return null
-  if (!user) return <Navigate to="/auth" replace />
+  if (!user) {
+    if (loading) return <LoadingScreen />
+    return <Navigate to="/auth" replace />
+  }
   if (profile?.onboarding_complete) return <Navigate to="/" replace />
-  return <Onboarding onComplete={() => navigate('/')} />
+  // Never block signed-in users with LoadingScreen — avoids a flash when leaving the legal wall for onboarding
+  // and when auth briefly sets loading during profile refetch (step state is preserved separately).
+  return <Onboarding onComplete={handleOnboardingComplete} />
 }
 
 function SuspendedScreen({ bannedAt }) {
@@ -211,7 +217,7 @@ function AppShell() {
   }
 
   return (
-    <div className="relative text-white" style={{ background: 'transparent' }}>
+    <div className="relative min-h-[100dvh] text-white" style={{ background: 'transparent' }}>
       <BackgroundManager />
       <div style={{ position: 'relative', zIndex: 10, background: 'transparent' }}>
         <div
@@ -278,8 +284,9 @@ function AppShell() {
       {showFooter && !hasAcceptedLegal ? (
         <LegalModal
           onAgreed={() => {
+            // Route first so /onboarding mounts immediately; never show LoadingScreen in that transition.
+            navigate('/onboarding', { replace: true })
             setHasAcceptedLegal(true)
-            navigate('/onboarding')
           }}
         />
       ) : null}

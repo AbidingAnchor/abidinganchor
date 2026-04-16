@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
 import { supabase } from '../lib/supabase'
@@ -35,10 +35,32 @@ const APP_TOUR_FEATURES = [
   { icon: '👥', title: 'Community', description: 'Pray with and for others' },
 ]
 
+const ONBOARDING_STEP_KEY = 'onboarding-step'
+
+function readStoredStep(userId) {
+  if (!userId || typeof window === 'undefined') return 1
+  try {
+    const raw = sessionStorage.getItem(userStorageKey(userId, ONBOARDING_STEP_KEY))
+    const n = parseInt(raw, 10)
+    return Number.isFinite(n) && n >= 1 && n <= 7 ? n : 1
+  } catch {
+    return 1
+  }
+}
+
 export default function Onboarding({ onComplete }) {
   const { user, profile, refreshProfile } = useAuth()
   const themeSky = useThemeBackgroundType()
-  const [screen, setScreen] = useState(1)
+  const [screen, setScreen] = useState(() => readStoredStep(user?.id))
+
+  useEffect(() => {
+    if (!user?.id) return
+    try {
+      sessionStorage.setItem(userStorageKey(user.id, ONBOARDING_STEP_KEY), String(screen))
+    } catch {
+      /* ignore */
+    }
+  }, [user?.id, screen])
   const [displayName, setDisplayName] = useState(() => initialDisplayNameFromAuth(user, profile))
   const [dateOfBirth, setDateOfBirth] = useState(() => profile?.date_of_birth || '')
   const [selectedGoals, setSelectedGoals] = useState([])
@@ -46,6 +68,12 @@ export default function Onboarding({ onComplete }) {
   const [dailyCommitment, setDailyCommitment] = useState('')
   const [formError, setFormError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [fadeIn, setFadeIn] = useState(false)
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setFadeIn(true))
+    return () => cancelAnimationFrame(id)
+  }, [])
 
   const canContinueProfile = useMemo(() => {
     const cleanName = displayName.trim()
@@ -140,6 +168,11 @@ export default function Onboarding({ onComplete }) {
         // Set local completion flag immediately so route guards don't bounce.
         localStorage.setItem(`onboarding-complete-${user.id}`, 'true')
         localStorage.setItem(userStorageKey(user.id, 'onboarding-complete'), 'true')
+        try {
+          sessionStorage.removeItem(userStorageKey(user.id, ONBOARDING_STEP_KEY))
+        } catch {
+          /* ignore */
+        }
       }
       
       // Save to Supabase profile
@@ -192,35 +225,52 @@ export default function Onboarding({ onComplete }) {
 
   return (
     <>
-      <div style={{
+      <div
+        className="onboarding-root-fade"
+        style={{
         position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
+        inset: 0,
         zIndex: 2000,
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'row',
         alignItems: 'center',
-        padding: '20px',
+        justifyContent: 'center',
+        minHeight: '100dvh',
+        width: '100%',
+        boxSizing: 'border-box',
+        paddingTop: 'max(16px, env(safe-area-inset-top, 0px))',
+        paddingBottom: 'max(16px, env(safe-area-inset-bottom, 0px))',
+        paddingLeft: 'max(16px, env(safe-area-inset-left, 0px))',
+        paddingRight: 'max(16px, env(safe-area-inset-right, 0px))',
         background: 'transparent',
-        overflowY: 'auto'
-      }}>
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
+        opacity: fadeIn ? 1 : 0,
+        transition: 'opacity 150ms ease-out',
+        pointerEvents: fadeIn ? 'auto' : 'none',
+      }}
+      >
         {/* Skip Button */}
         {screen !== 7 && (
           <button
             type="button"
             onClick={handleComplete}
             style={{
-              position: 'absolute',
-              top: 'max(calc(env(safe-area-inset-top, 0px) + 10px), 56px)',
-              right: '20px',
-              zIndex: 10,
+              position: 'fixed',
+              top: 'max(calc(env(safe-area-inset-top, 0px) + 10px), 16px)',
+              right: 'max(16px, env(safe-area-inset-right, 0px))',
+              zIndex: 2010,
+              minHeight: '44px',
+              minWidth: '44px',
+              padding: '8px',
               background: 'transparent',
               border: 'none',
               color: 'rgba(255,255,255,0.35)',
               fontSize: '12px',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             Skip
@@ -236,19 +286,50 @@ export default function Onboarding({ onComplete }) {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          height: 'auto',
-          marginTop: '30vh',
-          marginBottom: '40px',
+          flexShrink: 0,
+          margin: 0,
           background: onboardingTheme.cardBg,
           border: onboardingTheme.cardBorder,
           borderRadius: '20px',
-          padding: '20px 18px',
+          padding: screen > 1 ? '56px 18px 20px' : '20px 18px',
           boxShadow: onboardingTheme.mode === 'day'
             ? '0 12px 40px rgba(85, 62, 22, 0.14)'
             : '0 14px 45px rgba(0,0,0,0.35)',
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
         }}>
+          {screen > 1 ? (
+            <button
+              type="button"
+              aria-label="Previous step"
+              onClick={() => setScreen((s) => Math.max(1, s - 1))}
+              style={{
+                position: 'absolute',
+                left: '10px',
+                top: '10px',
+                zIndex: 12,
+                minWidth: '44px',
+                minHeight: '44px',
+                width: '44px',
+                height: '44px',
+                padding: 0,
+                margin: 0,
+                border: 'none',
+                borderRadius: '12px',
+                background: 'rgba(212, 175, 55, 0.14)',
+                color: '#D4AF37',
+                fontSize: '22px',
+                lineHeight: 1,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 1px 0 rgba(0,0,0,0.06)',
+              }}
+            >
+              <span aria-hidden style={{ transform: 'translateX(-1px)', display: 'block' }}>←</span>
+            </button>
+          ) : null}
           {/* Progress Dots */}
           <div style={{
             display: 'flex',
