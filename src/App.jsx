@@ -50,6 +50,16 @@ function ProtectedRoute({ children }) {
   return children
 }
 
+function OnboardingRoute() {
+  const { user, loading, profile, suspendedInfo } = useAuth()
+  const navigate = useNavigate()
+  if (loading) return <LoadingScreen />
+  if (suspendedInfo) return null
+  if (!user) return <Navigate to="/auth" replace />
+  if (profile?.onboarding_complete) return <Navigate to="/" replace />
+  return <Onboarding onComplete={() => navigate('/')} />
+}
+
 function SuspendedScreen({ bannedAt }) {
   const bannedDateText = bannedAt ? new Date(bannedAt).toLocaleString() : 'Unknown'
 
@@ -243,7 +253,7 @@ function AppShell() {
               <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
               <Route path="/worship" element={<ProtectedRoute><WorshipMode /></ProtectedRoute>} />
               <Route path="/bible-videos" element={<ProtectedRoute><BibleVideos /></ProtectedRoute>} />
-              <Route path="/onboarding" element={<ProtectedRoute><Onboarding onComplete={() => navigate('/')} /></ProtectedRoute>} />
+              <Route path="/onboarding" element={<OnboardingRoute />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
