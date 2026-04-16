@@ -131,38 +131,61 @@ export default function Onboarding({ onComplete }) {
 
   const handleComplete = async () => {
     setLoading(true)
+    setFormError('')
+    let saveSucceeded = false
     try {
       if (user?.id) {
+        // Set local completion flag immediately so route guards don't bounce.
         localStorage.setItem(`onboarding-complete-${user.id}`, 'true')
         localStorage.setItem(userStorageKey(user.id, 'onboarding-complete'), 'true')
       }
       
       // Save to Supabase profile
       if (user?.id) {
-        const recommendations = getRecommendations()
+        // Keep payload limited to known columns to avoid 400s from missing fields.
         const payload = {
           full_name: displayName.trim(),
           date_of_birth: dateOfBirth || null,
-          growth_goals: selectedGoals,
-          faith_duration: faithDuration || null,
-          daily_commitment: dailyCommitment || null,
-          recommended_path: recommendations.path,
-          recommended_reading_plan: recommendations.readingPlan,
-          recommended_study_depth: recommendations.studyDepth,
           onboarding_complete: true,
         }
-        const { error } = await supabase.from('profiles').update(payload).eq('id', user.id)
-        if (error?.message?.toLowerCase().includes('date_of_birth')) {
+        const { data: updatedRows, error } = await supabase
+          .from('profiles')
+          .update(payload)
+          .eq('id', user.id)
+          .select('id, onboarding_complete')
+
+        if (error?.message?.toLowerCase().includes('date_of_birth') || error?.code === '42703') {
           const { date_of_birth: _ignored, ...fallbackPayload } = payload
-          await supabase.from('profiles').update(fallbackPayload).eq('id', user.id)
+          const { data: fallbackRows, error: fallbackError } = await supabase
+            .from('profiles')
+            .update(fallbackPayload)
+            .eq('id', user.id)
+            .select('id, onboarding_complete')
+          if (fallbackError) {
+            throw fallbackError
+          }
+          if (!fallbackRows?.length) {
+            throw new Error('Onboarding save failed: no profile row updated.')
+          }
+        } else if (error) {
+          throw error
+        } else if (!updatedRows?.length) {
+          throw new Error('Onboarding save failed: no profile row updated.')
         }
+
         await refreshProfile()
+        saveSucceeded = true
+      } else {
+        setFormError('You must be signed in to complete onboarding.')
       }
     } catch (error) {
       console.error('Onboarding save error:', error)
+      setFormError('We could not save your onboarding yet. Please try again.')
     }
     setLoading(false)
-    onComplete()
+    if (saveSucceeded) {
+      onComplete()
+    }
   }
 
   return (
