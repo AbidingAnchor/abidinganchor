@@ -370,6 +370,48 @@ export function AuthProvider({ children }) {
     }
   }, [user?.id])
 
+  /**
+   * Re-read session from storage (e.g. after email confirm in another mobile tab)
+   * and hydrate user + profile in React state.
+   */
+  const syncAuthFromStoredSession = useCallback(async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+    const nextUser = session?.user ?? null
+    if (!nextUser) return false
+
+    setUser(nextUser)
+    setLoading(true)
+    try {
+      let nextProfile = null
+      try {
+        nextProfile = await fetchProfileWithTimeout(nextUser)
+      } catch (err) {
+        console.error('syncAuthFromStoredSession profile fetch:', err)
+        nextProfile = null
+      }
+      if (nextProfile?.is_banned) {
+        setSuspendedInfo({ bannedAt: nextProfile?.banned_at || null })
+        setUser(null)
+        setProfile(null)
+        profileSyncedUserIds.clear()
+        clearAbidingAnchorUserStorage()
+        await supabase.auth.signOut()
+        return false
+      }
+      setSuspendedInfo(null)
+      setProfile(nextProfile)
+      return true
+    } catch (err) {
+      console.error('syncAuthFromStoredSession:', err)
+      setProfile(null)
+      return false
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   const value = useMemo(
     () => ({
       user,
@@ -380,8 +422,9 @@ export function AuthProvider({ children }) {
       signIn,
       signOut,
       refreshProfile,
+      syncAuthFromStoredSession,
     }),
-    [user, profile, suspendedInfo, loading, refreshProfile],
+    [user, profile, suspendedInfo, loading, refreshProfile, syncAuthFromStoredSession],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

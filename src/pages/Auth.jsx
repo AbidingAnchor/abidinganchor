@@ -10,8 +10,10 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
 }
 
+const AUTH_SESSION_POLL_MS = 3000
+
 export default function Auth() {
-  const { user, profile, loading: authLoading, signIn, signUp } = useAuth()
+  const { user, profile, loading: authLoading, signIn, signUp, syncAuthFromStoredSession } = useAuth()
   const [authView, setAuthView] = useState('signIn')
   const [signInEmail, setSignInEmail] = useState('')
   const [signInPassword, setSignInPassword] = useState('')
@@ -122,6 +124,26 @@ export default function Auth() {
     signUpPassword,
     signUpConfirmPassword,
   ])
+
+  /** Email confirm often opens in another tab; poll storage so this tab picks up the session. */
+  useEffect(() => {
+    if (user) return undefined
+    let cancelled = false
+    const tick = async () => {
+      if (cancelled) return
+      try {
+        await syncAuthFromStoredSession()
+      } catch {
+        /* ignore */
+      }
+    }
+    void tick()
+    const id = window.setInterval(tick, AUTH_SESSION_POLL_MS)
+    return () => {
+      cancelled = true
+      window.clearInterval(id)
+    }
+  }, [user, syncAuthFromStoredSession])
 
   if (user) {
     if (authLoading) return <LoadingScreen />
