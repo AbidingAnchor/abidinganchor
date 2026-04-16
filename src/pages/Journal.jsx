@@ -20,6 +20,7 @@ import { WEEK_DAY_SHORT } from '../hooks/useStreakTracker'
 import FirstJournalEntryCelebration from '../components/FirstJournalEntryCelebration'
 
 const ACCENT_GOLD = '#c9922a'
+const JOURNAL_MOUNT_DELAY_MS = 950
 
 function getPromptForEntryDate(iso, prompts) {
   if (!prompts?.length) return { prompt: '', verse: '' }
@@ -201,6 +202,8 @@ function Journal() {
         setJournalWeekLocalDates([])
         return
       }
+      await new Promise((resolve) => setTimeout(resolve, JOURNAL_MOUNT_DELAY_MS))
+      if (!active) return
       setLoading(true)
       const data = await getJournalEntries(user.id)
       const activityYmds = await fetchJournalActivityLocalYmds(user.id)

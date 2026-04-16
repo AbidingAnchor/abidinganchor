@@ -18,6 +18,8 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { getLocalDateKey, profileLastActiveDateKey } from '../lib/presenceStreak'
 
+const STREAK_MOUNT_DELAY_MS = 650
+
 /** Re-export for callers that imported from this hook */
 export { getLocalDateKey }
 
@@ -207,6 +209,9 @@ export function useStreakTracker(userId) {
     }
 
     ;(async () => {
+      await new Promise((resolve) => setTimeout(resolve, STREAK_MOUNT_DELAY_MS))
+      if (cancelled) return
+
       // Sync today's day into weekly_active_days before reading so the fetch always
       // reflects the current calendar day, even on first mount before the app-open
       // sync has had a chance to run.
