@@ -165,11 +165,9 @@ export default function Auth() {
       return setError('Display name cannot look like an email address.')
     }
     setLoading(true)
-    const { error: signUpError, usedEmailFallback } = await signUp(cleanSignUpEmail, signUpPassword, name)
+    const { error: signUpError } = await signUp(cleanSignUpEmail, signUpPassword, name)
     if (signUpError) setError(formatAuthErrorMessage(signUpError))
-    else if (usedEmailFallback) {
-      setSuccess('')
-    } else {
+    else {
       setSuccess(
         'We sent a confirmation link to your email. Please check your inbox and confirm your account before signing in.',
       )

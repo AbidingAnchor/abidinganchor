@@ -7,17 +7,6 @@ const AuthContext = createContext({})
 
 const PROFILE_FETCH_TIMEOUT_MS = 5000
 const profileSyncedUserIds = new Set()
-const EMAIL_CONFIRMATION_SEND_ERROR_MARKERS = [
-  'error sending confirmation email',
-  'error sending email',
-  'confirmation email',
-]
-
-function isConfirmationEmailSendError(message = '') {
-  const normalized = String(message).toLowerCase()
-  return EMAIL_CONFIRMATION_SEND_ERROR_MARKERS.some((marker) => normalized.includes(marker))
-}
-
 function isValidUUID(str) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 }
@@ -301,18 +290,17 @@ export function AuthProvider({ children }) {
     try {
       const trimmedName = typeof fullName === 'string' ? fullName.trim() : ''
       if (!trimmedName) {
-        return { data: null, error: { message: 'Display name is required.' }, usedEmailFallback: false }
+        return { data: null, error: { message: 'Display name is required.' } }
       }
       const emailNorm = email.trim().toLowerCase()
       if (trimmedName.toLowerCase() === emailNorm) {
         return {
           data: null,
           error: { message: 'Display name cannot be your email address.' },
-          usedEmailFallback: false,
         }
       }
       const emailRedirectTo =
-        typeof window !== 'undefined' ? `${window.location.origin}/` : undefined
+        typeof window !== 'undefined' ? `${window.location.origin}/auth` : undefined
       const { data, error } = await supabase.auth.signUp({
         email: emailNorm,
         password,
@@ -321,16 +309,9 @@ export function AuthProvider({ children }) {
           ...(emailRedirectTo ? { emailRedirectTo } : {}),
         },
       })
-      if (!error) return { data, error: null, usedEmailFallback: false }
-      if (!isConfirmationEmailSendError(error.message)) return { data, error, usedEmailFallback: false }
-
-      // Fallback path: account may exist but confirmation delivery failed.
-      // Try password sign-in so users can continue immediately when allowed by project settings.
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password })
-      if (!signInError) return { data: signInData, error: null, usedEmailFallback: true }
-      return { data, error, usedEmailFallback: false }
+      return { data, error }
     } catch (error) {
-      return { data: null, error, usedEmailFallback: false }
+      return { data: null, error }
     }
   }
 
