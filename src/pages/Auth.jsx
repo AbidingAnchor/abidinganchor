@@ -12,9 +12,12 @@ function isValidEmail(email) {
 export default function Auth() {
   const { user, signIn, signUp } = useAuth()
   const [authView, setAuthView] = useState('signIn')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [displayName, setDisplayName] = useState('')
+  const [signInEmail, setSignInEmail] = useState('')
+  const [signInPassword, setSignInPassword] = useState('')
+  const [signUpDisplayName, setSignUpDisplayName] = useState('')
+  const [signUpEmail, setSignUpEmail] = useState('')
+  const [signUpPassword, setSignUpPassword] = useState('')
+  const [signUpConfirmPassword, setSignUpConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
@@ -107,21 +110,32 @@ export default function Auth() {
       vv?.removeEventListener('resize', recalcFit)
       vv?.removeEventListener('scroll', recalcFit)
     }
-  }, [recalcFit, error, success, loading, authView, displayName])
+  }, [
+    recalcFit,
+    error,
+    success,
+    loading,
+    authView,
+    signUpDisplayName,
+    signUpEmail,
+    signUpPassword,
+    signUpConfirmPassword,
+  ])
 
   if (user) return <Navigate to="/" replace />
 
-  const cleanEmail = email.trim().toLowerCase()
+  const cleanSignInEmail = signInEmail.trim().toLowerCase()
+  const cleanSignUpEmail = signUpEmail.trim().toLowerCase()
 
   const handleSignIn = async (event) => {
     event.preventDefault()
     setError('')
     setSuccess('')
-    if (!cleanEmail) return setError('Email is required.')
-    if (!isValidEmail(cleanEmail)) return setError('Please enter a valid email address.')
-    if (!password.trim()) return setError('Password is required.')
+    if (!cleanSignInEmail) return setError('Email is required.')
+    if (!isValidEmail(cleanSignInEmail)) return setError('Please enter a valid email address.')
+    if (!signInPassword.trim()) return setError('Password is required.')
     setLoading(true)
-    const { error: signInError } = await signIn(cleanEmail, password)
+    const { error: signInError } = await signIn(cleanSignInEmail, signInPassword)
     if (signInError) setError(formatAuthErrorMessage(signInError))
     setLoading(false)
   }
@@ -130,20 +144,23 @@ export default function Auth() {
     event.preventDefault()
     setError('')
     setSuccess('')
-    const name = displayName.trim()
-    if (!cleanEmail) return setError('Email is required.')
-    if (!isValidEmail(cleanEmail)) return setError('Please enter a valid email address.')
-    if (!password.trim()) return setError('Password is required.')
-    if (password.length < 6) return setError('Password must be at least 6 characters.')
+    const name = signUpDisplayName.trim()
     if (!name) return setError('Please choose a display name.')
-    if (name.toLowerCase() === cleanEmail) {
+    if (!cleanSignUpEmail) return setError('Email is required.')
+    if (!isValidEmail(cleanSignUpEmail)) return setError('Please enter a valid email address.')
+    if (!signUpPassword.trim()) return setError('Password is required.')
+    if (signUpPassword.length < 6) return setError('Password must be at least 6 characters.')
+    if (signUpPassword !== signUpConfirmPassword) {
+      return setError('Passwords do not match.')
+    }
+    if (name.toLowerCase() === cleanSignUpEmail) {
       return setError('Display name cannot be your email address.')
     }
     if (name.includes('@')) {
       return setError('Display name cannot look like an email address.')
     }
     setLoading(true)
-    const { error: signUpError, usedEmailFallback } = await signUp(cleanEmail, password, name)
+    const { error: signUpError, usedEmailFallback } = await signUp(cleanSignUpEmail, signUpPassword, name)
     if (signUpError) setError(formatAuthErrorMessage(signUpError))
     else if (usedEmailFallback) {
       setSuccess('')
@@ -345,54 +362,57 @@ export default function Auth() {
                     {authView === 'signIn' ? 'Sign In' : 'Create account'}
                   </h2>
                   {authView === 'signIn' ? (
-                    <form
-                      onSubmit={handleSignIn}
-                      className="grid w-full"
-                      style={{ gap: formGap }}
-                    >
-                      <input
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Email"
-                        type="email"
-                        className="app-input w-full"
-                        style={{
-                          borderRadius: '12px',
-                          padding: inputPad,
-                          fontSize: inputFont,
-                          background: 'rgba(0,0,0,0.15)',
-                          color: 'white',
-                          border: '0.5px solid rgba(212,175,55,0.4)',
-                        }}
-                        autoCapitalize="none"
-                        autoCorrect="off"
-                        autoComplete="email"
-                        spellCheck={false}
-                      />
-                      <input
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Password"
-                        type="password"
-                        className="app-input w-full"
-                        style={{
-                          borderRadius: '12px',
-                          padding: inputPad,
-                          fontSize: inputFont,
-                          background: 'rgba(0,0,0,0.15)',
-                          color: 'white',
-                          border: '0.5px solid rgba(212,175,55,0.4)',
-                        }}
-                        autoComplete="current-password"
-                      />
-                      <button
-                        type="submit"
-                        className="btn-primary w-full"
-                        disabled={loading}
-                        style={{ padding: inputPad, fontSize: inputFont }}
+                    <div className="grid w-full" style={{ gap: formGap }}>
+                      <form
+                        onSubmit={handleSignIn}
+                        noValidate
+                        className="grid w-full"
+                        style={{ gap: formGap }}
                       >
-                        {loading ? 'Please wait...' : 'Sign In'}
-                      </button>
+                        <input
+                          value={signInEmail}
+                          onChange={(e) => setSignInEmail(e.target.value)}
+                          placeholder="Email"
+                          type="email"
+                          className="app-input w-full"
+                          style={{
+                            borderRadius: '12px',
+                            padding: inputPad,
+                            fontSize: inputFont,
+                            background: 'rgba(0,0,0,0.15)',
+                            color: 'white',
+                            border: '0.5px solid rgba(212,175,55,0.4)',
+                          }}
+                          autoCapitalize="none"
+                          autoCorrect="off"
+                          autoComplete="email"
+                          spellCheck={false}
+                        />
+                        <input
+                          value={signInPassword}
+                          onChange={(e) => setSignInPassword(e.target.value)}
+                          placeholder="Password"
+                          type="password"
+                          className="app-input w-full"
+                          style={{
+                            borderRadius: '12px',
+                            padding: inputPad,
+                            fontSize: inputFont,
+                            background: 'rgba(0,0,0,0.15)',
+                            color: 'white',
+                            border: '0.5px solid rgba(212,175,55,0.4)',
+                          }}
+                          autoComplete="current-password"
+                        />
+                        <button
+                          type="submit"
+                          className="btn-primary w-full"
+                          disabled={loading}
+                          style={{ padding: inputPad, fontSize: inputFont }}
+                        >
+                          {loading ? 'Please wait...' : 'Sign In'}
+                        </button>
+                      </form>
                       <button
                         type="button"
                         className="btn-primary w-full"
@@ -406,75 +426,94 @@ export default function Auth() {
                       >
                         Create Free Account
                       </button>
-                    </form>
+                    </div>
                   ) : (
-                    <form
-                      onSubmit={handleSignUp}
-                      className="grid w-full"
-                      style={{ gap: formGap }}
-                    >
-                      <input
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Email"
-                        type="email"
-                        className="app-input w-full"
-                        style={{
-                          borderRadius: '12px',
-                          padding: inputPad,
-                          fontSize: inputFont,
-                          background: 'rgba(0,0,0,0.15)',
-                          color: 'white',
-                          border: '0.5px solid rgba(212,175,55,0.4)',
-                        }}
-                        autoCapitalize="none"
-                        autoCorrect="off"
-                        autoComplete="email"
-                        spellCheck={false}
-                      />
-                      <input
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Password"
-                        type="password"
-                        className="app-input w-full"
-                        style={{
-                          borderRadius: '12px',
-                          padding: inputPad,
-                          fontSize: inputFont,
-                          background: 'rgba(0,0,0,0.15)',
-                          color: 'white',
-                          border: '0.5px solid rgba(212,175,55,0.4)',
-                        }}
-                        autoComplete="new-password"
-                      />
-                      <input
-                        value={displayName}
-                        onChange={(e) => setDisplayName(e.target.value)}
-                        placeholder="Display name"
-                        type="text"
-                        className="app-input w-full"
-                        style={{
-                          borderRadius: '12px',
-                          padding: inputPad,
-                          fontSize: inputFont,
-                          background: 'rgba(0,0,0,0.15)',
-                          color: 'white',
-                          border: '0.5px solid rgba(212,175,55,0.4)',
-                        }}
-                        autoCapitalize="words"
-                        autoCorrect="off"
-                        autoComplete="nickname"
-                        spellCheck={false}
-                      />
-                      <button
-                        type="submit"
-                        className="btn-primary w-full"
-                        disabled={loading}
-                        style={{ padding: inputPad, fontSize: inputFont }}
+                    <div className="grid w-full" style={{ gap: formGap }}>
+                      <form
+                        onSubmit={handleSignUp}
+                        noValidate
+                        className="grid w-full"
+                        style={{ gap: formGap }}
                       >
-                        {loading ? 'Please wait...' : 'Create account'}
-                      </button>
+                        <input
+                          value={signUpDisplayName}
+                          onChange={(e) => setSignUpDisplayName(e.target.value)}
+                          placeholder="Display name"
+                          type="text"
+                          className="app-input w-full"
+                          style={{
+                            borderRadius: '12px',
+                            padding: inputPad,
+                            fontSize: inputFont,
+                            background: 'rgba(0,0,0,0.15)',
+                            color: 'white',
+                            border: '0.5px solid rgba(212,175,55,0.4)',
+                          }}
+                          autoCapitalize="words"
+                          autoCorrect="off"
+                          autoComplete="nickname"
+                          spellCheck={false}
+                        />
+                        <input
+                          value={signUpEmail}
+                          onChange={(e) => setSignUpEmail(e.target.value)}
+                          placeholder="Email"
+                          type="email"
+                          className="app-input w-full"
+                          style={{
+                            borderRadius: '12px',
+                            padding: inputPad,
+                            fontSize: inputFont,
+                            background: 'rgba(0,0,0,0.15)',
+                            color: 'white',
+                            border: '0.5px solid rgba(212,175,55,0.4)',
+                          }}
+                          autoCapitalize="none"
+                          autoCorrect="off"
+                          autoComplete="email"
+                          spellCheck={false}
+                        />
+                        <input
+                          value={signUpPassword}
+                          onChange={(e) => setSignUpPassword(e.target.value)}
+                          placeholder="Password"
+                          type="password"
+                          className="app-input w-full"
+                          style={{
+                            borderRadius: '12px',
+                            padding: inputPad,
+                            fontSize: inputFont,
+                            background: 'rgba(0,0,0,0.15)',
+                            color: 'white',
+                            border: '0.5px solid rgba(212,175,55,0.4)',
+                          }}
+                          autoComplete="new-password"
+                        />
+                        <input
+                          value={signUpConfirmPassword}
+                          onChange={(e) => setSignUpConfirmPassword(e.target.value)}
+                          placeholder="Confirm password"
+                          type="password"
+                          className="app-input w-full"
+                          style={{
+                            borderRadius: '12px',
+                            padding: inputPad,
+                            fontSize: inputFont,
+                            background: 'rgba(0,0,0,0.15)',
+                            color: 'white',
+                            border: '0.5px solid rgba(212,175,55,0.4)',
+                          }}
+                          autoComplete="new-password"
+                        />
+                        <button
+                          type="submit"
+                          className="btn-primary w-full"
+                          disabled={loading}
+                          style={{ padding: inputPad, fontSize: inputFont }}
+                        >
+                          {loading ? 'Please wait...' : 'Create account'}
+                        </button>
+                      </form>
                       <button
                         type="button"
                         className="btn-primary w-full"
@@ -494,7 +533,7 @@ export default function Auth() {
                       >
                         Back to sign in
                       </button>
-                    </form>
+                    </div>
                   )}
 
                   {error ? (
