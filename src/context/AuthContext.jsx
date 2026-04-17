@@ -5,6 +5,7 @@ import { profileFullNameFromUser } from '../utils/profileDisplay'
 import {
   clearThemePreferenceStorage,
   emitThemePreferenceChanged,
+  readThemePreferenceFromStorage,
   syncThemePreferenceFromProfileRow,
 } from '../utils/themePreferenceStorage'
 
@@ -174,9 +175,11 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
   /** After first boot finishes, auth events must not flip global loading (tab focus / token refresh). */
   const initialBootCompleteRef = useRef(false)
+  const userRef = useRef(null)
 
   useEffect(() => {
     setActiveStorageUserId(user?.id ?? null)
+    userRef.current = user ?? null
   }, [user?.id])
 
   /** Per-user anchor for achievements “days since start”; never reuse another account’s value. */
@@ -324,6 +327,11 @@ export function AuthProvider({ children }) {
         const nextUser = session?.user ?? null
         setUser(nextUser)
         if (!nextUser) {
+          // Guard against transient null sessions during background refresh.
+          // Do not clear a manual theme preference unless user was already signed out.
+          const localThemePref = readThemePreferenceFromStorage()
+          const hadSignedInUser = Boolean(userRef.current?.id)
+          if (hadSignedInUser && localThemePref && localThemePref !== 'automatic') return
           setProfile(null)
           applyThemeStorageForProfile(null)
           return

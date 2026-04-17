@@ -20,6 +20,7 @@ import { getNotificationPlatform } from '../utils/notificationPlatform'
 import {
   emitThemePreferenceChanged,
   normalizeThemePreferenceValue,
+  readThemePreferenceFromStorage,
   writeThemePreferenceToStorage,
 } from '../utils/themePreferenceStorage'
 
@@ -208,6 +209,11 @@ export default function Settings() {
   useEffect(() => {
     const raw = profile?.theme_preference
     const t = typeof raw === 'string' ? raw.trim().toLowerCase() : ''
+    const local = readThemePreferenceFromStorage()
+    if (local && local !== 'automatic' && t === 'automatic') {
+      setThemePreference(local)
+      return
+    }
     if (['day', 'evening', 'night', 'automatic'].includes(t)) {
       setThemePreference(t)
     } else {
