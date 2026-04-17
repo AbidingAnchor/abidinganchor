@@ -341,6 +341,9 @@ export default function EditProfile() {
         </div>
 
         <div className="glass-panel" style={{ borderRadius: '16px', padding: '20px' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '13px', lineHeight: 1.45, marginBottom: '14px' }}>
+            Username, bio, and favorite verse are saved together with Save Profile below.
+          </p>
           <UsernameInput
             value={username}
             onChange={(v) => {

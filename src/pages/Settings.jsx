@@ -48,7 +48,6 @@ const FEEDBACK_TYPES = [
 ]
 
 const FEEDBACK_MAX_LEN = 500
-const BIO_MAX = 150
 
 const THEME_OPTIONS = [
   { value: 'day', label: '☀️ Day' },
@@ -69,10 +68,6 @@ export default function Settings() {
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState(null)
   const [localAvatarUrl, setLocalAvatarUrl] = useState(null)
   const [localUsername, setLocalUsername] = useState('')
-  const [bio, setBio] = useState('')
-  const [favoriteVerse, setFavoriteVerse] = useState('')
-  const [profileSaving, setProfileSaving] = useState(false)
-  const [profileSaveMessage, setProfileSaveMessage] = useState('')
   const [themePreference, setThemePreference] = useState('automatic')
   const [themeSaving, setThemeSaving] = useState(false)
   const [themeSaveError, setThemeSaveError] = useState('')
@@ -215,13 +210,11 @@ export default function Settings() {
     const loadAvatar = async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('avatar_url, username, bio, favorite_verse')
+        .select('avatar_url, username')
         .eq('id', user.id)
         .maybeSingle()
       if (data?.avatar_url) setLocalAvatarUrl(data.avatar_url)
       setLocalUsername(data?.username || '')
-      setBio(data?.bio || '')
-      setFavoriteVerse(data?.favorite_verse || '')
     }
     loadAvatar()
   }, [user?.id])
@@ -255,34 +248,6 @@ export default function Settings() {
       emitThemePreferenceChanged()
     } finally {
       setThemeSaving(false)
-    }
-  }
-
-  const handleSaveProfileDetails = async () => {
-    if (!user?.id || profileSaving) return
-    setProfileSaving(true)
-    setProfileSaveMessage('')
-    try {
-      const payload = {
-        bio: bio.trim() || null,
-        favorite_verse: favoriteVerse.trim() || null,
-      }
-      const { data, error } = await supabase
-        .from('profiles')
-        .update(payload)
-        .eq('id', user.id)
-        .select()
-        .single()
-      if (error) throw error
-      await refreshProfile(data)
-      setProfileSaveMessage('Profile details saved.')
-      setTimeout(() => setProfileSaveMessage(''), 2200)
-    } catch (error) {
-      console.error('Profile details save error:', error)
-      setProfileSaveMessage('Could not save profile details.')
-      setTimeout(() => setProfileSaveMessage(''), 2200)
-    } finally {
-      setProfileSaving(false)
     }
   }
 
@@ -704,10 +669,16 @@ export default function Settings() {
               />
             </div>
             <div>
-              <p style={{ color: 'var(--text-primary)', fontSize: '18px', fontWeight: 700, marginBottom: '4px' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '4px', fontWeight: 500 }}>
+                Display name
+              </p>
+              <p style={{ color: 'var(--text-primary)', fontSize: '18px', fontWeight: 700, marginBottom: '10px' }}>
                 {displayName}
               </p>
-              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '4px', fontWeight: 500 }}>
+                Email
+              </p>
+              <p style={{ color: 'var(--text-primary)', fontSize: '14px', opacity: 0.9 }}>
                 {userEmail}
               </p>
               {profile?.is_supporter ? (
@@ -831,29 +802,6 @@ export default function Settings() {
           </p>
         </div>
 
-        {/* Edit Profile Option */}
-        <button
-          type="button"
-          onClick={() => navigate('/edit-profile')}
-          className="glass-panel"
-          style={{
-            width: '100%',
-            borderRadius: '16px',
-            padding: '16px 20px',
-            color: 'var(--text-primary)',
-            fontSize: '16px',
-            fontWeight: 500,
-            cursor: 'pointer',
-            textAlign: 'left',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}
-        >
-          <span>{t('settings.editProfile')}</span>
-          <span style={{ color: 'rgba(255,255,255,0.4)' }}>›</span>
-        </button>
-
         {/* Bible Translation Preference */}
         <div className="glass-panel" style={{
           borderRadius: '16px',
@@ -933,58 +881,28 @@ export default function Settings() {
           ) : null}
         </div>
 
-        <div className="glass-panel" style={{ borderRadius: '16px', padding: '20px' }}>
-          <p style={{ color: 'var(--text-primary)', fontSize: '16px', fontWeight: 600, marginBottom: '10px' }}>
-            Public Profile Details
-          </p>
-          <label style={{ color: 'var(--text-primary)', display: 'block', fontSize: '14px', marginBottom: '8px' }}>Bio</label>
-          <textarea
-            value={bio}
-            onChange={(e) => setBio(e.target.value.slice(0, BIO_MAX))}
-            placeholder="Share a short testimony or introduction"
-            rows={3}
-            className="glass-input-field"
-            style={{ width: '100%', borderRadius: '12px', padding: '12px', resize: 'none' }}
-          />
-          <p style={{ textAlign: 'right', color: 'rgba(255,255,255,0.6)', fontSize: '12px', marginTop: '6px' }}>
-            {bio.length}/{BIO_MAX}
-          </p>
-
-          <label style={{ color: 'var(--text-primary)', display: 'block', fontSize: '14px', marginBottom: '8px', marginTop: '10px' }}>
-            Favorite verse
-          </label>
-          <textarea
-            value={favoriteVerse}
-            onChange={(e) => setFavoriteVerse(e.target.value)}
-            placeholder="John 3:16 - For God so loved the world..."
-            rows={3}
-            className="glass-input-field"
-            style={{ width: '100%', borderRadius: '12px', padding: '12px', resize: 'vertical' }}
-          />
-
-          <button
-            type="button"
-            onClick={handleSaveProfileDetails}
-            disabled={profileSaving}
-            style={{
-              width: '100%',
-              marginTop: '14px',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '11px 14px',
-              background: '#D4AF37',
-              color: '#1a1a1a',
-              fontWeight: 700,
-              cursor: profileSaving ? 'not-allowed' : 'pointer',
-              opacity: profileSaving ? 0.75 : 1,
-            }}
-          >
-            {profileSaving ? 'Saving...' : 'Save Profile Details'}
-          </button>
-          {profileSaveMessage ? (
-            <p style={{ marginTop: '8px', marginBottom: 0, color: 'var(--text-secondary)', fontSize: '13px' }}>{profileSaveMessage}</p>
-          ) : null}
-        </div>
+        {/* Edit Profile — username, bio, favorite verse (editable on /edit-profile only) */}
+        <button
+          type="button"
+          onClick={() => navigate('/edit-profile')}
+          className="glass-panel"
+          style={{
+            width: '100%',
+            borderRadius: '16px',
+            padding: '16px 20px',
+            color: 'var(--text-primary)',
+            fontSize: '16px',
+            fontWeight: 500,
+            cursor: 'pointer',
+            textAlign: 'left',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <span>{t('settings.editProfile')}</span>
+          <span style={{ color: 'rgba(255,255,255,0.4)' }}>›</span>
+        </button>
 
         {/* Support the Ministry */}
         <div
