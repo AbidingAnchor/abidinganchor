@@ -32,6 +32,14 @@
     <title>AbidingAnchor</title>
     <script>
       (function () {
+        function logThemeMutation(source, payload) {
+          try {
+            var ts = new Date().toISOString()
+            console.log('[theme-debug] ' + ts + ' ' + source, payload)
+          } catch (e) {
+            /* no-op */
+          }
+        }
         try {
           var preference = 'automatic'
           var raw = localStorage.getItem('theme-preference')
@@ -50,10 +58,17 @@
           else if (totalMinutes >= 18 * 60 && totalMinutes < 20 * 60) theme = 'sunset'
 
           var root = document.documentElement
+          logThemeMutation('index.html bootstrap: set data-theme', {
+            preference: preference,
+            theme: theme,
+            hour: now.getHours(),
+            minute: now.getMinutes(),
+          })
           root.setAttribute('data-theme', theme)
 
           var body = document.body
           if (!body) return
+          var before = body.className
           var classes = [
             'theme-day',
             'theme-morning',
@@ -73,6 +88,11 @@
           } else {
             body.classList.add('theme-night')
           }
+          logThemeMutation('index.html bootstrap: body theme classes', {
+            theme: theme,
+            before: before,
+            after: body.className,
+          })
         } catch (e) {
           /* no-op */
         }

@@ -21,9 +21,19 @@ const BODY_SKY_CLASSES = [
   "theme-night",
 ];
 
+function logThemeMutation(source, payload) {
+  try {
+    const ts = new Date().toISOString();
+    console.log(`[theme-debug] ${ts} ${source}`, payload);
+  } catch {
+    /* ignore */
+  }
+}
+
 /** Syncs body.theme-* with sky period (parchment cards use morning/afternoon/day only). */
-function syncBodySkyClasses(theme) {
+function syncBodySkyClasses(theme, reason = "unknown") {
   const body = document.body;
+  const before = BODY_SKY_CLASSES.filter((c) => body.classList.contains(c));
   for (const c of BODY_SKY_CLASSES) body.classList.remove(c);
 
   if (theme === "day") {
@@ -36,6 +46,8 @@ function syncBodySkyClasses(theme) {
   } else {
     body.classList.add("theme-night");
   }
+  const after = BODY_SKY_CLASSES.filter((c) => body.classList.contains(c));
+  logThemeMutation("BackgroundManager: body theme classes", { reason, theme, before, after });
 }
 
 function BackgroundLayer({ type, isVisible }) {
@@ -63,8 +75,9 @@ function BackgroundLayer({ type, isVisible }) {
 export default function BackgroundManager() {
   const [currentBg, setCurrentBg] = useState(() => {
     const initial = getBackgroundTypeForTime(new Date());
+    logThemeMutation("BackgroundManager: set data-theme", { reason: "initial-state", theme: initial });
     document.documentElement.setAttribute("data-theme", initial);
-    syncBodySkyClasses(initial);
+    syncBodySkyClasses(initial, "initial-state");
     return initial;
   });
   const [previousBg, setPreviousBg] = useState(null);
@@ -74,9 +87,14 @@ export default function BackgroundManager() {
 
     const updateBackground = () => {
       const nextBg = getBackgroundTypeForTime(new Date());
-      syncBodySkyClasses(nextBg);
+      syncBodySkyClasses(nextBg, "updateBackground");
       setCurrentBg((prevBg) => {
         if (prevBg !== nextBg) {
+          logThemeMutation("BackgroundManager: set data-theme", {
+            reason: "state-transition",
+            prevTheme: prevBg,
+            nextTheme: nextBg,
+          });
           document.documentElement.setAttribute("data-theme", nextBg);
           setPreviousBg(prevBg);
           clearTimeout(fadeTimeout);
