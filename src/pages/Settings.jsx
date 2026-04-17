@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { userStorageKey } from '../utils/userStorage'
 import { getAvatarUploadExtension } from '../utils/avatarUrl'
-import i18n, { LANGUAGE_STORAGE_KEY } from '../i18n.js'
+import i18n, { LANGUAGE_STORAGE_KEY, SUPPORTED_LANGS } from '../i18n.js'
 import {
   cancelUniversalReminder,
   persistReminderToSupabase,
@@ -23,15 +23,23 @@ import {
   writeThemePreferenceToStorage,
 } from '../utils/themePreferenceStorage'
 
-const UI_LANG_OPTIONS = [
-  { code: 'en', flagIso: 'us', abbr: 'EN', labelKey: 'langEn' },
-  { code: 'es', flagIso: 'es', abbr: 'ES', labelKey: 'langEs' },
-  { code: 'pt', flagIso: 'br', abbr: 'PT', labelKey: 'langPt' },
-  { code: 'fr', flagIso: 'fr', abbr: 'FR', labelKey: 'langFr' },
-  { code: 'de', flagIso: 'de', abbr: 'DE', labelKey: 'langDe' },
-  { code: 'tl', flagIso: 'ph', abbr: 'TL', labelKey: 'langTl', fallbackLabel: 'Filipino' },
-  { code: 'ko', flagIso: 'kr', abbr: 'KO', labelKey: 'langKo', fallbackLabel: 'Korean' },
-]
+const UI_LANG_META = {
+  en: { flagIso: 'us', abbr: 'EN', labelKey: 'langEn', fallbackLabel: 'English' },
+  es: { flagIso: 'es', abbr: 'ES', labelKey: 'langEs', fallbackLabel: 'Spanish' },
+  pt: { flagIso: 'br', abbr: 'PT', labelKey: 'langPt', fallbackLabel: 'Portuguese' },
+  fr: { flagIso: 'fr', abbr: 'FR', labelKey: 'langFr', fallbackLabel: 'French' },
+  de: { flagIso: 'de', abbr: 'DE', labelKey: 'langDe', fallbackLabel: 'German' },
+  tl: { flagIso: 'ph', abbr: 'TL', labelKey: 'langTl', fallbackLabel: 'Filipino' },
+  ko: { flagIso: 'kr', abbr: 'KO', labelKey: 'langKo', fallbackLabel: 'Korean' },
+}
+
+const UI_LANG_OPTIONS = SUPPORTED_LANGS
+  .map((code) => {
+    const meta = UI_LANG_META[code]
+    if (!meta) return null
+    return { code, ...meta }
+  })
+  .filter(Boolean)
 
 const BIBLE_TRANSLATION_OPTIONS = [
   { value: 'WEB', labelKey: 'bible.web' },
