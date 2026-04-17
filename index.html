@@ -30,6 +30,9 @@
       content="Free Bible app with no ads, no distractions. Daily scripture, guided prayers, journal, and AI Bible companion. Built for Christians who want to focus on God's Word."
     />
     <title>AbidingAnchor</title>
+  </head>
+  <body>
+    <div id="root"></div>
     <script>
       (function () {
         function logThemeMutation(source, payload) {
@@ -67,7 +70,6 @@
           root.setAttribute('data-theme', theme)
 
           var body = document.body
-          if (!body) return
           var before = body.className
           var classes = [
             'theme-day',
@@ -98,9 +100,6 @@
         }
       })()
     </script>
-  </head>
-  <body>
-    <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
