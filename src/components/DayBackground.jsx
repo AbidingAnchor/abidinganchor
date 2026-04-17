@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import { getViewportCoverSize } from "../utils/viewportCover";
-import { readThemePreferenceFromStorage } from "../utils/themePreferenceStorage";
 
 // TODO: REMOVE BEFORE LAUNCH — dev-only hour override in source (Settings `devForceTheme` wins when set)
 export const DEV_FORCE_HOUR = null; // 10 = day, 18 = sunset, 21 = night, null = real time
@@ -30,16 +29,11 @@ export function getEffectiveForcedHour() {
 
 /**
  * Resolves sky/background type: "day" | "sunset" | "night".
- * Order: localStorage `theme-preference` (day / evening / night) → else automatic path:
+ * Order: automatic time-based path only:
  * dev forced hour → localhost → clock.
- * Second argument is ignored (legacy); preference is always read from storage.
+ * Second argument is ignored (legacy).
  */
 export function getBackgroundTypeForTime(date = new Date(), _themePreferenceLegacy = null) {
-  const stored = readThemePreferenceFromStorage();
-  if (stored === "day") return "day";
-  if (stored === "evening") return "sunset";
-  if (stored === "night") return "night";
-
   // TODO: REMOVE BEFORE LAUNCH
   const forced = getEffectiveForcedHour();
   if (Number.isFinite(forced)) {

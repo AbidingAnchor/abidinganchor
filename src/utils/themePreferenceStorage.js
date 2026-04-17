@@ -1,4 +1,4 @@
-/** User-chosen app theme; read first by getBackgroundTypeForTime before hour-based logic. */
+/** Manual theme selection is temporarily disabled; app always uses automatic time-based theme. */
 export const THEME_PREFERENCE_STORAGE_KEY = 'theme-preference'
 
 export const THEME_PREFERENCE_CHANGED_EVENT = 'abidinganchor-theme-preference-changed'
@@ -11,20 +11,14 @@ export function normalizeThemePreferenceValue(raw) {
 }
 
 export function readThemePreferenceFromStorage() {
-  if (typeof localStorage === 'undefined') return null
-  try {
-    const v = localStorage.getItem(THEME_PREFERENCE_STORAGE_KEY)
-    if (v == null || v === '') return null
-    return normalizeThemePreferenceValue(v)
-  } catch {
-    return null
-  }
+  return 'automatic'
 }
 
 export function writeThemePreferenceToStorage(value) {
   if (typeof localStorage === 'undefined') return
   try {
-    localStorage.setItem(THEME_PREFERENCE_STORAGE_KEY, normalizeThemePreferenceValue(value))
+    // Manual theme selection is disabled for now; keep storage clear.
+    localStorage.removeItem(THEME_PREFERENCE_STORAGE_KEY)
   } catch {
     /* ignore */
   }
@@ -47,12 +41,7 @@ export function emitThemePreferenceChanged() {
 /** Call when a full (or theme-updating) profile row arrives from Supabase. */
 export function syncThemePreferenceFromProfileRow(profile) {
   if (!profile || typeof profile !== 'object') return
-  if (!Object.prototype.hasOwnProperty.call(profile, 'theme_preference')) return
-  const v = normalizeThemePreferenceValue(profile.theme_preference ?? 'automatic')
-  const local = readThemePreferenceFromStorage()
-  // Manual local choice is sticky on this device: do not let background
-  // profile refreshes overwrite it (including stale DB values).
-  if (local && local !== 'automatic' && v !== local) return
-  writeThemePreferenceToStorage(v)
+  // Manual theme selection is disabled for now; force automatic behavior.
+  writeThemePreferenceToStorage('automatic')
   emitThemePreferenceChanged()
 }

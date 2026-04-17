@@ -45,19 +45,10 @@
         }
         try {
           var preference = 'automatic'
-          var raw = localStorage.getItem('theme-preference')
-          var v = String(raw || '').trim().toLowerCase()
-          if (v === 'day' || v === 'evening' || v === 'night' || v === 'automatic') {
-            preference = v
-          }
-
           var now = new Date()
           var totalMinutes = now.getHours() * 60 + now.getMinutes()
           var theme = 'night'
-          if (preference === 'day') theme = 'day'
-          else if (preference === 'evening') theme = 'sunset'
-          else if (preference === 'night') theme = 'night'
-          else if (totalMinutes >= 6 * 60 && totalMinutes < 18 * 60) theme = 'day'
+          if (totalMinutes >= 6 * 60 && totalMinutes < 18 * 60) theme = 'day'
           else if (totalMinutes >= 18 * 60 && totalMinutes < 20 * 60) theme = 'sunset'
 
           var root = document.documentElement
