@@ -29,6 +29,8 @@ const UI_LANG_OPTIONS = [
   { code: 'pt', flagIso: 'br', abbr: 'PT', labelKey: 'langPt' },
   { code: 'fr', flagIso: 'fr', abbr: 'FR', labelKey: 'langFr' },
   { code: 'de', flagIso: 'de', abbr: 'DE', labelKey: 'langDe' },
+  { code: 'tl', flagIso: 'ph', abbr: 'TL', labelKey: 'langTl', fallbackLabel: 'Filipino' },
+  { code: 'ko', flagIso: 'kr', abbr: 'KO', labelKey: 'langKo', fallbackLabel: 'Korean' },
 ]
 
 const BIBLE_TRANSLATION_OPTIONS = [
@@ -992,7 +994,10 @@ export default function Settings() {
             {t('settings.uiLanguageNote')}
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'flex-start' }}>
-            {UI_LANG_OPTIONS.map(({ code, flagIso, abbr, labelKey }) => {
+            {UI_LANG_OPTIONS.map(({ code, flagIso, abbr, labelKey, fallbackLabel }) => {
+              const languageLabel = t(`settings.${labelKey}`, {
+                defaultValue: fallbackLabel || abbr,
+              })
               const active = (i18nHook.resolvedLanguage || i18nHook.language || 'en')
                 .toLowerCase()
                 .startsWith(code)
@@ -1000,8 +1005,8 @@ export default function Settings() {
                 <button
                   type="button"
                   key={code}
-                  aria-label={t(`settings.${labelKey}`)}
-                  title={t(`settings.${labelKey}`)}
+                  aria-label={languageLabel}
+                  title={languageLabel}
                   onClick={async () => {
                     try {
                       localStorage.setItem(LANGUAGE_STORAGE_KEY, code)
