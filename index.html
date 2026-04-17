@@ -30,6 +30,54 @@
       content="Free Bible app with no ads, no distractions. Daily scripture, guided prayers, journal, and AI Bible companion. Built for Christians who want to focus on God's Word."
     />
     <title>AbidingAnchor</title>
+    <script>
+      (function () {
+        try {
+          var preference = 'automatic'
+          var raw = localStorage.getItem('theme-preference')
+          var v = String(raw || '').trim().toLowerCase()
+          if (v === 'day' || v === 'evening' || v === 'night' || v === 'automatic') {
+            preference = v
+          }
+
+          var now = new Date()
+          var totalMinutes = now.getHours() * 60 + now.getMinutes()
+          var theme = 'night'
+          if (preference === 'day') theme = 'day'
+          else if (preference === 'evening') theme = 'sunset'
+          else if (preference === 'night') theme = 'night'
+          else if (totalMinutes >= 6 * 60 && totalMinutes < 18 * 60) theme = 'day'
+          else if (totalMinutes >= 18 * 60 && totalMinutes < 20 * 60) theme = 'sunset'
+
+          var root = document.documentElement
+          root.setAttribute('data-theme', theme)
+
+          var body = document.body
+          if (!body) return
+          var classes = [
+            'theme-day',
+            'theme-morning',
+            'theme-afternoon',
+            'theme-evening',
+            'theme-sunset',
+            'theme-night',
+          ]
+          for (var i = 0; i < classes.length; i++) body.classList.remove(classes[i])
+
+          if (theme === 'day') {
+            body.classList.add('theme-day')
+            body.classList.add(now.getHours() < 12 ? 'theme-morning' : 'theme-afternoon')
+          } else if (theme === 'sunset') {
+            body.classList.add('theme-sunset')
+            body.classList.add('theme-evening')
+          } else {
+            body.classList.add('theme-night')
+          }
+        } catch (e) {
+          /* no-op */
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

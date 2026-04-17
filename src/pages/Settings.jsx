@@ -1022,7 +1022,6 @@ export default function Settings() {
                       /* ignore */
                     }
                     await i18n.changeLanguage(code)
-                    if (dailyReminderEnabled) await scheduleNotifications()
                   }}
                   style={{
                     display: 'flex',
