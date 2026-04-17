@@ -104,28 +104,6 @@ export default function WeeklyRecap({ userId, profile, weekStorageKey, autoGener
   const [stats, setStats] = useState({ chaptersRead: 0, journals: 0, prayers: 0, streak: 0 })
   const [dismissed, setDismissed] = useState(false)
   const localDismissKey = useMemo(() => `weekly-recap-dismissed-${weekStorageKey}`, [weekStorageKey])
-  const themedStyles = useMemo(() => {
-    const hour = new Date().getHours()
-    if (hour >= 6 && hour < 17) {
-      return {
-        cardBg: 'rgba(245,237,214,0.85)',
-        text: '#2c1810',
-        subtext: 'rgba(44,24,16,0.78)',
-      }
-    }
-    if (hour >= 17 && hour < 21) {
-      return {
-        cardBg: 'rgba(80,40,80,0.75)',
-        text: '#ffffff',
-        subtext: 'rgba(255,255,255,0.82)',
-      }
-    }
-    return {
-      cardBg: 'rgba(15,20,45,0.75)',
-      text: '#ffffff',
-      subtext: 'rgba(255,255,255,0.82)',
-    }
-  }, [])
 
   const callAiRecap = async (payloadPrompt) => {
     const endpoints = ['/api/ai-companion', '/.netlify/functions/ai-companion']
@@ -239,13 +217,12 @@ export default function WeeklyRecap({ userId, profile, weekStorageKey, autoGener
   if (dismissed) {
     return (
       <article
-        className="home-gold-glass"
+        className="home-gold-glass rounded-[20px] p-5"
         style={{
-          borderRadius: '16px',
-          padding: '14px 16px',
-          border: '1px solid rgba(212,175,55,0.55)',
           marginTop: '12px',
-          marginBottom: '12px',
+          marginBottom: '28px',
+          animation: 'fadeInUp 0.6s ease forwards',
+          animationDelay: '0.25s',
         }}
       >
         <button
@@ -274,10 +251,18 @@ export default function WeeklyRecap({ userId, profile, weekStorageKey, autoGener
 
   return (
     <article
-      style={{ backgroundColor: 'rgba(245,237,214,0.85)', borderRadius: '16px', padding: '16px', border: '1px solid rgba(212,175,55,0.55)', marginTop: '12px', marginBottom: '12px' }}
+      className="home-gold-glass rounded-[20px] p-5"
+      style={{
+        marginTop: '12px',
+        marginBottom: '28px',
+        animation: 'fadeInUp 0.6s ease forwards',
+        animationDelay: '0.25s',
+      }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', alignItems: 'center' }}>
-        <p style={{ margin: 0, color: themedStyles.text, fontWeight: 800, fontSize: '14px' }}>Weekly Spiritual Recap ✨</p>
+        <p style={{ margin: 0, color: 'var(--text-primary)', fontWeight: 800, fontSize: '14px' }}>
+          Weekly Spiritual Recap ✨
+        </p>
         <button
           type="button"
           onClick={() => {
@@ -285,34 +270,56 @@ export default function WeeklyRecap({ userId, profile, weekStorageKey, autoGener
             setDismissed(true)
             if (onDismiss) onDismiss()
           }}
-          style={{ border: '1px solid rgba(212,175,55,0.45)', borderRadius: '999px', background: 'transparent', color: themedStyles.subtext, padding: '4px 10px', cursor: 'pointer', fontSize: '11px' }}
+          style={{
+            border: '1px solid rgba(212, 168, 67, 0.35)',
+            borderRadius: '999px',
+            background: 'transparent',
+            color: 'var(--text-secondary)',
+            padding: '4px 10px',
+            cursor: 'pointer',
+            fontSize: '11px',
+          }}
         >
           Dismiss
         </button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '8px', marginTop: '10px' }}>
-        <div style={{ fontSize: '12px', color: themedStyles.text }}>📖 {stats.chaptersRead} ch</div>
-        <div style={{ fontSize: '12px', color: themedStyles.text }}>📝 {stats.journals} journal</div>
-        <div style={{ fontSize: '12px', color: themedStyles.text }}>🙏 {stats.prayers} prayers</div>
-        <div style={{ fontSize: '12px', color: themedStyles.text }}>🔥 {stats.streak} streak</div>
+        <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>📖 {stats.chaptersRead} ch</div>
+        <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>📝 {stats.journals} journal</div>
+        <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>🙏 {stats.prayers} prayers</div>
+        <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>🔥 {stats.streak} streak</div>
       </div>
 
       {recap ? (
-        <p style={{ margin: '10px 0 0', color: themedStyles.text, fontSize: '14px', lineHeight: 1.6 }}>{recap}</p>
+        <p style={{ margin: '10px 0 0', color: 'var(--text-primary)', fontSize: '14px', lineHeight: 1.6 }}>{recap}</p>
       ) : (
-        <p style={{ margin: '10px 0 0', color: themedStyles.subtext, fontSize: '13px' }}>
+        <p style={{ margin: '10px 0 0', color: 'var(--text-secondary)', fontSize: '13px', lineHeight: 1.5 }}>
           {loading ? 'Generating your recap…' : 'Generate a personalized recap from your week with God.'}
         </p>
       )}
 
-      {error ? <p style={{ margin: '8px 0 0', color: '#fca5a5', fontSize: '12px' }}>{error}</p> : null}
+      {error ? (
+        <p style={{ margin: '8px 0 0', color: '#f87171', fontSize: '12px', lineHeight: 1.45 }}>{error}</p>
+      ) : null}
 
       <button
         type="button"
         onClick={generateRecap}
         disabled={loading}
-        style={{ backgroundColor: '#D4AF37', color: '#1a1a1a', fontWeight: 'bold', border: 'none', borderRadius: '12px', padding: '14px', width: '100%', cursor: 'pointer', fontSize: '16px' }}
+        style={{
+          marginTop: '12px',
+          backgroundColor: '#D4AF37',
+          color: '#1a1a1a',
+          fontWeight: 'bold',
+          border: 'none',
+          borderRadius: '12px',
+          padding: '14px',
+          width: '100%',
+          cursor: loading ? 'not-allowed' : 'pointer',
+          fontSize: '16px',
+          opacity: loading ? 0.85 : 1,
+        }}
       >
         {loading ? 'Preparing Recap…' : (recap ? 'Regenerate Weekly Recap' : 'View Weekly Recap')}
       </button>
