@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 /**
@@ -9,52 +9,6 @@ import { useTranslation } from 'react-i18next'
 export default function LoadingScreen() {
   useTranslation()
   const [logoLoaded, setLogoLoaded] = useState(false)
-  useMemo(() => {
-    if (typeof window === 'undefined' || typeof document === 'undefined') return null
-
-    let preference = 'automatic'
-    try {
-      const raw = localStorage.getItem('theme-preference')
-      const v = String(raw || '').trim().toLowerCase()
-      if (v === 'day' || v === 'evening' || v === 'night' || v === 'automatic') {
-        preference = v
-      }
-    } catch {
-      /* ignore */
-    }
-
-    const now = new Date()
-    const totalMinutes = now.getHours() * 60 + now.getMinutes()
-    let theme = 'night'
-    if (preference === 'day') theme = 'day'
-    else if (preference === 'evening') theme = 'sunset'
-    else if (preference === 'night') theme = 'night'
-    else if (totalMinutes >= 6 * 60 && totalMinutes < 18 * 60) theme = 'day'
-    else if (totalMinutes >= 18 * 60 && totalMinutes < 20 * 60) theme = 'sunset'
-
-    document.documentElement.setAttribute('data-theme', theme)
-
-    const body = document.body
-    if (!body) return theme
-    const classes = [
-      'theme-day',
-      'theme-morning',
-      'theme-afternoon',
-      'theme-evening',
-      'theme-sunset',
-      'theme-night',
-    ]
-    for (const cls of classes) body.classList.remove(cls)
-    if (theme === 'day') {
-      body.classList.add('theme-day')
-      body.classList.add(now.getHours() < 12 ? 'theme-morning' : 'theme-afternoon')
-    } else if (theme === 'sunset') {
-      body.classList.add('theme-sunset', 'theme-evening')
-    } else {
-      body.classList.add('theme-night')
-    }
-    return theme
-  }, [])
 
   useEffect(() => {
     let alive = true
@@ -79,6 +33,7 @@ export default function LoadingScreen() {
 
   return (
     <div
+      className="aa-loading-screen"
       style={{
         position: 'fixed',
         top: 0,
@@ -87,7 +42,7 @@ export default function LoadingScreen() {
         height: '100dvh',
         zIndex: 9999,
         margin: 0,
-        background: 'transparent',
+        background: 'var(--loading-screen-bg)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -103,6 +58,18 @@ export default function LoadingScreen() {
         @keyframes loading-logo-pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.88; }
+        }
+        .aa-loading-screen {
+          --loading-screen-bg: linear-gradient(180deg, #07112a 0%, #0b1738 58%, #091021 100%);
+        }
+        html[data-theme="day"] .aa-loading-screen {
+          --loading-screen-bg: linear-gradient(180deg, #8ec7ea 0%, #bfdff2 48%, #f1dfbf 100%);
+        }
+        html[data-theme="sunset"] .aa-loading-screen {
+          --loading-screen-bg: linear-gradient(180deg, #3a2346 0%, #5a2d5f 45%, #e39a5a 100%);
+        }
+        html[data-theme="night"] .aa-loading-screen {
+          --loading-screen-bg: linear-gradient(180deg, #07112a 0%, #0b1738 58%, #091021 100%);
         }
       `}</style>
       <div
