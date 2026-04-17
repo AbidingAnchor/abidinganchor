@@ -26,6 +26,77 @@ function summarizeReading(rows) {
   }
 }
 
+function logSupabaseTableError(table, error) {
+  const message = error?.message ?? String(error)
+  const code = error?.code != null ? String(error.code) : ''
+  const details = error?.details != null ? String(error.details) : ''
+  const hint = error?.hint != null ? String(error.hint) : ''
+  console.warn(
+    `[WeeklyRecap] Supabase query failed: table="${table}" message="${message}"` +
+      (code ? ` code="${code}"` : '') +
+      (details ? ` details="${details}"` : '') +
+      (hint ? ` hint="${hint}"` : ''),
+    error,
+  )
+}
+
+async function fetchReadingProgressRows(uid) {
+  const table = 'reading_progress'
+  try {
+    const { data, error } = await supabase.from(table).select('*').eq('user_id', uid)
+    if (error) {
+      logSupabaseTableError(table, error)
+      return []
+    }
+    return data || []
+  } catch (e) {
+    logSupabaseTableError(table, e)
+    return []
+  }
+}
+
+async function fetchJournalRowsLast7Days(uid, sinceIso) {
+  const table = 'journal_entries'
+  try {
+    const { data, error } = await supabase
+      .from(table)
+      .select('content, verse, verse_reference, created_at')
+      .eq('user_id', uid)
+      .gte('created_at', sinceIso)
+      .order('created_at', { ascending: false })
+      .limit(20)
+    if (error) {
+      logSupabaseTableError(table, error)
+      return []
+    }
+    return data || []
+  } catch (e) {
+    logSupabaseTableError(table, e)
+    return []
+  }
+}
+
+async function fetchPrayerRowsLast7Days(uid, sinceIso) {
+  const table = 'personal_prayers'
+  try {
+    const { data, error } = await supabase
+      .from(table)
+      .select('prayer_text, created_at')
+      .eq('user_id', uid)
+      .gte('created_at', sinceIso)
+      .order('created_at', { ascending: false })
+      .limit(20)
+    if (error) {
+      logSupabaseTableError(table, error)
+      return []
+    }
+    return data || []
+  } catch (e) {
+    logSupabaseTableError(table, e)
+    return []
+  }
+}
+
 export default function WeeklyRecap({ userId, profile, weekStorageKey, autoGenerate = false, onDismiss }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -86,62 +157,36 @@ export default function WeeklyRecap({ userId, profile, weekStorageKey, autoGener
   }, [localDismissKey])
 
   const generateRecap = async () => {
-    if (!userId || loading) return
+    if (loading) return
     setLoading(true)
     setError('')
     try {
+      const {
+        data: { user: authUser },
+        error: authError,
+      } = await supabase.auth.getUser()
+      if (authError) {
+        logSupabaseTableError('auth.getUser', authError)
+        setError('Could not verify your session. Please sign in again.')
+        return
+      }
+      const uid = authUser?.id
+      if (!uid) {
+        setError('Sign in to generate your recap.')
+        return
+      }
+      if (userId && userId !== uid) {
+        console.warn('[WeeklyRecap] Session user id does not match userId prop; using authenticated session user.')
+      }
+
       const sevenDaysAgo = new Date()
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
       const sinceIso = sevenDaysAgo.toISOString()
 
       const [readingRows, journalRows, prayerRows] = await Promise.all([
-        (async () => {
-          try {
-            const res = await supabase
-              .from('reading_progress')
-              .select('book, chapter')
-              .eq('user_id', userId)
-            if (res?.error) {
-              // Table missing / RLS / 4xx should not block recap.
-              if (import.meta.env.DEV) console.warn('weekly recap reading_progress fallback:', res.error)
-              return []
-            }
-            return res.data || []
-          } catch (e) {
-            if (import.meta.env.DEV) console.warn('weekly recap reading_progress exception fallback:', e)
-            return []
-          }
-        })(),
-        (async () => {
-          try {
-            const res = await supabase
-              .from('journal_entries')
-              .select('entry, verse_text, created_at')
-              .eq('user_id', userId)
-              .gte('created_at', sinceIso)
-              .order('created_at', { ascending: false })
-              .limit(20)
-            if (res?.error) return []
-            return res.data || []
-          } catch {
-            return []
-          }
-        })(),
-        (async () => {
-          try {
-            const res = await supabase
-              .from('personal_prayers')
-              .select('title, content, created_at')
-              .eq('user_id', userId)
-              .gte('created_at', sinceIso)
-              .order('created_at', { ascending: false })
-              .limit(20)
-            if (res?.error) return []
-            return res.data || []
-          } catch {
-            return []
-          }
-        })(),
+        fetchReadingProgressRows(uid),
+        fetchJournalRowsLast7Days(uid, sinceIso),
+        fetchPrayerRowsLast7Days(uid, sinceIso),
       ])
       const readingSummary = summarizeReading(readingRows)
 
@@ -163,8 +208,8 @@ export default function WeeklyRecap({ userId, profile, weekStorageKey, autoGener
         `Journal entries this week: ${nextStats.journals}`,
         `Prayer entries this week: ${nextStats.prayers}`,
         `Current reading streak: ${nextStats.streak}`,
-        `Recent journal notes: ${(journalRows || []).slice(0, 3).map((j) => (j.entry || j.verse_text || '').slice(0, 160)).filter(Boolean).join(' | ') || 'None'}`,
-        `Recent prayers: ${(prayerRows || []).slice(0, 3).map((p) => (p.title || p.content || '').slice(0, 160)).filter(Boolean).join(' | ') || 'None'}`,
+        `Recent journal notes: ${(journalRows || []).slice(0, 3).map((j) => (j.content || j.entry || j.verse || j.verse_text || j.verse_reference || '').slice(0, 160)).filter(Boolean).join(' | ') || 'None'}`,
+        `Recent prayers: ${(prayerRows || []).slice(0, 3).map((p) => (p.prayer_text || '').slice(0, 160)).filter(Boolean).join(' | ') || 'None'}`,
       ].join('\n')
 
       if (typeof window !== 'undefined' && window.location?.hostname === 'localhost') {
@@ -191,7 +236,41 @@ export default function WeeklyRecap({ userId, profile, weekStorageKey, autoGener
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoGenerate, dismissed])
 
-  if (dismissed) return null
+  if (dismissed) {
+    return (
+      <article
+        className="home-gold-glass"
+        style={{
+          borderRadius: '16px',
+          padding: '14px 16px',
+          border: '1px solid rgba(212,175,55,0.55)',
+          marginTop: '12px',
+          marginBottom: '12px',
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            localStorage.removeItem(localDismissKey)
+            setDismissed(false)
+          }}
+          style={{
+            backgroundColor: '#D4AF37',
+            color: '#1a1a1a',
+            fontWeight: 'bold',
+            border: 'none',
+            borderRadius: '12px',
+            padding: '14px',
+            width: '100%',
+            cursor: 'pointer',
+            fontSize: '16px',
+          }}
+        >
+          View Weekly Recap
+        </button>
+      </article>
+    )
+  }
 
   return (
     <article

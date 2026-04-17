@@ -22,6 +22,7 @@ import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
 import { supabase } from '../lib/supabase'
 import { userStorageKey } from '../utils/userStorage'
 import Footer from '../components/Footer'
+import WeeklyRecap, { weekKeyForDate } from '../components/WeeklyRecap'
 
 /** Race a promise against a timeout so streak sync cannot hang indefinitely on stalled requests. */
 const STREAK_SYNC_TIMEOUT_MS = 45_000
@@ -675,6 +676,15 @@ function Home({ onOpenWorship, worshipStatus }) {
               activeDays={mergedWeekActiveDays}
               consecutiveStreak={dailyStreakCount}
             />
+
+            {user?.id ? (
+              <WeeklyRecap
+                userId={user.id}
+                profile={profile}
+                weekStorageKey={weekKeyForDate()}
+                autoGenerate={false}
+              />
+            ) : null}
 
             <div style={{ marginBottom: '28px', animation: 'fadeInUp 0.6s ease forwards', animationDelay: '0.3s' }}>
               <h2 style={{ color: 'var(--section-title)', fontSize: '13px', letterSpacing: '0.12em', fontWeight: 500, textTransform: 'uppercase' }}>{t('home.toolsHeading')}</h2>
