@@ -5,10 +5,60 @@ import {
   SUPPORT_BMAC_LINK,
   SUPPORT_PAGE_GOLD,
   SUPPORT_ROADMAP_ITEMS,
+  WALL_OF_HONOR_EMPTY,
+  WALL_OF_HONOR_SUBTITLE,
+  WALL_OF_HONOR_TITLE,
 } from '../data/supportPageConstants'
+import { fetchWallOfHonorSupporters, formatSupporterSince, supporterDisplayName } from '../data/supportWallOfHonor'
 import { supabase } from '../lib/supabase'
 import { parseMinistryTransparencyStats } from '../utils/parseMinistryTransparencyStats'
 import { userStorageKey } from '../utils/userStorage'
+
+function WallOfHonorAvatar({ avatarUrl, gold }) {
+  const [imgError, setImgError] = useState(false)
+  const showFallback = !avatarUrl || imgError
+  return (
+    <div
+      style={{
+        width: '44px',
+        height: '44px',
+        borderRadius: '50%',
+        overflow: 'hidden',
+        flexShrink: 0,
+        border: `1px solid rgba(212, 175, 55, 0.35)`,
+        background: 'rgba(0, 0, 0, 0.2)',
+      }}
+    >
+      {showFallback ? (
+        <div
+          aria-hidden
+          style={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: gold,
+            fontSize: '22px',
+            lineHeight: 1,
+          }}
+        >
+          ⚓
+        </div>
+      ) : (
+        <img
+          src={avatarUrl}
+          alt=""
+          width={44}
+          height={44}
+          referrerPolicy="no-referrer"
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          onError={() => setImgError(true)}
+        />
+      )}
+    </div>
+  )
+}
 
 export default function Support() {
   const { user } = useAuth()
@@ -16,6 +66,8 @@ export default function Support() {
   const [aiPrayersCount, setAiPrayersCount] = useState(null)
   const [usersReachedCount, setUsersReachedCount] = useState(null)
   const [transparencyLoading, setTransparencyLoading] = useState(true)
+  const [honorSupporters, setHonorSupporters] = useState([])
+  const [honorLoading, setHonorLoading] = useState(true)
 
   useEffect(() => {
     setNotificationsEnabled(
@@ -50,6 +102,21 @@ export default function Support() {
     }
 
     void loadTransparencyStats()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      setHonorLoading(true)
+      const { supporters } = await fetchWallOfHonorSupporters()
+      if (!cancelled) {
+        setHonorSupporters(supporters)
+        setHonorLoading(false)
+      }
+    })()
     return () => {
       cancelled = true
     }
@@ -331,6 +398,136 @@ export default function Support() {
               </li>
             ))}
           </ul>
+        </section>
+
+        <section
+          className="glass-panel"
+          style={{
+            borderRadius: '20px',
+            padding: '18px 16px',
+            marginBottom: '16px',
+            border: '1px solid rgba(212, 175, 55, 0.28)',
+            background: 'var(--card-bg, rgba(15, 20, 45, 0.88))',
+          }}
+        >
+          <h2
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              flexWrap: 'wrap',
+              color: 'var(--text-primary, #f5f5f5)',
+              fontSize: '16px',
+              fontWeight: 700,
+              margin: '0 0 6px',
+              fontFamily: 'Georgia, serif',
+              letterSpacing: '0.02em',
+            }}
+          >
+            <span style={{ fontSize: '18px', lineHeight: 1, filter: 'none' }} aria-hidden>
+              🏆
+            </span>
+            {WALL_OF_HONOR_TITLE}
+          </h2>
+          <p
+            style={{
+              margin: '0 0 16px',
+              fontSize: '12px',
+              lineHeight: 1.5,
+              color: 'var(--text-secondary, rgba(255,255,255,0.65))',
+            }}
+          >
+            {WALL_OF_HONOR_SUBTITLE}
+          </p>
+
+          {honorLoading ? (
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary, rgba(255,255,255,0.55))' }}>
+              Loading…
+            </p>
+          ) : honorSupporters.length === 0 ? (
+            <p
+              style={{
+                margin: 0,
+                fontSize: '13px',
+                fontStyle: 'italic',
+                color: 'var(--text-secondary, rgba(255,255,255,0.5))',
+                textAlign: 'center',
+                padding: '12px 8px',
+              }}
+            >
+              {WALL_OF_HONOR_EMPTY}
+            </p>
+          ) : (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                gap: '10px',
+              }}
+            >
+              {honorSupporters.map((row) => {
+                const name = supporterDisplayName(row)
+                const sinceLabel = formatSupporterSince(row.supporter_since)
+                return (
+                  <article
+                    key={row.id}
+                    style={{
+                      borderRadius: '14px',
+                      padding: '12px 10px',
+                      background: 'rgba(0, 0, 0, 0.22)',
+                      border: '1px solid rgba(212, 175, 55, 0.22)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      textAlign: 'center',
+                      gap: '8px',
+                      minWidth: 0,
+                    }}
+                  >
+                    <WallOfHonorAvatar avatarUrl={row.avatar_url} gold={gold} />
+                    <div
+                      style={{
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        color: 'var(--text-primary, rgba(255,255,255,0.95))',
+                        lineHeight: 1.3,
+                        wordBreak: 'break-word',
+                      }}
+                    >
+                      {name}
+                    </div>
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        fontSize: '9px',
+                        fontWeight: 700,
+                        letterSpacing: '0.06em',
+                        textTransform: 'uppercase',
+                        color: gold,
+                        border: `1px solid rgba(212, 175, 55, 0.45)`,
+                        borderRadius: '999px',
+                        padding: '3px 8px',
+                        background: 'rgba(212, 175, 55, 0.08)',
+                      }}
+                    >
+                      Ministry Supporter
+                    </span>
+                    {sinceLabel ? (
+                      <span
+                        style={{
+                          fontSize: '11px',
+                          color: 'var(--text-secondary, rgba(255,255,255,0.55))',
+                          lineHeight: 1.35,
+                        }}
+                      >
+                        {sinceLabel}
+                      </span>
+                    ) : null}
+                  </article>
+                )
+              })}
+            </div>
+          )}
         </section>
 
         <a href={SUPPORT_BMAC_LINK}

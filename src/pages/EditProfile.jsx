@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase'
 import { getAvatarUploadExtension } from '../utils/avatarUrl'
 import UsernameInput from '../components/UsernameInput'
 import { normalizeUsername, checkUsernameTaken, hasProfanityInUsername } from '../utils/usernameAvailability'
+import { hasUnlimitedUsernameChanges } from '../utils/usernameChangeBypass'
 
 const BIO_MAX = 150
 /** One free username change after signup; then the field is locked. */
@@ -23,6 +24,7 @@ export default function EditProfile() {
 
   const [username, setUsername] = useState('')
   const [usernameChanges, setUsernameChanges] = useState(0)
+  const [isAdminFromDb, setIsAdminFromDb] = useState(false)
   const [bio, setBio] = useState('')
   const [favoriteVerse, setFavoriteVerse] = useState('')
   const [saving, setSaving] = useState(false)
@@ -34,7 +36,7 @@ export default function EditProfile() {
     const loadProfile = async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('avatar_url, username, username_changes, bio, favorite_verse')
+        .select('avatar_url, username, username_changes, bio, favorite_verse, is_admin')
         .eq('id', user.id)
         .maybeSingle()
       if (error || !data) return
@@ -42,11 +44,16 @@ export default function EditProfile() {
       setLocalAvatarUrl(data.avatar_url || null)
       setUsername(data.username || '')
       setUsernameChanges(Number(data.username_changes) || 0)
+      setIsAdminFromDb(Boolean(data.is_admin))
       setBio(data.bio || '')
       setFavoriteVerse(data.favorite_verse || '')
     }
     loadProfile()
   }, [user?.id])
+
+  useEffect(() => {
+    if (profile?.is_admin != null) setIsAdminFromDb(Boolean(profile.is_admin))
+  }, [profile?.is_admin])
 
   useEffect(() => {
     return () => {
@@ -157,18 +164,23 @@ export default function EditProfile() {
       setSaving(true)
       const { data: latestProfile, error: latestProfileError } = await supabase
         .from('profiles')
-        .select('username, username_changes')
+        .select('username, username_changes, is_admin')
         .eq('id', user.id)
         .maybeSingle()
       if (latestProfileError) throw latestProfileError
 
       const dbUsername = latestProfile?.username || ''
       const dbUsernameChanges = Number(latestProfile?.username_changes) || 0
+      const unlimitedUsername = hasUnlimitedUsernameChanges({
+        email: user?.email,
+        isAdmin: Boolean(latestProfile?.is_admin),
+      })
 
       const didUsernameChange = nextUsername !== dbUsername
-      const reachedUsernameLimit = dbUsernameChanges >= USERNAME_FREE_CHANGES
+      const reachedUsernameLimit = !unlimitedUsername && dbUsernameChanges >= USERNAME_FREE_CHANGES
 
       setUsernameChanges(dbUsernameChanges)
+      setIsAdminFromDb(Boolean(latestProfile?.is_admin))
       if (didUsernameChange && reachedUsernameLimit) return
 
       const payload = {
@@ -203,7 +215,11 @@ export default function EditProfile() {
   const userEmail = user?.email || ''
   const avatarUrl = avatarPreviewUrl || localAvatarUrl || profile?.avatar_url
   const hasAvatarImage = Boolean(avatarUrl)
-  const reachedUsernameLimit = usernameChanges >= USERNAME_FREE_CHANGES
+  const unlimitedUsername = hasUnlimitedUsernameChanges({
+    email: user?.email,
+    isAdmin: Boolean(profile?.is_admin) || isAdminFromDb,
+  })
+  const reachedUsernameLimit = !unlimitedUsername && usernameChanges >= USERNAME_FREE_CHANGES
   const remainingUsernameChanges = Math.max(0, USERNAME_FREE_CHANGES - usernameChanges)
 
   return (
@@ -343,14 +359,19 @@ export default function EditProfile() {
               {profileError}
             </p>
           ) : null}
-          {!reachedUsernameLimit && remainingUsernameChanges > 0 ? (
+          {unlimitedUsername ? (
+            <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '12px', marginBottom: '12px' }}>
+              Unlimited username changes (admin)
+            </p>
+          ) : null}
+          {!unlimitedUsername && !reachedUsernameLimit && remainingUsernameChanges > 0 ? (
             <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '12px', marginBottom: '12px' }}>
               {remainingUsernameChanges === 1
                 ? '1 username change remaining'
                 : `${remainingUsernameChanges} username changes remaining`}
             </p>
           ) : null}
-          {reachedUsernameLimit ? (
+          {!unlimitedUsername && reachedUsernameLimit ? (
             <p style={{ color: '#D4A843', fontSize: '12px', marginBottom: '12px' }}>Username can only be changed once</p>
           ) : null}
 

@@ -3,6 +3,12 @@ export const SUPPORT_BMAC_LINK = 'https://buymeacoffee.com/abidinganchor'
 
 export const SUPPORT_PAGE_GOLD = '#D4AF37'
 
+export const WALL_OF_HONOR_TITLE = 'Wall of Honor'
+
+export const WALL_OF_HONOR_SUBTITLE = 'These believers helped keep this ministry free 🙏'
+
+export const WALL_OF_HONOR_EMPTY = 'Be the first to join the Wall of Honor 🙏'
+
 export const SUPPORT_ROADMAP_ITEMS = [
   { icon: '\u2705', text: 'Verse Highlighting & Notes', status: 'Completed' },
   { icon: '\u2705', text: 'Cross References', status: 'Completed' },
