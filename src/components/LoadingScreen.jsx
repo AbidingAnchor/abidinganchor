@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 /**
@@ -9,56 +9,51 @@ import { useTranslation } from 'react-i18next'
 export default function LoadingScreen() {
   useTranslation()
   const [logoLoaded, setLogoLoaded] = useState(false)
-  const [themeReady, setThemeReady] = useState(false)
+  useMemo(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return null
 
-  useLayoutEffect(() => {
-    const applyThemeImmediately = () => {
-      if (typeof window === 'undefined' || typeof document === 'undefined') return
-      let preference = 'automatic'
-      try {
-        const raw = localStorage.getItem('theme-preference')
-        const v = String(raw || '').trim().toLowerCase()
-        if (v === 'day' || v === 'evening' || v === 'night' || v === 'automatic') {
-          preference = v
-        }
-      } catch {
-        /* ignore */
+    let preference = 'automatic'
+    try {
+      const raw = localStorage.getItem('theme-preference')
+      const v = String(raw || '').trim().toLowerCase()
+      if (v === 'day' || v === 'evening' || v === 'night' || v === 'automatic') {
+        preference = v
       }
-
-      const now = new Date()
-      const totalMinutes = now.getHours() * 60 + now.getMinutes()
-      let theme = 'night'
-      if (preference === 'day') theme = 'day'
-      else if (preference === 'evening') theme = 'sunset'
-      else if (preference === 'night') theme = 'night'
-      else if (totalMinutes >= 6 * 60 && totalMinutes < 18 * 60) theme = 'day'
-      else if (totalMinutes >= 18 * 60 && totalMinutes < 20 * 60) theme = 'sunset'
-
-      document.documentElement.setAttribute('data-theme', theme)
-
-      const body = document.body
-      if (!body) return
-      const classes = [
-        'theme-day',
-        'theme-morning',
-        'theme-afternoon',
-        'theme-evening',
-        'theme-sunset',
-        'theme-night',
-      ]
-      for (const cls of classes) body.classList.remove(cls)
-      if (theme === 'day') {
-        body.classList.add('theme-day')
-        body.classList.add(now.getHours() < 12 ? 'theme-morning' : 'theme-afternoon')
-      } else if (theme === 'sunset') {
-        body.classList.add('theme-sunset', 'theme-evening')
-      } else {
-        body.classList.add('theme-night')
-      }
+    } catch {
+      /* ignore */
     }
 
-    applyThemeImmediately()
-    setThemeReady(true)
+    const now = new Date()
+    const totalMinutes = now.getHours() * 60 + now.getMinutes()
+    let theme = 'night'
+    if (preference === 'day') theme = 'day'
+    else if (preference === 'evening') theme = 'sunset'
+    else if (preference === 'night') theme = 'night'
+    else if (totalMinutes >= 6 * 60 && totalMinutes < 18 * 60) theme = 'day'
+    else if (totalMinutes >= 18 * 60 && totalMinutes < 20 * 60) theme = 'sunset'
+
+    document.documentElement.setAttribute('data-theme', theme)
+
+    const body = document.body
+    if (!body) return theme
+    const classes = [
+      'theme-day',
+      'theme-morning',
+      'theme-afternoon',
+      'theme-evening',
+      'theme-sunset',
+      'theme-night',
+    ]
+    for (const cls of classes) body.classList.remove(cls)
+    if (theme === 'day') {
+      body.classList.add('theme-day')
+      body.classList.add(now.getHours() < 12 ? 'theme-morning' : 'theme-afternoon')
+    } else if (theme === 'sunset') {
+      body.classList.add('theme-sunset', 'theme-evening')
+    } else {
+      body.classList.add('theme-night')
+    }
+    return theme
   }, [])
 
   useEffect(() => {
@@ -81,8 +76,6 @@ export default function LoadingScreen() {
       alive = false
     }
   }, [])
-
-  if (!themeReady) return null
 
   return (
     <div
