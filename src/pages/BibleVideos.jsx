@@ -57,6 +57,35 @@ function YouTubeEmbed({ videoId, title, edgeToEdge }) {
   )
 }
 
+function BibleProjectCredit({ style: extraStyle = {} }) {
+  return (
+    <p
+      style={{
+        margin: 0,
+        fontSize: '11px',
+        lineHeight: 1.45,
+        color: 'rgba(255, 255, 255, 0.42)',
+        letterSpacing: '0.01em',
+        ...extraStyle,
+      }}
+    >
+      Videos by BibleProject —{' '}
+      <a
+        href="https://bibleproject.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          color: 'rgba(212, 168, 67, 0.65)',
+          textDecoration: 'none',
+          borderBottom: '1px solid rgba(212, 168, 67, 0.22)',
+        }}
+      >
+        bibleproject.com
+      </a>
+    </p>
+  )
+}
+
 export default function BibleVideos() {
   const apiKey = import.meta.env.VITE_YOUTUBE_API_KEY
 
@@ -152,6 +181,7 @@ export default function BibleVideos() {
               outline: 'none',
             }}
           />
+          <BibleProjectCredit style={{ marginTop: '8px' }} />
         </div>
 
         {!apiKey ? (
@@ -364,6 +394,7 @@ export default function BibleVideos() {
               </button>
             </div>
             <YouTubeEmbed videoId={selected.id} title={selected.title} edgeToEdge />
+            <BibleProjectCredit style={{ marginTop: '8px', padding: '0 16px' }} />
             <p
               style={{
                 margin: '12px 0 0 0',
