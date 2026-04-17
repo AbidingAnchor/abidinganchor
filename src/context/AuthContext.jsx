@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { clearCachedSession, getCachedSession, supabase } from '../lib/supabase'
 import { clearAbidingAnchorUserStorage, setActiveStorageUserId, userStorageKey } from '../utils/userStorage'
 import { profileFullNameFromUser } from '../utils/profileDisplay'
@@ -172,6 +172,8 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null)
   const [suspendedInfo, setSuspendedInfo] = useState(null)
   const [loading, setLoading] = useState(true)
+  /** After first boot finishes, auth events must not flip global loading (tab focus / token refresh). */
+  const initialBootCompleteRef = useRef(false)
 
   useEffect(() => {
     setActiveStorageUserId(user?.id ?? null)
@@ -194,7 +196,10 @@ export function AuthProvider({ children }) {
     let active = true
     // Last-resort unblock if getSession() or anything before finally hangs
     const loadingWatchdog = setTimeout(() => {
-      if (active) setLoading(false)
+      if (active) {
+        setLoading(false)
+        initialBootCompleteRef.current = true
+      }
     }, PROFILE_FETCH_TIMEOUT_MS + 1000)
 
     const boot = async () => {
@@ -249,6 +254,7 @@ export function AuthProvider({ children }) {
         if (active) {
           clearTimeout(loadingWatchdog)
           setLoading(false)
+          initialBootCompleteRef.current = true
         }
       }
     }
@@ -267,7 +273,7 @@ export function AuthProvider({ children }) {
             setLoading(false)
             return
           }
-          setLoading(true)
+          // Never show the global loading screen here — only the first boot() may block the app.
           let nextProfile = null
           try {
             nextProfile = await fetchProfileWithTimeout(nextUser)
@@ -293,7 +299,7 @@ export function AuthProvider({ children }) {
           setProfile(null)
           applyThemeStorageForProfile(null)
         } finally {
-          setLoading(false)
+          if (!nextUser) setLoading(false)
         }
       },
     )
@@ -302,6 +308,72 @@ export function AuthProvider({ children }) {
       active = false
       clearTimeout(loadingWatchdog)
       subscription.unsubscribe()
+    }
+  }, [])
+
+  /** Tab focus / bfcache: refresh session + profile in the background without toggling `loading`. */
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return
+
+    let debounceId = null
+    const runSilent = async () => {
+      if (!initialBootCompleteRef.current) return
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        if (error) return
+        const nextUser = session?.user ?? null
+        setUser(nextUser)
+        if (!nextUser) {
+          setProfile(null)
+          applyThemeStorageForProfile(null)
+          return
+        }
+        // One lightweight SELECT — no ensureProfile upsert, no global loading.
+        let nextProfile = null
+        try {
+          nextProfile = await loadProfileRow(nextUser)
+        } catch (err) {
+          console.error('Silent visibility profile fetch:', err)
+          nextProfile = null
+        }
+        if (nextProfile?.is_banned) {
+          setSuspendedInfo({ bannedAt: nextProfile?.banned_at || null })
+          setUser(null)
+          setProfile(null)
+          applyThemeStorageForProfile(null)
+          profileSyncedUserIds.clear()
+          clearAbidingAnchorUserStorage()
+          await supabase.auth.signOut()
+          return
+        }
+        setSuspendedInfo(null)
+        setProfile(nextProfile)
+        applyThemeStorageForProfile(nextProfile)
+      } catch (e) {
+        console.warn('Silent session refresh:', e)
+      }
+    }
+
+    const schedule = () => {
+      if (debounceId) clearTimeout(debounceId)
+      debounceId = window.setTimeout(() => {
+        debounceId = null
+        if (document.visibilityState === 'visible') void runSilent()
+      }, 80)
+    }
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') schedule()
+    }
+
+    window.addEventListener('focus', schedule)
+    window.addEventListener('pageshow', schedule)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      if (debounceId) clearTimeout(debounceId)
+      window.removeEventListener('focus', schedule)
+      window.removeEventListener('pageshow', schedule)
+      document.removeEventListener('visibilitychange', onVisibility)
     }
   }, [])
 
