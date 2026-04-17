@@ -49,6 +49,10 @@ export function syncThemePreferenceFromProfileRow(profile) {
   if (!profile || typeof profile !== 'object') return
   if (!Object.prototype.hasOwnProperty.call(profile, 'theme_preference')) return
   const v = normalizeThemePreferenceValue(profile.theme_preference ?? 'automatic')
+  const local = readThemePreferenceFromStorage()
+  // Manual local choice is sticky: do not let background profile refreshes
+  // downgrade it back to automatic unless the user explicitly picks Automatic.
+  if (local && local !== 'automatic' && v === 'automatic') return
   writeThemePreferenceToStorage(v)
   emitThemePreferenceChanged()
 }

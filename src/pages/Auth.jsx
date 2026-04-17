@@ -1,17 +1,29 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { Navigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import LoadingScreen from '../components/LoadingScreen'
 import { formatAuthErrorMessage } from '../utils/authErrors'
 import { supabase } from '../lib/supabase'
+import i18n, { LANGUAGE_STORAGE_KEY } from '../i18n'
 
 const MIN_AUTH_SCALE = 0.58
+const AUTH_LANG_OPTIONS = [
+  { code: 'en', flag: '🇺🇸', label: 'EN' },
+  { code: 'es', flag: '🇪🇸', label: 'ES' },
+  { code: 'pt', flag: '🇧🇷', label: 'PT' },
+  { code: 'fr', flag: '🇫🇷', label: 'FR' },
+  { code: 'de', flag: '🇩🇪', label: 'DE' },
+  { code: 'tl', flag: '🇵🇭', label: 'TL' },
+  { code: 'ko', flag: '🇰🇷', label: 'KO' },
+]
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
 }
 
 export default function Auth() {
+  const { t } = useTranslation()
   const { user, profile, loading: authLoading, signIn, signUp } = useAuth()
   const [authView, setAuthView] = useState('signIn')
   const [signInEmail, setSignInEmail] = useState('')
@@ -161,14 +173,24 @@ export default function Auth() {
 
   const cleanSignInEmail = signInEmail.trim().toLowerCase()
   const cleanSignUpEmail = signUpEmail.trim().toLowerCase()
+  const activeLanguage = (i18n.resolvedLanguage || i18n.language || 'en').slice(0, 2)
+
+  const setLanguage = async (code) => {
+    try {
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, code)
+    } catch {
+      // ignore
+    }
+    await i18n.changeLanguage(code)
+  }
 
   const handleSignIn = async (event) => {
     event.preventDefault()
     setError('')
     setSuccess('')
-    if (!cleanSignInEmail) return setError('Email is required.')
-    if (!isValidEmail(cleanSignInEmail)) return setError('Please enter a valid email address.')
-    if (!signInPassword.trim()) return setError('Password is required.')
+    if (!cleanSignInEmail) return setError(t('auth.errors.emailRequired', { defaultValue: 'Email is required.' }))
+    if (!isValidEmail(cleanSignInEmail)) return setError(t('auth.errors.emailInvalid', { defaultValue: 'Please enter a valid email address.' }))
+    if (!signInPassword.trim()) return setError(t('auth.errors.passwordRequired', { defaultValue: 'Password is required.' }))
     setLoading(true)
     const { error: signInError } = await signIn(cleanSignInEmail, signInPassword)
     if (signInError) setError(formatAuthErrorMessage(signInError))
@@ -180,27 +202,25 @@ export default function Auth() {
     setError('')
     setSuccess('')
     const name = signUpDisplayName.trim()
-    if (!name) return setError('Please choose a display name.')
-    if (!cleanSignUpEmail) return setError('Email is required.')
-    if (!isValidEmail(cleanSignUpEmail)) return setError('Please enter a valid email address.')
-    if (!signUpPassword.trim()) return setError('Password is required.')
-    if (signUpPassword.length < 6) return setError('Password must be at least 6 characters.')
+    if (!name) return setError(t('auth.errors.displayNameRequired', { defaultValue: 'Please choose a display name.' }))
+    if (!cleanSignUpEmail) return setError(t('auth.errors.emailRequired', { defaultValue: 'Email is required.' }))
+    if (!isValidEmail(cleanSignUpEmail)) return setError(t('auth.errors.emailInvalid', { defaultValue: 'Please enter a valid email address.' }))
+    if (!signUpPassword.trim()) return setError(t('auth.errors.passwordRequired', { defaultValue: 'Password is required.' }))
+    if (signUpPassword.length < 6) return setError(t('auth.errors.passwordTooShort', { defaultValue: 'Password must be at least 6 characters.' }))
     if (signUpPassword !== signUpConfirmPassword) {
-      return setError('Passwords do not match.')
+      return setError(t('auth.errors.passwordMismatch', { defaultValue: 'Passwords do not match.' }))
     }
     if (name.toLowerCase() === cleanSignUpEmail) {
-      return setError('Display name cannot be your email address.')
+      return setError(t('auth.errors.displayNameEmail', { defaultValue: 'Display name cannot be your email address.' }))
     }
     if (name.includes('@')) {
-      return setError('Display name cannot look like an email address.')
+      return setError(t('auth.errors.displayNameLooksEmail', { defaultValue: 'Display name cannot look like an email address.' }))
     }
     setLoading(true)
     const { error: signUpError } = await signUp(cleanSignUpEmail, signUpPassword, name)
     if (signUpError) setError(formatAuthErrorMessage(signUpError))
     else {
-      setSuccess(
-        'We sent a confirmation link to your email. Please check your inbox and confirm your account before signing in.',
-      )
+      setSuccess(t('auth.confirmationSent', { defaultValue: 'We sent a confirmation link to your email. Please check your inbox and confirm your account before signing in.' }))
     }
     setLoading(false)
   }
@@ -363,8 +383,31 @@ export default function Auth() {
                       lineHeight: 1.35,
                     }}
                   >
-                    Your private space to grow in faith
+                    {t('auth.tagline', { defaultValue: 'Your private space to grow in faith' })}
                   </p>
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'center', marginTop: '6px' }}>
+                    {AUTH_LANG_OPTIONS.map((opt) => {
+                      const active = activeLanguage === opt.code
+                      return (
+                        <button
+                          key={opt.code}
+                          type="button"
+                          onClick={() => setLanguage(opt.code)}
+                          style={{
+                            borderRadius: '999px',
+                            border: active ? '1px solid #D4A843' : '1px solid rgba(255,255,255,0.2)',
+                            background: active ? 'rgba(212,168,67,0.18)' : 'rgba(255,255,255,0.08)',
+                            color: 'white',
+                            padding: '4px 8px',
+                            fontSize: '11px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {opt.flag} {opt.label}
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
 
                 <article
@@ -392,7 +435,9 @@ export default function Auth() {
                       letterSpacing: '0.05em',
                     }}
                   >
-                    {authView === 'signIn' ? 'Sign In' : 'Create account'}
+                    {authView === 'signIn'
+                      ? t('auth.signIn', { defaultValue: 'Sign In' })
+                      : t('auth.createAccount', { defaultValue: 'Create account' })}
                   </h2>
                   {authView === 'signIn' ? (
                     <div className="grid w-full" style={{ gap: formGap }}>
@@ -405,7 +450,7 @@ export default function Auth() {
                         <input
                           value={signInEmail}
                           onChange={(e) => setSignInEmail(e.target.value)}
-                          placeholder="Email"
+                          placeholder={t('auth.email', { defaultValue: 'Email' })}
                           type="email"
                           className="app-input w-full"
                           style={{
@@ -424,7 +469,7 @@ export default function Auth() {
                         <input
                           value={signInPassword}
                           onChange={(e) => setSignInPassword(e.target.value)}
-                          placeholder="Password"
+                          placeholder={t('auth.password', { defaultValue: 'Password' })}
                           type="password"
                           className="app-input w-full"
                           style={{
@@ -443,7 +488,7 @@ export default function Auth() {
                           disabled={loading}
                           style={{ padding: inputPad, fontSize: inputFont }}
                         >
-                          {loading ? 'Please wait...' : 'Sign In'}
+                          {loading ? t('auth.pleaseWait', { defaultValue: 'Please wait...' }) : t('auth.signIn', { defaultValue: 'Sign In' })}
                         </button>
                       </form>
                       <button
@@ -457,7 +502,7 @@ export default function Auth() {
                         }}
                         style={{ padding: inputPad, fontSize: inputFont }}
                       >
-                        Create Free Account
+                        {t('auth.createFreeAccount', { defaultValue: 'Create Free Account' })}
                       </button>
                     </div>
                   ) : (
@@ -471,7 +516,7 @@ export default function Auth() {
                         <input
                           value={signUpDisplayName}
                           onChange={(e) => setSignUpDisplayName(e.target.value)}
-                          placeholder="Display name"
+                          placeholder={t('auth.displayName', { defaultValue: 'Display name' })}
                           type="text"
                           className="app-input w-full"
                           style={{
@@ -490,7 +535,7 @@ export default function Auth() {
                         <input
                           value={signUpEmail}
                           onChange={(e) => setSignUpEmail(e.target.value)}
-                          placeholder="Email"
+                          placeholder={t('auth.email', { defaultValue: 'Email' })}
                           type="email"
                           className="app-input w-full"
                           style={{
@@ -509,7 +554,7 @@ export default function Auth() {
                         <input
                           value={signUpPassword}
                           onChange={(e) => setSignUpPassword(e.target.value)}
-                          placeholder="Password"
+                          placeholder={t('auth.password', { defaultValue: 'Password' })}
                           type="password"
                           className="app-input w-full"
                           style={{
@@ -525,7 +570,7 @@ export default function Auth() {
                         <input
                           value={signUpConfirmPassword}
                           onChange={(e) => setSignUpConfirmPassword(e.target.value)}
-                          placeholder="Confirm password"
+                          placeholder={t('auth.confirmPassword', { defaultValue: 'Confirm password' })}
                           type="password"
                           className="app-input w-full"
                           style={{
@@ -544,7 +589,7 @@ export default function Auth() {
                           disabled={loading}
                           style={{ padding: inputPad, fontSize: inputFont }}
                         >
-                          {loading ? 'Please wait...' : 'Create account'}
+                          {loading ? t('auth.pleaseWait', { defaultValue: 'Please wait...' }) : t('auth.createAccount', { defaultValue: 'Create account' })}
                         </button>
                       </form>
                       <button
@@ -564,7 +609,7 @@ export default function Auth() {
                           color: 'rgba(255,255,255,0.9)',
                         }}
                       >
-                        Back to sign in
+                        {t('auth.backToSignIn', { defaultValue: 'Back to sign in' })}
                       </button>
                     </div>
                   )}
@@ -590,7 +635,7 @@ export default function Auth() {
                     }}
                   >
                     <p style={{ margin: 0, color: '#D4AF37', fontSize: '12px', fontWeight: 700, letterSpacing: '0.04em' }}>
-                      What&apos;s New
+                      {t('auth.whatsNew', { defaultValue: "What's New" })}
                     </p>
                     <div style={{ marginTop: '8px', display: 'grid', gap: '8px' }}>
                       {latestUpdates.map((update) => (
@@ -656,7 +701,7 @@ export default function Auth() {
                       marginTop: 'clamp(4px, 1.2vmin, 10px)',
                     }}
                   >
-                    {['Bible Reader', 'Guided Prayers', 'Daily Streak', 'AI Companion'].map(
+                    {[t('auth.pillBibleReader', { defaultValue: 'Bible Reader' }), t('auth.pillGuidedPrayers', { defaultValue: 'Guided Prayers' }), t('auth.pillDailyStreak', { defaultValue: 'Daily Streak' }), t('auth.pillAiCompanion', { defaultValue: 'AI Companion' })].map(
                       (pill) => (
                         <span
                           key={pill}
@@ -688,7 +733,7 @@ export default function Auth() {
                       lineHeight: 1.35,
                     }}
                   >
-                    Free forever. Built as a ministry. {'\u{1F64F}'}
+                    {t('auth.freeForever', { defaultValue: 'Free forever. Built as a ministry.' })} {'\u{1F64F}'}
                   </p>
                 </div>
               </div>
