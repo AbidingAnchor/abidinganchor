@@ -1,6 +1,13 @@
 import { useEffect, useRef } from "react";
 import { getViewportCoverSize } from "../utils/viewportCover";
 
+// TODO: REMOVE BEFORE DEPLOY — set to null to use automatic time again
+/**
+ * Dev-only: lock sky/background to one period for local testing (matches `data-theme` + Home greeting).
+ * Valid: 'day' | 'sunset' | 'night' | null
+ */
+export const DEV_FORCE_THEME = "night";
+
 // TODO: REMOVE BEFORE LAUNCH — dev-only hour override in source (Settings `devForceTheme` wins when set)
 export const DEV_FORCE_HOUR = null; // 10 = day, 18 = sunset, 21 = night, null = real time
 
@@ -33,7 +40,19 @@ export function getEffectiveForcedHour() {
  * dev forced hour → localhost → clock.
  * Second argument is ignored (legacy).
  */
+const DEV_SKY_PERIODS = new Set(["day", "sunset", "night"]);
+
+function getDevForcedSkyPeriod() {
+  // TODO: REMOVE BEFORE DEPLOY
+  if (DEV_FORCE_THEME == null || DEV_FORCE_THEME === "") return null;
+  const t = String(DEV_FORCE_THEME);
+  return DEV_SKY_PERIODS.has(t) ? t : null;
+}
+
 export function getBackgroundTypeForTime(date = new Date(), _themePreferenceLegacy = null) {
+  const devSky = getDevForcedSkyPeriod();
+  if (devSky) return devSky;
+
   // TODO: REMOVE BEFORE LAUNCH
   const forced = getEffectiveForcedHour();
   if (Number.isFinite(forced)) {

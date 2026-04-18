@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import { getGuestBrowse } from '../utils/guestBrowse'
+import { useGuestSignupModal } from '../context/GuestSignupModalContext'
 
 const HEADER_PATH_TO_KEY = {
   '/': 'brand',
@@ -38,6 +40,7 @@ export default function Header() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, profile, refreshProfile } = useAuth()
+  const { openGuestSignupModal } = useGuestSignupModal()
   const [localAvatarUrl, setLocalAvatarUrl] = useState(null)
 
   const headerKey = HEADER_PATH_TO_KEY[location.pathname] ?? 'brand'
@@ -94,9 +97,13 @@ export default function Header() {
       {/* Profile avatar (settings trigger) */}
       <button
           type="button"
-          onClick={() => navigate('/settings')}
-          aria-label={t('header.settings')}
-          title={t('header.settings')}
+          onClick={() => {
+            if (user) navigate('/settings')
+            else if (getGuestBrowse()) openGuestSignupModal()
+            else navigate('/auth')
+          }}
+          aria-label={user ? t('header.settings') : t('auth.signIn')}
+          title={user ? t('header.settings') : t('auth.signIn')}
           key={localAvatarUrl || 'no-avatar'}
           style={{
             width: '36px',

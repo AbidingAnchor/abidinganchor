@@ -6,12 +6,16 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import PrayerWall from './PrayerWall'
 import GuidedPrayersSection from '../components/GuidedPrayersSection'
+import GuestPreviewBanner from '../components/GuestPreviewBanner'
+import { getGuestBrowse } from '../utils/guestBrowse'
+import { useGuestSignupModal } from '../context/GuestSignupModalContext'
 
 export default function Prayer() {
   const { t, i18n } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { openGuestSignupModal } = useGuestSignupModal()
   const [mainTab, setMainTab] = useState('mine')
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -26,7 +30,12 @@ export default function Prayer() {
 
   const load = useCallback(async (opts = {}) => {
     const silent = opts.silent === true
-    if (!user?.id) return
+    if (!user?.id) {
+      setItems([])
+      setAnsweredCount(0)
+      setLoading(false)
+      return
+    }
     if (!silent) setLoading(true)
     try {
       const { data, error } = await supabase
@@ -70,7 +79,11 @@ export default function Prayer() {
 
   const addPrayer = async () => {
     const text = draft.trim()
-    if (!text || !user?.id) return
+    if (!text) return
+    if (!user?.id) {
+      if (getGuestBrowse()) openGuestSignupModal()
+      return
+    }
     setSaving(true)
     try {
       const { data: row, error } = await supabase
@@ -157,6 +170,7 @@ export default function Prayer() {
   return (
     <div className="bg-transparent">
       <div className="content-scroll px-4 pt-3 max-w-[680px] mx-auto w-full">
+        <GuestPreviewBanner />
         <div className="prayer-page-main-tabs">
           <button
             type="button"

@@ -636,5 +636,51 @@
     "shareAnon": "익명으로 공유",
     "keepPrivate": "???? ??",
     "toastPrayer": "당신의 기도가 올려졌습니다 🕊️"
+  },
+  "auth": {
+    "brandTitle": "ABIDING ANCHOR",
+    "logoAlt": "어바이딩 앵커 로고",
+    "tagline": "믿음 안에서 자라가는 나만의 공간",
+    "socialProof": "전 세계 200명 이상의 신자와 함께하세요 🌍",
+    "signIn": "로그인",
+    "createAccount": "계정 만들기",
+    "createFreeAccount": "무료 계정 만들기",
+    "continueAsGuest": "게스트로 계속하기",
+    "continueAsGuestHint": "계정 없이 성경 읽기와 기본 기능을 이용하세요",
+    "email": "이메일",
+    "password": "비밀번호",
+    "displayName": "표시 이름",
+    "confirmPassword": "비밀번호 확인",
+    "pleaseWait": "잠시만 기다려 주세요...",
+    "backToSignIn": "로그인으로 돌아가기",
+    "whatsNew": "새 소식",
+    "freeForever": "영원히 무료. 사역으로 만들었습니다.",
+    "pillBibleReader": "성경 읽기",
+    "pillGuidedPrayers": "인도 기도",
+    "pillDailyStreak": "매일 연속",
+    "pillAiCompanion": "AI 동반자",
+    "pillBibleReaderDesc": "고요하게 말씀에 집중하며 읽기",
+    "pillGuidedPrayersDesc": "부드러운 음성 인도로 기도하기",
+    "pillDailyStreakDesc": "매일 꾸준히 이어가기",
+    "pillAiCompanionDesc": "말씀에 뿌리 둔 질문하기",
+    "errors": {
+      "emailRequired": "이메일을 입력하세요.",
+      "emailInvalid": "올바른 이메일 주소를 입력하세요.",
+      "passwordRequired": "비밀번호를 입력하세요.",
+      "passwordTooShort": "비밀번호는 6자 이상이어야 합니다.",
+      "passwordMismatch": "비밀번호가 일치하지 않습니다.",
+      "displayNameRequired": "표시 이름을 입력하세요.",
+      "displayNameEmail": "표시 이름은 이메일일 수 없습니다.",
+      "displayNameLooksEmail": "표시 이름이 이메일처럼 보일 수 없습니다."
+    },
+    "confirmationSent": "확인 링크를 이메일로 보냈습니다. 받은 편지함을 확인한 뒤 로그인하세요.",
+    "verses": [
+      { "text": "시냇가에 심은 나무 같이", "ref": "시편 1:3" },
+      { "text": "여호와는 나의 목자시니 내게 부족함이 없으리로다", "ref": "시편 23:1" },
+      { "text": "내게 능력 주시는 자 안에서 내가 모든 것을 할 수 있느니라", "ref": "빌립보서 4:13" },
+      { "text": "너희는 가만히 있어 내가 하나님 됨을 알지어다", "ref": "시편 46:10" },
+      { "text": "여호와는 나의 빛이요 나의 구원이시니", "ref": "시편 27:1" },
+      { "text": "수고하고 무거운 짐 진 자들아 다 내게로 오라", "ref": "마태복음 11:28" }
+    ]
   }
 }

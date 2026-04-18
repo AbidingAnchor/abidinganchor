@@ -1,8 +1,17 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 export default function Footer({ compact = false }) {
   const { t } = useTranslation()
+  const { pathname } = useLocation()
+  const authLike = pathname === '/auth' || pathname === '/reset-password'
+
+  const pad = compact
+    ? '20px 0 0'
+    : authLike
+      ? 'clamp(20px, 5vmin, 36px) 12px clamp(28px, 7vmin, 48px)'
+      : '10px 10px 88px'
+
   return (
     <footer
       className="glass-nav-bar"
@@ -14,7 +23,7 @@ export default function Footer({ compact = false }) {
         textAlign: 'center',
         fontSize: '12px',
         color: 'rgba(255,255,255,0.4)',
-        padding: compact ? '20px 0 0' : '10px 10px 88px',
+        padding: pad,
         borderTop: '1px solid rgba(255,255,255,0.06)',
       }}
     >
@@ -35,7 +44,7 @@ export default function Footer({ compact = false }) {
         style={{
           display: 'flex',
           justifyContent: 'center',
-          marginTop: '12px',
+          marginTop: authLike ? 'clamp(18px, 4.5vmin, 28px)' : '12px',
           marginBottom: 0,
           lineHeight: 0,
         }}

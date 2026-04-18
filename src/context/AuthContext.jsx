@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { clearCachedSession, getCachedSession, supabase } from '../lib/supabase'
 import { clearAbidingAnchorUserStorage, setActiveStorageUserId, userStorageKey } from '../utils/userStorage'
+import { clearGuestBrowse } from '../utils/guestBrowse'
 import { profileFullNameFromUser } from '../utils/profileDisplay'
 import {
   clearThemePreferenceStorage,
@@ -221,6 +222,7 @@ export function AuthProvider({ children }) {
         if (!active) return
         setUser(nextUser)
         if (nextUser) {
+          clearGuestBrowse()
           let nextProfile = null
           try {
             nextProfile = await fetchProfileWithTimeout(nextUser)
@@ -270,6 +272,7 @@ export function AuthProvider({ children }) {
         const nextUser = session?.user ?? null
         setUser(nextUser)
         try {
+          if (nextUser) clearGuestBrowse()
           if (!nextUser) {
             setProfile(null)
             applyThemeStorageForProfile(null)

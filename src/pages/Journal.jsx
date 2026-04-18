@@ -18,6 +18,9 @@ import { userStorageKey } from '../utils/userStorage'
 import { supabase } from '../lib/supabase'
 import { WEEK_DAY_SHORT } from '../hooks/useStreakTracker'
 import FirstJournalEntryCelebration from '../components/FirstJournalEntryCelebration'
+import GuestPreviewBanner from '../components/GuestPreviewBanner'
+import { useIsGuestSession } from '../hooks/useIsGuestSession'
+import { useGuestSignupModal } from '../context/GuestSignupModalContext'
 
 const ACCENT_GOLD = '#c9922a'
 const JOURNAL_MOUNT_DELAY_MS = 600
@@ -79,6 +82,8 @@ function isInThisMonth(ymd) {
 function Journal() {
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
+  const isGuestSession = useIsGuestSession()
+  const { openGuestSignupModal } = useGuestSignupModal()
   const navigate = useNavigate()
   const location = useLocation()
   const [entries, setEntries] = useState([])
@@ -200,6 +205,8 @@ function Journal() {
     const load = async () => {
       if (!user?.id) {
         setJournalWeekLocalDates([])
+        setEntries([])
+        setLoading(false)
         return
       }
       await new Promise((resolve) => setTimeout(resolve, JOURNAL_MOUNT_DELAY_MS))
@@ -239,6 +246,10 @@ function Journal() {
   }, [user?.id, normalizeEntry])
 
   const handleDeleteEntry = async (entry) => {
+    if (isGuestSession) {
+      openGuestSignupModal()
+      return
+    }
     await deleteJournalEntry(entry.id)
     const nextEntries = await getJournalEntries(user?.id)
     setJournalWeekLocalDates(await fetchJournalWeekEntryLocalDates(user?.id))
@@ -249,6 +260,10 @@ function Journal() {
   }
 
   const handleMarkAnswered = async (entry) => {
+    if (isGuestSession) {
+      openGuestSignupModal()
+      return
+    }
     const updated = await markPrayerAnswered(entry.id)
     if (updated) {
       setEntries(prev => prev.map(e =>
@@ -285,7 +300,11 @@ function Journal() {
 
   const handleSaveGuidedEntry = async () => {
     if (!reflection.trim()) return
-    
+    if (isGuestSession) {
+      openGuestSignupModal()
+      return
+    }
+
     setSaving(true)
     
     const saved = await saveToJournal({
@@ -366,6 +385,10 @@ function Journal() {
   }
 
   const handleShareEntry = (entry) => {
+    if (isGuestSession) {
+      openGuestSignupModal()
+      return
+    }
     navigate('/share-card', {
       state: {
         verseReference: entry.reference || '',
@@ -422,6 +445,7 @@ function Journal() {
         className="content-scroll"
         style={{ padding: '0 16px', paddingTop: '20px', paddingBottom: '120px', maxWidth: '390px', margin: '0 auto', width: '100%' }}
       >
+        <GuestPreviewBanner />
         <div style={{
           display: 'flex',
           gap: '8px',

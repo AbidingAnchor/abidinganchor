@@ -532,5 +532,51 @@
     "shareAnon": "Compartir en anónimo",
     "keepPrivate": "Mantener privado",
     "toastPrayer": "Tu oración ha sido presentada 🕊️"
+  },
+  "auth": {
+    "brandTitle": "ABIDING ANCHOR",
+    "logoAlt": "Logotipo de Abiding Anchor",
+    "tagline": "Tu espacio privado para crecer en la fe",
+    "socialProof": "Únete a más de 200 creyentes en todo el mundo 🌍",
+    "signIn": "Iniciar sesión",
+    "createAccount": "Crear cuenta",
+    "createFreeAccount": "Crear cuenta gratis",
+    "continueAsGuest": "Continuar como invitado",
+    "continueAsGuestHint": "Explora la Biblia y herramientas básicas sin cuenta",
+    "email": "Correo",
+    "password": "Contraseña",
+    "displayName": "Nombre visible",
+    "confirmPassword": "Confirmar contraseña",
+    "pleaseWait": "Espera...",
+    "backToSignIn": "Volver al inicio de sesión",
+    "whatsNew": "Novedades",
+    "freeForever": "Gratis para siempre. Hecho como ministerio.",
+    "pillBibleReader": "Lector bíblico",
+    "pillGuidedPrayers": "Oraciones guiadas",
+    "pillDailyStreak": "Racha diaria",
+    "pillAiCompanion": "Compañero IA",
+    "pillBibleReaderDesc": "Lee la Escritura con calma y enfoque",
+    "pillGuidedPrayersDesc": "Ora con momentos guiados por voz",
+    "pillDailyStreakDesc": "Mantén la constancia cada día",
+    "pillAiCompanionDesc": "Pregunta con base en la Palabra",
+    "errors": {
+      "emailRequired": "El correo es obligatorio.",
+      "emailInvalid": "Introduce un correo válido.",
+      "passwordRequired": "La contraseña es obligatoria.",
+      "passwordTooShort": "La contraseña debe tener al menos 6 caracteres.",
+      "passwordMismatch": "Las contraseñas no coinciden.",
+      "displayNameRequired": "Elige un nombre visible.",
+      "displayNameEmail": "El nombre visible no puede ser tu correo.",
+      "displayNameLooksEmail": "El nombre visible no puede parecer un correo."
+    },
+    "confirmationSent": "Te enviamos un enlace de confirmación. Revisa tu bandeja y confirma tu cuenta antes de iniciar sesión.",
+    "verses": [
+      { "text": "Es como árbol plantado junto a corrientes de aguas", "ref": "Salmos 1:3" },
+      { "text": "Jehová es mi pastor; nada me faltará", "ref": "Salmos 23:1" },
+      { "text": "Todo lo puedo en Cristo que me fortalece", "ref": "Filipenses 4:13" },
+      { "text": "Estad quietos, y conoced que yo soy Dios", "ref": "Salmos 46:10" },
+      { "text": "Jehová es mi luz y mi salvación", "ref": "Salmos 27:1" },
+      { "text": "Venid a mí todos los fatigados, y yo os haré descansar", "ref": "Mateo 11:28" }
+    ]
   }
 }

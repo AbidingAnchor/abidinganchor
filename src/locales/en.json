@@ -44,6 +44,15 @@
     "terms": "Terms of Service",
     "legal": "Legal"
   },
+  "guest": {
+    "banner": "You're browsing as a guest. Create a free account to save prayers, journal entries, and your streak.",
+    "signUp": "Sign up free",
+    "saveRequiresAccount": "Sign up free to save — your progress stays with your account.",
+    "modalTitle": "Create a Free Account 🙏",
+    "modalSubtitle": "Save prayers, track your streak, journal your faith journey and more — completely free, no ads, ever.",
+    "signUpFree": "Sign Up Free",
+    "maybeLater": "Maybe Later"
+  },
   "loading": {
     "message": "Loading..."
   },
@@ -636,5 +645,51 @@
     "shareAnon": "Share Anonymously",
     "keepPrivate": "Keep Private",
     "toastPrayer": "Your prayer has been lifted up 🕊️"
+  },
+  "auth": {
+    "brandTitle": "ABIDING ANCHOR",
+    "logoAlt": "Abiding Anchor logo",
+    "tagline": "Your private space to grow in faith",
+    "socialProof": "Join 200+ believers worldwide 🌍",
+    "signIn": "Sign In",
+    "createAccount": "Create account",
+    "createFreeAccount": "Create Free Account",
+    "continueAsGuest": "Continue as Guest",
+    "continueAsGuestHint": "Browse the Bible reader and basic tools without an account",
+    "email": "Email",
+    "password": "Password",
+    "displayName": "Display name",
+    "confirmPassword": "Confirm password",
+    "pleaseWait": "Please wait...",
+    "backToSignIn": "Back to sign in",
+    "whatsNew": "What's New",
+    "freeForever": "Free forever. Built as a ministry.",
+    "pillBibleReader": "Bible Reader",
+    "pillGuidedPrayers": "Guided Prayers",
+    "pillDailyStreak": "Daily Streak",
+    "pillAiCompanion": "AI Companion",
+    "pillBibleReaderDesc": "Read Scripture in a calm, focused space",
+    "pillGuidedPrayersDesc": "Pray with gentle voice-guided moments",
+    "pillDailyStreakDesc": "Stay consistent with daily check-ins",
+    "pillAiCompanionDesc": "Ask questions rooted in the Word",
+    "errors": {
+      "emailRequired": "Email is required.",
+      "emailInvalid": "Please enter a valid email address.",
+      "passwordRequired": "Password is required.",
+      "passwordTooShort": "Password must be at least 6 characters.",
+      "passwordMismatch": "Passwords do not match.",
+      "displayNameRequired": "Please choose a display name.",
+      "displayNameEmail": "Display name cannot be your email address.",
+      "displayNameLooksEmail": "Display name cannot look like an email address."
+    },
+    "confirmationSent": "We sent a confirmation link to your email. Please check your inbox and confirm your account before signing in.",
+    "verses": [
+      { "text": "He is like a tree planted by streams of water", "ref": "Psalm 1:3" },
+      { "text": "The Lord is my shepherd, I shall not want", "ref": "Psalm 23:1" },
+      { "text": "I can do all things through Christ who strengthens me", "ref": "Philippians 4:13" },
+      { "text": "Be still and know that I am God", "ref": "Psalm 46:10" },
+      { "text": "The Lord is my light and my salvation", "ref": "Psalm 27:1" },
+      { "text": "Come to me, all who labor and are heavy laden, and I will give you rest", "ref": "Matthew 11:28" }
+    ]
   }
 }

@@ -532,5 +532,51 @@
     "shareAnon": "Compartilhar anonimamente",
     "keepPrivate": "Manter privado",
     "toastPrayer": "Sua oração foi levada a Deus 🕊️"
+  },
+  "auth": {
+    "brandTitle": "ABIDING ANCHOR",
+    "logoAlt": "Logotipo Abiding Anchor",
+    "tagline": "Seu espaço privado para crescer na fé",
+    "socialProof": "Junte-se a mais de 200 crentes no mundo todo 🌍",
+    "signIn": "Entrar",
+    "createAccount": "Criar conta",
+    "createFreeAccount": "Criar conta grátis",
+    "continueAsGuest": "Continuar como convidado",
+    "continueAsGuestHint": "Leia a Bíblia e use ferramentas básicas sem conta",
+    "email": "E-mail",
+    "password": "Senha",
+    "displayName": "Nome de exibição",
+    "confirmPassword": "Confirmar senha",
+    "pleaseWait": "Aguarde...",
+    "backToSignIn": "Voltar ao login",
+    "whatsNew": "Novidades",
+    "freeForever": "Grátis para sempre. Feito como ministério.",
+    "pillBibleReader": "Leitor bíblico",
+    "pillGuidedPrayers": "Orações guiadas",
+    "pillDailyStreak": "Sequência diária",
+    "pillAiCompanion": "Companheiro de IA",
+    "pillBibleReaderDesc": "Leia as Escrituras com calma e foco",
+    "pillGuidedPrayersDesc": "Ore com momentos guiados por voz",
+    "pillDailyStreakDesc": "Mantenha a constância todos os dias",
+    "pillAiCompanionDesc": "Pergunte com base na Palavra",
+    "errors": {
+      "emailRequired": "O e-mail é obrigatório.",
+      "emailInvalid": "Digite um e-mail válido.",
+      "passwordRequired": "A senha é obrigatória.",
+      "passwordTooShort": "A senha deve ter pelo menos 6 caracteres.",
+      "passwordMismatch": "As senhas não coincidem.",
+      "displayNameRequired": "Escolha um nome de exibição.",
+      "displayNameEmail": "O nome não pode ser seu e-mail.",
+      "displayNameLooksEmail": "O nome não pode parecer um e-mail."
+    },
+    "confirmationSent": "Enviamos um link de confirmação. Verifique sua caixa de entrada antes de entrar.",
+    "verses": [
+      { "text": "É como árvore plantada junto a correntes de águas", "ref": "Salmos 1:3" },
+      { "text": "O Senhor é o meu pastor; nada me faltará", "ref": "Salmos 23:1" },
+      { "text": "Tudo posso naquele que me fortalece", "ref": "Filipenses 4:13" },
+      { "text": "Aquietai-vos e sabei que eu sou Deus", "ref": "Salmos 46:10" },
+      { "text": "O Senhor é a minha luz e a minha salvação", "ref": "Salmos 27:1" },
+      { "text": "Vinde a mim todos os que estais cansados", "ref": "Mateus 11:28" }
+    ]
   }
 }

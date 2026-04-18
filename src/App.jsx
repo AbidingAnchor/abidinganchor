@@ -40,6 +40,9 @@ import BackgroundManager from './components/BackgroundManager'
 import { useWorshipPlaybackState } from './lib/worshipGlobalAudio'
 import { applyDailyStreakOnAppOpen } from './lib/dailyAppStreak'
 import { syncWeeklyActiveDays } from './hooks/useStreakTracker'
+import { getGuestBrowse } from './utils/guestBrowse'
+import { GuestSignupModalProvider } from './context/GuestSignupModalContext'
+import GuestAccountRequiredGate from './components/GuestAccountRequiredGate'
 
 const LEGAL_ACCEPTED_KEY = 'legalAccepted'
 const GA_MEASUREMENT_ID = 'G-1VXQ7114R7'
@@ -49,12 +52,23 @@ function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute({ children, guestOk = false }) {
   const { user, loading, suspendedInfo } = useAuth()
   if (loading) return <LoadingScreen />
   if (suspendedInfo) return null
-  if (!user) return <Navigate to="/auth" replace />
-  return children
+  if (user) return children
+  if (getGuestBrowse()) {
+    if (guestOk) return children
+    return <GuestAccountRequiredGate />
+  }
+  return <Navigate to="/auth" replace />
+}
+
+function CatchAllRedirect() {
+  const { user } = useAuth()
+  if (user) return <Navigate to="/" replace />
+  if (getGuestBrowse()) return <GuestAccountRequiredGate />
+  return <Navigate to="/auth" replace />
 }
 
 function OnboardingRoute() {
@@ -65,6 +79,7 @@ function OnboardingRoute() {
   if (suspendedInfo) return null
   if (!user) {
     if (loading) return <LoadingScreen />
+    if (getGuestBrowse()) return <GuestAccountRequiredGate />
     return <Navigate to="/auth" replace />
   }
   if (profile?.onboarding_complete) return <Navigate to="/" replace />
@@ -245,14 +260,14 @@ function AppShell() {
             <Routes>
               <Route path="/auth" element={<Auth />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/" element={<ProtectedRoute><Home onOpenWorship={(startPlaying) => openWorship(startPlaying)} worshipStatus={worshipStatus} /></ProtectedRoute>} />
-              <Route path="/read" element={<ProtectedRoute><ReadingPlan onOpenWorship={(startPlaying) => openWorship(startPlaying)} /></ProtectedRoute>} />
-              <Route path="/reading-plan" element={<ProtectedRoute><ReadingPlan onOpenWorship={(startPlaying) => openWorship(startPlaying)} /></ProtectedRoute>} />
-              <Route path="/search" element={<ProtectedRoute><Search onOpenWorship={(startPlaying) => openWorship(startPlaying)} /></ProtectedRoute>} />
-              <Route path="/prayer" element={<ProtectedRoute><Prayer /></ProtectedRoute>} />
+              <Route path="/" element={<ProtectedRoute guestOk><Home onOpenWorship={(startPlaying) => openWorship(startPlaying)} worshipStatus={worshipStatus} /></ProtectedRoute>} />
+              <Route path="/read" element={<ProtectedRoute guestOk><ReadingPlan onOpenWorship={(startPlaying) => openWorship(startPlaying)} /></ProtectedRoute>} />
+              <Route path="/reading-plan" element={<Navigate to="/read" replace />} />
+              <Route path="/search" element={<ProtectedRoute guestOk><Search onOpenWorship={(startPlaying) => openWorship(startPlaying)} /></ProtectedRoute>} />
+              <Route path="/prayer" element={<ProtectedRoute guestOk><Prayer /></ProtectedRoute>} />
               <Route path="/my-prayers" element={<Navigate to="/prayer" replace />} />
               <Route path="/share-card" element={<ProtectedRoute><ShareCard /></ProtectedRoute>} />
-              <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
+              <Route path="/journal" element={<ProtectedRoute guestOk><Journal /></ProtectedRoute>} />
               <Route path="/memorize" element={<ProtectedRoute><Memorize /></ProtectedRoute>} />
               <Route path="/devotional" element={<ProtectedRoute><Devotional /></ProtectedRoute>} />
               <Route path="/scripture-art" element={<ProtectedRoute><ScriptureArt /></ProtectedRoute>} />
@@ -275,7 +290,7 @@ function AppShell() {
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/legal" element={<Legal />} />
-              <Route path="*" element={<Navigate to={user ? '/' : '/auth'} replace />} />
+              <Route path="*" element={<CatchAllRedirect />} />
             </Routes>
             {showFooter ? <Footer /> : null}
           </div>
@@ -304,7 +319,9 @@ function AppShell() {
 export default function App() {
   return (
     <BrowserRouter>
-      <AppShell />
+      <GuestSignupModalProvider>
+        <AppShell />
+      </GuestSignupModalProvider>
     </BrowserRouter>
   )
 }

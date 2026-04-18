@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import MoreDrawer from './MoreDrawer'
 import { useWorshipPlaybackState } from '../lib/worshipGlobalAudio'
-
 export default function BottomNav() {
   const { t } = useTranslation()
   const mainTabs = useMemo(

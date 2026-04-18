@@ -1,11 +1,12 @@
-import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
-import { Navigate } from 'react-router-dom'
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import LoadingScreen from '../components/LoadingScreen'
 import { formatAuthErrorMessage } from '../utils/authErrors'
 import { supabase } from '../lib/supabase'
 import i18n, { LANGUAGE_STORAGE_KEY } from '../i18n'
+import { setGuestBrowse } from '../utils/guestBrowse'
 
 const MIN_AUTH_SCALE = 0.58
 const AUTH_LANG_OPTIONS = [
@@ -18,12 +19,23 @@ const AUTH_LANG_OPTIONS = [
   { code: 'ko', flag: '🇰🇷', label: 'KO' },
 ]
 
+const FEATURE_ITEMS = [
+  { icon: '📖', titleKey: 'auth.pillBibleReader', descKey: 'auth.pillBibleReaderDesc' },
+  { icon: '🙏', titleKey: 'auth.pillGuidedPrayers', descKey: 'auth.pillGuidedPrayersDesc' },
+  { icon: '🔥', titleKey: 'auth.pillDailyStreak', descKey: 'auth.pillDailyStreakDesc' },
+  { icon: '🤖', titleKey: 'auth.pillAiCompanion', descKey: 'auth.pillAiCompanionDesc' },
+]
+
+const VERSE_ROTATE_MS = 5200
+const VERSE_FADE_MS = 520
+
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
 }
 
 export default function Auth() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const navigate = useNavigate()
   const { user, profile, loading: authLoading, signIn, signUp } = useAuth()
   const [authView, setAuthView] = useState('signIn')
   const [signInEmail, setSignInEmail] = useState('')
@@ -36,30 +48,40 @@ export default function Auth() {
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
   const [currentVerseIndex, setCurrentVerseIndex] = useState(0)
-  const [opacity, setOpacity] = useState(1)
+  const [verseOpacity, setVerseOpacity] = useState(1)
   const [latestUpdates, setLatestUpdates] = useState([])
-  const [showDesktopUpdates, setShowDesktopUpdates] = useState(() => window.innerWidth >= 768)
+  const [showDesktopUpdates, setShowDesktopUpdates] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth >= 768 : false,
+  )
 
-  const outerFitRef = useRef(null)
-  const innerFitRef = useRef(null)
-  const [fit, setFit] = useState({ scale: 1, clipPx: null })
-
-  const verses = [
-    { text: 'He is like a tree planted by streams of water', reference: 'Psalm 1:3' },
-    { text: 'The Lord is my shepherd, I shall not want', reference: 'Psalm 23:1' },
-    { text: 'I can do all things through Christ who strengthens me', reference: 'Phil 4:13' },
-    { text: 'Be still and know that I am God', reference: 'Psalm 46:10' },
-    { text: 'The Lord is my light and my salvation', reference: 'Psalm 27:1' },
-  ]
+  const verses = useMemo(() => {
+    const raw = t('auth.verses', { returnObjects: true })
+    if (Array.isArray(raw) && raw.length > 0) {
+      return raw.map((row) => ({
+        text: row?.text ?? '',
+        reference: row?.ref ?? row?.reference ?? '',
+      }))
+    }
+    return [
+      { text: 'He is like a tree planted by streams of water', reference: 'Psalm 1:3' },
+      { text: 'The Lord is my shepherd, I shall not want', reference: 'Psalm 23:1' },
+    ]
+  }, [t, i18n.language])
 
   useEffect(() => {
+    setCurrentVerseIndex(0)
+    setVerseOpacity(1)
+  }, [verses])
+
+  useEffect(() => {
+    if (verses.length === 0) return undefined
     const interval = setInterval(() => {
-      setOpacity(0)
+      setVerseOpacity(0)
       setTimeout(() => {
         setCurrentVerseIndex((prev) => (prev + 1) % verses.length)
-        setOpacity(1)
-      }, 450)
-    }, 4200)
+        setVerseOpacity(1)
+      }, VERSE_FADE_MS)
+    }, VERSE_ROTATE_MS)
     return () => clearInterval(interval)
   }, [verses.length])
 
@@ -115,6 +137,10 @@ export default function Auth() {
     }
   }, [])
 
+  const outerFitRef = useRef(null)
+  const innerFitRef = useRef(null)
+  const [fit, setFit] = useState({ scale: 1, clipPx: null })
+
   const recalcFit = useCallback(() => {
     const outer = outerFitRef.current
     const inner = innerFitRef.current
@@ -163,6 +189,7 @@ export default function Auth() {
     signUpEmail,
     signUpPassword,
     signUpConfirmPassword,
+    i18n.language,
   ])
 
   if (user) {
@@ -179,18 +206,23 @@ export default function Auth() {
     try {
       localStorage.setItem(LANGUAGE_STORAGE_KEY, code)
     } catch {
-      // ignore
+      /* ignore */
     }
     await i18n.changeLanguage(code)
+  }
+
+  const handleContinueGuest = () => {
+    setGuestBrowse(true)
+    navigate('/read')
   }
 
   const handleSignIn = async (event) => {
     event.preventDefault()
     setError('')
     setSuccess('')
-    if (!cleanSignInEmail) return setError(t('auth.errors.emailRequired', { defaultValue: 'Email is required.' }))
-    if (!isValidEmail(cleanSignInEmail)) return setError(t('auth.errors.emailInvalid', { defaultValue: 'Please enter a valid email address.' }))
-    if (!signInPassword.trim()) return setError(t('auth.errors.passwordRequired', { defaultValue: 'Password is required.' }))
+    if (!cleanSignInEmail) return setError(t('auth.errors.emailRequired'))
+    if (!isValidEmail(cleanSignInEmail)) return setError(t('auth.errors.emailInvalid'))
+    if (!signInPassword.trim()) return setError(t('auth.errors.passwordRequired'))
     setLoading(true)
     const { error: signInError } = await signIn(cleanSignInEmail, signInPassword)
     if (signInError) setError(formatAuthErrorMessage(signInError))
@@ -202,47 +234,61 @@ export default function Auth() {
     setError('')
     setSuccess('')
     const name = signUpDisplayName.trim()
-    if (!name) return setError(t('auth.errors.displayNameRequired', { defaultValue: 'Please choose a display name.' }))
-    if (!cleanSignUpEmail) return setError(t('auth.errors.emailRequired', { defaultValue: 'Email is required.' }))
-    if (!isValidEmail(cleanSignUpEmail)) return setError(t('auth.errors.emailInvalid', { defaultValue: 'Please enter a valid email address.' }))
-    if (!signUpPassword.trim()) return setError(t('auth.errors.passwordRequired', { defaultValue: 'Password is required.' }))
-    if (signUpPassword.length < 6) return setError(t('auth.errors.passwordTooShort', { defaultValue: 'Password must be at least 6 characters.' }))
+    if (!name) return setError(t('auth.errors.displayNameRequired'))
+    if (!cleanSignUpEmail) return setError(t('auth.errors.emailRequired'))
+    if (!isValidEmail(cleanSignUpEmail)) return setError(t('auth.errors.emailInvalid'))
+    if (!signUpPassword.trim()) return setError(t('auth.errors.passwordRequired'))
+    if (signUpPassword.length < 6) return setError(t('auth.errors.passwordTooShort'))
     if (signUpPassword !== signUpConfirmPassword) {
-      return setError(t('auth.errors.passwordMismatch', { defaultValue: 'Passwords do not match.' }))
+      return setError(t('auth.errors.passwordMismatch'))
     }
     if (name.toLowerCase() === cleanSignUpEmail) {
-      return setError(t('auth.errors.displayNameEmail', { defaultValue: 'Display name cannot be your email address.' }))
+      return setError(t('auth.errors.displayNameEmail'))
     }
     if (name.includes('@')) {
-      return setError(t('auth.errors.displayNameLooksEmail', { defaultValue: 'Display name cannot look like an email address.' }))
+      return setError(t('auth.errors.displayNameLooksEmail'))
     }
     setLoading(true)
     const { error: signUpError } = await signUp(cleanSignUpEmail, signUpPassword, name)
     if (signUpError) setError(formatAuthErrorMessage(signUpError))
     else {
-      setSuccess(t('auth.confirmationSent', { defaultValue: 'We sent a confirmation link to your email. Please check your inbox and confirm your account before signing in.' }))
+      setSuccess(t('auth.confirmationSent'))
     }
     setLoading(false)
   }
 
   const pad = 'max(8px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) max(8px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px))'
-  const gapCol = 'clamp(4px, 1.4vmin, 12px)'
+  const gapCol = 'clamp(6px, 1.6vmin, 14px)'
   const logoSize = 'clamp(72px, min(24vw, 20dvh), 200px)'
   const titleSize = 'clamp(0.85rem, 4.2vmin, 2.25rem)'
-  const taglineSize = 'clamp(11px, 2.8vmin, 13px)'
-  const modalPad = 'clamp(10px, 3.2vmin, 26px)'
+  const taglineSize = 'clamp(11px, 2.8vmin, 14px)'
+  const modalPad = 'clamp(14px, 3.5vmin, 28px)'
   const h2Size = 'clamp(1.05rem, 3.8vmin, 1.5rem)'
   const inputPad = 'clamp(10px, 2.8vmin, 14px)'
   const inputFont = 'clamp(14px, 3.5vmin, 16px)'
   const formGap = 'clamp(8px, 2.2vmin, 16px)'
-  const verseSize = 'clamp(10px, 2.9vmin, 13px)'
-  const refSize = 'clamp(9px, 2.5vmin, 11px)'
-  const pillFont = 'clamp(8px, 2.4vmin, 11px)'
-  const pillPadV = 'clamp(4px, 1.2vmin, 6px)'
-  const pillPadH = 'clamp(6px, 1.8vmin, 10px)'
+  const verseSize = 'clamp(11px, 3vmin, 14px)'
+  const refSize = 'clamp(10px, 2.6vmin, 12px)'
   const freeSize = 'clamp(10px, 2.6vmin, 12px)'
+  const socialSize = 'clamp(12px, 3vmin, 14px)'
 
   const isScaled = fit.clipPx != null && fit.scale < 1
+  const verseRow = verses[currentVerseIndex] || { text: '', reference: '' }
+
+  const glassCard = {
+    width: '100%',
+    maxWidth: '480px',
+    borderRadius: 'clamp(16px, 4vmin, 22px)',
+    padding: modalPad,
+    boxSizing: 'border-box',
+    background: 'linear-gradient(155deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.05) 45%, rgba(13,31,78,0.25) 100%)',
+    border: '1px solid rgba(255,255,255,0.28)',
+    backdropFilter: 'blur(22px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(22px) saturate(180%)',
+    boxShadow:
+      '0 4px 4px rgba(0,0,0,0.12), 0 12px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.2), 0 0 0 1px rgba(212,168,67,0.15)',
+    flexShrink: 0,
+  }
 
   return (
     <div
@@ -332,6 +378,7 @@ export default function Auth() {
                   boxSizing: 'border-box',
                 }}
               >
+                {/* Brand + language */}
                 <div
                   style={{
                     width: '100%',
@@ -339,21 +386,20 @@ export default function Auth() {
                     flexDirection: 'column',
                     alignItems: 'center',
                     textAlign: 'center',
-                    gap: 'clamp(2px, 1vmin, 10px)',
+                    gap: 'clamp(4px, 1.2vmin, 10px)',
                     flexShrink: 0,
                   }}
                 >
                   <img
                     src="/Logo.png"
-                    alt="Abiding Anchor logo"
+                    alt={t('auth.logoAlt')}
+                    className="auth-logo-glow"
                     style={{
                       width: logoSize,
                       height: logoSize,
                       maxWidth: '100%',
                       objectFit: 'contain',
                       flexShrink: 0,
-                      filter: 'drop-shadow(0 0 15px rgba(212, 175, 55, 0.6))',
-                      animation: 'authLogoFloat 4s ease-in-out infinite',
                     }}
                   />
                   <h1
@@ -370,22 +416,27 @@ export default function Auth() {
                       textShadow: '0 2px 12px rgba(0,0,0,0.35)',
                     }}
                   >
-                    ABIDING ANCHOR
+                    {t('auth.brandTitle')}
                   </h1>
                   <p
                     style={{
                       margin: 0,
-                      padding: '0 8px',
-                      color: 'rgba(255,255,255,0.68)',
+                      padding: '0 10px',
+                      color: 'rgba(255,255,255,0.72)',
                       fontSize: taglineSize,
-                      letterSpacing: '0.02em',
+                      letterSpacing: '0.03em',
                       textAlign: 'center',
-                      lineHeight: 1.35,
+                      lineHeight: 1.45,
+                      maxWidth: '34em',
                     }}
                   >
-                    {t('auth.tagline', { defaultValue: 'Your private space to grow in faith' })}
+                    {t('auth.tagline')}
                   </p>
-                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'center', marginTop: '6px' }}>
+                  <div
+                    role="group"
+                    aria-label={i18n.t('settings.uiLanguage', { defaultValue: 'App language' })}
+                    style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'center', marginTop: '4px' }}
+                  >
                     {AUTH_LANG_OPTIONS.map((opt) => {
                       const active = activeLanguage === opt.code
                       return (
@@ -395,12 +446,13 @@ export default function Auth() {
                           onClick={() => setLanguage(opt.code)}
                           style={{
                             borderRadius: '999px',
-                            border: active ? '1px solid #D4A843' : '1px solid rgba(255,255,255,0.2)',
-                            background: active ? 'rgba(212,168,67,0.18)' : 'rgba(255,255,255,0.08)',
+                            border: active ? '1px solid #D4A843' : '1px solid rgba(255,255,255,0.22)',
+                            background: active ? 'rgba(212,168,67,0.22)' : 'rgba(255,255,255,0.08)',
                             color: 'white',
-                            padding: '4px 8px',
+                            padding: '5px 10px',
                             fontSize: '11px',
                             cursor: 'pointer',
+                            fontWeight: active ? 700 : 500,
                           }}
                         >
                           {opt.flag} {opt.label}
@@ -410,56 +462,106 @@ export default function Auth() {
                   </div>
                 </div>
 
-                <article
+                {/* Feature highlights — above sign-in */}
+                <div
                   style={{
                     width: '100%',
                     maxWidth: '480px',
-                    borderRadius: 'clamp(12px, 3vmin, 16px)',
-                    padding: modalPad,
-                    boxSizing: 'border-box',
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '0.5px solid rgba(212,168,67,0.8)',
-                    backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)',
-                    boxShadow: '0 0 24px rgba(212,168,67,0.18), 0 10px 40px rgba(0,0,0,0.35)',
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                    gap: '10px',
                     flexShrink: 0,
                   }}
                 >
+                  {FEATURE_ITEMS.map((item) => (
+                    <div
+                      key={item.titleKey}
+                      style={{
+                        borderRadius: '14px',
+                        padding: '12px 12px 14px',
+                        background: 'linear-gradient(160deg, rgba(255,255,255,0.12) 0%, rgba(13,31,78,0.35) 100%)',
+                        border: '1px solid rgba(255,255,255,0.18)',
+                        boxShadow: '0 6px 20px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.1)',
+                        textAlign: 'left',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '6px',
+                        minHeight: '96px',
+                      }}
+                    >
+                      <span style={{ fontSize: 'clamp(22px, 5vmin, 30px)', lineHeight: 1 }} aria-hidden>
+                        {item.icon}
+                      </span>
+                      <span
+                        style={{
+                          color: '#F5E6B8',
+                          fontWeight: 700,
+                          fontSize: 'clamp(12px, 3vmin, 14px)',
+                          letterSpacing: '0.02em',
+                          lineHeight: 1.25,
+                        }}
+                      >
+                        {t(item.titleKey)}
+                      </span>
+                      <span
+                        style={{
+                          color: 'rgba(255,255,255,0.65)',
+                          fontSize: 'clamp(10px, 2.6vmin, 12px)',
+                          lineHeight: 1.35,
+                        }}
+                      >
+                        {t(item.descKey)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Social proof */}
+                <p
+                  style={{
+                    margin: 0,
+                    padding: '0 12px',
+                    color: 'rgba(255,230,180,0.95)',
+                    fontSize: socialSize,
+                    fontWeight: 600,
+                    letterSpacing: '0.04em',
+                    textAlign: 'center',
+                    textShadow: '0 1px 8px rgba(0,0,0,0.35)',
+                  }}
+                >
+                  {t('auth.socialProof')}
+                </p>
+
+                {/* Glass sign-in card */}
+                <article style={glassCard}>
                   <h2
                     style={{
-                      margin: '0 0 4px',
+                      margin: '0 0 8px',
                       color: '#D4A843',
                       fontSize: h2Size,
                       textAlign: 'center',
                       fontWeight: 700,
-                      letterSpacing: '0.05em',
+                      letterSpacing: '0.06em',
                     }}
                   >
-                    {authView === 'signIn'
-                      ? t('auth.signIn', { defaultValue: 'Sign In' })
-                      : t('auth.createAccount', { defaultValue: 'Create account' })}
+                    {authView === 'signIn' ? t('auth.signIn') : t('auth.createAccount')}
                   </h2>
                   {authView === 'signIn' ? (
                     <div className="grid w-full" style={{ gap: formGap }}>
-                      <form
-                        onSubmit={handleSignIn}
-                        noValidate
-                        className="grid w-full"
-                        style={{ gap: formGap }}
-                      >
+                      <form onSubmit={handleSignIn} noValidate className="grid w-full" style={{ gap: formGap }}>
                         <input
                           value={signInEmail}
                           onChange={(e) => setSignInEmail(e.target.value)}
-                          placeholder={t('auth.email', { defaultValue: 'Email' })}
+                          placeholder={t('auth.email')}
                           type="email"
                           className="app-input w-full"
                           style={{
                             borderRadius: '12px',
                             padding: inputPad,
                             fontSize: inputFont,
-                            background: 'rgba(0,0,0,0.15)',
+                            background: 'rgba(0,0,0,0.22)',
                             color: 'white',
-                            border: '0.5px solid rgba(212,175,55,0.4)',
+                            border: '1px solid rgba(212,175,55,0.38)',
                           }}
                           autoCapitalize="none"
                           autoCorrect="off"
@@ -469,16 +571,16 @@ export default function Auth() {
                         <input
                           value={signInPassword}
                           onChange={(e) => setSignInPassword(e.target.value)}
-                          placeholder={t('auth.password', { defaultValue: 'Password' })}
+                          placeholder={t('auth.password')}
                           type="password"
                           className="app-input w-full"
                           style={{
                             borderRadius: '12px',
                             padding: inputPad,
                             fontSize: inputFont,
-                            background: 'rgba(0,0,0,0.15)',
+                            background: 'rgba(0,0,0,0.22)',
                             color: 'white',
-                            border: '0.5px solid rgba(212,175,55,0.4)',
+                            border: '1px solid rgba(212,175,55,0.38)',
                           }}
                           autoComplete="current-password"
                         />
@@ -488,7 +590,7 @@ export default function Auth() {
                           disabled={loading}
                           style={{ padding: inputPad, fontSize: inputFont }}
                         >
-                          {loading ? t('auth.pleaseWait', { defaultValue: 'Please wait...' }) : t('auth.signIn', { defaultValue: 'Sign In' })}
+                          {loading ? t('auth.pleaseWait') : t('auth.signIn')}
                         </button>
                       </form>
                       <button
@@ -502,30 +604,54 @@ export default function Auth() {
                         }}
                         style={{ padding: inputPad, fontSize: inputFont }}
                       >
-                        {t('auth.createFreeAccount', { defaultValue: 'Create Free Account' })}
+                        {t('auth.createFreeAccount')}
                       </button>
+                      <button
+                        type="button"
+                        disabled={loading}
+                        onClick={handleContinueGuest}
+                        style={{
+                          padding: inputPad,
+                          fontSize: inputFont,
+                          width: '100%',
+                          borderRadius: '12px',
+                          background: 'rgba(255,255,255,0.06)',
+                          border: '1px solid rgba(255,255,255,0.28)',
+                          color: 'rgba(255,255,255,0.92)',
+                          cursor: 'pointer',
+                          fontWeight: 600,
+                        }}
+                      >
+                        {t('auth.continueAsGuest')}
+                      </button>
+                      <p
+                        style={{
+                          margin: 0,
+                          textAlign: 'center',
+                          color: 'rgba(255,255,255,0.55)',
+                          fontSize: 'clamp(10px, 2.6vmin, 12px)',
+                          lineHeight: 1.4,
+                        }}
+                      >
+                        {t('auth.continueAsGuestHint')}
+                      </p>
                     </div>
                   ) : (
                     <div className="grid w-full" style={{ gap: formGap }}>
-                      <form
-                        onSubmit={handleSignUp}
-                        noValidate
-                        className="grid w-full"
-                        style={{ gap: formGap }}
-                      >
+                      <form onSubmit={handleSignUp} noValidate className="grid w-full" style={{ gap: formGap }}>
                         <input
                           value={signUpDisplayName}
                           onChange={(e) => setSignUpDisplayName(e.target.value)}
-                          placeholder={t('auth.displayName', { defaultValue: 'Display name' })}
+                          placeholder={t('auth.displayName')}
                           type="text"
                           className="app-input w-full"
                           style={{
                             borderRadius: '12px',
                             padding: inputPad,
                             fontSize: inputFont,
-                            background: 'rgba(0,0,0,0.15)',
+                            background: 'rgba(0,0,0,0.22)',
                             color: 'white',
-                            border: '0.5px solid rgba(212,175,55,0.4)',
+                            border: '1px solid rgba(212,175,55,0.38)',
                           }}
                           autoCapitalize="words"
                           autoCorrect="off"
@@ -535,16 +661,16 @@ export default function Auth() {
                         <input
                           value={signUpEmail}
                           onChange={(e) => setSignUpEmail(e.target.value)}
-                          placeholder={t('auth.email', { defaultValue: 'Email' })}
+                          placeholder={t('auth.email')}
                           type="email"
                           className="app-input w-full"
                           style={{
                             borderRadius: '12px',
                             padding: inputPad,
                             fontSize: inputFont,
-                            background: 'rgba(0,0,0,0.15)',
+                            background: 'rgba(0,0,0,0.22)',
                             color: 'white',
-                            border: '0.5px solid rgba(212,175,55,0.4)',
+                            border: '1px solid rgba(212,175,55,0.38)',
                           }}
                           autoCapitalize="none"
                           autoCorrect="off"
@@ -554,32 +680,32 @@ export default function Auth() {
                         <input
                           value={signUpPassword}
                           onChange={(e) => setSignUpPassword(e.target.value)}
-                          placeholder={t('auth.password', { defaultValue: 'Password' })}
+                          placeholder={t('auth.password')}
                           type="password"
                           className="app-input w-full"
                           style={{
                             borderRadius: '12px',
                             padding: inputPad,
                             fontSize: inputFont,
-                            background: 'rgba(0,0,0,0.15)',
+                            background: 'rgba(0,0,0,0.22)',
                             color: 'white',
-                            border: '0.5px solid rgba(212,175,55,0.4)',
+                            border: '1px solid rgba(212,175,55,0.38)',
                           }}
                           autoComplete="new-password"
                         />
                         <input
                           value={signUpConfirmPassword}
                           onChange={(e) => setSignUpConfirmPassword(e.target.value)}
-                          placeholder={t('auth.confirmPassword', { defaultValue: 'Confirm password' })}
+                          placeholder={t('auth.confirmPassword')}
                           type="password"
                           className="app-input w-full"
                           style={{
                             borderRadius: '12px',
                             padding: inputPad,
                             fontSize: inputFont,
-                            background: 'rgba(0,0,0,0.15)',
+                            background: 'rgba(0,0,0,0.22)',
                             color: 'white',
-                            border: '0.5px solid rgba(212,175,55,0.4)',
+                            border: '1px solid rgba(212,175,55,0.38)',
                           }}
                           autoComplete="new-password"
                         />
@@ -589,7 +715,7 @@ export default function Auth() {
                           disabled={loading}
                           style={{ padding: inputPad, fontSize: inputFont }}
                         >
-                          {loading ? t('auth.pleaseWait', { defaultValue: 'Please wait...' }) : t('auth.createAccount', { defaultValue: 'Create account' })}
+                          {loading ? t('auth.pleaseWait') : t('auth.createAccount')}
                         </button>
                       </form>
                       <button
@@ -609,7 +735,7 @@ export default function Auth() {
                           color: 'rgba(255,255,255,0.9)',
                         }}
                       >
-                        {t('auth.backToSignIn', { defaultValue: 'Back to sign in' })}
+                        {t('auth.backToSignIn')}
                       </button>
                     </div>
                   )}
@@ -622,6 +748,64 @@ export default function Auth() {
                   ) : null}
                 </article>
 
+                {/* Rotating verses — above What's New + above footer Product Hunt (footer sits under transparent auth layer) */}
+                <div
+                  style={{
+                    width: '100%',
+                    maxWidth: '480px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    textAlign: 'center',
+                    flexShrink: 0,
+                    marginTop: 'clamp(6px, 1.5vmin, 14px)',
+                  }}
+                >
+                  <p
+                    style={{
+                      fontSize: verseSize,
+                      fontStyle: 'italic',
+                      color: 'rgba(255,255,255,0.88)',
+                      lineHeight: 1.5,
+                      margin: 0,
+                      padding: '0 8px',
+                      textAlign: 'center',
+                      opacity: verseOpacity,
+                      transition: `opacity ${VERSE_FADE_MS}ms ease`,
+                      maxWidth: '36em',
+                    }}
+                  >
+                    &ldquo;{verseRow.text}&rdquo;
+                  </p>
+                  <p
+                    style={{
+                      fontSize: refSize,
+                      color: 'rgba(212,168,67,0.95)',
+                      margin: '6px 0 0',
+                      letterSpacing: '0.06em',
+                      textAlign: 'center',
+                      opacity: verseOpacity,
+                      transition: `opacity ${VERSE_FADE_MS}ms ease`,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {verseRow.reference}
+                  </p>
+
+                  <p
+                    style={{
+                      margin: 'clamp(8px, 1.4vmin, 14px) 0 0',
+                      color: 'rgba(255,255,255,0.62)',
+                      fontSize: freeSize,
+                      textAlign: 'center',
+                      padding: '0 8px',
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    {t('auth.freeForever')} {'\u{1F64F}'}
+                  </p>
+                </div>
+
                 {showDesktopUpdates && latestUpdates.length > 0 ? (
                   <aside
                     style={{
@@ -629,13 +813,15 @@ export default function Auth() {
                       maxWidth: '480px',
                       borderRadius: '14px',
                       padding: '12px 14px',
+                      marginTop: 'clamp(12px, 3vmin, 20px)',
+                      marginBottom: 'clamp(8px, 2vmin, 16px)',
                       background: 'rgba(212,168,67,0.08)',
                       border: '1px solid rgba(212,168,67,0.35)',
                       boxShadow: '0 8px 22px rgba(0,0,0,0.2)',
                     }}
                   >
                     <p style={{ margin: 0, color: '#D4AF37', fontSize: '12px', fontWeight: 700, letterSpacing: '0.04em' }}>
-                      {t('auth.whatsNew', { defaultValue: "What's New" })}
+                      {t('auth.whatsNew')}
                     </p>
                     <div style={{ marginTop: '8px', display: 'grid', gap: '8px' }}>
                       {latestUpdates.map((update) => (
@@ -652,90 +838,16 @@ export default function Auth() {
                   </aside>
                 ) : null}
 
+                {/* Reserve vertical space so fixed footer (links + Product Hunt) does not cover verse / What's New */}
                 <div
+                  aria-hidden
                   style={{
-                    width: '100%',
-                    maxWidth: '480px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    textAlign: 'center',
                     flexShrink: 0,
+                    width: '100%',
+                    minHeight: 'clamp(120px, 26dvh, 200px)',
+                    height: 'clamp(120px, 26dvh, 200px)',
                   }}
-                >
-                  <p
-                    style={{
-                      fontSize: verseSize,
-                      fontStyle: 'italic',
-                      color: 'rgba(255,255,255,0.82)',
-                      lineHeight: 1.45,
-                      margin: 'clamp(2px, 0.8vmin, 10px) 0 0',
-                      padding: '0 6px',
-                      textAlign: 'center',
-                      opacity,
-                      transition: 'opacity 0.45s ease',
-                    }}
-                  >
-                    &ldquo;{verses[currentVerseIndex].text}&rdquo;
-                  </p>
-                  <p
-                    style={{
-                      fontSize: refSize,
-                      color: 'rgba(212,168,67,0.9)',
-                      margin: '2px 0 0',
-                      letterSpacing: '0.05em',
-                      textAlign: 'center',
-                      opacity,
-                      transition: 'opacity 0.45s ease',
-                    }}
-                  >
-                    {verses[currentVerseIndex].reference}
-                  </p>
-
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      justifyContent: 'center',
-                      gap: 'clamp(4px, 1.2vmin, 8px)',
-                      marginTop: 'clamp(4px, 1.2vmin, 10px)',
-                    }}
-                  >
-                    {[t('auth.pillBibleReader', { defaultValue: 'Bible Reader' }), t('auth.pillGuidedPrayers', { defaultValue: 'Guided Prayers' }), t('auth.pillDailyStreak', { defaultValue: 'Daily Streak' }), t('auth.pillAiCompanion', { defaultValue: 'AI Companion' })].map(
-                      (pill) => (
-                        <span
-                          key={pill}
-                          style={{
-                            padding: `${pillPadV} ${pillPadH}`,
-                            borderRadius: '999px',
-                            background: 'rgba(255,255,255,0.12)',
-                            border: '1px solid rgba(255,255,255,0.22)',
-                            color: 'rgba(255,255,255,0.88)',
-                            fontSize: pillFont,
-                            fontWeight: 500,
-                            letterSpacing: '0.01em',
-                            lineHeight: 1,
-                          }}
-                        >
-                          {pill}
-                        </span>
-                      ),
-                    )}
-                  </div>
-
-                  <p
-                    style={{
-                      margin: 'clamp(4px, 1vmin, 8px) 0 0',
-                      color: 'rgba(255,255,255,0.62)',
-                      fontSize: freeSize,
-                      textAlign: 'center',
-                      padding: '0 6px',
-                      lineHeight: 1.35,
-                    }}
-                  >
-                    {t('auth.freeForever', { defaultValue: 'Free forever. Built as a ministry.' })} {'\u{1F64F}'}
-                  </p>
-                </div>
+                />
               </div>
             </div>
           </div>
@@ -744,7 +856,22 @@ export default function Auth() {
       <style>{`
         @keyframes authLogoFloat {
           0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-5px); }
+          50% { transform: translateY(-6px); }
+        }
+        @keyframes authLogoGlowPulse {
+          0%, 100% {
+            filter: drop-shadow(0 0 14px rgba(212, 168, 67, 0.5))
+              drop-shadow(0 0 32px rgba(212, 168, 67, 0.22));
+          }
+          50% {
+            filter: drop-shadow(0 0 22px rgba(212, 168, 67, 0.85))
+              drop-shadow(0 0 48px rgba(212, 168, 67, 0.4));
+          }
+        }
+        .auth-logo-glow {
+          animation:
+            authLogoFloat 5s ease-in-out infinite,
+            authLogoGlowPulse 3.2s ease-in-out infinite;
         }
       `}</style>
     </div>

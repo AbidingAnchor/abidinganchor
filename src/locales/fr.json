@@ -532,5 +532,51 @@
     "shareAnon": "Partager anonymement",
     "keepPrivate": "Garder privé",
     "toastPrayer": "Votre prière a été présentée 🕊️"
+  },
+  "auth": {
+    "brandTitle": "ABIDING ANCHOR",
+    "logoAlt": "Logo Abiding Anchor",
+    "tagline": "Votre espace privé pour grandir dans la foi",
+    "socialProof": "Rejoignez plus de 200 croyants dans le monde 🌍",
+    "signIn": "Connexion",
+    "createAccount": "Créer un compte",
+    "createFreeAccount": "Créer un compte gratuit",
+    "continueAsGuest": "Continuer en invité",
+    "continueAsGuestHint": "Parcourez la Bible et les outils de base sans compte",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "displayName": "Nom affiché",
+    "confirmPassword": "Confirmer le mot de passe",
+    "pleaseWait": "Veuillez patienter...",
+    "backToSignIn": "Retour à la connexion",
+    "whatsNew": "Nouveautés",
+    "freeForever": "Gratuit pour toujours. Un ministère au service de tous.",
+    "pillBibleReader": "Lecteur biblique",
+    "pillGuidedPrayers": "Prières guidées",
+    "pillDailyStreak": "Série quotidienne",
+    "pillAiCompanion": "Compagnon IA",
+    "pillBibleReaderDesc": "Lisez les Écritures dans le calme",
+    "pillGuidedPrayersDesc": "Priez avec des moments guidés à voix basse",
+    "pillDailyStreakDesc": "Restez régulier jour après jour",
+    "pillAiCompanionDesc": "Posez des questions ancrées dans la Parole",
+    "errors": {
+      "emailRequired": "L’e-mail est requis.",
+      "emailInvalid": "Entrez une adresse e-mail valide.",
+      "passwordRequired": "Le mot de passe est requis.",
+      "passwordTooShort": "Au moins 6 caractères.",
+      "passwordMismatch": "Les mots de passe ne correspondent pas.",
+      "displayNameRequired": "Choisissez un nom affiché.",
+      "displayNameEmail": "Le nom ne peut pas être votre e-mail.",
+      "displayNameLooksEmail": "Le nom ne peut pas ressembler à un e-mail."
+    },
+    "confirmationSent": "Nous avons envoyé un lien de confirmation. Vérifiez votre boîte mail avant de vous connecter.",
+    "verses": [
+      { "text": "Il est comme un arbre planté près des courants d’eau", "ref": "Psaume 1:3" },
+      { "text": "L’Éternel est mon berger : je ne manquerai de rien", "ref": "Psaume 23:1" },
+      { "text": "Je puis tout par celui qui me fortifie", "ref": "Philippiens 4:13" },
+      { "text": "Arrêtez, et sachez que je suis Dieu", "ref": "Psaume 46:10" },
+      { "text": "L’Éternel est ma lumière et mon salut", "ref": "Psaume 27:1" },
+      { "text": "Venez à moi, vous tous qui êtes fatigués", "ref": "Matthieu 11:28" }
+    ]
   }
 }

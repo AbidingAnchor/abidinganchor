@@ -634,5 +634,51 @@
     "shareAnon": "Ibahagi nang Di-kilala",
     "keepPrivate": "Panatilihing pribado",
     "toastPrayer": "Naiahon na ang iyong panalangin 🕊️"
+  },
+  "auth": {
+    "brandTitle": "ABIDING ANCHOR",
+    "logoAlt": "Logo ng Abiding Anchor",
+    "tagline": "Ang iyong pribadong espasyo para lumago sa pananampalataya",
+    "socialProof": "Sumali sa 200+ mananampalataya sa buong mundo 🌍",
+    "signIn": "Mag-sign in",
+    "createAccount": "Gumawa ng account",
+    "createFreeAccount": "Gumawa ng libreng account",
+    "continueAsGuest": "Magpatuloy bilang bisita",
+    "continueAsGuestHint": "Basahin ang Bibliya at mga pangunahing tool nang walang account",
+    "email": "Email",
+    "password": "Password",
+    "displayName": "Ipinapakitang pangalan",
+    "confirmPassword": "Kumpirmahin ang password",
+    "pleaseWait": "Mangyaring maghintay...",
+    "backToSignIn": "Bumalik sa sign in",
+    "whatsNew": "Ano ang bago",
+    "freeForever": "Libre magpakailanman. Ginawa bilang ministeryo.",
+    "pillBibleReader": "Tagabasa ng Bibliya",
+    "pillGuidedPrayers": "Pinapatnubayang panalangin",
+    "pillDailyStreak": "Araw-araw na sunod-sunod",
+    "pillAiCompanion": "AI kasama",
+    "pillBibleReaderDesc": "Basahin ang Kasulatan nang tahimik at may pokus",
+    "pillGuidedPrayersDesc": "Manalangin nang may banayad na tinig",
+    "pillDailyStreakDesc": "Manatiling tuloy-tuloy araw-araw",
+    "pillAiCompanionDesc": "Magtanong batay sa Salita",
+    "errors": {
+      "emailRequired": "Kailangan ang email.",
+      "emailInvalid": "Maglagay ng wastong email.",
+      "passwordRequired": "Kailangan ang password.",
+      "passwordTooShort": "Hindi bababa sa 6 na character ang password.",
+      "passwordMismatch": "Hindi tugma ang mga password.",
+      "displayNameRequired": "Pumili ng ipinapakitang pangalan.",
+      "displayNameEmail": "Hindi maaaring email ang ipinapakitang pangalan.",
+      "displayNameLooksEmail": "Hindi maaaring mukhang email ang pangalan."
+    },
+    "confirmationSent": "Nagpadala kami ng link sa email mo. Suriin ang inbox bago mag-sign in.",
+    "verses": [
+      { "text": "Siya'y parang punong kahoy na itinanim sa tabi ng mga batis", "ref": "Awit 1:3" },
+      { "text": "Ang Panginoon ay aking pastor; hindi ako mangangailangan", "ref": "Awit 23:1" },
+      { "text": "Lahat ng mga bagay ay aking magagawa sa pamamagitan ni Cristo", "ref": "Filipos 4:13" },
+      { "text": "Magsitigil kayo at kilalanin ninyo na ako ang Dios", "ref": "Awit 46:10" },
+      { "text": "Ang Panginoon ay aking liwanag at aking kaligtasan", "ref": "Awit 27:1" },
+      { "text": "Magsiparito sa akin kayong lahat na napapagal at nabibigatan", "ref": "Mateo 11:28" }
+    ]
   }
 }

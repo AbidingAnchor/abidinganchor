@@ -23,6 +23,9 @@ import { supabase } from '../lib/supabase'
 import { userStorageKey } from '../utils/userStorage'
 import Footer from '../components/Footer'
 import WeeklyRecap, { weekKeyForDate } from '../components/WeeklyRecap'
+import GuestPreviewBanner from '../components/GuestPreviewBanner'
+import { useIsGuestSession } from '../hooks/useIsGuestSession'
+import { useGuestSignupModal } from '../context/GuestSignupModalContext'
 
 /** Race a promise against a timeout so streak sync cannot hang indefinitely on stalled requests. */
 const STREAK_SYNC_TIMEOUT_MS = 45_000
@@ -46,6 +49,8 @@ function Home({ onOpenWorship, worshipStatus }) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { user, profile, loading, refreshProfile } = useAuth()
+  const isGuestSession = useIsGuestSession()
+  const { openGuestSignupModal } = useGuestSignupModal()
   const skyPeriod = useThemeBackgroundType()
   const { activeDays: profileWeekActiveDays } = useStreakTracker(user?.id)
   const [journalWeekActiveDays, setJournalWeekActiveDays] = useState([])
@@ -229,6 +234,10 @@ function Home({ onOpenWorship, worshipStatus }) {
   }, [])
 
   const handlePresenceComplete = useCallback(async () => {
+    if (isGuestSession) {
+      openGuestSignupModal()
+      return
+    }
     console.log('[presence-check-in] handlePresenceComplete (I showed up today) invoked', {
       userId: user?.id ?? null,
       profileLastActive: profile?.last_active_date ?? null,
@@ -277,7 +286,15 @@ function Home({ onOpenWorship, worshipStatus }) {
       presenceCtaBusyRef.current = false
       setPresenceCtaSyncing(false)
     }
-  }, [user?.id, profile?.last_active_date, syncStreakToSupabase, finishPresenceGlow, t])
+  }, [
+    isGuestSession,
+    openGuestSignupModal,
+    user?.id,
+    profile?.last_active_date,
+    syncStreakToSupabase,
+    finishPresenceGlow,
+    t,
+  ])
 
   useEffect(() => {
     setPresenceOptimisticDone(false)
@@ -384,6 +401,10 @@ function Home({ onOpenWorship, worshipStatus }) {
   }, [])
 
   const handleSaveDailyVerse = useCallback(async () => {
+    if (isGuestSession) {
+      openGuestSignupModal()
+      return
+    }
     const result = await saveToJournal({
       verse: dailyEncounter.text,
       reference: dailyEncounter.reference,
@@ -391,9 +412,13 @@ function Home({ onOpenWorship, worshipStatus }) {
     })
     if (result?.isFirstJournalEntry) setShowFirstJournalCelebration(true)
     setToastTrigger((x) => x + 1)
-  }, [dailyEncounter, t])
+  }, [dailyEncounter, t, isGuestSession, openGuestSignupModal])
 
   const handleSaveVerseOfWeek = useCallback(async () => {
+    if (isGuestSession) {
+      openGuestSignupModal()
+      return
+    }
     const result = await saveToJournal({
       verse: t('home.verseWeekText'),
       reference: t('home.verseWeekRef'),
@@ -401,7 +426,7 @@ function Home({ onOpenWorship, worshipStatus }) {
     })
     if (result?.isFirstJournalEntry) setShowFirstJournalCelebration(true)
     setToastTrigger((x) => x + 1)
-  }, [t])
+  }, [t, isGuestSession, openGuestSignupModal])
 
   const handleShareDailyVerse = useCallback(async () => {
     const verse = dailyEncounter?.text ?? ''
@@ -512,6 +537,10 @@ function Home({ onOpenWorship, worshipStatus }) {
   }, [markPresenceFromEngagement, navigate, dailyEncounter])
 
   const handleEncounterAskAi = useCallback(() => {
+    if (isGuestSession) {
+      openGuestSignupModal()
+      return
+    }
     markPresenceFromEngagement()
     navigate('/ai-companion', {
       state: {
@@ -523,7 +552,7 @@ function Home({ onOpenWorship, worshipStatus }) {
         },
       },
     })
-  }, [markPresenceFromEngagement, navigate, dailyEncounter])
+  }, [isGuestSession, markPresenceFromEngagement, navigate, dailyEncounter, openGuestSignupModal])
 
   useEffect(() => {
     let active = true
@@ -568,7 +597,9 @@ function Home({ onOpenWorship, worshipStatus }) {
   const friendFallback = t('home.friendFallback')
   const firstName = suppressPersonalWelcome
     ? friendFallback
-    : (profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || friendFallback)
+    : (profile?.display_name?.trim()?.split(/\s+/)[0]
+      || profile?.full_name?.split(' ')[0]
+      || friendFallback)
 
   return (
     <>
@@ -583,14 +614,15 @@ function Home({ onOpenWorship, worshipStatus }) {
           maxWidth: '680px',
           margin: '0 auto',
           width: '100%',
-          boxSizing: 'border-box',
-          background: 'transparent',
-        }}
-      >
+        boxSizing: 'border-box',
+        background: 'transparent',
+      }}
+    >
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          <GuestPreviewBanner />
           <section style={{ marginBottom: 0 }}>
             <div style={{ marginBottom: '20px' }}>
-              <p style={{ 
+              <p style={{
                 color: 'var(--heading-text)', 
                 fontSize: '22px', 
                 fontWeight: 700, 
