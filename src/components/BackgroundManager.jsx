@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import DayBackground, {
   getBackgroundTypeForTime,
   getEffectiveForcedHour,
@@ -11,6 +11,8 @@ import {
 } from "../utils/themePreferenceStorage";
 
 const FADE_DURATION_MS = 800;
+/** Solid base behind canvases — must never rely on “transparent” stacking (negative z-index can show OS/desktop). */
+export const BACKGROUND_FALLBACK_NAVY = "#0a1a3e";
 
 const BODY_SKY_CLASSES = [
   "theme-day",
@@ -73,8 +75,10 @@ function BackgroundLayer({ type, isVisible }) {
 }
 
 export default function BackgroundManager() {
+  const currentBgRef = useRef(null);
   const [currentBg, setCurrentBg] = useState(() => {
     const initial = getBackgroundTypeForTime(new Date());
+    currentBgRef.current = initial;
     logThemeMutation("BackgroundManager: set data-theme", { reason: "initial-state", theme: initial });
     document.documentElement.setAttribute("data-theme", initial);
     syncBodySkyClasses(initial, "initial-state");
@@ -87,22 +91,22 @@ export default function BackgroundManager() {
 
     const updateBackground = () => {
       const nextBg = getBackgroundTypeForTime(new Date());
+      // Dedupe: skip DOM + state when period unchanged (avoids thrash from duplicate events / interval ticks).
+      if (nextBg === currentBgRef.current) return;
+
+      const prevBg = currentBgRef.current;
+      currentBgRef.current = nextBg;
       syncBodySkyClasses(nextBg, "updateBackground");
-      setCurrentBg((prevBg) => {
-        if (prevBg !== nextBg) {
-          logThemeMutation("BackgroundManager: set data-theme", {
-            reason: "state-transition",
-            prevTheme: prevBg,
-            nextTheme: nextBg,
-          });
-          document.documentElement.setAttribute("data-theme", nextBg);
-          setPreviousBg(prevBg);
-          clearTimeout(fadeTimeout);
-          fadeTimeout = setTimeout(() => setPreviousBg(null), FADE_DURATION_MS);
-          return nextBg;
-        }
-        return prevBg;
+      logThemeMutation("BackgroundManager: set data-theme", {
+        reason: "state-transition",
+        prevTheme: prevBg,
+        nextTheme: nextBg,
       });
+      document.documentElement.setAttribute("data-theme", nextBg);
+      setPreviousBg(prevBg);
+      setCurrentBg(nextBg);
+      clearTimeout(fadeTimeout);
+      fadeTimeout = setTimeout(() => setPreviousBg(null), FADE_DURATION_MS);
     };
 
     updateBackground();
@@ -137,8 +141,15 @@ export default function BackgroundManager() {
 
   return (
     <div
-      className="fixed inset-0 -z-50 pointer-events-none overflow-hidden min-h-[100dvh] h-[100dvh] w-full bg-[#0a1432]"
+      className="fixed inset-0 z-0 pointer-events-none overflow-hidden min-h-[100dvh] h-[100dvh] w-full"
+      style={{ backgroundColor: BACKGROUND_FALLBACK_NAVY }}
     >
+      {/* Always-on paint layer so canvas/WebGL never exposes transparency during mount or cross-fade */}
+      <div
+        className="absolute inset-0"
+        style={{ backgroundColor: BACKGROUND_FALLBACK_NAVY, zIndex: 0 }}
+        aria-hidden
+      />
       {previousBg && <BackgroundLayer type={previousBg} isVisible={false} />}
       <BackgroundLayer type={currentBg} isVisible />
       {/* Lighten bottom scrim on day sky so canvas stays crisp (sunset/night keep depth) */}

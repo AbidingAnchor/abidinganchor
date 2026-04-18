@@ -125,8 +125,8 @@ export default function Auth() {
     body.style.overflow = 'hidden'
     body.style.overscrollBehavior = 'none'
     html.style.overscrollBehavior = 'none'
-    html.style.backgroundColor = '#0a1432'
-    body.style.backgroundColor = '#0a1432'
+    html.style.backgroundColor = '#0a1a3e'
+    body.style.backgroundColor = '#0a1a3e'
     return () => {
       html.style.overflow = prevHtmlOverflow
       body.style.overflow = prevBodyOverflow

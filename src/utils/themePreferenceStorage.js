@@ -41,7 +41,7 @@ export function emitThemePreferenceChanged() {
 /** Call when a full (or theme-updating) profile row arrives from Supabase. */
 export function syncThemePreferenceFromProfileRow(profile) {
   if (!profile || typeof profile !== 'object') return
-  // Manual theme selection is disabled for now; force automatic behavior.
+  // Manual theme selection is disabled; sky is time-based only. Do not emit —
+  // emitting on every profile refresh caused BackgroundManager to "thrash" and log repeatedly.
   writeThemePreferenceToStorage('automatic')
-  emitThemePreferenceChanged()
 }
