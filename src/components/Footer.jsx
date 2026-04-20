@@ -5,6 +5,13 @@ export default function Footer({ compact = false }) {
   const { t } = useTranslation()
   const { pathname } = useLocation()
   const authLike = pathname === '/auth' || pathname === '/reset-password'
+  const legalLinks = [
+    { to: '/about', label: 'About' },
+    { to: '/privacy', label: t('footer.privacy') },
+    { to: '/terms', label: t('footer.terms') },
+    { to: '/legal', label: t('footer.legal') },
+  ]
+  const linkStyle = { color: '#D4A843', textDecoration: 'none', fontWeight: 600 }
 
   const pad = compact
     ? '20px 0 0'
@@ -28,18 +35,14 @@ export default function Footer({ compact = false }) {
       }}
     >
       <span>{t('footer.copyright')}</span>
-      <span style={{ margin: '0 6px' }}>·</span>
-      <Link to="/privacy" style={{ color: '#D4A843', textDecoration: 'none' }}>
-        {t('footer.privacy')}
-      </Link>
-      <span style={{ margin: '0 6px' }}>·</span>
-      <Link to="/terms" style={{ color: '#D4A843', textDecoration: 'none' }}>
-        {t('footer.terms')}
-      </Link>
-      <span style={{ margin: '0 6px' }}>·</span>
-      <Link to="/legal" style={{ color: '#D4A843', textDecoration: 'none' }}>
-        {t('footer.legal')}
-      </Link>
+      {legalLinks.map((link) => (
+        <span key={link.to}>
+          <span style={{ margin: '0 6px' }}>·</span>
+          <Link to={link.to} style={linkStyle}>
+            {link.label}
+          </Link>
+        </span>
+      ))}
       <div
         style={{
           display: 'flex',
