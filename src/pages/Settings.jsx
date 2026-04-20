@@ -628,6 +628,24 @@ export default function Settings() {
               <p style={{ color: 'var(--text-primary)', fontSize: '18px', fontWeight: 700, marginBottom: '10px' }}>
                 {displayName}
               </p>
+              {profile?.is_founding_member ? (
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    background: 'rgba(212,168,67,0.15)',
+                    border: '1px solid #D4A843',
+                    color: '#D4A843',
+                    fontSize: '12px',
+                    borderRadius: '20px',
+                    padding: '4px 10px',
+                    fontWeight: 700,
+                    marginBottom: '10px',
+                  }}
+                >
+                  ⚓ Founding Member
+                </div>
+              ) : null}
               <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '4px', fontWeight: 500 }}>
                 Email
               </p>
