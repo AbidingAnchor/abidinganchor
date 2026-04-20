@@ -54,6 +54,21 @@ const FEEDBACK_TYPES = [
 
 const FEEDBACK_MAX_LEN = 500
 
+function buildFaithBadges({ profile, hasReadChapter, hasPrayerWallPost }) {
+  const badges = []
+  const streak = Math.max(0, Number(profile?.reading_streak) || 0)
+
+  if (profile?.is_founding_member) badges.push('⚓ Founding Member')
+  if (profile?.is_supporter) badges.push('⚓ Ministry Supporter')
+  if (streak >= 3) badges.push('🔥 Streak Starter')
+  if (streak >= 7) badges.push('⚡ On Fire')
+  if (streak >= 30) badges.push('👑 Faithful')
+  if (hasReadChapter) badges.push('📖 Word Seeker')
+  if (hasPrayerWallPost) badges.push('🙏 Prayer Warrior')
+
+  return badges
+}
+
 export default function Settings() {
   const { t, i18n: i18nHook } = useTranslation()
   const navigate = useNavigate()
@@ -80,6 +95,7 @@ export default function Settings() {
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false)
   const [feedbackSuccess, setFeedbackSuccess] = useState(false)
   const [feedbackSubmitError, setFeedbackSubmitError] = useState('')
+  const [hasPrayerWallPost, setHasPrayerWallPost] = useState(false)
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false)
   const [deleteAccountSubmitting, setDeleteAccountSubmitting] = useState(false)
   const [deleteAccountError, setDeleteAccountError] = useState('')
@@ -509,6 +525,31 @@ export default function Settings() {
   const userEmail = user?.email || ''
   const avatarUrl = avatarPreviewUrl || localAvatarUrl || profile?.avatar_url
   const hasAvatarImage = Boolean(avatarPreviewUrl || localAvatarUrl || profile?.avatar_url)
+  const hasReadChapter = Math.max(0, Number(profile?.verses_read) || 0) > 0 || Boolean(profile?.last_chapter)
+  const faithBadges = buildFaithBadges({ profile, hasReadChapter, hasPrayerWallPost })
+
+  useEffect(() => {
+    let alive = true
+    const loadPrayerBadge = async () => {
+      if (!user?.id) {
+        if (alive) setHasPrayerWallPost(false)
+        return
+      }
+      try {
+        const { count } = await supabase
+          .from('prayer_wall')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+        if (alive) setHasPrayerWallPost((count || 0) > 0)
+      } catch {
+        if (alive) setHasPrayerWallPost(false)
+      }
+    }
+    loadPrayerBadge()
+    return () => {
+      alive = false
+    }
+  }, [user?.id])
 
   return (
     <div
@@ -628,50 +669,42 @@ export default function Settings() {
               <p style={{ color: 'var(--text-primary)', fontSize: '18px', fontWeight: 700, marginBottom: '10px' }}>
                 {displayName}
               </p>
-              {profile?.is_founding_member ? (
-                <div
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    background: 'rgba(212,168,67,0.15)',
-                    border: '1px solid #D4A843',
-                    color: '#D4A843',
-                    fontSize: '12px',
-                    borderRadius: '20px',
-                    padding: '4px 10px',
-                    fontWeight: 700,
-                    marginBottom: '10px',
-                  }}
-                >
-                  ⚓ Founding Member
-                </div>
-              ) : null}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
+                {faithBadges.map((badge) => (
+                  <span
+                    key={badge}
+                    style={
+                      badge === '⚓ Founding Member'
+                        ? {
+                            background: 'rgba(212,168,67,0.15)',
+                            border: '1px solid #D4A843',
+                            color: '#D4A843',
+                            fontSize: '12px',
+                            borderRadius: '20px',
+                            padding: '4px 10px',
+                            fontWeight: 700,
+                          }
+                        : {
+                            borderRadius: '20px',
+                            border: '1px solid rgba(212,175,55,0.55)',
+                            background: 'rgba(212,175,55,0.14)',
+                            color: '#D4AF37',
+                            padding: '4px 10px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                          }
+                    }
+                  >
+                    {badge}
+                  </span>
+                ))}
+              </div>
               <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '4px', fontWeight: 500 }}>
                 Email
               </p>
               <p style={{ color: 'var(--text-primary)', fontSize: '14px', opacity: 0.9 }}>
                 {userEmail}
               </p>
-              {profile?.is_supporter ? (
-                <div
-                  style={{
-                    marginTop: '8px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    background: 'rgba(212,175,55,0.18)',
-                    border: '1px solid #D4AF37',
-                    borderRadius: '999px',
-                    padding: '4px 10px',
-                    color: '#D4AF37',
-                    fontSize: '12px',
-                    fontWeight: 700,
-                  }}
-                >
-                  <span aria-hidden>⚓</span>
-                  <span>Ministry Supporter</span>
-                </div>
-              ) : null}
               {uploadStatus === 'success' && (
                 <p style={{ color: '#4ade80', fontSize: '12px', marginTop: '4px' }}>
                   {t('settings.profilePhotoSaved')}

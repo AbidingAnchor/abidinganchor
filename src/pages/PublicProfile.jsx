@@ -20,12 +20,13 @@ function buildFaithBadges({ profile, hasReadChapter, hasPrayerWallPost }) {
   const badges = []
   const streak = Math.max(0, Number(profile?.reading_streak) || 0)
 
+  if (profile?.is_founding_member) badges.push('⚓ Founding Member')
+  if (profile?.is_supporter) badges.push('⚓ Ministry Supporter')
   if (streak >= 3) badges.push('🔥 Streak Starter')
   if (streak >= 7) badges.push('⚡ On Fire')
   if (streak >= 30) badges.push('👑 Faithful')
   if (hasReadChapter) badges.push('📖 Word Seeker')
   if (hasPrayerWallPost) badges.push('🙏 Prayer Warrior')
-  if (profile?.is_supporter) badges.push('⚓ Ministry Supporter')
 
   return badges
 }
@@ -56,7 +57,7 @@ export default function PublicProfile() {
       try {
         const { data, error: fetchError } = await supabase
           .from('profiles')
-          .select('id, username, full_name, avatar_url, bio, favorite_verse, is_supporter, reading_streak, weekly_active_days, verses_read, last_chapter, created_at')
+          .select('id, username, full_name, avatar_url, bio, favorite_verse, is_supporter, is_founding_member, reading_streak, weekly_active_days, verses_read, last_chapter, created_at')
           .eq('id', userId)
           .maybeSingle()
         if (fetchError) throw fetchError
@@ -238,23 +239,36 @@ export default function PublicProfile() {
               )}
               <div style={{ minWidth: 0, flex: 1 }}>
                 <p style={{ margin: 0, color: 'var(--text-primary)', fontSize: '20px', fontWeight: 700 }}>{displayName}</p>
-                {profile.is_supporter ? (
-                  <span
-                    style={{
-                      display: 'inline-block',
-                      marginTop: '6px',
-                      padding: '4px 10px',
-                      borderRadius: '999px',
-                      border: '1px solid rgba(212,168,67,0.45)',
-                      color: 'var(--gold)',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      background: 'rgba(212,168,67,0.12)',
-                    }}
-                  >
-                    ⚓ Ministry Supporter
-                  </span>
-                ) : null}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
+                  {faithBadges.length > 0 ? faithBadges.map((badge) => (
+                    <span
+                      key={badge}
+                      style={
+                        badge === '⚓ Founding Member'
+                          ? {
+                              background: 'rgba(212,168,67,0.15)',
+                              border: '1px solid #D4A843',
+                              color: '#D4A843',
+                              fontSize: '12px',
+                              borderRadius: '20px',
+                              padding: '4px 10px',
+                              fontWeight: 700,
+                            }
+                          : {
+                              borderRadius: '20px',
+                              border: '1px solid rgba(212,175,55,0.55)',
+                              background: 'rgba(212,175,55,0.14)',
+                              color: '#D4AF37',
+                              padding: '4px 10px',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                            }
+                      }
+                    >
+                      {badge}
+                    </span>
+                  )) : null}
+                </div>
                 {bio ? (
                   <p style={{ margin: '10px 0 0', color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.5 }}>
                     {bio}
@@ -298,32 +312,6 @@ export default function PublicProfile() {
                 <p style={{ margin: '4px 0 0', color: 'var(--text-primary)', fontSize: '16px', fontWeight: 700 }}>
                   {formatMemberSince(profile.created_at)}
                 </p>
-              </div>
-            </div>
-
-            <div className="mt-4">
-              <p style={{ margin: '0 0 8px', color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 700, letterSpacing: '0.04em' }}>
-                FAITH BADGES
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {faithBadges.length > 0 ? faithBadges.map((badge) => (
-                  <span
-                    key={badge}
-                    style={{
-                      borderRadius: '999px',
-                      border: '1px solid rgba(212,175,55,0.55)',
-                      background: 'rgba(212,175,55,0.14)',
-                      color: '#D4AF37',
-                      padding: '4px 10px',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                    }}
-                  >
-                    {badge}
-                  </span>
-                )) : (
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>No badges yet</span>
-                )}
               </div>
             </div>
 
