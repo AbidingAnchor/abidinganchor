@@ -11,7 +11,13 @@ export default function Footer({ compact = false }) {
     { to: '/terms', label: t('footer.terms') },
     { to: '/legal', label: t('footer.legal') },
   ]
-  const linkStyle = { color: '#D4A843', textDecoration: 'none', fontWeight: 600 }
+  const linkStyle = {
+    color: '#D4A843',
+    textDecoration: 'none',
+    fontWeight: 600,
+    cursor: 'pointer',
+    pointerEvents: 'auto',
+  }
 
   const pad = compact
     ? '20px 0 0'
@@ -24,6 +30,7 @@ export default function Footer({ compact = false }) {
       className="glass-nav-bar"
       style={{
         position: 'static',
+        zIndex: 20,
         width: '100%',
         marginTop: compact ? 0 : 'auto',
         marginBottom: 0,
@@ -32,11 +39,12 @@ export default function Footer({ compact = false }) {
         color: 'rgba(255,255,255,0.4)',
         padding: pad,
         borderTop: '1px solid rgba(255,255,255,0.06)',
+        pointerEvents: 'auto',
       }}
     >
       <span>{t('footer.copyright')}</span>
       {legalLinks.map((link) => (
-        <span key={link.to}>
+        <span key={link.to} style={{ pointerEvents: 'auto' }}>
           <span style={{ margin: '0 6px' }}>·</span>
           <Link to={link.to} style={linkStyle}>
             {link.label}
