@@ -26,6 +26,7 @@ import Settings from './pages/Settings'
 import EditProfile from './pages/EditProfile'
 import WorshipMode from './pages/WorshipMode'
 import BibleVideos from './pages/BibleVideos'
+import About from './pages/About'
 import BottomNav from './components/BottomNav'
 import Header from './components/Header'
 import LegalModal from './components/LegalModal'
@@ -290,6 +291,7 @@ function AppShell() {
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/legal" element={<Legal />} />
+              <Route path="/about" element={<About />} />
               <Route path="*" element={<CatchAllRedirect />} />
             </Routes>
             {showFooter ? <Footer /> : null}
