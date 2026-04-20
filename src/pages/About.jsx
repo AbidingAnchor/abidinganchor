@@ -57,6 +57,86 @@ export default function About() {
               Abiding Anchor was founded by Drew, a solo Christian developer who built it as a free ministry
               tool for believers who want a distraction-free space to study Scripture.
             </p>
+            <p style={{ margin: '12px 0 0', color: 'rgba(255,255,255,0.88)', lineHeight: 1.8, fontSize: '15px' }}>
+              Drew noticed that most Bible apps are cluttered with ads, social features, and paywalls, so he built
+              Abiding Anchor as a distraction-free alternative and offered it as ministry to anyone seeking a quiet,
+              focused place to meet with God in His Word.
+            </p>
+          </section>
+
+          <section style={{ marginTop: '20px' }}>
+            <h2 style={{ margin: '0 0 10px', color: '#F2D486', fontSize: '20px', fontWeight: 700 }}>
+              Our Mission
+            </h2>
+            <p style={{ margin: 0, color: 'rgba(255,255,255,0.9)', lineHeight: 1.8, fontSize: '15px' }}>
+              To provide every believer with a free, private, and focused space to grow in God's Word. No ads.
+              No tracking. No subscriptions. Ever.
+            </p>
+          </section>
+
+          <section style={{ marginTop: '20px' }}>
+            <h2 style={{ margin: '0 0 10px', color: '#F2D486', fontSize: '20px', fontWeight: 700 }}>
+              Features
+            </h2>
+            <ul
+              style={{
+                margin: 0,
+                padding: 0,
+                listStyle: 'none',
+                display: 'grid',
+                gap: '8px',
+              }}
+            >
+              {[
+                'Bible Reader',
+                'Guided Prayers',
+                'AI Bible Companion',
+                'Journaling',
+                "Strong's Concordance",
+                'Hebrew & Greek Tools',
+                'Ambient Worship Music',
+                'Daily Streak',
+              ].map((feature) => (
+                <li
+                  key={feature}
+                  style={{
+                    borderRadius: '12px',
+                    border: '1px solid rgba(212, 168, 67, 0.22)',
+                    background: 'rgba(255,255,255,0.03)',
+                    padding: '10px 12px',
+                    color: 'rgba(255,255,255,0.92)',
+                    fontSize: '14px',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  <span style={{ color: '#D4A843', marginRight: '8px' }} aria-hidden>
+                    ✦
+                  </span>
+                  {feature}
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section style={{ marginTop: '20px' }}>
+            <h2 style={{ margin: '0 0 10px', color: '#F2D486', fontSize: '20px', fontWeight: 700 }}>
+              Contact
+            </h2>
+            <p style={{ margin: 0, color: 'rgba(255,255,255,0.88)', fontSize: '15px', lineHeight: 1.7 }}>
+              Questions, feedback, or prayer requests are always welcome:
+            </p>
+            <a
+              href="mailto:abidingstudiosdev@gmail.com"
+              style={{
+                display: 'inline-block',
+                marginTop: '8px',
+                color: '#D4A843',
+                fontWeight: 700,
+                textDecoration: 'underline',
+              }}
+            >
+              abidingstudiosdev@gmail.com
+            </a>
           </section>
 
           <section
