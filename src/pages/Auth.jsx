@@ -28,6 +28,7 @@ const FEATURE_ITEMS = [
 
 const VERSE_ROTATE_MS = 5200
 const VERSE_FADE_MS = 520
+const VERSE_BLOCK_MIN_HEIGHT = 'clamp(84px, 12dvh, 116px)'
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
@@ -77,12 +78,21 @@ export default function Auth() {
     if (verses.length === 0) return undefined
     const interval = setInterval(() => {
       setVerseOpacity(0)
-      setTimeout(() => {
+      if (verseSwapTimeoutRef.current) {
+        clearTimeout(verseSwapTimeoutRef.current)
+      }
+      verseSwapTimeoutRef.current = setTimeout(() => {
         setCurrentVerseIndex((prev) => (prev + 1) % verses.length)
         setVerseOpacity(1)
       }, VERSE_FADE_MS)
     }, VERSE_ROTATE_MS)
-    return () => clearInterval(interval)
+    return () => {
+      clearInterval(interval)
+      if (verseSwapTimeoutRef.current) {
+        clearTimeout(verseSwapTimeoutRef.current)
+        verseSwapTimeoutRef.current = null
+      }
+    }
   }, [verses.length])
 
   useEffect(() => {
@@ -140,6 +150,7 @@ export default function Auth() {
   const outerFitRef = useRef(null)
   const innerFitRef = useRef(null)
   const [fit, setFit] = useState({ scale: 1, clipPx: null })
+  const verseSwapTimeoutRef = useRef(null)
 
   const recalcFit = useCallback(() => {
     const outer = outerFitRef.current
@@ -761,36 +772,47 @@ export default function Auth() {
                     marginTop: 'clamp(6px, 1.5vmin, 14px)',
                   }}
                 >
-                  <p
+                  <div
                     style={{
-                      fontSize: verseSize,
-                      fontStyle: 'italic',
-                      color: 'rgba(255,255,255,0.88)',
-                      lineHeight: 1.5,
-                      margin: 0,
-                      padding: '0 8px',
-                      textAlign: 'center',
-                      opacity: verseOpacity,
-                      transition: `opacity ${VERSE_FADE_MS}ms ease`,
-                      maxWidth: '36em',
+                      minHeight: VERSE_BLOCK_MIN_HEIGHT,
+                      width: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: 'center',
                     }}
                   >
-                    &ldquo;{verseRow.text}&rdquo;
-                  </p>
-                  <p
-                    style={{
-                      fontSize: refSize,
-                      color: 'rgba(212,168,67,0.95)',
-                      margin: '6px 0 0',
-                      letterSpacing: '0.06em',
-                      textAlign: 'center',
-                      opacity: verseOpacity,
-                      transition: `opacity ${VERSE_FADE_MS}ms ease`,
-                      fontWeight: 600,
-                    }}
-                  >
-                    {verseRow.reference}
-                  </p>
+                    <p
+                      style={{
+                        fontSize: verseSize,
+                        fontStyle: 'italic',
+                        color: 'rgba(255,255,255,0.88)',
+                        lineHeight: 1.5,
+                        margin: 0,
+                        padding: '0 8px',
+                        textAlign: 'center',
+                        opacity: verseOpacity,
+                        transition: `opacity ${VERSE_FADE_MS}ms ease-in-out`,
+                        maxWidth: '36em',
+                      }}
+                    >
+                      &ldquo;{verseRow.text}&rdquo;
+                    </p>
+                    <p
+                      style={{
+                        fontSize: refSize,
+                        color: 'rgba(212,168,67,0.95)',
+                        margin: '6px 0 0',
+                        letterSpacing: '0.06em',
+                        textAlign: 'center',
+                        opacity: verseOpacity,
+                        transition: `opacity ${VERSE_FADE_MS}ms ease-in-out`,
+                        fontWeight: 600,
+                      }}
+                    >
+                      {verseRow.reference}
+                    </p>
+                  </div>
 
                   <p
                     style={{
