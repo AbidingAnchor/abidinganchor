@@ -13,6 +13,7 @@ import {
 const AuthContext = createContext({})
 
 const PROFILE_FETCH_TIMEOUT_MS = 5000
+const ONBOARDING_COMPLETED_KEY = 'onboarding_completed'
 const profileSyncedUserIds = new Set()
 function isValidUUID(str) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
@@ -26,6 +27,17 @@ function applyThemeStorageForProfile(profile) {
     return
   }
   syncThemePreferenceFromProfileRow(profile)
+}
+
+function syncLocalOnboardingCompletion(profile) {
+  if (typeof window === 'undefined') return
+  try {
+    const completed =
+      profile?.onboarding_complete === true || profile?.onboarding_completed === true
+    if (completed) localStorage.setItem(ONBOARDING_COMPLETED_KEY, 'true')
+  } catch {
+    /* ignore */
+  }
 }
 
 /**
@@ -118,7 +130,7 @@ async function ensureProfile(user) {
   try {
     const { data: existingProfile, error: selectError } = await supabase
       .from('profiles')
-      .select('onboarding_complete')
+      .select('onboarding_complete, onboarding_completed')
       .eq('id', user.id)
       .maybeSingle()
 
@@ -135,6 +147,8 @@ async function ensureProfile(user) {
       full_name: profileFullNameFromUser(user),
       bible_version: 'KJV',
       onboarding_complete: existingProfile?.onboarding_complete ?? false,
+      onboarding_completed:
+        existingProfile?.onboarding_completed ?? existingProfile?.onboarding_complete ?? false,
     }
     /**
      * New rows: no last_active_date until the first daily check-in (local calendar).
@@ -244,6 +258,7 @@ export function AuthProvider({ children }) {
           setSuspendedInfo(null)
           setProfile(nextProfile)
           applyThemeStorageForProfile(nextProfile)
+          syncLocalOnboardingCompletion(nextProfile)
         } else {
           setProfile(null)
           applyThemeStorageForProfile(null)
@@ -300,6 +315,7 @@ export function AuthProvider({ children }) {
           setSuspendedInfo(null)
           setProfile(nextProfile)
           applyThemeStorageForProfile(nextProfile)
+          syncLocalOnboardingCompletion(nextProfile)
         } catch (err) {
           console.error('onAuthStateChange:', err)
           setProfile(null)
@@ -360,6 +376,7 @@ export function AuthProvider({ children }) {
         setSuspendedInfo(null)
         setProfile(nextProfile)
         applyThemeStorageForProfile(nextProfile)
+        syncLocalOnboardingCompletion(nextProfile)
       } catch (e) {
         console.warn('Silent session refresh:', e)
       }
@@ -451,6 +468,7 @@ export function AuthProvider({ children }) {
       }
       setProfile(data ?? null)
       if (data) applyThemeStorageForProfile(data)
+      if (data) syncLocalOnboardingCompletion(data)
       return data ?? null
     } catch (error) {
       console.error('Profile refresh error:', error)

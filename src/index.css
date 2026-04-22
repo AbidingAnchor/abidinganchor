@@ -340,6 +340,87 @@ body {
     0 0 20px rgba(212, 168, 67, 0.22);
 }
 
+/* Home Daily Encounter — premium navy glass (overrides theme parchment/plum on .home-gold-glass) */
+.home-gold-glass.daily-encounter-card-premium {
+  background: linear-gradient(145deg, rgba(20, 28, 65, 0.95), rgba(10, 15, 40, 0.98)) !important;
+  border: 1px solid rgba(212, 168, 67, 0.25) !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(212, 168, 67, 0.1),
+    inset 0 1px 0 rgba(212, 168, 67, 0.15) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  --text-primary: rgba(255, 255, 255, 0.92);
+  --text-secondary: rgba(255, 255, 255, 0.68);
+  --verse-text: rgba(255, 255, 255, 0.96);
+  --heading-text: rgba(255, 255, 255, 0.95);
+  --label-text: rgba(255, 255, 255, 0.62);
+  --streak-text: rgba(255, 255, 255, 0.88);
+  --card-parchment-ink: rgba(255, 255, 255, 0.92);
+  --card-parchment-ink-muted: rgba(255, 255, 255, 0.65);
+}
+
+body.theme-day .home-gold-glass.daily-encounter-card-premium:hover,
+body.theme-morning .home-gold-glass.daily-encounter-card-premium:hover,
+body.theme-afternoon .home-gold-glass.daily-encounter-card-premium:hover,
+body.theme-evening .home-gold-glass.daily-encounter-card-premium:hover,
+body.theme-night .home-page .home-gold-glass.daily-encounter-card-premium:hover {
+  background: linear-gradient(145deg, rgba(26, 34, 78, 0.97), rgba(14, 20, 52, 0.99)) !important;
+  border-color: rgba(212, 168, 67, 0.35) !important;
+  box-shadow:
+    0 10px 38px rgba(0, 0, 0, 0.45),
+    0 2px 10px rgba(212, 168, 67, 0.14),
+    inset 0 1px 0 rgba(212, 168, 67, 0.2) !important;
+}
+
+@keyframes goldPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 20px rgba(212, 168, 67, 0.3),
+      0 4px 16px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  }
+  50% {
+    box-shadow:
+      0 0 32px rgba(212, 168, 67, 0.6),
+      0 4px 16px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  }
+}
+
+.presence-cta-gold-pulse {
+  animation: goldPulse 2.6s ease-in-out infinite;
+}
+
+@keyframes homePageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.home-page-premium-enter {
+  opacity: 0;
+  animation: homePageFadeIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .home-tool-tile {
   min-width: 140px;
   min-height: 100px;
@@ -2013,6 +2094,13 @@ body.theme-afternoon .home-tool-tile * {
   --text-secondary: rgba(42, 31, 14, 0.65);
 }
 
+body.theme-day .home-gold-glass.daily-encounter-card-premium *,
+body.theme-morning .home-gold-glass.daily-encounter-card-premium *,
+body.theme-afternoon .home-gold-glass.daily-encounter-card-premium * {
+  --text-primary: rgba(255, 255, 255, 0.92);
+  --text-secondary: rgba(255, 255, 255, 0.68);
+}
+
 /* ── EVENING / SUNSET: plum glass + warm amber glow (distinct from night navy; day & night rules unchanged above) ── */
 body.theme-evening {
   --card-text: #f0eeea;
@@ -2075,19 +2163,16 @@ body.theme-evening [class*="card-"]:hover {
 
 /* Warm white default on card chrome; inline/accent colors on copy stay intact */
 body.theme-evening .home-gold-glass .daily-encounter-action-btn {
-  background: rgba(80, 30, 100, 0.6) !important;
-  border: 1px solid rgba(212, 168, 67, 0.3) !important;
-  color: #f0eeea !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  color: #d4a843 !important;
 }
 
 body.theme-evening .home-gold-glass .daily-encounter-action-btn:hover {
-  background: rgba(95, 38, 118, 0.72) !important;
-  border-color: rgba(212, 168, 67, 0.45) !important;
-  box-shadow: 0 0 18px rgba(212, 168, 67, 0.2) !important;
-}
-
-body.theme-evening .home-gold-glass .daily-encounter-action-label {
-  color: #f0eeea !important;
+  background: rgba(212, 168, 67, 0.12) !important;
+  border-color: rgba(212, 168, 67, 0.5) !important;
 }
 
 body.theme-evening .daily-encounter-presence-box {
@@ -2159,5 +2244,39 @@ body.theme-day .search-scripture-input::placeholder,
 body.theme-morning .search-scripture-input::placeholder,
 body.theme-afternoon .search-scripture-input::placeholder {
   color: rgba(44, 24, 16, 0.5);
+}
+
+/* Fellowship modal slide-up animation */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Fellowship post fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Pulse animation for prayer status dot */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
 }
 

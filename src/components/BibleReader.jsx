@@ -5,6 +5,8 @@ import { dedupeVersesByNumber, prepareBibleReaderVerseText } from '../utils/kjvV
 import { BOOK_CDN_TO_OSIS } from '../utils/bookOsisMap'
 import { fetchApiBibleChapterVerses, resolveBibleIdForLanguage } from '../services/apiBible'
 import { fetchGetBibleChapter, resolveGetBibleTranslationId } from '../services/getBibleApi'
+import { POPULAR_BIBLES, getSavedBibleId } from '../services/bibleApi'
+import BibleTranslationSelector from './BibleTranslationSelector'
 import { useAuth } from '../context/AuthContext'
 import { userStorageKey } from '../utils/userStorage'
 import { supabase } from '../lib/supabase'
@@ -19,7 +21,8 @@ const BIBLE_FONT_STEP = 2
 
 /** Layout zones (viewport-fixed). Zone 1 = app header, Zone 5 = tab bar — defined in App; not styled here. */
 const APP_BAR_HEIGHT_PX = 56
-const CHAPTER_ZONE_HEIGHT_PX = 90
+/** Scroll offset ~ compact chapter header (title row + pills; border below both). */
+const CHAPTER_ZONE_HEIGHT_PX = 118
 const BOTTOM_CHROME_NAV_PX = 60
 const BOTTOM_TAB_BAR_PX = 60
 const OLD_TESTAMENT_LAST_INDEX = 38
@@ -214,6 +217,10 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
   const translationButtonRef = useRef(null)
   const [translationId, setTranslationId] = useState(DEFAULT_BIBLE_API_COM_TRANSLATION)
   const [fontSize, setFontSize] = useState(BIBLE_FONT_DEFAULT)
+  const [showReadingControls, setShowReadingControls] = useState(false)
+  const [showHindiBiblePicker, setShowHindiBiblePicker] = useState(false)
+  const [cachedHindiCatalogId, setCachedHindiCatalogId] = useState(null)
+  const [hindiSavedBibleId, setHindiSavedBibleId] = useState(null)
 
   useEffect(() => {
     setTranslationId(getStoredTranslationId(user?.id))
@@ -225,12 +232,67 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
     }
   }, [user?.id])
 
+  useEffect(() => {
+    if (uiLang === 'hi') {
+      try {
+        setHindiSavedBibleId(getSavedBibleId())
+      } catch {
+        setHindiSavedBibleId(null)
+      }
+    } else {
+      setHindiSavedBibleId(null)
+      setCachedHindiCatalogId(null)
+    }
+  }, [uiLang, user?.id])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(userStorageKey(user?.id, 'bible-font-size'), String(fontSize))
+    } catch {
+      /* ignore */
+    }
+  }, [fontSize, user?.id])
+
   const selectedBook = BOOKS[bookIndex]
   const maxChapter = selectedBook?.chapters || 1
   const bookNumber = bookIndex + 1
   const getBibleSlug = resolveGetBibleTranslationId(uiLang, translationId)
   const showEnglishBibleVersions = uiLang === 'en'
+  const showHindiApiBiblePicker = uiLang === 'hi' && HAS_API_BIBLE
+  const hindiBiblePickerList = useMemo(() => {
+    if (!showHindiApiBiblePicker) return []
+    const fromPopular = POPULAR_BIBLES.filter((b) => b.language === 'हिंदी' && b.id)
+    const fromCatalog = cachedHindiCatalogId
+      ? [
+          {
+            id: cachedHindiCatalogId,
+            name: 'Hindi Bible',
+            abbr: 'HINIRV',
+            language: 'हिंदी',
+          },
+        ]
+      : []
+    const byId = new Map()
+    for (const b of [...fromCatalog, ...fromPopular]) {
+      if (b.id) byId.set(b.id, b)
+    }
+    return Array.from(byId.values())
+  }, [showHindiApiBiblePicker, cachedHindiCatalogId])
+  const hindiPillAbbr =
+    hindiBiblePickerList.find((b) => b.id === (hindiSavedBibleId || cachedHindiCatalogId))?.abbr || 'HINIRV'
   const bookKey = selectedBook?.cdnName || ''
+
+  useEffect(() => {
+    if (!open || uiLang !== 'hi' || !HAS_API_BIBLE) return
+    let cancelled = false
+    ;(async () => {
+      const id = await resolveBibleIdForLanguage('hi')
+      if (!cancelled && id) setCachedHindiCatalogId(id)
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [open, uiLang])
   const filteredBooks = useMemo(() => {
     const start = testamentFilter === 'old' ? 0 : OLD_TESTAMENT_LAST_INDEX + 1
     const end = testamentFilter === 'old' ? OLD_TESTAMENT_LAST_INDEX : BOOKS.length - 1
@@ -350,8 +412,23 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
             return
           }
         }
-        if (HAS_API_BIBLE && showEnglishBibleVersions) {
-          const bibleId = await resolveBibleIdForLanguage(uiLang)
+        if (HAS_API_BIBLE && (showEnglishBibleVersions || uiLang === 'hi')) {
+          let bibleId = await resolveBibleIdForLanguage(uiLang)
+          if (uiLang === 'hi') {
+            const catalogHi = bibleId
+            if (catalogHi && !cancelled) setCachedHindiCatalogId(catalogHi)
+            let saved = hindiSavedBibleId
+            try {
+              saved = saved ?? getSavedBibleId()
+            } catch {
+              saved = null
+            }
+            const hindiIds = new Set(
+              POPULAR_BIBLES.filter((b) => b.language === 'हिंदी' && b.id).map((b) => b.id),
+            )
+            if (catalogHi) hindiIds.add(catalogHi)
+            if (saved && hindiIds.has(saved)) bibleId = saved
+          }
           const osis = BOOK_CDN_TO_OSIS[selectedBook.cdnName]
           if (bibleId && osis) {
             const raw = await fetchApiBibleChapterVerses(bibleId, osis, chapter)
@@ -385,7 +462,17 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
     return () => {
       cancelled = true
     }
-  }, [open, selectedBook, chapter, translationId, uiLang, getBibleSlug, bookNumber, showEnglishBibleVersions])
+  }, [
+    open,
+    selectedBook,
+    chapter,
+    translationId,
+    uiLang,
+    getBibleSlug,
+    bookNumber,
+    showEnglishBibleVersions,
+    hindiSavedBibleId,
+  ])
 
   useEffect(() => {
     if (!showBookPicker) return
@@ -758,129 +845,235 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
           top: APP_BAR_TOP_OFFSET,
           left: 0,
           right: 0,
-          height: CHAPTER_ZONE_HEIGHT_PX,
+          height: 'auto',
           zIndex: 90,
-          background: 'var(--bible-chrome-bg)',
-          borderBottom: '1px solid var(--glass-border)',
+          background: 'linear-gradient(145deg, rgba(15, 22, 55, 0.92), rgba(10, 15, 40, 0.97))',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(212, 168, 67, 0.2)',
           boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'space-between',
-          padding: '6px 20px 8px',
+          justifyContent: 'flex-start',
+          paddingTop: 12,
+          paddingBottom: 12,
+          paddingLeft: 20,
+          paddingRight: 20,
         }}
       >
         <div style={{ maxWidth: '680px', margin: '0 auto', width: '100%' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '0 16px' }}>
             <button
               type="button"
-              onClick={() => setShowBookPicker(true)}
+              onClick={() => {
+                if (chapter > 1) {
+                  setChapter(chapter - 1)
+                } else if (bookIndex > 0) {
+                  setBookIndex(bookIndex - 1)
+                  setChapter(BOOKS[bookIndex - 1]?.chapters || 1)
+                }
+              }}
+              disabled={bookIndex === 0 && chapter === 1}
               style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--text-primary)',
-                fontSize: '17px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                padding: '2px 8px',
+                background: 'rgba(212, 168, 67, 0.1)',
+                border: '1px solid rgba(212, 168, 67, 0.3)',
+                borderRadius: '12px',
+                color: '#D4A843',
+                fontSize: '24px',
+                cursor: (bookIndex === 0 && chapter === 1) ? 'not-allowed' : 'pointer',
+                padding: '6px 12px',
+                lineHeight: '1',
+                opacity: (bookIndex === 0 && chapter === 1) ? 0.3 : 1,
+                transition: 'all 0.2s ease',
+                alignSelf: 'center',
               }}
             >
-              {selectedBook ? bookDisplayName(selectedBook) : t('bible.loading')}
+              ←
             </button>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={() => setShowBookPicker(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#ffffff',
+                  fontSize: '28px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  padding: '0 8px',
+                  letterSpacing: '-0.02em',
+                  lineHeight: '1.1',
+                }}
+              >
+                {selectedBook ? bookDisplayName(selectedBook) : t('bible.loading')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowChapterPicker(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#D4A843',
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  padding: '0 8px',
+                  lineHeight: '1.2',
+                }}
+              >
+                {t('bible.chapter', { n: chapter })}
+              </button>
+            </div>
+            
             <button
               type="button"
-              onClick={() => setShowChapterPicker(true)}
+              onClick={() => {
+                if (chapter < maxChapter) {
+                  setChapter(chapter + 1)
+                } else if (bookIndex < BOOKS.length - 1) {
+                  setBookIndex(bookIndex + 1)
+                  setChapter(1)
+                }
+              }}
+              disabled={bookIndex === BOOKS.length - 1 && chapter === maxChapter}
               style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--text-primary)',
-                fontSize: '17px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                padding: '2px 8px',
+                background: 'rgba(212, 168, 67, 0.1)',
+                border: '1px solid rgba(212, 168, 67, 0.3)',
+                borderRadius: '12px',
+                color: '#D4A843',
+                fontSize: '24px',
+                cursor: (bookIndex === BOOKS.length - 1 && chapter === maxChapter) ? 'not-allowed' : 'pointer',
+                padding: '6px 12px',
+                lineHeight: '1',
+                opacity: (bookIndex === BOOKS.length - 1 && chapter === maxChapter) ? 0.3 : 1,
+                transition: 'all 0.2s ease',
+                alignSelf: 'center',
               }}
             >
-              {t('bible.chapter', { n: chapter })}
+              →
             </button>
-            {showEnglishBibleVersions ? (
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 4, marginBottom: 0, gap: '8px', flexShrink: 0 }}>
+            {showEnglishBibleVersions || showHindiApiBiblePicker ? (
               <button
                 ref={translationButtonRef}
                 type="button"
-                onClick={() => setShowTranslationPicker((o) => !o)}
-                style={{
-                  background: 'var(--bible-chrome-bg)',
-                  border: '1px solid rgba(212,168,67,0.38)',
-                  borderRadius: '999px',
-                  color: 'var(--text-primary)',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  padding: '5px 10px',
-                  letterSpacing: '0.04em',
-                  boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
+                onClick={() => {
+                  if (showHindiApiBiblePicker) setShowHindiBiblePicker(true)
+                  else setShowTranslationPicker((o) => !o)
                 }}
-                aria-expanded={showTranslationPicker}
+                style={{
+                  background: 'rgba(212, 168, 67, 0.1)',
+                  border: '1px solid rgba(212, 168, 67, 0.4)',
+                  borderRadius: '50px',
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  padding: '0 16px',
+                  height: '40px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  transition: 'all 0.2s ease',
+                }}
+                aria-expanded={showHindiApiBiblePicker ? showHindiBiblePicker : showTranslationPicker}
                 aria-haspopup="listbox"
               >
-                {HAS_API_BIBLE ? uiLang.toUpperCase() : selectedTranslation.label} ▾
+                {HAS_API_BIBLE && showHindiApiBiblePicker
+                  ? hindiPillAbbr
+                  : HAS_API_BIBLE
+                    ? uiLang.toUpperCase()
+                    : selectedTranslation.label}
               </button>
             ) : (
-              <span style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(212,168,67,0.85)', padding: '4px 6px' }}>
+              <span style={{
+                fontSize: '12px',
+                fontWeight: 600,
+                color: 'rgba(255, 255, 255, 0.7)',
+                padding: '0 16px',
+                height: '40px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                background: 'rgba(212, 168, 67, 0.1)',
+                border: '1px solid rgba(212, 168, 67, 0.4)',
+                borderRadius: '50px',
+              }}>
                 {getBibleSlug ? String(getBibleSlug).toUpperCase() : ''}
               </span>
             )}
-          </div>
-        </div>
-        {onModeChange ? (
-          <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '2px' }}>
-            <div
-              className="glass"
-              style={{
-                borderRadius: '50px',
-                padding: '3px',
-                display: 'flex',
-                gap: '4px',
-                border: '1px solid var(--glass-border)',
-              }}
-            >
+            
+            {onModeChange && (
               <button
                 type="button"
                 onClick={() => onModeChange('read')}
                 style={{
-                  background: mode === 'read' ? 'var(--gold)' : 'transparent',
-                  color: mode === 'read' ? 'white' : 'var(--text-secondary)',
+                  background: '#D4A843',
+                  color: '#0a1428',
                   border: 'none',
                   borderRadius: '50px',
-                  padding: '5px 16px',
-                  fontSize: '13px',
-                  fontWeight: 600,
+                  padding: '0 16px',
+                  height: '40px',
+                  fontSize: '12px',
+                  fontWeight: 700,
                   cursor: 'pointer',
-                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  transition: 'all 0.2s ease',
                 }}
               >
                 {t('bible.read')}
               </button>
+            )}
+            
+            {onModeChange && (
               <button
                 type="button"
                 onClick={() => onModeChange('listen')}
                 style={{
-                  background: mode === 'listen' ? 'var(--gold)' : 'transparent',
-                  color: mode === 'listen' ? 'white' : 'var(--text-secondary)',
-                  border: 'none',
+                  background: 'rgba(212, 168, 67, 0.1)',
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  border: '1px solid rgba(212, 168, 67, 0.4)',
                   borderRadius: '50px',
-                  padding: '5px 16px',
-                  fontSize: '13px',
+                  padding: '0 16px',
+                  height: '40px',
+                  fontSize: '12px',
                   fontWeight: 600,
                   cursor: 'pointer',
-                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  transition: 'all 0.2s ease',
                 }}
               >
                 {t('bible.listen')}
               </button>
-            </div>
+            )}
+            
+            <button
+              type="button"
+              onClick={() => setShowReadingControls(true)}
+              style={{
+                background: 'rgba(212, 168, 67, 0.1)',
+                border: '1px solid rgba(212, 168, 67, 0.4)',
+                borderRadius: '50px',
+                color: '#D4A843',
+                fontSize: '16px',
+                cursor: 'pointer',
+                width: '40px',
+                height: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease',
+              }}
+              aria-label="Reading settings"
+            >
+              ⚙
+            </button>
           </div>
-        ) : (
-          <div style={{ minHeight: '4px' }} aria-hidden />
-        )}
+        </div>
       </div>
 
       {/* ZONE 3 — Scrollable Bible text only */}
@@ -893,22 +1086,23 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
           right: 0,
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch',
-          padding: '16px 20px',
+          padding: '24px 20px',
           zIndex: 40,
           boxSizing: 'border-box',
+          background: 'rgba(8, 12, 35, 1)',
         }}
       >
-        <div style={{ maxWidth: '680px', margin: '0 auto', width: '100%' }}>
+        <div style={{ maxWidth: '680px', margin: '0 auto', width: '100%', animation: 'fadeIn 0.6s ease-out' }}>
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '40px' }}>
-              <div style={{ fontSize: '32px', marginBottom: '16px' }}>✝</div>
-              <p style={{ color: 'var(--text-secondary)' }}>{t('bible.loading')}</p>
+            <div style={{ textAlign: 'center', padding: '80px 24px' }}>
+              <div style={{ fontSize: '48px', marginBottom: '24px', filter: 'drop-shadow(0 0 20px rgba(212, 168, 67, 0.3))' }}>✝</div>
+              <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '15px' }}>{t('bible.loading')}</p>
             </div>
           ) : (
             <div
               className="bible-verse-well"
               style={{
-                color: 'var(--text-primary)',
+                color: '#ffffff',
                 fontSize: `${fontSize}px`,
                 lineHeight: '1.8',
                 fontFamily: 'Lora, serif',
@@ -926,32 +1120,32 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                   key={v.verse}
                   onClick={(e) => openVerseMenu(v.verse, e.clientX, e.clientY)}
                   style={{
-                    marginBottom: '1.2rem',
-                    textAlign: 'justify',
+                    marginBottom: '2rem',
+                    textAlign: 'left',
                     cursor: 'pointer',
-                    padding: highlightsByVerse[String(v.verse)] || isJumpHighlight ? '10px 12px' : '0px',
-                    borderRadius: '10px',
+                    padding: highlightsByVerse[String(v.verse)] || isJumpHighlight ? '16px 20px' : '16px 20px',
+                    borderRadius: '16px',
                     background:
                       highlightsByVerse[String(v.verse)] || isJumpHighlight
-                        ? 'rgba(212,175,55,0.3)'
+                        ? 'rgba(212, 168, 67, 0.15)'
                         : 'transparent',
                     borderLeft:
                       highlightsByVerse[String(v.verse)] || isJumpHighlight
-                        ? '3px solid #D4AF37'
+                        ? '3px solid #D4A843'
                         : '3px solid transparent',
                     boxShadow:
                       highlightsByVerse[String(v.verse)] || isJumpHighlight
-                        ? '0 4px 16px rgba(212,175,55,0.12)'
+                        ? '0 8px 32px rgba(212, 168, 67, 0.15)'
                         : 'none',
-                    transition: 'background 0.15s ease, border 0.15s ease',
+                    transition: 'all 0.2s ease',
                   }}
                 >
                   <sup
                     style={{
-                      color: 'var(--verse-number-color)',
-                      fontSize: '0.75em',
+                      color: '#D4A843',
+                      fontSize: '12px',
                       fontWeight: 600,
-                      marginRight: '4px',
+                      marginRight: '6px',
                       verticalAlign: 'super',
                     }}
                   >
@@ -966,14 +1160,16 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                         openNoteViewer(v.verse)
                       }}
                       style={{
-                        background: 'transparent',
-                        border: 'none',
+                        background: 'rgba(212, 168, 67, 0.15)',
+                        border: '1px solid rgba(212, 168, 67, 0.3)',
                         cursor: 'pointer',
-                        padding: '0 0 0 8px',
-                        margin: 0,
-                        color: '#D4AF37',
-                        fontSize: '14px',
-                        fontWeight: 800,
+                        padding: '4px 10px',
+                        margin: '0 0 0 8px',
+                        color: '#D4A843',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        borderRadius: '99px',
+                        transition: 'all 0.2s ease',
                       }}
                       aria-label={`View note for verse ${v.verse}`}
                       title="View note"
@@ -1000,125 +1196,103 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                 setVerseMenuRect(null)
                 setActiveVerse(null)
               }}
-              style={{ position: 'fixed', inset: 0, zIndex: 10030, background: 'transparent' }}
+              style={{ position: 'fixed', inset: 0, zIndex: 10030, background: 'rgba(0, 0, 0, 0.5)' }}
               aria-hidden
             />
             <div
-              className="glass-panel"
               style={{
                 position: 'fixed',
-                top: verseMenuRect.top,
-                left: verseMenuRect.left,
-                width: verseMenuRect.width,
+                bottom: 0,
+                left: 0,
+                right: 0,
                 zIndex: 10031,
-                borderRadius: '14px',
-                border: '1px solid rgba(255,255,255,0.10)',
-                padding: '10px',
-                background: 'var(--card-bg, rgba(15,20,45,0.94))',
-                backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
-                boxShadow: '0 16px 40px rgba(0,0,0,0.35)',
-                color: 'var(--card-text, var(--text-primary))',
+                background: 'linear-gradient(180deg, rgba(15, 20, 50, 0.98), rgba(8, 12, 35, 0.99))',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                borderTop: '1px solid rgba(212, 168, 67, 0.3)',
+                borderRadius: '24px 24px 0 0',
+                padding: '24px',
+                animation: 'slideUp 0.3s ease-out',
               }}
               onClick={(e) => e.stopPropagation()}
               role="menu"
               aria-label="Verse options"
             >
-              <p style={{ margin: '0 0 8px', fontSize: '11px', opacity: 0.8, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--text-secondary)' }}>
-                VERSE {activeVerse ?? ''}
-              </p>
-              <button
-                type="button"
-                onClick={() => saveHighlight(activeVerse)}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  background: 'rgba(212,175,55,0.18)',
-                  border: '1px solid rgba(212,175,55,0.30)',
-                  color: '#1a1a1a',
-                  borderRadius: '12px',
-                  padding: '10px 12px',
-                  cursor: 'pointer',
-                  fontWeight: 900,
-                  marginBottom: '8px',
-                }}
-              >
-                🟡 Highlight
-              </button>
-              <button
-                type="button"
-                onClick={() => openAddNote(activeVerse)}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  background: 'rgba(255,255,255,0.82)',
-                  border: '1px solid rgba(255,255,255,0.10)',
-                  color: '#1a1a1a',
-                  borderRadius: '12px',
-                  padding: '10px 12px',
-                  cursor: 'pointer',
-                  fontWeight: 900,
-                  marginBottom: '8px',
-                }}
-              >
-                📝 Add Note
-              </button>
-              <button
-                type="button"
-                onClick={() => openCrossReferences(activeVerse)}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  background: 'rgba(255,255,255,0.82)',
-                  border: '1px solid rgba(255,255,255,0.10)',
-                  color: '#1a1a1a',
-                  borderRadius: '12px',
-                  padding: '10px 12px',
-                  cursor: 'pointer',
-                  fontWeight: 900,
-                  marginBottom: '8px',
-                }}
-              >
-                🔗 Cross References
-              </button>
-              <button
-                type="button"
-                onClick={() => openStrongsConcordance(activeVerse)}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  background: 'rgba(255,255,255,0.82)',
-                  border: '1px solid rgba(255,255,255,0.10)',
-                  color: '#1a1a1a',
-                  borderRadius: '12px',
-                  padding: '10px 12px',
-                  cursor: 'pointer',
-                  fontWeight: 900,
-                  marginBottom: '8px',
-                }}
-              >
-                📚 Strong&apos;s Concordance
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setVerseMenuRect(null)
-                  setActiveVerse(null)
-                }}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  background: 'rgba(255,255,255,0.82)',
-                  border: '1px solid rgba(255,255,255,0.10)',
-                  color: '#1a1a1a',
-                  borderRadius: '12px',
-                  padding: '10px 12px',
-                  cursor: 'pointer',
-                  fontWeight: 900,
-                }}
-              >
-                ❌ Cancel
-              </button>
+              <div style={{ maxWidth: '680px', margin: '0 auto' }}>
+                <p style={{ margin: '0 0 20px', fontSize: '11px', fontWeight: 600, letterSpacing: '0.18em', color: '#D4A843', textTransform: 'uppercase', textAlign: 'center' }}>
+                  Verse {activeVerse ?? ''}
+                </p>
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    onClick={() => saveHighlight(activeVerse)}
+                    style={{
+                      background: 'rgba(212, 168, 67, 0.15)',
+                      border: '1px solid rgba(212, 168, 67, 0.3)',
+                      color: '#D4A843',
+                      borderRadius: '16px',
+                      padding: '12px 20px',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                      fontSize: '14px',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    � Highlight
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openAddNote(activeVerse)}
+                    style={{
+                      background: 'rgba(212, 168, 67, 0.15)',
+                      border: '1px solid rgba(212, 168, 67, 0.3)',
+                      color: '#D4A843',
+                      borderRadius: '16px',
+                      padding: '12px 20px',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                      fontSize: '14px',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    📝 Note
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openCrossReferences(activeVerse)}
+                    style={{
+                      background: 'rgba(212, 168, 67, 0.15)',
+                      border: '1px solid rgba(212, 168, 67, 0.3)',
+                      color: '#D4A843',
+                      borderRadius: '16px',
+                      padding: '12px 20px',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                      fontSize: '14px',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    🔗 Cross Ref
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openStrongsConcordance(activeVerse)}
+                    style={{
+                      background: 'rgba(212, 168, 67, 0.15)',
+                      border: '1px solid rgba(212, 168, 67, 0.3)',
+                      color: '#D4A843',
+                      borderRadius: '16px',
+                      padding: '12px 20px',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                      fontSize: '14px',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    📖 Strong's
+                  </button>
+                </div>
+              </div>
             </div>
           </>,
           document.body,
@@ -1672,149 +1846,133 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
       </div>
 
       {/* Book Picker Modal */}
-      {showBookPicker && (
+      {showBookPicker && typeof document !== 'undefined' ? createPortal(
         <>
           <div
             onClick={() => setShowBookPicker(false)}
-            className="glass-scrim"
-            style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 200,
-            }}
+            style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0, 0, 0, 0.5)' }}
+            aria-hidden
           />
           <div
-            className="glass-panel"
             style={{
               position: 'fixed',
-              top: `calc(${BIBLE_SCROLL_TOP_OFFSET} + 8px)`,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: 'min(680px, calc(100vw - 20px))',
-              maxHeight: `calc(100dvh - (${BIBLE_SCROLL_TOP_OFFSET} + 16px))`,
-              overflowY: 'auto',
+              bottom: 0,
+              left: 0,
+              right: 0,
               zIndex: 201,
-              borderRadius: '20px',
-              border: '1px solid var(--glass-border, rgba(255,255,255,0.12))',
-              background: 'var(--card-bg, rgba(15,20,45,0.96))',
-              backdropFilter: 'blur(14px)',
-              WebkitBackdropFilter: 'blur(14px)',
-              boxShadow: '0 24px 70px rgba(0,0,0,0.42)',
-              padding: '18px 16px 16px',
+              maxHeight: '85vh',
+              background: 'linear-gradient(180deg, rgba(15, 20, 50, 0.98), rgba(8, 12, 35, 0.99))',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              borderTop: '1px solid rgba(212, 168, 67, 0.3)',
+              borderRadius: '24px 24px 0 0',
+              padding: '24px',
+              animation: 'slideUp 0.3s ease-out',
             }}
             role="dialog"
             aria-modal="true"
             aria-label="Book selector"
           >
-            <div style={{ maxWidth: '640px', margin: '0 auto' }}>
-              <div
-                style={{
-                  width: '38px',
-                  height: '4px',
-                  borderRadius: '999px',
-                  background: 'rgba(255,255,255,0.22)',
-                  margin: '0 auto 14px',
-                }}
-              />
-            <h2 style={{ 
-              color: '#D4A843', 
-              fontSize: '20px', 
-              fontWeight: 700, 
-              marginBottom: '16px',
-              textAlign: 'center'
-            }}>
-              {t('bible.selectBook')}
-            </h2>
-
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '18px' }}>
-              <button
-                type="button"
-                onClick={() => setTestamentFilter('old')}
-                style={{
-                  flex: 1,
-                  borderRadius: '999px',
-                  border: testamentFilter === 'old' ? '1px solid rgba(212,175,55,0.55)' : '1px solid var(--glass-border, rgba(255,255,255,0.16))',
-                  background: testamentFilter === 'old' ? 'rgba(212,175,55,0.18)' : 'transparent',
-                  color: 'var(--text-primary)',
-                  fontWeight: 700,
-                  padding: '8px 12px',
-                  cursor: 'pointer',
-                }}
-              >
-                Old Testament
-              </button>
-              <button
-                type="button"
-                onClick={() => setTestamentFilter('new')}
-                style={{
-                  flex: 1,
-                  borderRadius: '999px',
-                  border: testamentFilter === 'new' ? '1px solid rgba(212,175,55,0.55)' : '1px solid var(--glass-border, rgba(255,255,255,0.16))',
-                  background: testamentFilter === 'new' ? 'rgba(212,175,55,0.18)' : 'transparent',
-                  color: 'var(--text-primary)',
-                  fontWeight: 700,
-                  padding: '8px 12px',
-                  cursor: 'pointer',
-                }}
-              >
-                New Testament
-              </button>
-            </div>
-
-            {/* Book List */}
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {filteredBooks.map(({ book, index }) => (
+            <div style={{ maxWidth: '680px', margin: '0 auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h2 style={{ 
+                  color: '#D4A843', 
+                  fontSize: '20px', 
+                  fontWeight: 600, 
+                  margin: 0
+                }}>
+                  {t('bible.selectBook')}
+                </h2>
                 <button
-                  key={book.name}
                   type="button"
-                  onClick={() => handleBookSelect(index)}
+                  onClick={() => setShowBookPicker(false)}
                   style={{
                     background: 'none',
                     border: 'none',
-                    borderBottom: '1px solid rgba(255,255,255,0.06)',
-                    color: 'var(--text-primary)',
-                    fontSize: '17px',
-                    fontWeight: 600,
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    fontSize: '24px',
                     cursor: 'pointer',
-                    padding: '16px 4px',
-                    textAlign: 'left',
-                    width: '100%',
-                    transition: 'background 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(212,168,67,0.1)'
-                    e.currentTarget.style.color = '#D4A843'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'none'
-                    e.currentTarget.style.color = 'var(--text-primary)'
+                    padding: '8px',
                   }}
                 >
-                  {bookDisplayName(book)}
+                  ✕
                 </button>
-              ))}
-            </div>
+              </div>
 
-            <button
-              type="button"
-              onClick={() => setShowBookPicker(false)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--text-secondary)',
-                fontSize: '15px',
-                cursor: 'pointer',
-                marginTop: '18px',
-                padding: '12px',
-                width: '100%'
-              }}
-            >
-              {t('common.cancel')}
-            </button>
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+                <button
+                  type="button"
+                  onClick={() => setTestamentFilter('old')}
+                  style={{
+                    flex: 1,
+                    borderRadius: '99px',
+                    border: testamentFilter === 'old' ? 'none' : '1px solid rgba(212, 168, 67, 0.3)',
+                    background: testamentFilter === 'old' ? 'linear-gradient(135deg, #D4A843 0%, #B8860B 100%)' : 'rgba(10, 15, 40, 0.6)',
+                    color: testamentFilter === 'old' ? '#0a0f28' : 'rgba(255, 255, 255, 0.7)',
+                    fontWeight: 600,
+                    padding: '10px 16px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  Old Testament
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTestamentFilter('new')}
+                  style={{
+                    flex: 1,
+                    borderRadius: '99px',
+                    border: testamentFilter === 'new' ? 'none' : '1px solid rgba(212, 168, 67, 0.3)',
+                    background: testamentFilter === 'new' ? 'linear-gradient(135deg, #D4A843 0%, #B8860B 100%)' : 'rgba(10, 15, 40, 0.6)',
+                    color: testamentFilter === 'new' ? '#0a0f28' : 'rgba(255, 255, 255, 0.7)',
+                    fontWeight: 600,
+                    padding: '10px 16px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  New Testament
+                </button>
+              </div>
+
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(3, 1fr)', 
+                gap: '12px',
+                maxHeight: '50vh',
+                overflowY: 'auto',
+                paddingBottom: '20px'
+              }}>
+                {filteredBooks.map(({ book, index }) => (
+                  <button
+                    key={book.name}
+                    type="button"
+                    onClick={() => handleBookSelect(index)}
+                    style={{
+                      background: index === bookIndex ? 'rgba(212, 168, 67, 0.15)' : 'rgba(255, 255, 255, 0.04)',
+                      border: index === bookIndex ? '1px solid rgba(212, 168, 67, 0.4)' : '1px solid rgba(255, 255, 255, 0.1)',
+                      color: index === bookIndex ? '#D4A843' : 'rgba(255, 255, 255, 0.85)',
+                      fontSize: '14px',
+                      fontWeight: index === bookIndex ? 600 : 500,
+                      cursor: 'pointer',
+                      padding: '14px 12px',
+                      borderRadius: '12px',
+                      textAlign: 'left',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    {bookDisplayName(book)}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        </>
-      )}
+        </>,
+        document.body,
+      ) : null}
 
       {/* Translation dropdown — portaled + anchored to WEB pill (see Journal modals pattern) */}
       {showTranslationPicker &&
@@ -1973,62 +2131,65 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
         )}
 
       {/* Chapter Picker Modal */}
-      {showChapterPicker && (
+      {showChapterPicker && typeof document !== 'undefined' ? createPortal(
         <>
           <div 
             onClick={() => setShowChapterPicker(false)}
-            className="glass-scrim"
-            style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 200,
-            }}
+            style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0, 0, 0, 0.5)' }}
+            aria-hidden
           />
           <div
-            className="glass-panel"
             style={{
               position: 'fixed',
-              top: `calc(${BIBLE_SCROLL_TOP_OFFSET} + 8px)`,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: 'min(680px, calc(100vw - 20px))',
-              maxHeight: `calc(100dvh - (${BIBLE_SCROLL_TOP_OFFSET} + 16px))`,
-              overflowY: 'auto',
+              bottom: 0,
+              left: 0,
+              right: 0,
               zIndex: 201,
-              borderRadius: '20px',
-              border: '1px solid var(--glass-border, rgba(255,255,255,0.12))',
-              background: 'var(--card-bg, rgba(15,20,45,0.96))',
-              backdropFilter: 'blur(14px)',
-              WebkitBackdropFilter: 'blur(14px)',
-              boxShadow: '0 24px 70px rgba(0,0,0,0.42)',
-              padding: '18px 16px 16px',
+              maxHeight: '85vh',
+              background: 'linear-gradient(180deg, rgba(15, 20, 50, 0.98), rgba(8, 12, 35, 0.99))',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              borderTop: '1px solid rgba(212, 168, 67, 0.3)',
+              borderRadius: '24px 24px 0 0',
+              padding: '24px',
+              animation: 'slideUp 0.3s ease-out',
             }}
             role="dialog"
             aria-modal="true"
             aria-label="Chapter selector"
           >
-            <div style={{ maxWidth: '640px', margin: '0 auto' }}>
-              <div style={{
-                width: '40px',
-                height: '4px',
-                background: 'rgba(255,255,255,0.2)',
-                borderRadius: '2px',
-                margin: '0 auto 14px'
-              }} />
-              <h2 style={{ 
-                color: '#D4A843', 
-                fontSize: '20px', 
-                fontWeight: 700, 
-                marginBottom: '16px',
-                textAlign: 'center'
-              }}>
-                {selectedBook ? bookDisplayName(selectedBook) : ''}
-              </h2>
+            <div style={{ maxWidth: '680px', margin: '0 auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h2 style={{ 
+                  color: '#D4A843', 
+                  fontSize: '20px', 
+                  fontWeight: 600, 
+                  margin: 0
+                }}>
+                  {selectedBook ? bookDisplayName(selectedBook) : ''}
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setShowChapterPicker(false)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    padding: '8px',
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
               <div style={{ 
                 display: 'grid', 
                 gridTemplateColumns: 'repeat(6, 1fr)', 
                 gap: '12px',
-                justifyContent: 'center'
+                maxHeight: '50vh',
+                overflowY: 'auto',
+                paddingBottom: '20px'
               }}>
                 {Array.from({ length: maxChapter }, (_, i) => i + 1).map((chapterNum) => (
                   <button
@@ -2036,53 +2197,222 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                     type="button"
                     onClick={() => handleChapterSelect(chapterNum)}
                     style={{
-                      background: 'rgba(255,255,255,0.08)',
-                      color: 'var(--text-primary, #2c1810)',
-                      borderRadius: '50%',
+                      background: chapterNum === chapter ? 'rgba(212, 168, 67, 0.15)' : 'rgba(255, 255, 255, 0.04)',
+                      color: chapterNum === chapter ? '#D4A843' : 'rgba(255, 255, 255, 0.85)',
+                      borderRadius: '12px',
                       width: '48px',
                       height: '48px',
-                      border: 'none',
+                      border: chapterNum === chapter ? '1px solid rgba(212, 168, 67, 0.4)' : '1px solid rgba(255, 255, 255, 0.1)',
                       cursor: 'pointer',
                       fontSize: '15px',
-                      fontWeight: 400,
+                      fontWeight: chapterNum === chapter ? 600 : 500,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(212,168,67,0.3)'
-                      e.currentTarget.style.color = '#D4A843'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.08)'
-                      e.currentTarget.style.color = 'var(--text-primary, #2c1810)'
                     }}
                   >
                     {chapterNum}
                   </button>
                 ))}
               </div>
-              <button
-                type="button"
-                onClick={() => setShowChapterPicker(false)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--text-secondary)',
-                  fontSize: '15px',
-                  cursor: 'pointer',
-                  marginTop: '18px',
-                  padding: '12px',
-                  width: '100%',
-                }}
-              >
-                {t('common.cancel')}
-              </button>
             </div>
           </div>
-        </>
-      )}
+        </>,
+        document.body,
+      ) : null}
+
+      {/* Reading Controls Modal */}
+      {showReadingControls && typeof document !== 'undefined' ? createPortal(
+        <>
+          <div
+            onClick={() => setShowReadingControls(false)}
+            style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0, 0, 0, 0.5)' }}
+            aria-hidden
+          />
+          <div
+            style={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 201,
+              maxHeight: '85vh',
+              background: 'linear-gradient(180deg, rgba(15, 20, 50, 0.98), rgba(8, 12, 35, 0.99))',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              borderTop: '1px solid rgba(212, 168, 67, 0.3)',
+              borderRadius: '24px 24px 0 0',
+              padding: '24px',
+              animation: 'slideUp 0.3s ease-out',
+            }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Reading controls"
+          >
+            <div style={{ maxWidth: '680px', margin: '0 auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h2 style={{ 
+                  color: '#D4A843', 
+                  fontSize: '20px', 
+                  fontWeight: 600, 
+                  margin: 0
+                }}>
+                  Reading Settings
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setShowReadingControls(false)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    padding: '8px',
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div style={{ marginBottom: '24px' }}>
+                <p style={{ 
+                  color: 'rgba(255, 255, 255, 0.7)', 
+                  fontSize: '13px', 
+                  fontWeight: 600, 
+                  marginBottom: '12px',
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase'
+                }}>
+                  Font Size
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setFontSize(Math.max(BIBLE_FONT_MIN, fontSize - BIBLE_FONT_STEP))}
+                    disabled={fontSize <= BIBLE_FONT_MIN}
+                    style={{
+                      background: 'rgba(212, 168, 67, 0.15)',
+                      border: '1px solid rgba(212, 168, 67, 0.3)',
+                      borderRadius: '12px',
+                      color: '#D4A843',
+                      fontSize: '20px',
+                      cursor: fontSize <= BIBLE_FONT_MIN ? 'not-allowed' : 'pointer',
+                      padding: '12px 16px',
+                      opacity: fontSize <= BIBLE_FONT_MIN ? 0.3 : 1,
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    −
+                  </button>
+                  <div style={{
+                    background: 'rgba(212, 168, 67, 0.1)',
+                    border: '1px solid rgba(212, 168, 67, 0.3)',
+                    borderRadius: '12px',
+                    padding: '12px 24px',
+                    minWidth: '80px',
+                    textAlign: 'center',
+                    color: '#D4A843',
+                    fontSize: '16px',
+                    fontWeight: 600,
+                  }}>
+                    {fontSize}px
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFontSize(Math.min(BIBLE_FONT_MAX, fontSize + BIBLE_FONT_STEP))}
+                    disabled={fontSize >= BIBLE_FONT_MAX}
+                    style={{
+                      background: 'rgba(212, 168, 67, 0.15)',
+                      border: '1px solid rgba(212, 168, 67, 0.3)',
+                      borderRadius: '12px',
+                      color: '#D4A843',
+                      fontSize: '20px',
+                      cursor: fontSize >= BIBLE_FONT_MAX ? 'not-allowed' : 'pointer',
+                      padding: '12px 16px',
+                      opacity: fontSize >= BIBLE_FONT_MAX ? 0.3 : 1,
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  type="button"
+                  onClick={() => setFontSize(BIBLE_FONT_MIN)}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(212, 168, 67, 0.1)',
+                    border: '1px solid rgba(212, 168, 67, 0.3)',
+                    borderRadius: '12px',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    padding: '12px',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  Small
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFontSize(BIBLE_FONT_DEFAULT)}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(212, 168, 67, 0.15)',
+                    border: '1px solid rgba(212, 168, 67, 0.4)',
+                    borderRadius: '12px',
+                    color: '#D4A843',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    padding: '12px',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  Default
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFontSize(BIBLE_FONT_MAX)}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(212, 168, 67, 0.1)',
+                    border: '1px solid rgba(212, 168, 67, 0.3)',
+                    borderRadius: '12px',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    padding: '12px',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  Large
+                </button>
+              </div>
+            </div>
+          </div>
+        </>,
+        document.body,
+      ) : null}
+
+      {showHindiApiBiblePicker ? (
+        <BibleTranslationSelector
+          isOpen={showHindiBiblePicker}
+          onClose={() => setShowHindiBiblePicker(false)}
+          currentBibleId={hindiSavedBibleId || cachedHindiCatalogId || ''}
+          bibles={hindiBiblePickerList}
+          onSelect={(id) => {
+            setHindiSavedBibleId(id)
+          }}
+        />
+      ) : null}
     </div>
   )
 }

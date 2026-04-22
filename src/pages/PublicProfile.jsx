@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
@@ -33,6 +33,7 @@ function buildFaithBadges({ profile, hasReadChapter, hasPrayerWallPost }) {
 
 export default function PublicProfile() {
   const { userId } = useParams()
+  const navigate = useNavigate()
   const { user } = useAuth()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -165,8 +166,38 @@ export default function PublicProfile() {
           width: '100%',
         }}
       >
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          padding: '16px 16px 8px 16px',
+        }}>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            style={{
+              width: '40px',
+              height: '40px',
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(212,168,67,0.3)',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: '#D4A843',
+              fontSize: '20px',
+            }}
+          >
+            ←
+          </button>
+          <div style={{ flex: 1, textAlign: 'center' }}>
+            <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
+              Public Profile
+            </span>
+          </div>
+          <div style={{ width: '40px' }} />
+        </div>
         <div className="mb-4 flex items-center justify-between gap-3">
-          <h1 style={{ color: 'var(--heading-text)', fontSize: '24px', fontWeight: 700, margin: 0 }}>Public Profile</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button
               type="button"

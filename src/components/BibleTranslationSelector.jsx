@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { POPULAR_BIBLES, saveBibleId } from '../services/bibleApi'
 
-export default function BibleTranslationSelector({ isOpen, onClose, currentBibleId, onSelect }) {
+export default function BibleTranslationSelector({ isOpen, onClose, currentBibleId, onSelect, bibles }) {
   const [searchQuery, setSearchQuery] = useState('')
 
   if (!isOpen) return null
 
-  const groupedBibles = POPULAR_BIBLES.reduce((acc, bible) => {
+  const bibleList = (bibles ?? POPULAR_BIBLES).filter((b) => b.id)
+
+  const groupedBibles = bibleList.reduce((acc, bible) => {
     if (!acc[bible.language]) {
       acc[bible.language] = []
     }
@@ -14,7 +16,7 @@ export default function BibleTranslationSelector({ isOpen, onClose, currentBible
     return acc
   }, {})
 
-  const filteredBibles = POPULAR_BIBLES.filter(bible =>
+  const filteredBibles = bibleList.filter(bible =>
     bible.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     bible.abbr.toLowerCase().includes(searchQuery.toLowerCase())
   )

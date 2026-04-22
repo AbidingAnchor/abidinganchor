@@ -29,6 +29,7 @@ export default function DailyStreakCard({ activeDays = [], consecutiveStreak }) 
       : t('home.streakDay', { n: streakCount })
 
   const set = new Set(activeDays)
+  const todayIndex = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1
 
   return (
     <div style={{ marginBottom: '28px' }}>
@@ -67,16 +68,8 @@ export default function DailyStreakCard({ activeDays = [], consecutiveStreak }) 
         <div className="flex items-center justify-between gap-2" style={{ overflowX: 'auto' }}>
           {WEEK_DAY_SHORT.map((key, index) => {
             const isLit = set.has(key)
-            const unlitStyle = {
-              width: '28px',
-              height: '28px',
-              borderRadius: '50%',
-              background: 'rgba(150,150,150,0.25)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }
+            const isToday = index === todayIndex
+
             return (
               <div
                 key={key}
@@ -89,7 +82,7 @@ export default function DailyStreakCard({ activeDays = [], consecutiveStreak }) 
               >
                 <span
                   style={{
-                    color: 'var(--label-text)',
+                    color: 'rgba(255,255,255,0.5)',
                     fontSize: '11px',
                     fontWeight: 600,
                   }}
@@ -97,11 +90,49 @@ export default function DailyStreakCard({ activeDays = [], consecutiveStreak }) 
                   {dayLabels[index]}
                 </span>
                 {isLit ? (
-                  <span style={{ fontSize: '22px', lineHeight: 1 }} aria-hidden>
-                    🔥
-                  </span>
+                  <div
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '50%',
+                      background: '#D4A843',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <span style={{ fontSize: '16px', lineHeight: 1, color: 'white' }} aria-hidden>
+                      ✓
+                    </span>
+                  </div>
+                ) : isToday ? (
+                  <div
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '50%',
+                      background: 'transparent',
+                      border: '2px solid #D4A843',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  />
                 ) : (
-                  <div style={unlitStyle} />
+                  <div
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '50%',
+                      background: 'rgba(255,255,255,0.08)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  />
                 )}
               </div>
             )

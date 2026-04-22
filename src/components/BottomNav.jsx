@@ -1,27 +1,29 @@
 import { useState, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Home, BookOpenText, Scroll, Users, BookMarked, Menu } from 'lucide-react'
 import MoreDrawer from './MoreDrawer'
 import { useWorshipPlaybackState } from '../lib/worshipGlobalAudio'
 export default function BottomNav() {
   const { t } = useTranslation()
   const mainTabs = useMemo(
     () => [
-      { labelKey: 'nav.home', path: '/', icon: '🏠' },
-      { labelKey: 'nav.read', path: '/read', icon: '📖' },
-      { labelKey: 'nav.prayer', path: '/prayer', icon: '🙏' },
-      { labelKey: 'nav.journal', path: '/journal', icon: '📓' },
-      { labelKey: 'nav.more', path: '#more', icon: '☰' },
+      { labelKey: 'nav.home', path: '/', icon: Home },
+      { labelKey: 'nav.read', path: '/read', icon: BookOpenText },
+      { labelKey: 'nav.prayer', path: '/prayer', icon: Scroll },
+      { labelKey: 'nav.fellowship', path: '/fellowship', icon: Users },
+      { labelKey: 'nav.journal', path: '/journal', icon: BookMarked },
+      { labelKey: 'nav.more', path: '#more', icon: Menu },
     ],
     [],
   )
   const moreOptions = useMemo(
     () => [
-      { labelKey: 'nav.search', path: '/search', icon: '🔍' },
-      { labelKey: 'nav.journey', path: '/faith-journey', icon: '✨' },
-      { labelKey: 'nav.community', path: '/testimony-wall', icon: '📜' },
-      { labelKey: 'nav.create', path: '/share-card', icon: '🕊️' },
-      { labelKey: 'nav.settings', path: '/settings', icon: '⚙️' },
+      { labelKey: 'nav.search', path: '/search', icon: '⌕' },
+      { labelKey: 'nav.journey', path: '/faith-journey', icon: '✝' },
+      { labelKey: 'nav.community', path: '/testimony-wall', icon: '✎' },
+      { labelKey: 'nav.create', path: '/share-card', icon: '♦' },
+      { labelKey: 'nav.settings', path: '/settings', icon: '⚙' },
     ],
     [],
   )
@@ -60,8 +62,9 @@ export default function BottomNav() {
           left: 0,
           right: 0,
           zIndex: 9999,
-          background: 'var(--nav-bg)',
-          borderTop: '1px solid var(--nav-border)',
+          background: 'rgba(10,20,50,0.95)',
+          backdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(212,168,67,0.15)',
           height: '72px',
           display: 'flex',
           justifyContent: 'space-around',
@@ -102,48 +105,40 @@ export default function BottomNav() {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '4px',
-              padding: '8px 4px',
+              paddingTop: '10px',
+              paddingBottom: '10px',
               background: 'none',
               border: 'none',
               cursor: 'pointer',
               position: 'relative',
-              paddingTop: '12px',
             }}
           >
+            {isActive(tab.path) && (
+              <div
+                style={{
+                  width: '20px',
+                  height: '2px',
+                  background: '#D4A843',
+                  borderRadius: '2px',
+                  marginBottom: '6px',
+                }}
+              />
+            )}
+            <tab.icon
+              size={tab.path === '/' ? 22 : 24}
+              strokeWidth={isActive(tab.path) ? 2.5 : 1.5}
+              color={isActive(tab.path) ? '#D4A843' : 'rgba(255,255,255,0.35)'}
+            />
             <span
               style={{
-                fontSize: '24px',
-                lineHeight: 1,
-                opacity: 1,
-                transition: 'opacity 0.2s ease',
-              }}
-            >
-              {tab.icon}
-            </span>
-            <span
-              style={{
-                fontSize: '11px',
-                fontWeight: 500,
-                color: isActive(tab.path) ? 'var(--nav-text-active)' : 'var(--nav-text)',
-                transition: 'color 0.2s ease',
+                fontSize: '10px',
+                fontWeight: isActive(tab.path) ? 700 : 500,
+                color: isActive(tab.path) ? '#D4A843' : 'rgba(255,255,255,0.35)',
+                transition: 'color 0.2s ease, font-weight 0.2s ease',
               }}
             >
               {t(tab.labelKey)}
             </span>
-            {isActive(tab.path) && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: '32px',
-                  height: '3px',
-                  background: '#D4A843',
-                  borderRadius: '0 0 2px 2px',
-                }}
-              />
-            )}
           </button>
         ))}
       </nav>

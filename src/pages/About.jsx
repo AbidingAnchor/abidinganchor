@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 export default function About() {
+  const navigate = useNavigate()
   useEffect(() => {
     document.title = 'About — AbidingAnchor'
   }, [])
@@ -19,6 +20,37 @@ export default function About() {
           width: '100%',
         }}
       >
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          padding: '16px 16px 8px 16px',
+        }}>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            style={{
+              width: '40px',
+              height: '40px',
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(212,168,67,0.3)',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: '#D4A843',
+              fontSize: '20px',
+            }}
+          >
+            ←
+          </button>
+          <div style={{ flex: 1, textAlign: 'center' }}>
+            <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
+              What's New
+            </span>
+          </div>
+          <div style={{ width: '40px' }} />
+        </div>
         <main
           className="glass-panel"
           style={{

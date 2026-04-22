@@ -62,6 +62,10 @@ const LearningPathCard = ({ icon, title, subtitle, accentColor, iconBg, featured
       transition: 'background 0.2s',
       position: 'relative',
       overflow: 'hidden',
+      background: 'rgba(255,255,255,0.05)',
+      border: '1px solid rgba(212,168,67,0.15)',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
     }}
   >
     {/* Left accent bar */}
@@ -72,7 +76,7 @@ const LearningPathCard = ({ icon, title, subtitle, accentColor, iconBg, featured
         position: 'absolute',
         left: 0,
         top: 0,
-        background: accentColor,
+        background: 'rgba(212,168,67,0.5)',
         borderRadius: '16px 0 0 16px',
       }}
     />
@@ -80,14 +84,15 @@ const LearningPathCard = ({ icon, title, subtitle, accentColor, iconBg, featured
     {/* Icon box */}
     <div
       style={{
-        width: '40px',
-        height: '40px',
+        width: '44px',
+        height: '44px',
         borderRadius: '12px',
-        background: iconBg,
+        background: 'rgba(212,168,67,0.1)',
+        border: '1px solid rgba(212,168,67,0.25)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: '20px',
+        fontSize: '22px',
         marginLeft: '6px',
         flexShrink: 0,
       }}
@@ -95,7 +100,7 @@ const LearningPathCard = ({ icon, title, subtitle, accentColor, iconBg, featured
       {icon}
     </div>
 
-    {/* Title + subtitle (divs — not p — avoids global day/form resets; no faux “input” look) */}
+    {/* Title + subtitle (divs — not p — avoids global day/form resets; no faux "input" look) */}
     <div className="fj-hub-copy" style={{ flex: 1, minWidth: 0 }}>
       <div className="fj-hub-title">{title}</div>
       <div className="fj-hub-subtitle">{subtitle}</div>
@@ -105,14 +110,13 @@ const LearningPathCard = ({ icon, title, subtitle, accentColor, iconBg, featured
       <span
         className={`fj-hub-badge ${featured ? 'fj-hub-badge--featured' : ''}`}
         style={{
-          padding: '4px 12px',
-          borderRadius: '20px',
-          fontSize: '10px',
-          fontWeight: 600,
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
-          background: featured ? '#D4A843' : 'rgba(255,255,255,0.1)',
-          color: featured ? '#0a1a3e' : 'rgba(255,255,255,0.6)',
+          padding: '8px 20px',
+          borderRadius: '50px',
+          fontSize: '13px',
+          fontWeight: 700,
+          background: 'transparent',
+          border: '1px solid rgba(212,168,67,0.4)',
+          color: '#D4A843',
           flexShrink: 0,
         }}
       >
@@ -216,7 +220,7 @@ export default function FaithJourney() {
       }}
     >
       {view === 'hub' ? (
-        <div style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '100px', maxWidth: '680px', margin: '0 auto', width: '100%', flex: 1 }}>
+        <div style={{ padding: '0 16px', paddingTop: '16px', paddingBottom: '100px', maxWidth: '680px', margin: '0 auto', width: '100%', flex: 1 }}>
           
           {/* Hero Section */}
           <header className="glass-panel" style={{ marginBottom: '20px', position: 'relative', borderRadius: '16px', overflow: 'hidden', minHeight: '160px' }}>
@@ -347,7 +351,7 @@ export default function FaithJourney() {
           {/* Learning Paths */}
           <div style={{ marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <LearningPathCard
-              icon="🎮"
+              icon="❓"
               title={t('faithJourney.cardTrivia')}
               subtitle={t('faithJourney.cardTriviaSub')}
               accentColor="#D4A843"
@@ -357,11 +361,11 @@ export default function FaithJourney() {
               onStart={() => setView('trivia')}
             />
             <LearningPathCard
-              icon="📖"
+              icon="�"
               title={t('faithJourney.cardFlash')}
               subtitle={t('faithJourney.cardFlashSub')}
-              accentColor="#7F77DD"
-              iconBg="rgba(127,119,221,0.15)"
+              accentColor="#D4A843"
+              iconBg="rgba(212,168,67,0.15)"
               featured={false}
               badge={t('faithJourney.badgeStart')}
               onStart={() => setView('flashcards')}
@@ -370,8 +374,8 @@ export default function FaithJourney() {
               icon="🗺️"
               title={t('faithJourney.cardMap')}
               subtitle={t('faithJourney.cardMapSub')}
-              accentColor="#1D9E75"
-              iconBg="rgba(29,158,117,0.15)"
+              accentColor="#D4A843"
+              iconBg="rgba(212,168,67,0.15)"
               featured={false}
               badge={t('faithJourney.badgeStart')}
               onStart={() => setView('map')}
@@ -380,8 +384,8 @@ export default function FaithJourney() {
               icon="🏆"
               title={t('faithJourney.cardAchievements')}
               subtitle={t('faithJourney.cardAchievementsSub')}
-              accentColor="#378ADD"
-              iconBg="rgba(55,138,221,0.15)"
+              accentColor="#D4A843"
+              iconBg="rgba(212,168,67,0.15)"
               featured={false}
               badge={t('faithJourney.badgeStart')}
               onStart={() => setView('achievements')}
@@ -398,34 +402,46 @@ export default function FaithJourney() {
               className="fj-hub-stat-card"
               style={{
               flex: 1,
-              ...JOURNEY_NIGHT_CARD_STYLE,
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(212,168,67,0.2)',
+              borderRadius: '16px',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
               padding: '14px',
               textAlign: 'center'
             }}>
-              <p style={{ color: '#D4A843', fontSize: '22px', fontWeight: 700, marginBottom: '2px' }}>{stats.versesRead}</p>
-              <p style={{ color: 'var(--text-primary)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('faithJourney.statVerses')}</p>
+              <p style={{ color: '#D4A843', fontSize: '28px', fontWeight: 800, marginBottom: '2px' }}>{stats.versesRead}</p>
+              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 600 }}>{t('faithJourney.statVerses')}</p>
             </div>
             <div
               className="fj-hub-stat-card"
               style={{
               flex: 1,
-              ...JOURNEY_NIGHT_CARD_STYLE,
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(212,168,67,0.2)',
+              borderRadius: '16px',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
               padding: '14px',
               textAlign: 'center'
             }}>
-              <p style={{ color: '#D4A843', fontSize: '22px', fontWeight: 700, marginBottom: '2px' }}>{streakCount}</p>
-              <p style={{ color: 'var(--text-primary)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('faithJourney.statStreak')}</p>
+              <p style={{ color: '#D4A843', fontSize: '28px', fontWeight: 800, marginBottom: '2px' }}>{streakCount}</p>
+              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 600 }}>{t('faithJourney.statStreak')}</p>
             </div>
             <div
               className="fj-hub-stat-card"
               style={{
               flex: 1,
-              ...JOURNEY_NIGHT_CARD_STYLE,
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(212,168,67,0.2)',
+              borderRadius: '16px',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
               padding: '14px',
               textAlign: 'center'
             }}>
-              <p style={{ color: '#D4A843', fontSize: '22px', fontWeight: 700, marginBottom: '2px' }}>{stats.badges}</p>
-              <p style={{ color: 'var(--text-primary)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('faithJourney.statBadges')}</p>
+              <p style={{ color: '#D4A843', fontSize: '28px', fontWeight: 800, marginBottom: '2px' }}>{stats.badges}</p>
+              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 600 }}>{t('faithJourney.statBadges')}</p>
             </div>
           </div>
 

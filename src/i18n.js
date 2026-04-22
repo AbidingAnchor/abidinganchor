@@ -8,13 +8,14 @@ import fr from './locales/fr.json'
 import de from './locales/de.json'
 import tl from './locales/tl.json'
 import ko from './locales/ko.json'
+import hi from './locales/hi.json'
 import journeyStopsEs from './locales/journeyMapStops.es.js'
 import journeyStopsPt from './locales/journeyMapStops.pt.js'
 import journeyStopsFr from './locales/journeyMapStops.fr.js'
 import journeyStopsDe from './locales/journeyMapStops.de.js'
 import { deepMerge } from './utils/deepMerge.js'
 
-export const SUPPORTED_LANGS = ['en', 'es', 'pt', 'fr', 'de', 'tl', 'ko']
+export const SUPPORTED_LANGS = ['en', 'es', 'pt', 'fr', 'de', 'tl', 'ko', 'hi']
 
 /** Persisted UI language (Settings + i18n). */
 export const LANGUAGE_STORAGE_KEY = 'abidinganchor-language'
@@ -41,6 +42,7 @@ const frMerged = deepMerge(fr, { journeyMap: { stops: journeyStopsFr } })
 const deMerged = deepMerge(de, { journeyMap: { stops: journeyStopsDe } })
 const tlMerged = deepMerge(en, tl)
 const koMerged = deepMerge(en, ko)
+const hiMerged = deepMerge(en, hi)
 
 i18n
   .use(LanguageDetector)
@@ -54,6 +56,7 @@ i18n
       de: { translation: deMerged },
       tl: { translation: tlMerged },
       ko: { translation: koMerged },
+      hi: { translation: hiMerged },
     },
     fallbackLng: 'en',
     supportedLngs: SUPPORTED_LANGS,

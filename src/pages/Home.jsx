@@ -20,7 +20,6 @@ import FirstJournalEntryCelebration from '../components/FirstJournalEntryCelebra
 import { useAuth } from '../context/AuthContext'
 import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
 import { supabase } from '../lib/supabase'
-import { userStorageKey } from '../utils/userStorage'
 import Footer from '../components/Footer'
 import WeeklyRecap, { weekKeyForDate } from '../components/WeeklyRecap'
 import GuestPreviewBanner from '../components/GuestPreviewBanner'
@@ -339,17 +338,6 @@ function Home({ onOpenWorship, worshipStatus }) {
   }, [profile])
 
   useEffect(() => {
-    if (user?.id && profile && !loading) {
-      const onboardingLocal =
-        user?.id && localStorage.getItem(userStorageKey(user.id, 'onboarding-complete')) === 'true'
-      const isComplete = profile.onboarding_complete === true || onboardingLocal
-      if (!isComplete) {
-        navigate('/onboarding')
-      }
-    }
-  }, [user?.id, profile, loading, navigate])
-
-  useEffect(() => {
     let timeoutId
     const scheduleNextMidnight = () => {
       setDailyEncounter(getDailyEncounter())
@@ -592,8 +580,6 @@ function Home({ onOpenWorship, worshipStatus }) {
     timeEmoji = '🌇'
   }
 
-  const encouragement = t(`home.enc${new Date().getDay()}`)
-
   const friendFallback = t('home.friendFallback')
   const firstName = suppressPersonalWelcome
     ? friendFallback
@@ -604,7 +590,7 @@ function Home({ onOpenWorship, worshipStatus }) {
   return (
     <>
       <div
-        className="content-scroll home-page"
+        className="content-scroll home-page home-page-premium-enter"
         style={{
           position: 'relative',
           display: 'flex',
@@ -623,19 +609,25 @@ function Home({ onOpenWorship, worshipStatus }) {
           <section style={{ marginBottom: 0 }}>
             <div style={{ marginBottom: '20px' }}>
               <p style={{
-                color: 'var(--heading-text)', 
-                fontSize: '22px', 
-                fontWeight: 700, 
-                marginBottom: '4px' 
+                color: 'var(--heading-text)',
+                fontSize: '28px',
+                fontWeight: 800,
+                marginBottom: '4px',
+                letterSpacing: '-0.02em',
+                lineHeight: 1.22,
               }}>
                 {timeGreeting}, {firstName} {timeEmoji}
               </p>
               <p style={{
                 color: 'var(--text-secondary)',
-                fontSize: '13px',
-                marginBottom: '32px'
+                fontSize: '15px',
+                fontWeight: 400,
+                marginBottom: '32px',
+                opacity: 0.6,
+                letterSpacing: '0.02em',
+                lineHeight: 1.5,
               }}>
-                {encouragement}
+                You are loved beyond measure.
               </p>
             </div>
             <DailyEncounterCard
@@ -655,61 +647,12 @@ function Home({ onOpenWorship, worshipStatus }) {
               onPresenceComplete={handlePresenceComplete}
             />
 
-            {latestUpdate ? (
-              <article
-                className="home-gold-glass"
-                style={{
-                  borderRadius: '16px',
-                  padding: '16px',
-                  border: '1px solid rgba(212,175,55,0.55)',
-                  marginTop: '12px',
-                  marginBottom: '12px',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
-                  <p style={{ margin: 0, color: '#D4AF37', fontSize: '14px', fontWeight: 700 }}>
-                    What&apos;s New ✨
-                  </p>
-                  <button
-                    type="button"
-                    onClick={dismissLatestUpdate}
-                    style={{
-                      background: 'transparent',
-                      border: '1px solid rgba(212,175,55,0.4)',
-                      color: 'var(--text-secondary)',
-                      borderRadius: '999px',
-                      padding: '4px 10px',
-                      fontSize: '11px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Dismiss
-                  </button>
-                </div>
-                <p style={{ margin: '8px 0 0', color: 'var(--text-primary)', fontWeight: 700 }}>
-                  v{latestUpdate.version} - {latestUpdate.title}
-                </p>
-                {latestUpdate.description ? (
-                  <p style={{ margin: '6px 0 0', color: 'var(--text-secondary)', fontSize: '13px' }}>
-                    {latestUpdate.description}
-                  </p>
-                ) : null}
-                <ul style={{ margin: '10px 0 0', paddingLeft: '18px' }}>
-                  {(latestUpdate.features || []).map((feature) => (
-                    <li key={feature} style={{ color: '#D4AF37', fontSize: '13px', marginBottom: '4px' }}>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            ) : null}
-
             <DailyStreakCard
               activeDays={mergedWeekActiveDays}
               consecutiveStreak={dailyStreakCount}
             />
 
-            {user?.id ? (
+            {user?.id && (mergedWeekActiveDays.length > 0 || journalCount > 0 || dailyStreakCount > 0) ? (
               <WeeklyRecap
                 userId={user.id}
                 profile={profile}
@@ -723,51 +666,177 @@ function Home({ onOpenWorship, worshipStatus }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
               <Link
                 to="/bible-videos"
-                className="home-gold-glass home-tool-tile"
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(212,168,67,0.15)',
+                  borderRadius: '16px',
+                  backdropFilter: 'blur(8px)',
+                  padding: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease',
+                }}
               >
-                <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>🎬</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolBibleVideos')}</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('home.toolBibleVideosSub')}</p>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '12px',
+                  background: 'rgba(212,168,67,0.12)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '24px',
+                  marginBottom: '8px',
+                }}>🎬</div>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: 0 }}>{t('home.toolBibleVideos')}</p>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '4px 0 0 0' }}>{t('home.toolBibleVideosSub')}</p>
               </Link>
               <Link
                 to="/worship"
-                className="home-gold-glass home-tool-tile"
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(212,168,67,0.15)',
+                  borderRadius: '16px',
+                  backdropFilter: 'blur(8px)',
+                  padding: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease',
+                }}
               >
-                <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>🎵</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>Worship Mode</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Music for your soul</p>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '12px',
+                  background: 'rgba(212,168,67,0.12)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '24px',
+                  marginBottom: '8px',
+                }}>🎵</div>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: 0 }}>Worship Mode</p>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '4px 0 0 0' }}>Music for your soul</p>
               </Link>
               <Link
                 to="/reading-plans"
-                className="home-gold-glass home-tool-tile"
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(212,168,67,0.15)',
+                  borderRadius: '16px',
+                  backdropFilter: 'blur(8px)',
+                  padding: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease',
+                }}
               >
-                <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>📅</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolReadingPlans')}</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('home.toolReadingPlansSub')}</p>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '12px',
+                  background: 'rgba(212,168,67,0.12)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '24px',
+                  marginBottom: '8px',
+                }}>📅</div>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: 0 }}>{t('home.toolReadingPlans')}</p>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '4px 0 0 0' }}>{t('home.toolReadingPlansSub')}</p>
               </Link>
               <Link
                 to="/fasting"
-                className="home-gold-glass home-tool-tile"
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(212,168,67,0.15)',
+                  borderRadius: '16px',
+                  backdropFilter: 'blur(8px)',
+                  padding: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease',
+                }}
               >
-                <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>🕐</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolFasting')}</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('home.toolFastingSub')}</p>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '12px',
+                  background: 'rgba(212,168,67,0.12)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '24px',
+                  marginBottom: '8px',
+                }}>🕐</div>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: 0 }}>{t('home.toolFasting')}</p>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '4px 0 0 0' }}>{t('home.toolFastingSub')}</p>
               </Link>
               <Link
                 to="/support"
-                className="home-gold-glass home-tool-tile"
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(212,168,67,0.15)',
+                  borderRadius: '16px',
+                  backdropFilter: 'blur(8px)',
+                  padding: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease',
+                }}
               >
-                <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>🤝</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolSupport')}</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('home.toolSupportSub')}</p>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '12px',
+                  background: 'rgba(212,168,67,0.12)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '24px',
+                  marginBottom: '8px',
+                }}>🤝</div>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: 0 }}>{t('home.toolSupport')}</p>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '4px 0 0 0' }}>{t('home.toolSupportSub')}</p>
               </Link>
               <Link
                 to="/testimony-wall"
-                className="home-gold-glass home-tool-tile"
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(212,168,67,0.15)',
+                  borderRadius: '16px',
+                  backdropFilter: 'blur(8px)',
+                  padding: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease',
+                }}
               >
-                <p style={{ fontSize: '28px', marginBottom: '12px', color: 'var(--gold)' }}>📜</p>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '4px' }}>{t('home.toolCommunity')}</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('home.toolCommunitySub')}</p>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '12px',
+                  background: 'rgba(212,168,67,0.12)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '24px',
+                  marginBottom: '8px',
+                }}>📜</div>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: 0 }}>{t('home.toolCommunity')}</p>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '4px 0 0 0' }}>{t('home.toolCommunitySub')}</p>
               </Link>
             </div>
           </div>
@@ -780,7 +849,7 @@ function Home({ onOpenWorship, worshipStatus }) {
               animationDelay: '0.4s'
             }}
           >
-            <div className="relative">
+            <div className="relative" style={{ borderLeft: '3px solid #D4A843', paddingLeft: '16px' }}>
               <span style={{ 
                 position: 'absolute', 
                 top: '-20px', 
@@ -800,22 +869,21 @@ function Home({ onOpenWorship, worshipStatus }) {
               }}>{t('home.verseOfWeek')}</p>
               <p style={{ 
                 marginTop: '16px', 
-                fontSize: '16px', 
-                lineHeight: 1.9,
-                color: 'var(--verse-text)',
+                fontSize: '17px', 
+                lineHeight: 1.6,
+                color: 'white',
                 fontStyle: 'italic',
                 fontFamily: 'Georgia, serif',
-                paddingLeft: '24px'
               }}>
                 "{t('home.verseWeekText')}"
               </p>
             </div>
             <p style={{ 
-              marginTop: '16px', 
+              marginTop: '8px', 
               fontSize: '13px', 
-              fontWeight: 500, 
+              fontWeight: 700, 
               letterSpacing: '0.1em',
-              color: 'var(--text-secondary)'
+              color: '#D4A843'
             }}>{t('home.verseWeekRef')}</p>
             <div className="mt-4 flex justify-end">
               <button

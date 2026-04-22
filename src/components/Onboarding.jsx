@@ -5,6 +5,20 @@ import { supabase } from '../lib/supabase'
 import { userStorageKey } from '../utils/userStorage'
 import { initialDisplayNameFromAuth } from '../utils/profileDisplay'
 
+function isAtLeast13FromDobString(dobYmd) {
+  if (!dobYmd || typeof dobYmd !== 'string') return false
+  const parts = dobYmd.split('-').map((x) => parseInt(x, 10))
+  if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n))) return false
+  const [y, m, d] = parts
+  const birth = new Date(y, m - 1, d)
+  if (!Number.isFinite(birth.getTime())) return false
+  const today = new Date()
+  let age = today.getFullYear() - birth.getFullYear()
+  const mo = today.getMonth() - birth.getMonth()
+  if (mo < 0 || (mo === 0 && today.getDate() < birth.getDate())) age -= 1
+  return age >= 13
+}
+
 const GROWTH_GOALS = [
   { id: 'prayer', icon: '🙏', label: 'Deeper Prayer Life' },
   { id: 'bible', icon: '📖', label: 'Understanding the Bible' },
@@ -36,6 +50,8 @@ const APP_TOUR_FEATURES = [
 ]
 
 const ONBOARDING_STEP_KEY = 'onboarding-step'
+const ONBOARDING_COMPLETED_KEY = 'onboarding_completed'
+const TOTAL_STEPS = 7
 
 function readStoredStep(userId) {
   if (!userId || typeof window === 'undefined') return 1
@@ -62,12 +78,14 @@ export default function Onboarding({ onComplete }) {
     }
   }, [user?.id, screen])
   const [displayName, setDisplayName] = useState(() => initialDisplayNameFromAuth(user, profile))
-  const [dateOfBirth, setDateOfBirth] = useState(() => profile?.date_of_birth || '')
+  const [dateOfBirth, setDateOfBirth] = useState('')
+  const [ageConfirmed, setAgeConfirmed] = useState(false)
   const [selectedGoals, setSelectedGoals] = useState([])
   const [faithDuration, setFaithDuration] = useState('')
   const [dailyCommitment, setDailyCommitment] = useState('')
   const [formError, setFormError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [isCompleting, setIsCompleting] = useState(false)
   const [fadeIn, setFadeIn] = useState(false)
 
   useEffect(() => {
@@ -75,13 +93,24 @@ export default function Onboarding({ onComplete }) {
     return () => cancelAnimationFrame(id)
   }, [])
 
+  useEffect(() => {
+    // Keep onboarding blocking: browser back should not dismiss this flow.
+    window.history.pushState({ onboarding: true }, '', window.location.href)
+    const onPopState = () => {
+      window.history.pushState({ onboarding: true }, '', window.location.href)
+    }
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
+
   const canContinueProfile = useMemo(() => {
     const cleanName = displayName.trim()
     if (!cleanName) return false
-    if (!dateOfBirth) return true
-    const parsed = new Date(dateOfBirth)
-    return Number.isFinite(parsed.getTime())
-  }, [displayName, dateOfBirth])
+    if (!dateOfBirth) return false
+    if (!isAtLeast13FromDobString(dateOfBirth)) return false
+    if (!ageConfirmed) return false
+    return true
+  }, [displayName, dateOfBirth, ageConfirmed])
 
   const onboardingTheme = useMemo(() => {
     const sky = themeSky
@@ -159,55 +188,47 @@ export default function Onboarding({ onComplete }) {
     }
   }
 
-  const handleComplete = async () => {
+  const completeOnboarding = async () => {
+    if (isCompleting) return
+    setIsCompleting(true)
     setLoading(true)
     setFormError('')
     let saveSucceeded = false
     try {
       if (user?.id) {
-        // Set local completion flag immediately so route guards don't bounce.
-        localStorage.setItem(`onboarding-complete-${user.id}`, 'true')
-        localStorage.setItem(userStorageKey(user.id, 'onboarding-complete'), 'true')
         try {
           sessionStorage.removeItem(userStorageKey(user.id, ONBOARDING_STEP_KEY))
         } catch {
           /* ignore */
         }
       }
-      
-      // Save to Supabase profile
+
       if (user?.id) {
-        // Keep payload limited to known columns to avoid 400s from missing fields.
-        const payload = {
-          full_name: displayName.trim(),
-          date_of_birth: dateOfBirth || null,
-          onboarding_complete: true,
+        const trimmed = displayName.trim()
+        if (!trimmed || !dateOfBirth || !isAtLeast13FromDobString(dateOfBirth) || !ageConfirmed) {
+          setFormError('Please complete all required profile fields before finishing.')
+          setLoading(false)
+          return
         }
-        const { data: updatedRows, error } = await supabase
+
+        const { error } = await supabase
           .from('profiles')
-          .update(payload)
+          .update({
+            onboarding_completed: true,
+            onboarding_complete: true
+          })
           .eq('id', user.id)
-          .select('id, onboarding_complete')
 
-        if (error?.message?.toLowerCase().includes('date_of_birth') || error?.code === '42703') {
-          const { date_of_birth: _ignored, ...fallbackPayload } = payload
-          const { data: fallbackRows, error: fallbackError } = await supabase
-            .from('profiles')
-            .update(fallbackPayload)
-            .eq('id', user.id)
-            .select('id, onboarding_complete')
-          if (fallbackError) {
-            throw fallbackError
-          }
-          if (!fallbackRows?.length) {
-            throw new Error('Onboarding save failed: no profile row updated.')
-          }
-        } else if (error) {
+        if (error) {
+          console.error('Onboarding update error:', error)
           throw error
-        } else if (!updatedRows?.length) {
-          throw new Error('Onboarding save failed: no profile row updated.')
         }
 
+        try {
+          localStorage.setItem(ONBOARDING_COMPLETED_KEY, 'true')
+        } catch {
+          /* ignore */
+        }
         await refreshProfile()
         saveSucceeded = true
       } else {
@@ -218,9 +239,18 @@ export default function Onboarding({ onComplete }) {
       setFormError('We could not save your onboarding yet. Please try again.')
     }
     setLoading(false)
+    setIsCompleting(false)
     if (saveSucceeded) {
-      onComplete()
+      onComplete?.()
     }
+  }
+
+  const handleAdvance = async () => {
+    if (screen === TOTAL_STEPS) {
+      await completeOnboarding()
+      return
+    }
+    setScreen((prev) => Math.min(TOTAL_STEPS, prev + 1))
   }
 
   return (
@@ -247,36 +277,9 @@ export default function Onboarding({ onComplete }) {
         WebkitOverflowScrolling: 'touch',
         opacity: fadeIn ? 1 : 0,
         transition: 'opacity 150ms ease-out',
-        pointerEvents: fadeIn ? 'auto' : 'none',
+        pointerEvents: 'auto',
       }}
       >
-        {/* Skip Button */}
-        {screen !== 7 && (
-          <button
-            type="button"
-            onClick={handleComplete}
-            style={{
-              position: 'fixed',
-              top: 'max(calc(env(safe-area-inset-top, 0px) + 10px), 16px)',
-              right: 'max(16px, env(safe-area-inset-right, 0px))',
-              zIndex: 2010,
-              minHeight: '44px',
-              minWidth: '44px',
-              padding: '8px',
-              background: 'transparent',
-              border: 'none',
-              color: 'rgba(255,255,255,0.35)',
-              fontSize: '12px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            Skip
-          </button>
-        )}
-
         <div style={{
           maxWidth: '480px',
           width: '100%',
@@ -465,7 +468,7 @@ export default function Onboarding({ onComplete }) {
                   />
                 </label>
                 <label style={{ color: onboardingTheme.mutedText, fontSize: '13px', fontWeight: 600 }}>
-                  Date of birth (optional)
+                  Date of birth
                   <input
                     type="date"
                     value={dateOfBirth}
@@ -487,6 +490,30 @@ export default function Onboarding({ onComplete }) {
                     }}
                   />
                 </label>
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '10px',
+                    marginTop: '4px',
+                    cursor: 'pointer',
+                    color: onboardingTheme.mutedText,
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    textAlign: 'left',
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={ageConfirmed}
+                    onChange={(e) => {
+                      setAgeConfirmed(e.target.checked)
+                      if (formError) setFormError('')
+                    }}
+                    style={{ marginTop: '2px', width: '18px', height: '18px', flexShrink: 0 }}
+                  />
+                  <span>I confirm I am 13 years of age or older</span>
+                </label>
               </div>
               {formError ? (
                 <p style={{ marginTop: '10px', color: '#ffb3b3', fontSize: '13px' }}>{formError}</p>
@@ -494,8 +521,21 @@ export default function Onboarding({ onComplete }) {
               <button
                 type="button"
                 onClick={() => {
-                  if (!canContinueProfile) {
-                    setFormError('Please provide your display name.')
+                  const name = displayName.trim()
+                  if (!name) {
+                    setFormError('Please enter a display name to continue')
+                    return
+                  }
+                  if (!dateOfBirth) {
+                    setFormError('Please enter your date of birth to continue')
+                    return
+                  }
+                  if (!isAtLeast13FromDobString(dateOfBirth)) {
+                    setFormError('You must be 13 or older to use Abiding Anchor.')
+                    return
+                  }
+                  if (!ageConfirmed) {
+                    setFormError('Please confirm that you are 13 or older to continue.')
                     return
                   }
                   setFormError('')
@@ -858,7 +898,7 @@ export default function Onboarding({ onComplete }) {
               </div>
               <button
                 type="button"
-                onClick={() => setScreen(7)}
+                onClick={handleAdvance}
                 style={{
                   background: '#D4A843',
                   color: '#060f26',
@@ -970,8 +1010,8 @@ export default function Onboarding({ onComplete }) {
 
               <button
                 type="button"
-                onClick={handleComplete}
-                disabled={loading}
+                onClick={completeOnboarding}
+                disabled={loading || isCompleting}
                 style={{
                   background: '#D4A843',
                   color: '#060f26',
@@ -980,8 +1020,8 @@ export default function Onboarding({ onComplete }) {
                   padding: '16px',
                   fontSize: '16px',
                   fontWeight: 700,
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  opacity: loading ? 0.7 : 1,
+                  cursor: loading || isCompleting ? 'not-allowed' : 'pointer',
+                  opacity: loading || isCompleting ? 0.7 : 1,
                   width: '100%'
                 }}
               >

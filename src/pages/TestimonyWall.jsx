@@ -6,10 +6,10 @@ import { supabase } from '../lib/supabase'
 const CONTENT_MAX = 300
 
 const REACTIONS = [
-  { key: 'amen', icon: '\uD83D\uDE4F', label: 'Amen' },
-  { key: 'love', icon: '\u2764\uFE0F', label: 'Love' },
-  { key: 'fire', icon: '\uD83D\uDD25', label: 'Fire' },
-  { key: 'cross', icon: '\u271D\uFE0F', label: 'Cross' },
+  { key: 'amen', icon: '🙏', label: 'Amen' },
+  { key: 'love', icon: '❤️', label: 'Love' },
+  { key: 'fire', icon: '🔥', label: 'Fire' },
+  { key: 'cross', icon: '✝️', label: 'Cross' },
 ]
 
 function timeAgo(iso) {
@@ -39,6 +39,8 @@ export default function TestimonyWall() {
   const [posting, setPosting] = useState(false)
   const [error, setError] = useState('')
   const [reactionBusy, setReactionBusy] = useState(null)
+  const [menuOpen, setMenuOpen] = useState(null)
+  const [toast, setToast] = useState(null)
 
   /** testimonyId -> { amen: n, love: n, ... } */
   const [countsByTestimony, setCountsByTestimony] = useState({})
@@ -146,6 +148,38 @@ export default function TestimonyWall() {
     }
   }
 
+  const handleDeleteTestimony = async (testimonyId) => {
+    if (!user?.id) return
+    if (!confirm('Are you sure you want to delete this testimony?')) return
+    
+    try {
+      // Delete reactions first
+      await supabase
+        .from('testimony_reactions')
+        .delete()
+        .eq('testimony_id', testimonyId)
+      
+      // Delete testimony
+      const { error: deleteError } = await supabase
+        .from('testimonies')
+        .delete()
+        .eq('id', testimonyId)
+      
+      if (deleteError) throw deleteError
+      
+      // Remove from UI
+      setRows(prev => prev.filter(t => t.id !== testimonyId))
+      setMenuOpen(null)
+      
+      // Show toast
+      setToast('Testimony removed')
+      setTimeout(() => setToast(null), 3000)
+    } catch (err) {
+      console.error('Error deleting testimony:', err)
+      setError('Could not delete testimony. Please try again.')
+    }
+  }
+
   const toggleReaction = async (testimonyId, emojiKey) => {
     if (!user?.id || reactionBusy) return
     const current = myReactionByTestimony[testimonyId]
@@ -196,6 +230,7 @@ export default function TestimonyWall() {
       className="content-scroll content-scroll--nav-clear"
       style={{
         padding: '16px',
+        paddingBottom: '80px',
         maxWidth: '680px',
         margin: '0 auto',
         width: '100%',
@@ -203,15 +238,34 @@ export default function TestimonyWall() {
       }}
     >
       <header style={{ marginBottom: '20px' }}>
-        <h1 className="text-page-title" style={{ marginBottom: '8px' }}>
-          Testimony Wall
+        <h1 style={{
+          color: '#ffffff',
+          fontSize: '32px',
+          fontWeight: 800,
+          marginBottom: '8px',
+          margin: '0 0 8px 0',
+        }}>
+          TESTIMONY WALL
         </h1>
-        <p className="text-body" style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.5 }}>
+        <p style={{
+          color: 'rgba(255, 255, 255, 0.5)',
+          fontSize: '14px',
+          fontStyle: 'italic',
+          margin: 0,
+        }}>
           They overcame by the word of their testimony — Revelation 12:11
         </p>
       </header>
 
-      <section className="glass-panel" style={{ ...cardStyle, padding: '16px', marginBottom: '20px' }}>
+      <section style={{
+        background: 'rgba(255, 255, 255, 0.06)',
+        border: '1px solid rgba(212, 168, 67, 0.2)',
+        borderRadius: '16px',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        padding: '16px',
+        marginBottom: '20px',
+      }}>
         <label htmlFor="testimony-input" style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>
           Share your testimony
         </label>
@@ -220,16 +274,19 @@ export default function TestimonyWall() {
           value={content}
           onChange={(e) => setContent(e.target.value.slice(0, CONTENT_MAX))}
           rows={4}
-          className="glass-input-field"
           placeholder="What has God done in your life?"
           style={{
             width: '100%',
             borderRadius: '12px',
-            padding: '12px',
+            padding: '14px',
             resize: 'vertical',
-            color: 'var(--text-primary)',
-            background: 'var(--input-bg, rgba(0,0,0,0.2))',
-            border: '1px solid rgba(212,168,67,0.3)',
+            color: '#ffffff',
+            fontSize: '15px',
+            background: 'rgba(255, 255, 255, 0.04)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            outline: 'none',
+            boxSizing: 'border-box',
+            fontFamily: 'inherit',
           }}
         />
         <div
@@ -297,11 +354,11 @@ export default function TestimonyWall() {
             onClick={handlePost}
             disabled={posting || !trimmed}
             style={{
-              background: '#D4AF37',
-              color: '#1a1a1a',
+              background: '#D4A843',
+              color: '#0a1428',
               border: 'none',
-              borderRadius: '12px',
-              padding: '10px 20px',
+              borderRadius: '50px',
+              padding: '10px 24px',
               fontWeight: 700,
               cursor: posting || !trimmed ? 'not-allowed' : 'pointer',
               opacity: posting || !trimmed ? 0.65 : 1,
@@ -317,14 +374,33 @@ export default function TestimonyWall() {
       ) : null}
 
       <section>
-        <h2 className="text-section-header" style={{ marginBottom: '12px' }}>
+        <h2 style={{
+          fontSize: '11px',
+          letterSpacing: '1.5px',
+          color: 'rgba(212, 168, 67, 0.7)',
+          textTransform: 'uppercase',
+          marginBottom: '12px',
+          margin: '0 0 12px 0',
+          fontWeight: 600,
+        }}>
           Testimonies
         </h2>
         {loading ? (
           <p style={{ color: 'var(--text-secondary)' }}>Loading…</p>
         ) : rows.length === 0 ? (
-          <article className="app-card" style={{ ...cardStyle, padding: '16px' }}>
-            <p style={{ margin: 0, color: 'var(--text-secondary)' }}>Be the first to share what God has done.</p>
+          <article style={{
+            background: 'rgba(255, 255, 255, 0.04)',
+            border: '1px solid rgba(212, 168, 67, 0.15)',
+            borderRadius: '16px',
+            padding: '32px 20px',
+            textAlign: 'center',
+          }}>
+            <div style={{ fontSize: '32px', marginBottom: '12px' }}>🕊️</div>
+            <p style={{
+              margin: 0,
+              color: 'rgba(255, 255, 255, 0.5)',
+              fontSize: '15px',
+            }}>Be the first to share what God has done.</p>
           </article>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -334,8 +410,61 @@ export default function TestimonyWall() {
               const avatarUrl = isAnon ? null : t.author_profile?.avatar_url
               const counts = countsByTestimony[t.id] || { amen: 0, love: 0, fire: 0, cross: 0 }
               const my = myReactionByTestimony[t.id]
+              const isOwnPost = t.user_id === user?.id
               return (
-                <article key={t.id} className="app-card" style={{ ...cardStyle, padding: '16px' }}>
+                <article key={t.id} className="app-card" style={{ ...cardStyle, padding: '16px', position: 'relative' }}>
+                  {isOwnPost && (
+                    <button
+                      type="button"
+                      onClick={() => setMenuOpen(menuOpen === t.id ? null : t.id)}
+                      style={{
+                        position: 'absolute',
+                        top: '12px',
+                        right: '12px',
+                        background: 'transparent',
+                        color: 'rgba(255,255,255,0.4)',
+                        fontSize: '20px',
+                        cursor: 'pointer',
+                        padding: '4px 8px',
+                        borderRadius: '8px',
+                        border: 'none',
+                      }}
+                    >
+                      ⋯
+                    </button>
+                  )}
+                  {menuOpen === t.id && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '36px',
+                      right: '12px',
+                      background: 'rgba(10,20,50,0.98)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '12px',
+                      padding: '8px 0',
+                      zIndex: 100,
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                    }}>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteTestimony(t.id)}
+                        style={{
+                          padding: '10px 16px',
+                          color: '#ff6b6b',
+                          fontSize: '14px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          background: 'transparent',
+                          border: 'none',
+                          width: '100%',
+                        }}
+                      >
+                        🗑️ Delete Testimony
+                      </button>
+                    </div>
+                  )}
                   <div className="flex items-start gap-3" style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                     {avatarUrl ? (
                       <img src={avatarUrl} alt="" style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover' }} />
@@ -411,21 +540,22 @@ export default function TestimonyWall() {
                               onClick={() => toggleReaction(t.id, r.key)}
                               title={r.label}
                               style={{
-                                display: 'inline-flex',
+                                display: 'flex',
                                 alignItems: 'center',
-                                gap: '6px',
-                                borderRadius: '999px',
-                                padding: '6px 10px',
-                                fontSize: '13px',
-                                border: active ? '2px solid #D4AF37' : '1px solid rgba(212,168,67,0.35)',
-                                background: active ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)',
-                                color: 'var(--text-primary)',
+                                gap: '4px',
+                                borderRadius: '50px',
+                                padding: '4px 10px',
+                                fontSize: '16px',
+                                border: active ? '1px solid rgba(212,168,67,0.3)' : '1px solid rgba(255,255,255,0.1)',
+                                background: active ? 'rgba(212,168,67,0.15)' : 'rgba(255,255,255,0.06)',
+                                color: active ? '#D4A843' : 'var(--text-primary)',
                                 cursor: user?.id ? 'pointer' : 'not-allowed',
                               }}
                             >
                               <span aria-hidden>{r.icon}</span>
-                              <span>{r.label}</span>
-                              <span style={{ fontWeight: 700, opacity: 0.9 }}>{n}</span>
+                              {n > 0 && (
+                                <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>{n}</span>
+                              )}
                             </button>
                           )
                         })}
@@ -439,11 +569,25 @@ export default function TestimonyWall() {
         )}
       </section>
 
-      <p style={{ marginTop: '24px', textAlign: 'center' }}>
-        <Link to="/" style={{ color: '#D4AF37', fontWeight: 600 }}>
-          ← Home
-        </Link>
-      </p>
+      {toast && (
+        <div style={{
+          position: 'fixed',
+          bottom: '100px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'rgba(212, 168, 67, 0.95)',
+          color: '#0a1428',
+          padding: '12px 24px',
+          borderRadius: '50px',
+          fontSize: '14px',
+          fontWeight: 600,
+          zIndex: 1000,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+        }}>
+          {toast}
+        </div>
+      )}
+
     </div>
   )
 }

@@ -18,6 +18,8 @@ import Support from './pages/Support'
 import CommunityPrayer from './pages/CommunityPrayer'
 import TestimonyWall from './pages/TestimonyWall'
 import Friends from './pages/Friends'
+import Fellowship from './pages/Fellowship'
+import JoinFellowship from './pages/JoinFellowship'
 import PublicProfile from './pages/PublicProfile'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsOfService from './pages/TermsOfService'
@@ -46,8 +48,21 @@ import { GuestSignupModalProvider } from './context/GuestSignupModalContext'
 import GuestAccountRequiredGate from './components/GuestAccountRequiredGate'
 
 const LEGAL_ACCEPTED_KEY = 'legalAccepted'
+const ONBOARDING_COMPLETED_KEY = 'onboarding_completed'
 const GA_MEASUREMENT_ID = 'G-1VXQ7114R7'
 const APP_STAGGER_DELAY_MS = 300
+
+function readOnboardingCompletedLocal() {
+  try {
+    return localStorage.getItem(ONBOARDING_COMPLETED_KEY) === 'true'
+  } catch {
+    return false
+  }
+}
+
+function isOnboardingComplete(profile) {
+  return profile?.onboarding_complete === true || profile?.onboarding_completed === true
+}
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -75,7 +90,7 @@ function CatchAllRedirect() {
 function OnboardingRoute() {
   const { user, loading, profile, suspendedInfo } = useAuth()
   const navigate = useNavigate()
-  const handleOnboardingComplete = useCallback(() => navigate('/'), [navigate])
+  const handleOnboardingComplete = useCallback(() => navigate('/faith-journey', { replace: true }), [navigate])
 
   if (suspendedInfo) return null
   if (!user) {
@@ -83,10 +98,22 @@ function OnboardingRoute() {
     if (getGuestBrowse()) return <GuestAccountRequiredGate />
     return <Navigate to="/auth" replace />
   }
-  if (profile?.onboarding_complete) return <Navigate to="/" replace />
-  // Never block signed-in users with LoadingScreen — avoids a flash when leaving the legal wall for onboarding
-  // and when auth briefly sets loading during profile refetch (step state is preserved separately).
+  if (readOnboardingCompletedLocal()) return <Navigate to="/" replace />
+  if (isOnboardingComplete(profile)) return <Navigate to="/" replace />
+  if (loading && !profile) return <LoadingScreen />
   return <Onboarding onComplete={handleOnboardingComplete} />
+}
+
+/** Signed-in users only reach Home when onboarding is complete (DB is source of truth). */
+function HomeOnboardingGate({ children }) {
+  const { user, profile, loading } = useAuth()
+  if (!user?.id) return children
+  if (readOnboardingCompletedLocal()) return children
+  if (loading && !profile) return <LoadingScreen />
+  if (!profile || (profile.onboarding_completed === false && profile.onboarding_complete === false)) {
+    return <Navigate to="/onboarding" replace />
+  }
+  return children
 }
 
 function SuspendedScreen({ bannedAt }) {
@@ -153,6 +180,8 @@ function AppShell() {
     }),
     [worshipPlayback.isPlaying, worshipPlayback.trackName, worshipVisible],
   )
+  const onboardingBlocking = location.pathname === '/onboarding'
+
   const showNav =
     !loading &&
     location.pathname !== '/auth' &&
@@ -256,17 +285,29 @@ function AppShell() {
               paddingTop: showHeader ? '56px' : '0px',
               paddingBottom: showNav ? '80px' : '0px',
               background: 'transparent',
+              pointerEvents: onboardingBlocking ? 'none' : 'auto',
             }}
           >
             <Routes>
               <Route path="/auth" element={<Auth />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/" element={<ProtectedRoute guestOk><Home onOpenWorship={(startPlaying) => openWorship(startPlaying)} worshipStatus={worshipStatus} /></ProtectedRoute>} />
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute guestOk>
+                    <HomeOnboardingGate>
+                      <Home onOpenWorship={(startPlaying) => openWorship(startPlaying)} worshipStatus={worshipStatus} />
+                    </HomeOnboardingGate>
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/read" element={<ProtectedRoute guestOk><ReadingPlan onOpenWorship={(startPlaying) => openWorship(startPlaying)} /></ProtectedRoute>} />
               <Route path="/reading-plan" element={<Navigate to="/read" replace />} />
               <Route path="/search" element={<ProtectedRoute guestOk><Search onOpenWorship={(startPlaying) => openWorship(startPlaying)} /></ProtectedRoute>} />
               <Route path="/prayer" element={<ProtectedRoute guestOk><Prayer /></ProtectedRoute>} />
               <Route path="/my-prayers" element={<Navigate to="/prayer" replace />} />
+              <Route path="/fellowship" element={<ProtectedRoute guestOk><Fellowship /></ProtectedRoute>} />
+              <Route path="/join/:invite_code" element={<JoinFellowship />} />
               <Route path="/share-card" element={<ProtectedRoute><ShareCard /></ProtectedRoute>} />
               <Route path="/journal" element={<ProtectedRoute guestOk><Journal /></ProtectedRoute>} />
               <Route path="/memorize" element={<ProtectedRoute><Memorize /></ProtectedRoute>} />

@@ -13,6 +13,12 @@ export const POPULAR_BIBLES = [
   { id: 'b856f6b9ee656f81-01', name: 'Reina Valera 1960', abbr: 'RVR1960', language: 'Español' },
   { id: '55212e3cf5d04d49-01', name: 'Nueva Versión Internacional', abbr: 'NVI', language: 'Español' },
   { id: '4d8e89ab47e00e51-01', name: 'Almeida Revista e Corrigida', abbr: 'ARC', language: 'Português' },
+  {
+    id: '1e8ab327edbce67f-01',
+    name: 'Indian Revised Version (IRV) Hindi',
+    abbr: 'IRVHin',
+    language: 'हिंदी',
+  },
 ];
 
 export async function getBooks(bibleId) {

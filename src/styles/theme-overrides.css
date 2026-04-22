@@ -235,6 +235,19 @@ body.theme-night .home-page .home-tool-tile:hover {
   border-color: rgba(212, 168, 67, 0.42) !important;
 }
 
+body.theme-night .home-page .home-gold-glass .daily-encounter-action-btn {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  color: #d4a843 !important;
+}
+
+body.theme-night .home-page .home-gold-glass .daily-encounter-action-btn:hover {
+  background: rgba(212, 168, 67, 0.12) !important;
+  border-color: rgba(212, 168, 67, 0.5) !important;
+}
+
 /* Day sky — parchment card copy (beats global [data-theme="day"] navy rules) */
 body.theme-day .app-card p,
 body.theme-morning .app-card p,
@@ -280,11 +293,38 @@ body.theme-afternoon .glass:not(.glass-nav-bar) span:not([class*="emoji"]) {
 
 body.theme-day .home-gold-glass .daily-encounter-action-btn,
 body.theme-morning .home-gold-glass .daily-encounter-action-btn,
-body.theme-afternoon .home-gold-glass .daily-encounter-action-btn,
-body.theme-day .home-gold-glass .daily-encounter-action-label,
-body.theme-morning .home-gold-glass .daily-encounter-action-label,
-body.theme-afternoon .home-gold-glass .daily-encounter-action-label {
-  color: #2a1f0e !important;
+body.theme-afternoon .home-gold-glass .daily-encounter-action-btn {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  color: #d4a843 !important;
+}
+
+body.theme-day .home-gold-glass .daily-encounter-action-btn:hover,
+body.theme-morning .home-gold-glass .daily-encounter-action-btn:hover,
+body.theme-afternoon .home-gold-glass .daily-encounter-action-btn:hover {
+  background: rgba(212, 168, 67, 0.12) !important;
+  border-color: rgba(212, 168, 67, 0.5) !important;
+}
+
+/* Premium daily encounter: light copy on navy glass (day themes force dark text on .home-gold-glass) */
+body.theme-day .home-gold-glass.daily-encounter-card-premium .daily-encounter-verse,
+body.theme-morning .home-gold-glass.daily-encounter-card-premium .daily-encounter-verse,
+body.theme-afternoon .home-gold-glass.daily-encounter-card-premium .daily-encounter-verse {
+  color: rgba(255, 255, 255, 0.96) !important;
+}
+
+body.theme-day .home-gold-glass.daily-encounter-card-premium .daily-encounter-reflection,
+body.theme-morning .home-gold-glass.daily-encounter-card-premium .daily-encounter-reflection,
+body.theme-afternoon .home-gold-glass.daily-encounter-card-premium .daily-encounter-reflection {
+  color: rgba(255, 255, 255, 0.88) !important;
+}
+
+body.theme-day .home-gold-glass.daily-encounter-card-premium span.daily-encounter-action-label,
+body.theme-morning .home-gold-glass.daily-encounter-card-premium span.daily-encounter-action-label,
+body.theme-afternoon .home-gold-glass.daily-encounter-card-premium span.daily-encounter-action-label {
+  color: #d4a843 !important;
 }
 
 body.theme-day .app-card.text-white,

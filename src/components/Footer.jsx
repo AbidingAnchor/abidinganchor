@@ -5,6 +5,8 @@ export default function Footer({ compact = false }) {
   const { t } = useTranslation()
   const { pathname } = useLocation()
   const authLike = pathname === '/auth' || pathname === '/reset-password'
+  const isHomePage = pathname === '/'
+  const hideProductHuntOnAuth = pathname === '/auth'
   const legalLinks = [
     { to: '/about', label: 'About' },
     { to: '/privacy', label: t('footer.privacy') },
@@ -51,30 +53,32 @@ export default function Footer({ compact = false }) {
           </Link>
         </span>
       ))}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          marginTop: authLike ? 'clamp(18px, 4.5vmin, 28px)' : '12px',
-          marginBottom: 0,
-          lineHeight: 0,
-        }}
-      >
-        <a
-          href="https://www.producthunt.com/products/abiding-anchor?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-abiding-anchor"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ lineHeight: 0, display: 'inline-block' }}
+      {!isHomePage && !hideProductHuntOnAuth ? (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginTop: authLike ? 'clamp(18px, 4.5vmin, 28px)' : '16px',
+            marginBottom: 0,
+            lineHeight: 0,
+          }}
         >
-          <img
-            alt="Abiding Anchor on Product Hunt"
-            width="250"
-            height="54"
-            src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1124085&theme=light&t=1776230155188"
-            style={{ display: 'block' }}
-          />
-        </a>
-      </div>
+          <a
+            href="https://www.producthunt.com/products/abiding-anchor?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-abiding-anchor"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ lineHeight: 0, display: 'inline-block' }}
+          >
+            <img
+              alt="Abiding Anchor on Product Hunt"
+              width="250"
+              height="54"
+              src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1124085&theme=light&t=1776230155188"
+              style={{ display: 'block' }}
+            />
+          </a>
+        </div>
+      ) : null}
     </footer>
   )
 }

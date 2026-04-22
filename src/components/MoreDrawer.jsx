@@ -47,8 +47,10 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
           left: 0,
           right: 0,
           zIndex: 10001,
-          background: 'var(--modal-bg)',
-          borderTop: '1px solid var(--glass-border)',
+          background: 'rgba(10,20,50,0.98)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(212,168,67,0.15)',
           borderRadius: '24px 24px 0 0',
           paddingBottom: 'env(safe-area-inset-bottom, 20px)',
           paddingLeft: 'env(safe-area-inset-left, 0px)',
@@ -67,7 +69,7 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
           style={{
             width: '40px',
             height: '4px',
-            background: 'var(--text-muted)',
+            background: 'rgba(255,255,255,0.2)',
             borderRadius: '2px',
             margin: '12px auto 16px',
           }}
@@ -82,17 +84,28 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
             justifyContent: 'space-between',
           }}
         >
-          <h2
-            style={{
-              fontSize: '18px',
-              fontWeight: 600,
-              color: '#D4A843',
-              margin: 0,
-              letterSpacing: '0.05em',
-            }}
-          >
-            {t('nav.more')}
-          </h2>
+          <div>
+            <h2
+              style={{
+                fontSize: '20px',
+                fontWeight: 800,
+                color: '#ffffff',
+                margin: 0,
+                letterSpacing: '0.05em',
+              }}
+            >
+              {t('nav.more')}
+            </h2>
+            <div
+              style={{
+                width: '40px',
+                height: '2px',
+                background: '#D4A843',
+                marginTop: '8px',
+                borderRadius: '1px',
+              }}
+            />
+          </div>
           <button
             type="button"
             onClick={onClose}
@@ -103,12 +116,12 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
               }
             }}
             style={{
-              width: '32px',
-              height: '32px',
+              width: '36px',
+              height: '36px',
               borderRadius: '50%',
-              background: 'var(--btn-secondary-bg)',
-              border: '1px solid var(--glass-border)',
-              color: 'var(--text-primary)',
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: '#ffffff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -123,7 +136,7 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
         </div>
 
         {/* Options list */}
-        <div style={{ padding: '0 12px 8px' }}>
+        <div style={{ padding: '0 0 8px' }}>
           {options.map((option, index) => (
             <div key={option.path}>
               <button
@@ -137,35 +150,44 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
                 }}
                 style={{
                   width: '100%',
+                  minHeight: '60px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '16px',
-                  padding: '16px 16px',
-                  background: 'var(--more-menu-item-bg)',
-                  border: '1px solid var(--glass-border)',
-                  borderRadius: '12px',
+                  padding: '0 20px',
+                  borderBottom: index < options.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                  background: 'transparent',
+                  border: 'none',
+                  borderRadius: '0',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                  marginBottom: index < options.length - 1 ? '8px' : '0',
                   touchAction: 'manipulation',
                   WebkitTapHighlightColor: 'transparent',
                 }}
               >
-                <span
+                <div
                   style={{
-                    fontSize: '24px',
-                    opacity: 1,
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '12px',
+                    background: 'rgba(212,168,67,0.1)',
+                    border: '1px solid rgba(212,168,67,0.25)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}
                 >
-                  {option.icon}
-                </span>
+                  <span style={{ color: '#D4A843', fontSize: '20px' }}>
+                    {option.icon}
+                  </span>
+                </div>
                 <span
                   style={{
                     flex: 1,
                     fontSize: '16px',
-                    fontWeight: 500,
-                    color: 'var(--text-primary)',
+                    fontWeight: 600,
+                    color: '#ffffff',
                     textAlign: 'left',
+                    marginLeft: '14px',
                   }}
                 >
                   {option.labelKey ? t(option.labelKey) : option.label}
@@ -174,7 +196,6 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
                   style={{
                     fontSize: '18px',
                     color: '#D4A843',
-                    opacity: 0.8,
                   }}
                 >
                   →

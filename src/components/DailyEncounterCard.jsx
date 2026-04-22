@@ -32,33 +32,37 @@ export default function DailyEncounterCard({
           textAlign: 'center',
           fontSize: '11px',
           fontWeight: 600,
-          letterSpacing: '0.2em',
+          letterSpacing: '0.22em',
           textTransform: 'uppercase',
-          color: 'rgba(212, 168, 67, 0.85)',
+          color: 'rgba(212, 168, 67, 0.78)',
         }}
       >
         {t('home.dailyEncounterKicker')}
       </p>
 
       <article
-        className="home-gold-glass"
+        className="home-gold-glass daily-encounter-card-premium"
         style={{
           borderRadius: '16px',
           padding: '20px 18px 18px',
           position: 'relative',
-          animation: 'fadeInUp 0.6s ease forwards',
-          animationDelay: '0.1s',
+          animation: 'fadeInUp 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+          animationDelay: '0.12s',
         }}
       >
         <p
+          className="daily-encounter-verse"
           style={{
             margin: '0 0 18px',
             textAlign: 'center',
-            fontSize: '17px',
-            lineHeight: 1.75,
+            fontSize: '19px',
+            lineHeight: 1.72,
             color: 'var(--verse-text)',
             fontStyle: 'italic',
             fontFamily: 'Georgia, "Lora", serif',
+            fontWeight: 500,
+            letterSpacing: '0.01em',
+            textShadow: '0 0 20px rgba(212, 168, 67, 0.2)',
           }}
         >
           {text}
@@ -91,6 +95,7 @@ export default function DailyEncounterCard({
         </div>
 
         <p
+          className="daily-encounter-reflection"
           style={{
             margin: '0 0 14px',
             fontSize: '14px',
@@ -134,23 +139,71 @@ export default function DailyEncounterCard({
             marginBottom: '10px',
           }}
         >
-          <button type="button" onClick={onWrite} className="daily-encounter-action-btn">
-            <span className="daily-encounter-action-emoji" aria-hidden>
-              ✍️
-            </span>
-            <span className="daily-encounter-action-label">{t('home.encounterWrite')}</span>
+          <button
+            type="button"
+            onClick={onWrite}
+            style={{
+              background: 'rgba(255,255,255,0.07)',
+              border: '1px solid rgba(212,168,67,0.3)',
+              borderRadius: '50px',
+              padding: '14px 20px',
+              backdropFilter: 'blur(10px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(212,168,67,0.15)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}
+          >
+            <span style={{ fontSize: '24px', lineHeight: 1 }} aria-hidden>✍️</span>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: '#ffffff' }}>{t('home.encounterWrite')}</span>
           </button>
-          <button type="button" onClick={onPray} className="daily-encounter-action-btn">
-            <span className="daily-encounter-action-emoji" aria-hidden>
-              🙏
-            </span>
-            <span className="daily-encounter-action-label">{t('home.encounterPray')}</span>
+          <button
+            type="button"
+            onClick={onPray}
+            style={{
+              background: 'rgba(255,255,255,0.07)',
+              border: '1px solid rgba(212,168,67,0.3)',
+              borderRadius: '50px',
+              padding: '14px 20px',
+              backdropFilter: 'blur(10px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(212,168,67,0.15)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}
+          >
+            <span style={{ fontSize: '24px', lineHeight: 1 }} aria-hidden>🙏</span>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: '#ffffff' }}>{t('home.encounterPray')}</span>
           </button>
-          <button type="button" onClick={onAskAi} className="daily-encounter-action-btn">
-            <span className="daily-encounter-action-emoji" aria-hidden>
-              🤖
-            </span>
-            <span className="daily-encounter-action-label">{t('home.encounterAskAi')}</span>
+          <button
+            type="button"
+            onClick={onAskAi}
+            style={{
+              background: 'rgba(255,255,255,0.07)',
+              border: '1px solid rgba(212,168,67,0.3)',
+              borderRadius: '50px',
+              padding: '14px 20px',
+              backdropFilter: 'blur(10px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(212,168,67,0.15)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}
+          >
+            <span style={{ fontSize: '24px', lineHeight: 1 }} aria-hidden>🤖</span>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: '#ffffff' }}>{t('home.encounterAskAi')}</span>
           </button>
         </div>
 
@@ -183,10 +236,16 @@ export default function DailyEncounterCard({
                   void Promise.resolve(onPresenceComplete()).catch(() => {})
                 }}
                 className={[
-                  'w-full rounded-lg border py-2.5 px-3 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D4A843]/40',
+                  'w-full rounded-[16px] border-0 py-2.5 px-3 text-sm font-bold text-white',
+                  'bg-[linear-gradient(165deg,#F4E8C8_0%,#E8C56A_18%,#D4A843_50%,#B8860B_88%,#8A6910_100%)]',
+                  'transition-all duration-200 ease-out',
+                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D4A843]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
                   presence.ctaSyncing
-                    ? 'cursor-wait border-[#D4A843]/75 bg-[linear-gradient(180deg,rgba(212,168,67,0.42),rgba(212,168,67,0.2))] shadow-[0_0_20px_rgba(212,168,67,0.25)] opacity-95'
-                    : 'border-[#D4A843]/45 bg-[rgba(255,255,255,0.1)] hover:border-[#D4A843]/65 hover:bg-[rgba(212,168,67,0.18)] hover:shadow-[0_0_18px_rgba(212,168,67,0.2)]',
+                    ? 'cursor-wait opacity-95 shadow-[0_4px_16px_rgba(0,0,0,0.35)]'
+                    : [
+                        'presence-cta-gold-pulse',
+                        'hover:brightness-[1.06] active:scale-[0.98] active:brightness-[1.02]',
+                      ].join(' '),
                 ].join(' ')}
               >
                 {presence.ctaSyncing ? t('home.presenceCtaSaving') : t('home.presenceCta')}
@@ -227,36 +286,6 @@ export default function DailyEncounterCard({
       </article>
 
       <style>{`
-        .daily-encounter-action-btn {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 4px;
-          min-height: 64px;
-          padding: 10px 6px;
-          border-radius: 12px;
-          border: 1px solid rgba(212, 168, 67, 0.35);
-          background: rgba(255, 255, 255, 0.08);
-          color: rgba(255, 255, 255, 0.95);
-          font-size: 12px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-        }
-        .daily-encounter-action-btn:hover {
-          border-color: rgba(212, 168, 67, 0.55);
-          box-shadow: 0 0 16px rgba(212, 168, 67, 0.15);
-          background: rgba(212, 168, 67, 0.14);
-        }
-        .daily-encounter-action-emoji {
-          font-size: 20px;
-          line-height: 1;
-        }
-        .daily-encounter-action-label {
-          font-size: 11px;
-          letter-spacing: 0.02em;
-        }
         @keyframes presenceCompleteGlow {
           0% { box-shadow: 0 0 0 rgba(212, 168, 67, 0); }
           40% { box-shadow: 0 0 28px rgba(212, 168, 67, 0.35); }

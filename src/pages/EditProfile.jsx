@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -13,6 +14,7 @@ const USERNAME_FREE_CHANGES = 1
 
 export default function EditProfile() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { user, profile, refreshProfile } = useAuth()
   const fileInputRef = useRef(null)
 
@@ -224,6 +226,37 @@ export default function EditProfile() {
 
   return (
     <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '120px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        padding: '16px 16px 8px 16px',
+      }}>
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          style={{
+            width: '40px',
+            height: '40px',
+            background: 'rgba(255,255,255,0.08)',
+            border: '1px solid rgba(212,168,67,0.3)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            color: '#D4A843',
+            fontSize: '20px',
+          }}
+        >
+          ←
+        </button>
+        <div style={{ flex: 1, textAlign: 'center' }}>
+          <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
+            Edit Profile
+          </span>
+        </div>
+        <div style={{ width: '40px' }} />
+      </div>
       <section className="space-y-4">
         <div className="glass-panel" style={{ borderRadius: '16px', padding: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>

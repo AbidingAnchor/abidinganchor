@@ -17,13 +17,14 @@ const AUTH_LANG_OPTIONS = [
   { code: 'de', flag: '🇩🇪', label: 'DE' },
   { code: 'tl', flag: '🇵🇭', label: 'TL' },
   { code: 'ko', flag: '🇰🇷', label: 'KO' },
+  { code: 'hi', flag: '🇮🇳', label: 'HI' },
 ]
 
 const FEATURE_ITEMS = [
   { icon: '📖', titleKey: 'auth.pillBibleReader', descKey: 'auth.pillBibleReaderDesc' },
   { icon: '🙏', titleKey: 'auth.pillGuidedPrayers', descKey: 'auth.pillGuidedPrayersDesc' },
   { icon: '🔥', titleKey: 'auth.pillDailyStreak', descKey: 'auth.pillDailyStreakDesc' },
-  { icon: '🤖', titleKey: 'auth.pillAiCompanion', descKey: 'auth.pillAiCompanionDesc' },
+  { icon: '✦', titleKey: 'auth.pillAiCompanion', descKey: 'auth.pillAiCompanionDesc' },
 ]
 
 const VERSE_ROTATE_MS = 5200
@@ -275,8 +276,6 @@ export default function Auth() {
   const taglineSize = 'clamp(11px, 2.8vmin, 14px)'
   const modalPad = 'clamp(14px, 3.5vmin, 28px)'
   const h2Size = 'clamp(1.05rem, 3.8vmin, 1.5rem)'
-  const inputPad = 'clamp(10px, 2.8vmin, 14px)'
-  const inputFont = 'clamp(14px, 3.5vmin, 16px)'
   const formGap = 'clamp(8px, 2.2vmin, 16px)'
   const verseSize = 'clamp(11px, 3vmin, 14px)'
   const refSize = 'clamp(10px, 2.6vmin, 12px)'
@@ -289,16 +288,61 @@ export default function Auth() {
   const glassCard = {
     width: '100%',
     maxWidth: '480px',
-    borderRadius: 'clamp(16px, 4vmin, 22px)',
+    borderRadius: '20px',
     padding: modalPad,
     boxSizing: 'border-box',
-    background: 'linear-gradient(155deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.05) 45%, rgba(13,31,78,0.25) 100%)',
-    border: '1px solid rgba(255,255,255,0.28)',
-    backdropFilter: 'blur(22px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(22px) saturate(180%)',
-    boxShadow:
-      '0 4px 4px rgba(0,0,0,0.12), 0 12px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.2), 0 0 0 1px rgba(212,168,67,0.15)',
+    background: 'rgba(255,255,255,0.06)',
+    border: '1px solid rgba(212,168,67,0.2)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
     flexShrink: 0,
+  }
+
+  const authInputStyle = {
+    width: '100%',
+    boxSizing: 'border-box',
+    borderRadius: '12px',
+    padding: '14px 16px',
+    fontSize: '15px',
+    background: 'rgba(255,255,255,0.08)',
+    border: '1px solid rgba(255,255,255,0.1)',
+    color: 'white',
+  }
+
+  const authBtnPrimary = {
+    width: '100%',
+    borderRadius: '50px',
+    background: '#D4A843',
+    color: '#0a1428',
+    fontWeight: 700,
+    padding: '14px 20px',
+    fontSize: '15px',
+    border: 'none',
+    cursor: 'pointer',
+  }
+
+  const authBtnSecondary = {
+    width: '100%',
+    borderRadius: '50px',
+    background: 'transparent',
+    border: '2px solid #D4A843',
+    color: '#D4A843',
+    fontWeight: 700,
+    padding: '14px 20px',
+    fontSize: '15px',
+    cursor: 'pointer',
+  }
+
+  const authBtnGuest = {
+    width: '100%',
+    borderRadius: '50px',
+    background: 'rgba(255,255,255,0.06)',
+    border: '1px solid rgba(255,255,255,0.15)',
+    color: 'rgba(255,255,255,0.7)',
+    fontWeight: 600,
+    padding: '14px 20px',
+    fontSize: '15px',
+    cursor: 'pointer',
   }
 
   return (
@@ -488,37 +532,53 @@ export default function Auth() {
                     <div
                       key={item.titleKey}
                       style={{
-                        borderRadius: '14px',
-                        padding: '12px 12px 14px',
-                        background: 'linear-gradient(160deg, rgba(255,255,255,0.12) 0%, rgba(13,31,78,0.35) 100%)',
-                        border: '1px solid rgba(255,255,255,0.18)',
-                        boxShadow: '0 6px 20px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.1)',
+                        borderRadius: '16px',
+                        padding: '16px',
+                        background: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(212,168,67,0.2)',
+                        backdropFilter: 'blur(10px)',
+                        WebkitBackdropFilter: 'blur(10px)',
                         textAlign: 'left',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '6px',
+                        alignItems: 'flex-start',
                         minHeight: '96px',
                       }}
                     >
-                      <span style={{ fontSize: 'clamp(22px, 5vmin, 30px)', lineHeight: 1 }} aria-hidden>
+                      <div
+                        aria-hidden
+                        style={{
+                          width: '36px',
+                          height: '36px',
+                          borderRadius: '10px',
+                          background: 'rgba(212,168,67,0.1)',
+                          border: '1px solid rgba(212,168,67,0.25)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '18px',
+                          flexShrink: 0,
+                        }}
+                      >
                         {item.icon}
-                      </span>
+                      </div>
                       <span
                         style={{
-                          color: '#F5E6B8',
+                          color: '#ffffff',
                           fontWeight: 700,
-                          fontSize: 'clamp(12px, 3vmin, 14px)',
-                          letterSpacing: '0.02em',
+                          fontSize: '14px',
                           lineHeight: 1.25,
+                          marginTop: '10px',
                         }}
                       >
                         {t(item.titleKey)}
                       </span>
                       <span
                         style={{
-                          color: 'rgba(255,255,255,0.65)',
-                          fontSize: 'clamp(10px, 2.6vmin, 12px)',
+                          color: 'rgba(255,255,255,0.5)',
+                          fontSize: '12px',
                           lineHeight: 1.35,
+                          marginTop: '4px',
                         }}
                       >
                         {t(item.descKey)}
@@ -565,15 +625,8 @@ export default function Auth() {
                           onChange={(e) => setSignInEmail(e.target.value)}
                           placeholder={t('auth.email')}
                           type="email"
-                          className="app-input w-full"
-                          style={{
-                            borderRadius: '12px',
-                            padding: inputPad,
-                            fontSize: inputFont,
-                            background: 'rgba(0,0,0,0.22)',
-                            color: 'white',
-                            border: '1px solid rgba(212,175,55,0.38)',
-                          }}
+                          className="app-input auth-input-auth-page w-full"
+                          style={authInputStyle}
                           autoCapitalize="none"
                           autoCorrect="off"
                           autoComplete="email"
@@ -584,36 +637,33 @@ export default function Auth() {
                           onChange={(e) => setSignInPassword(e.target.value)}
                           placeholder={t('auth.password')}
                           type="password"
-                          className="app-input w-full"
-                          style={{
-                            borderRadius: '12px',
-                            padding: inputPad,
-                            fontSize: inputFont,
-                            background: 'rgba(0,0,0,0.22)',
-                            color: 'white',
-                            border: '1px solid rgba(212,175,55,0.38)',
-                          }}
+                          className="app-input auth-input-auth-page w-full"
+                          style={authInputStyle}
                           autoComplete="current-password"
                         />
                         <button
                           type="submit"
-                          className="btn-primary w-full"
                           disabled={loading}
-                          style={{ padding: inputPad, fontSize: inputFont }}
+                          style={{
+                            ...authBtnPrimary,
+                            ...(loading ? { opacity: 0.6, cursor: 'not-allowed' } : {}),
+                          }}
                         >
                           {loading ? t('auth.pleaseWait') : t('auth.signIn')}
                         </button>
                       </form>
                       <button
                         type="button"
-                        className="btn-primary w-full"
                         disabled={loading}
                         onClick={() => {
                           setError('')
                           setSuccess('')
                           setAuthView('signUp')
                         }}
-                        style={{ padding: inputPad, fontSize: inputFont }}
+                        style={{
+                          ...authBtnSecondary,
+                          ...(loading ? { opacity: 0.6, cursor: 'not-allowed' } : {}),
+                        }}
                       >
                         {t('auth.createFreeAccount')}
                       </button>
@@ -622,15 +672,8 @@ export default function Auth() {
                         disabled={loading}
                         onClick={handleContinueGuest}
                         style={{
-                          padding: inputPad,
-                          fontSize: inputFont,
-                          width: '100%',
-                          borderRadius: '12px',
-                          background: 'rgba(255,255,255,0.06)',
-                          border: '1px solid rgba(255,255,255,0.28)',
-                          color: 'rgba(255,255,255,0.92)',
-                          cursor: 'pointer',
-                          fontWeight: 600,
+                          ...authBtnGuest,
+                          ...(loading ? { opacity: 0.6, cursor: 'not-allowed' } : {}),
                         }}
                       >
                         {t('auth.continueAsGuest')}
@@ -655,15 +698,8 @@ export default function Auth() {
                           onChange={(e) => setSignUpDisplayName(e.target.value)}
                           placeholder={t('auth.displayName')}
                           type="text"
-                          className="app-input w-full"
-                          style={{
-                            borderRadius: '12px',
-                            padding: inputPad,
-                            fontSize: inputFont,
-                            background: 'rgba(0,0,0,0.22)',
-                            color: 'white',
-                            border: '1px solid rgba(212,175,55,0.38)',
-                          }}
+                          className="app-input auth-input-auth-page w-full"
+                          style={authInputStyle}
                           autoCapitalize="words"
                           autoCorrect="off"
                           autoComplete="nickname"
@@ -674,15 +710,8 @@ export default function Auth() {
                           onChange={(e) => setSignUpEmail(e.target.value)}
                           placeholder={t('auth.email')}
                           type="email"
-                          className="app-input w-full"
-                          style={{
-                            borderRadius: '12px',
-                            padding: inputPad,
-                            fontSize: inputFont,
-                            background: 'rgba(0,0,0,0.22)',
-                            color: 'white',
-                            border: '1px solid rgba(212,175,55,0.38)',
-                          }}
+                          className="app-input auth-input-auth-page w-full"
+                          style={authInputStyle}
                           autoCapitalize="none"
                           autoCorrect="off"
                           autoComplete="email"
@@ -693,15 +722,8 @@ export default function Auth() {
                           onChange={(e) => setSignUpPassword(e.target.value)}
                           placeholder={t('auth.password')}
                           type="password"
-                          className="app-input w-full"
-                          style={{
-                            borderRadius: '12px',
-                            padding: inputPad,
-                            fontSize: inputFont,
-                            background: 'rgba(0,0,0,0.22)',
-                            color: 'white',
-                            border: '1px solid rgba(212,175,55,0.38)',
-                          }}
+                          className="app-input auth-input-auth-page w-full"
+                          style={authInputStyle}
                           autoComplete="new-password"
                         />
                         <input
@@ -709,29 +731,23 @@ export default function Auth() {
                           onChange={(e) => setSignUpConfirmPassword(e.target.value)}
                           placeholder={t('auth.confirmPassword')}
                           type="password"
-                          className="app-input w-full"
-                          style={{
-                            borderRadius: '12px',
-                            padding: inputPad,
-                            fontSize: inputFont,
-                            background: 'rgba(0,0,0,0.22)',
-                            color: 'white',
-                            border: '1px solid rgba(212,175,55,0.38)',
-                          }}
+                          className="app-input auth-input-auth-page w-full"
+                          style={authInputStyle}
                           autoComplete="new-password"
                         />
                         <button
                           type="submit"
-                          className="btn-primary w-full"
                           disabled={loading}
-                          style={{ padding: inputPad, fontSize: inputFont }}
+                          style={{
+                            ...authBtnPrimary,
+                            ...(loading ? { opacity: 0.6, cursor: 'not-allowed' } : {}),
+                          }}
                         >
                           {loading ? t('auth.pleaseWait') : t('auth.createAccount')}
                         </button>
                       </form>
                       <button
                         type="button"
-                        className="btn-primary w-full"
                         disabled={loading}
                         onClick={() => {
                           setError('')
@@ -739,11 +755,8 @@ export default function Auth() {
                           setAuthView('signIn')
                         }}
                         style={{
-                          padding: inputPad,
-                          fontSize: inputFont,
-                          background: 'transparent',
-                          border: '1px solid rgba(212,175,55,0.45)',
-                          color: 'rgba(255,255,255,0.9)',
+                          ...authBtnSecondary,
+                          ...(loading ? { opacity: 0.6, cursor: 'not-allowed' } : {}),
                         }}
                       >
                         {t('auth.backToSignIn')}
@@ -759,7 +772,7 @@ export default function Auth() {
                   ) : null}
                 </article>
 
-                {/* Rotating verses — above What's New + above footer Product Hunt (footer sits under transparent auth layer) */}
+                {/* Rotating verses — above What's New (footer sits under transparent auth layer) */}
                 <div
                   style={{
                     width: '100%',
@@ -860,7 +873,7 @@ export default function Auth() {
                   </aside>
                 ) : null}
 
-                {/* Reserve vertical space so fixed footer (links + Product Hunt) does not cover verse / What's New */}
+                {/* Reserve vertical space so fixed footer does not cover verse / What's New */}
                 <div
                   aria-hidden
                   style={{
@@ -894,6 +907,10 @@ export default function Auth() {
           animation:
             authLogoFloat 5s ease-in-out infinite,
             authLogoGlowPulse 3.2s ease-in-out infinite;
+        }
+        .auth-input-auth-page:focus {
+          border: 1px solid rgba(212, 168, 67, 0.5) !important;
+          outline: none;
         }
       `}</style>
     </div>

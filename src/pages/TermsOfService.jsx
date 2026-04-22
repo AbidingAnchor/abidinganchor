@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export default function TermsOfService() {
+  const navigate = useNavigate()
   useEffect(() => {
     document.title = 'Terms of Service — AbidingAnchor'
   }, [])
@@ -13,11 +15,39 @@ export default function TermsOfService() {
         className="content-scroll"
         style={{ padding: '0 16px', paddingTop: '220px', paddingBottom: '120px', maxWidth: '680px', margin: '0 auto', width: '100%' }}
       >
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          padding: '16px 16px 8px 16px',
+        }}>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            style={{
+              width: '40px',
+              height: '40px',
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(212,168,67,0.3)',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: '#D4A843',
+              fontSize: '20px',
+            }}
+          >
+            ←
+          </button>
+          <div style={{ flex: 1, textAlign: 'center' }}>
+            <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
+              Terms of Service
+            </span>
+          </div>
+          <div style={{ width: '40px' }} />
+        </div>
         <section className="space-y-4">
           <header className="space-y-1 text-center">
-            <h1 className="text-3xl font-bold text-white" style={{ textShadow: '0 1px 8px rgba(0,60,120,0.4)' }}>
-              Terms of Service
-            </h1>
             <p className="text-sm text-white/80">Last Updated: April 13, 2026</p>
           </header>
 

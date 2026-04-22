@@ -3,9 +3,8 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
-import { userStorageKey } from '../utils/userStorage'
 import { getAvatarUploadExtension } from '../utils/avatarUrl'
-import i18n, { LANGUAGE_STORAGE_KEY, SUPPORTED_LANGS } from '../i18n.js'
+import { LANGUAGE_STORAGE_KEY, SUPPORTED_LANGS } from '../i18n.js'
 import {
   cancelUniversalReminder,
   persistReminderToSupabase,
@@ -13,10 +12,8 @@ import {
   readReminderLocal,
   requestUniversalNotificationPermission,
   scheduleUniversalReminder,
-  sendTestNotification,
   writeReminderLocal,
 } from '../services/universalNotifications'
-import { getNotificationPlatform } from '../utils/notificationPlatform'
 
 const UI_LANG_META = {
   en: { flagIso: 'us', abbr: 'EN', labelKey: 'langEn', fallbackLabel: 'English' },
@@ -26,6 +23,7 @@ const UI_LANG_META = {
   de: { flagIso: 'de', abbr: 'DE', labelKey: 'langDe', fallbackLabel: 'German' },
   tl: { flagIso: 'ph', abbr: 'TL', labelKey: 'langTl', fallbackLabel: 'Filipino' },
   ko: { flagIso: 'kr', abbr: 'KO', labelKey: 'langKo', fallbackLabel: 'Korean' },
+  hi: { flagIso: 'in', abbr: 'HI', labelKey: 'langHi', fallbackLabel: 'Hindi' },
 }
 
 const UI_LANG_OPTIONS = SUPPORTED_LANGS
@@ -54,26 +52,11 @@ const FEEDBACK_TYPES = [
 
 const FEEDBACK_MAX_LEN = 500
 
-function buildFaithBadges({ profile, hasReadChapter, hasPrayerWallPost }) {
-  const badges = []
-  const streak = Math.max(0, Number(profile?.reading_streak) || 0)
-
-  if (profile?.is_founding_member) badges.push('⚓ Founding Member')
-  if (profile?.is_supporter) badges.push('⚓ Ministry Supporter')
-  if (streak >= 3) badges.push('🔥 Streak Starter')
-  if (streak >= 7) badges.push('⚡ On Fire')
-  if (streak >= 30) badges.push('👑 Faithful')
-  if (hasReadChapter) badges.push('📖 Word Seeker')
-  if (hasPrayerWallPost) badges.push('🙏 Prayer Warrior')
-
-  return badges
-}
-
 export default function Settings() {
   const { t, i18n: i18nHook } = useTranslation()
   const navigate = useNavigate()
   const { user, profile, signOut, refreshProfile } = useAuth()
-  const [selectedTranslation, setSelectedTranslation] = useState('WEB')
+  const [selectedTranslation] = useState('WEB')
   const [uploadStatus, setUploadStatus] = useState('idle') // idle, uploading, success
   const [uploadError, setUploadError] = useState('')
   const [pendingAvatarUrl, setPendingAvatarUrl] = useState(null)
@@ -82,27 +65,25 @@ export default function Settings() {
   const [localAvatarUrl, setLocalAvatarUrl] = useState(null)
   const [localUsername, setLocalUsername] = useState('')
   const [dailyReminderEnabled, setDailyReminderEnabled] = useState(false)
-  const [reminderTime, setReminderTime] = useState('08:00')
-  const [draftReminderTime, setDraftReminderTime] = useState('08:00')
-  const [reminderTimeConfirmOpen, setReminderTimeConfirmOpen] = useState(false)
-  const [reminderToastText, setReminderToastText] = useState('')
-  const [reminderToastVisible, setReminderToastVisible] = useState(false)
-  const [reminderPermissionMessage, setReminderPermissionMessage] = useState('')
-  const [testNotifRunning, setTestNotifRunning] = useState(false)
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [languageOpen, setLanguageOpen] = useState(false)
+  const [translationOpen, setTranslationOpen] = useState(false)
+  const [fontSizeOpen, setFontSizeOpen] = useState(false)
+  const [publicProfileOpen, setPublicProfileOpen] = useState(false)
+  const [shareAppOpen, setShareAppOpen] = useState(false)
+  const [rateUsOpen, setRateUsOpen] = useState(false)
+  const [whatsNewOpen, setWhatsNewOpen] = useState(false)
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false)
   const [feedbackType, setFeedbackType] = useState('suggestion')
   const [feedbackText, setFeedbackText] = useState('')
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false)
   const [feedbackSuccess, setFeedbackSuccess] = useState(false)
   const [feedbackSubmitError, setFeedbackSubmitError] = useState('')
-  const [hasPrayerWallPost, setHasPrayerWallPost] = useState(false)
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false)
   const [deleteAccountSubmitting, setDeleteAccountSubmitting] = useState(false)
   const [deleteAccountError, setDeleteAccountError] = useState('')
   const feedbackSuccessTimerRef = useRef(null)
-  const reminderToastTimerRef = useRef(null)
   const fileInputRef = useRef(null)
-  const notifPlatform = getNotificationPlatform()
 
   const openFeedbackModal = () => {
     setFeedbackType('suggestion')
@@ -123,15 +104,6 @@ export default function Settings() {
     setFeedbackSubmitError('')
   }
 
-  const showReminderToast = useCallback((message) => {
-    setReminderToastText(message)
-    setReminderToastVisible(true)
-    if (reminderToastTimerRef.current) clearTimeout(reminderToastTimerRef.current)
-    reminderToastTimerRef.current = setTimeout(() => {
-      setReminderToastVisible(false)
-      reminderToastTimerRef.current = null
-    }, 2200)
-  }, [])
 
   const submitFeedback = async () => {
     const webhook = import.meta.env.VITE_DISCORD_FEEDBACK_WEBHOOK_URL
@@ -193,18 +165,17 @@ export default function Settings() {
   useEffect(() => {
     return () => {
       if (feedbackSuccessTimerRef.current) clearTimeout(feedbackSuccessTimerRef.current)
-      if (reminderToastTimerRef.current) clearTimeout(reminderToastTimerRef.current)
     }
   }, [])
 
   useEffect(() => {
-    if (!feedbackModalOpen && !deleteAccountModalOpen && !reminderTimeConfirmOpen) return
+    if (!feedbackModalOpen && !deleteAccountModalOpen) return
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
       document.body.style.overflow = prev
     }
-  }, [feedbackModalOpen, deleteAccountModalOpen, reminderTimeConfirmOpen])
+  }, [feedbackModalOpen, deleteAccountModalOpen])
 
   useEffect(() => {
     if (!user?.id) return
@@ -241,122 +212,54 @@ export default function Settings() {
     if (!user?.id) return
     const localPrefs = readReminderLocal(user.id)
     setDailyReminderEnabled(localPrefs.enabled)
-    setReminderTime(localPrefs.time)
 
     readReminderFromSupabase(user.id).then((cloudPrefs) => {
       if (!cloudPrefs) return
       setDailyReminderEnabled(cloudPrefs.enabled)
-      setReminderTime(cloudPrefs.time)
       writeReminderLocal(user.id, cloudPrefs)
     }).catch((error) => {
       console.warn('Unable to read reminder preferences from Supabase:', error)
     })
   }, [user?.id])
 
-  useEffect(() => {
-    setDraftReminderTime(reminderTime)
-  }, [reminderTime])
-
-  useEffect(() => {
-    if (!dailyReminderEnabled) setReminderTimeConfirmOpen(false)
-  }, [dailyReminderEnabled])
-
-  const scheduleNotifications = useCallback(async (timeOverride) => {
+  const scheduleNotifications = useCallback(async () => {
     try {
-      const timeStr = timeOverride ?? reminderTime
-      await scheduleUniversalReminder({ time: timeStr, userId: user?.id })
-      setReminderPermissionMessage('')
-      showReminderToast(`Reminder set for ${formatTimeForReminderConfirm(timeStr)} ✓`)
+      await scheduleUniversalReminder({ time: '08:00', userId: user?.id })
     } catch (error) {
       console.error('Error scheduling notifications:', error)
-      setReminderPermissionMessage('Please enable notifications in your device settings to receive reminders.')
     }
-  }, [reminderTime, user?.id])
+  }, [user?.id])
 
   const handleDailyReminderToggle = async () => {
     const newValue = !dailyReminderEnabled
     setDailyReminderEnabled(newValue)
     if (user?.id) {
-      writeReminderLocal(user.id, { enabled: newValue, time: reminderTime })
-      await persistReminderToSupabase(user.id, { enabled: newValue, time: reminderTime })
+      writeReminderLocal(user.id, { enabled: newValue, time: '08:00' })
+      await persistReminderToSupabase(user.id, { enabled: newValue, time: '08:00' })
     }
 
     if (newValue) {
       const permission = await requestUniversalNotificationPermission({ userGesture: true })
       if (permission === 'gesture-required') {
-        setReminderPermissionMessage('Tap again to allow notifications. iOS requires a user action to grant permission.')
         setDailyReminderEnabled(false)
-        if (user?.id) writeReminderLocal(user.id, { enabled: false, time: reminderTime })
+        if (user?.id) writeReminderLocal(user.id, { enabled: false, time: '08:00' })
         return
       }
       if (permission !== 'granted') {
-        setReminderPermissionMessage('Please enable notifications in your device settings to receive reminders.')
         setDailyReminderEnabled(false)
-        if (user?.id) writeReminderLocal(user.id, { enabled: false, time: reminderTime })
+        if (user?.id) writeReminderLocal(user.id, { enabled: false, time: '08:00' })
         return
       }
       await scheduleNotifications()
     } else {
       try {
         await cancelUniversalReminder()
-        setReminderPermissionMessage('')
       } catch (e) {
         console.error('Error canceling reminders:', e)
       }
     }
   }
 
-  const formatTimeForReminderConfirm = (hhmm) => {
-    const parts = hhmm.split(':').map(Number)
-    const h = parts[0] ?? 8
-    const m = parts[1] ?? 0
-    const d = new Date()
-    d.setHours(h, m, 0, 0)
-    return d.toLocaleTimeString(i18nHook.language, { hour: 'numeric', minute: '2-digit' })
-  }
-
-  const handleReminderTimeInputChange = (e) => {
-    setDraftReminderTime(e.target.value)
-    setReminderTimeConfirmOpen(true)
-  }
-
-  const confirmReminderTime = async () => {
-    const next = draftReminderTime
-    setReminderTime(next)
-    if (user?.id) {
-      writeReminderLocal(user.id, { enabled: dailyReminderEnabled, time: next })
-      await persistReminderToSupabase(user.id, { enabled: dailyReminderEnabled, time: next })
-    }
-    setReminderTimeConfirmOpen(false)
-    if (dailyReminderEnabled) {
-      await scheduleNotifications(next)
-    } else {
-      showReminderToast(`Reminder set for ${formatTimeForReminderConfirm(next)} ✓`)
-    }
-  }
-
-  const cancelReminderTimeConfirm = () => {
-    setDraftReminderTime(reminderTime)
-    setReminderTimeConfirmOpen(false)
-  }
-
-  const handleSendTestNotification = async () => {
-    setTestNotifRunning(true)
-    try {
-      const permission = await requestUniversalNotificationPermission({ userGesture: true })
-      if (permission !== 'granted') {
-        setReminderPermissionMessage('Please enable notifications in your device settings to receive reminders.')
-        return
-      }
-      const sent = await sendTestNotification()
-      if (sent) showReminderToast('Test notification sent ✓')
-    } catch (error) {
-      console.error('Failed to send test notification:', error)
-      setReminderPermissionMessage('Please enable notifications in your device settings to receive reminders.')
-    } finally {
-      setTestNotifRunning(false)
-    }
-  }
 
   const handleSignOut = async () => {
     await signOut()
@@ -388,25 +291,6 @@ export default function Settings() {
     }
   }
 
-  const handleReplayTutorial = async () => {
-    try {
-      // Clear from localStorage (do NOT clear tos_agreed)
-      if (user?.id) localStorage.removeItem(userStorageKey(user.id, 'onboarding-complete'))
-      
-      // Clear from Supabase profile
-      if (user?.id) {
-        await supabase
-          .from('profiles')
-          .update({ onboarding_complete: false })
-          .eq('id', user.id)
-      }
-      
-      // Navigate directly to onboarding route (skips ToS)
-      navigate('/onboarding')
-    } catch (error) {
-      console.error('Error replaying tutorial:', error)
-    }
-  }
 
   const validateAvatarFile = (file) => {
     const allowedTypes = [
@@ -522,41 +406,13 @@ export default function Settings() {
     profile?.full_name ||
     user?.user_metadata?.full_name ||
     t('common.user')
-  const userEmail = user?.email || ''
   const avatarUrl = avatarPreviewUrl || localAvatarUrl || profile?.avatar_url
-  const hasAvatarImage = Boolean(avatarPreviewUrl || localAvatarUrl || profile?.avatar_url)
-  const hasReadChapter = Math.max(0, Number(profile?.verses_read) || 0) > 0 || Boolean(profile?.last_chapter)
-  const faithBadges = buildFaithBadges({ profile, hasReadChapter, hasPrayerWallPost })
-
-  useEffect(() => {
-    let alive = true
-    const loadPrayerBadge = async () => {
-      if (!user?.id) {
-        if (alive) setHasPrayerWallPost(false)
-        return
-      }
-      try {
-        const { count } = await supabase
-          .from('prayer_wall')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', user.id)
-        if (alive) setHasPrayerWallPost((count || 0) > 0)
-      } catch {
-        if (alive) setHasPrayerWallPost(false)
-      }
-    }
-    loadPrayerBadge()
-    return () => {
-      alive = false
-    }
-  }, [user?.id])
 
   return (
     <div
       className="content-scroll content-scroll--nav-clear"
       style={{
-        padding: '0 16px',
-        paddingTop: '8px',
+        padding: '60px 16px 120px',
         maxWidth: '680px',
         margin: '0 auto',
         width: '100%',
@@ -570,24 +426,26 @@ export default function Settings() {
           to { transform: rotate(360deg); }
         }
       `}</style>
-      <section className="space-y-4">
-        <header className="space-y-2">
-          <p className="text-section-header">{t('settings.sectionLabel')}</p>
-          <h1 className="text-page-title">{t('settings.pageTitle')}</h1>
-        </header>
+      <section>
 
-        {/* User Profile Card */}
-        <div className="glass-panel" style={{
-          borderRadius: '16px',
-          padding: '20px'
-        }}>
+        {/* SECTION 1 - PROFILE CARD */}
+        <div
+          style={{
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(212,168,67,0.2)',
+            borderRadius: '16px',
+            backdropFilter: 'blur(12px)',
+            padding: '20px',
+            marginBottom: '24px',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{ position: 'relative' }}>
               <div
                 onClick={() => fileInputRef.current?.click()}
                 style={{
-                  width: '80px',
-                  height: '80px',
+                  width: '60px',
+                  height: '60px',
                   borderRadius: '50%',
                   background: '#D4A843',
                   position: 'relative',
@@ -595,9 +453,8 @@ export default function Settings() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: '0 2px 8px rgba(212,168,67,0.3)',
+                  border: '2px solid #D4A843',
                   cursor: 'pointer',
-                  border: hasAvatarImage ? '2px solid rgba(212,168,67,0.4)' : 'none',
                 }}
               >
                 <span
@@ -608,7 +465,7 @@ export default function Settings() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     color: '#fff',
-                    fontSize: '32px',
+                    fontSize: '24px',
                     fontWeight: 600,
                     zIndex: 0,
                   }}
@@ -640,16 +497,16 @@ export default function Settings() {
                   position: 'absolute',
                   bottom: '-4px',
                   right: '-4px',
-                  width: '28px',
-                  height: '28px',
+                  width: '24px',
+                  height: '24px',
                   borderRadius: '50%',
                   background: '#D4A843',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   cursor: 'pointer',
-                  border: '2px solid var(--glass-border-hover)',
-                  fontSize: '14px'
+                  border: '2px solid rgba(212,168,67,0.4)',
+                  fontSize: '12px'
                 }}
               >
                 📷
@@ -662,63 +519,51 @@ export default function Settings() {
                 style={{ display: 'none' }}
               />
             </div>
-            <div>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '4px', fontWeight: 500 }}>
-                Display name
-              </p>
-              <p style={{ color: 'var(--text-primary)', fontSize: '18px', fontWeight: 700, marginBottom: '10px' }}>
+            <div style={{ flex: 1 }}>
+              <p style={{ color: '#ffffff', fontSize: '18px', fontWeight: 700, marginBottom: '4px' }}>
                 {displayName}
               </p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
-                {faithBadges.map((badge) => (
-                  <span
-                    key={badge}
-                    style={
-                      badge === '⚓ Founding Member'
-                        ? {
-                            background: 'rgba(212,168,67,0.15)',
-                            border: '1px solid #D4A843',
-                            color: '#D4A843',
-                            fontSize: '12px',
-                            borderRadius: '20px',
-                            padding: '4px 10px',
-                            fontWeight: 700,
-                          }
-                        : {
-                            borderRadius: '20px',
-                            border: '1px solid rgba(212,175,55,0.55)',
-                            background: 'rgba(212,175,55,0.14)',
-                            color: '#D4AF37',
-                            padding: '4px 10px',
-                            fontSize: '11px',
-                            fontWeight: 700,
-                          }
-                    }
-                  >
-                    {badge}
-                  </span>
-                ))}
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px', marginBottom: '8px' }}>
+                @{localUsername || 'user'}
+              </p>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  background: 'rgba(212,168,67,0.15)',
+                  border: '1px solid rgba(212,168,67,0.4)',
+                  borderRadius: '50px',
+                  fontSize: '12px',
+                  color: '#D4A843',
+                  paddingLeft: '10px',
+                  paddingRight: '10px',
+                  paddingTop: '4px',
+                  paddingBottom: '4px',
+                }}
+              >
+                🔥 {Math.max(0, Number(profile?.reading_streak) || 0)} day streak
               </div>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '4px', fontWeight: 500 }}>
-                Email
-              </p>
-              <p style={{ color: 'var(--text-primary)', fontSize: '14px', opacity: 0.9 }}>
-                {userEmail}
-              </p>
-              {uploadStatus === 'success' && (
-                <p style={{ color: '#4ade80', fontSize: '12px', marginTop: '4px' }}>
-                  {t('settings.profilePhotoSaved')}
-                </p>
-              )}
+            </div>
+            <div
+              onClick={() => navigate('/edit-profile')}
+              style={{
+                color: '#D4A843',
+                fontSize: '24px',
+                cursor: 'pointer',
+                padding: '8px',
+              }}
+            >
+              ›
             </div>
           </div>
           {pendingAvatarFile && (
             <div
-              className="glass-panel"
               style={{
                 marginTop: '16px',
-                padding: '14px 16px',
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(212,168,67,0.2)',
                 borderRadius: '12px',
+                padding: '14px 16px',
                 display: 'flex',
                 gap: '12px',
               }}
@@ -790,253 +635,270 @@ export default function Settings() {
               border: '1px solid rgba(255,80,80,0.4)',
               borderRadius: '12px',
               padding: '12px 16px',
-              color: 'var(--text-primary)',
+              color: '#ffffff',
               fontSize: '14px'
             }}>
               {uploadError}
             </div>
           )}
-          <p style={{
-            marginTop: '12px',
-            color: 'rgba(255,255,255,0.5)',
-            fontSize: '12px',
-            lineHeight: '1.4'
-          }}>
-            {t('settings.guidelines')}
-          </p>
         </div>
 
-        {/* Bible Translation Preference */}
-        <div className="glass-panel" style={{
-          borderRadius: '16px',
-          padding: '16px 20px'
+        {/* SECTION 2 - ACCOUNT */}
+        <p style={{
+          fontSize: '11px',
+          letterSpacing: '1.5px',
+          color: 'rgba(212,168,67,0.7)',
+          textTransform: 'uppercase',
+          marginBottom: '8px',
+          fontWeight: 600,
         }}>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', marginBottom: '8px' }}>
-            {t('settings.bibleTranslation')}
-          </p>
-          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '12px', marginBottom: '12px', lineHeight: 1.45 }}>
-            {t('settings.bibleTranslationHint')}
-          </p>
-          <select
-            value={selectedTranslation}
-            onChange={(e) => setSelectedTranslation(e.target.value)}
-            className="glass-input-field settings-bible-translation-select"
+          Account
+        </p>
+        <div style={{
+          background: 'rgba(255,255,255,0.06)',
+          border: '1px solid rgba(212,168,67,0.2)',
+          borderRadius: '16px',
+          backdropFilter: 'blur(12px)',
+          marginBottom: '24px',
+        }}>
+          {/* Edit Profile */}
+          <button
+            type="button"
+            onClick={() => navigate('/edit-profile')}
             style={{
+              minHeight: '52px',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 16px',
               width: '100%',
-              borderRadius: '12px',
-              padding: '12px',
-              fontSize: '16px',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: 'rgba(212,168,67,0.1)',
+              color: '#D4A843',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              👤
+            </div>
+            <div style={{ marginLeft: '14px', flex: 1 }}>
+              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+                Edit Profile
+              </p>
+            </div>
+            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+          </button>
+          {/* Notifications */}
+          <button
+            type="button"
+            onClick={() => setNotificationsOpen(true)}
+            style={{
+              minHeight: '52px',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 16px',
+              width: '100%',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: 'rgba(212,168,67,0.1)',
+              color: '#D4A843',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              🔔
+            </div>
+            <div style={{ marginLeft: '14px', flex: 1 }}>
+              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+                Notifications
+              </p>
+            </div>
+            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+          </button>
+          {/* App Language */}
+          <button
+            type="button"
+            onClick={() => setLanguageOpen(true)}
+            style={{
+              minHeight: '52px',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 16px',
+              width: '100%',
+              background: 'none',
+              border: 'none',
               cursor: 'pointer',
             }}
           >
-            {BIBLE_TRANSLATION_OPTIONS.map(({ value, labelKey }) => (
-              <option key={value} value={value}>
-                {t(labelKey)}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Edit Profile — username, bio, favorite verse (editable on /edit-profile only) */}
-        <button
-          type="button"
-          onClick={() => navigate('/edit-profile')}
-          className="glass-panel"
-          style={{
-            width: '100%',
-            borderRadius: '16px',
-            padding: '16px 20px',
-            color: 'var(--text-primary)',
-            fontSize: '16px',
-            fontWeight: 500,
-            cursor: 'pointer',
-            textAlign: 'left',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <span>{t('settings.editProfile')}</span>
-          <span style={{ color: 'rgba(255,255,255,0.4)' }}>›</span>
-        </button>
-
-        {/* Support the Ministry */}
-        <div
-          className="glass-panel"
-          style={{
-            borderRadius: '16px',
-            padding: '20px',
-            border: '1px solid rgba(212,175,55,0.45)',
-            boxShadow: '0 10px 30px rgba(212,175,55,0.14)',
-          }}
-        >
-          <div
-            style={{
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: 'rgba(212,168,67,0.1)',
+              color: '#D4A843',
+              fontSize: '18px',
               display: 'flex',
               alignItems: 'center',
-              gap: '10px',
-              marginBottom: '10px',
-            }}
-          >
-            <div
-              style={{
-                width: '34px',
-                height: '34px',
-                borderRadius: '10px',
-                background: 'rgba(212,175,55,0.20)',
-                border: '1px solid #D4AF37',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '18px',
-              }}
-              aria-hidden
-            >
-              ⚓
+              justifyContent: 'center',
+            }}>
+              🌐
             </div>
-            <p style={{ margin: 0, color: '#D4AF37', fontSize: '18px', fontWeight: 700 }}>
-              Keep the Ministry Free
-            </p>
-          </div>
-          <p style={{ margin: '0 0 14px', color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.5 }}>
-            Every contribution helps keep Abiding Anchor free and ad-free for believers worldwide.
-          </p>
-          {profile?.is_supporter ? (
-            <p style={{ margin: 0, color: '#D4AF37', fontSize: '14px', fontWeight: 700 }}>
-              Thank you for supporting the ministry! 🙏
-            </p>
-          ) : (
-            <button
-              type="button"
-              onClick={() => window.open('https://abidinganchor.com/support', '_blank', 'noopener,noreferrer')}
-              style={{
-                background: '#D4AF37',
-                color: '#1a1a1a',
-                border: 'none',
-                borderRadius: '14px',
-                padding: '12px 14px',
-                fontSize: '14px',
-                fontWeight: 800,
-                cursor: 'pointer',
-                width: '100%',
-              }}
-            >
-              Sponsor a Verse
-            </button>
-          )}
+            <div style={{ marginLeft: '14px', flex: 1 }}>
+              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+                App Language
+              </p>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
+                {(i18nHook.resolvedLanguage || i18nHook.language || 'en').toUpperCase()}
+              </p>
+            </div>
+            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+          </button>
         </div>
 
-        {/* App language */}
-        <div
-          className="glass-panel"
-          style={{
-            borderRadius: '16px',
-            padding: '16px 20px',
-          }}
-        >
-          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '14px', marginBottom: '8px', fontWeight: 600 }}>
-            {t('settings.uiLanguage')}
-          </p>
-          <p
-            style={{
-              color: 'rgba(255,255,255,0.55)',
-              fontSize: '12px',
-              marginBottom: '14px',
-              lineHeight: 1.45,
-            }}
-          >
-            {t('settings.uiLanguageNote')}
-          </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'flex-start' }}>
-            {UI_LANG_OPTIONS.map(({ code, flagIso, abbr, labelKey, fallbackLabel }) => {
-              const languageLabel = t(`settings.${labelKey}`, {
-                defaultValue: fallbackLabel || abbr,
-              })
-              const active = (i18nHook.resolvedLanguage || i18nHook.language || 'en')
-                .toLowerCase()
-                .startsWith(code)
-              return (
-                <button
-                  type="button"
-                  key={code}
-                  aria-label={languageLabel}
-                  title={languageLabel}
-                  onClick={async () => {
-                    try {
-                      localStorage.setItem(LANGUAGE_STORAGE_KEY, code)
-                    } catch {
-                      /* ignore */
-                    }
-                    await i18n.changeLanguage(code)
-                  }}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    minWidth: '88px',
-                    padding: '12px 14px',
-                    borderRadius: '12px',
-                    border: active ? '2px solid #D4A843' : '1px solid rgba(255,255,255,0.15)',
-                    background: active ? 'rgba(212,168,67,0.15)' : 'rgba(255,255,255,0.06)',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <span
-                    className="inline-flex h-[22px] w-[22px] shrink-0 items-center justify-center overflow-hidden rounded-full ring-1 ring-white/25"
-                    aria-hidden
-                  >
-                    <img
-                      src={`https://flagcdn.com/24x18/${flagIso}.png`}
-                      alt=""
-                      width={24}
-                      height={18}
-                      className="h-full w-full object-cover"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </span>
-                  <span
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: 700,
-                      letterSpacing: '0.06em',
-                      color: 'var(--text-primary)',
-                      whiteSpace: 'nowrap',
-                      lineHeight: 1.15,
-                    }}
-                  >
-                    {abbr}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Daily Reminder */}
-        <div className="glass-panel" style={{
-          borderRadius: '16px',
-          padding: '20px'
+        {/* SECTION 3 - READING */}
+        <p style={{
+          fontSize: '11px',
+          letterSpacing: '1.5px',
+          color: 'rgba(212,168,67,0.7)',
+          textTransform: 'uppercase',
+          marginBottom: '8px',
+          fontWeight: 600,
         }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '16px'
-          }}>
-            <div>
-              <p style={{ color: '#FFFFFF', fontSize: '16px', fontWeight: 500, marginBottom: '4px' }}>
-                {t('settings.dailyReminder')}
+          Reading
+        </p>
+        <div style={{
+          background: 'rgba(255,255,255,0.06)',
+          border: '1px solid rgba(212,168,67,0.2)',
+          borderRadius: '16px',
+          backdropFilter: 'blur(12px)',
+          marginBottom: '24px',
+        }}>
+          {/* Bible Translation */}
+          <button
+            type="button"
+            onClick={() => setTranslationOpen(true)}
+            style={{
+              minHeight: '52px',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 16px',
+              width: '100%',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: 'rgba(212,168,67,0.1)',
+              color: '#D4A843',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              📖
+            </div>
+            <div style={{ marginLeft: '14px', flex: 1 }}>
+              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+                Bible Translation
               </p>
-              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>
-                {t('settings.dailyReminderDesc')}
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
+                {selectedTranslation}
+              </p>
+            </div>
+            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+          </button>
+          {/* Font Size */}
+          <button
+            type="button"
+            onClick={() => setFontSizeOpen(true)}
+            style={{
+              minHeight: '52px',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 16px',
+              width: '100%',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: 'rgba(212,168,67,0.1)',
+              color: '#D4A843',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              🔤
+            </div>
+            <div style={{ marginLeft: '14px', flex: 1 }}>
+              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+                Font Size
+              </p>
+            </div>
+            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+          </button>
+          {/* Reading Reminders */}
+          <div
+            onClick={handleDailyReminderToggle}
+            style={{
+              minHeight: '52px',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 16px',
+              width: '100%',
+              cursor: 'pointer',
+            }}
+          >
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: 'rgba(212,168,67,0.1)',
+              color: '#D4A843',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              ⏰
+            </div>
+            <div style={{ marginLeft: '14px', flex: 1 }}>
+              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+                Reading Reminders
               </p>
             </div>
             <button
               type="button"
-              onClick={handleDailyReminderToggle}
+              onClick={(e) => { e.stopPropagation(); handleDailyReminderToggle(); }}
               style={{
                 width: '52px',
                 height: '28px',
@@ -1060,300 +922,450 @@ export default function Settings() {
               }} />
             </button>
           </div>
+        </div>
 
-          {notifPlatform.isIos && !notifPlatform.isStandalonePwa ? (
-            <p
-              style={{
-                marginBottom: '10px',
-                color: '#D4A843',
-                fontSize: '13px',
-                lineHeight: 1.4,
-              }}
-            >
-              Add to Home Screen for notifications to work.
-            </p>
-          ) : null}
-
-          {reminderPermissionMessage ? (
-            <p
-              style={{
-                marginBottom: '10px',
-                color: '#fbbf24',
-                fontSize: '13px',
-                lineHeight: 1.4,
-              }}
-            >
-              {reminderPermissionMessage}
-            </p>
-          ) : null}
-          
-          {dailyReminderEnabled && (
-            <div>
-              <style>
-                {`
-                  .settings-reminder-time-input {
-                    color-scheme: light;
-                    width: 100%;
-                    border-radius: 12px;
-                    padding: 12px 14px;
-                    font-size: 16px;
-                    cursor: pointer;
-                    background: rgba(255, 255, 255, 0.9);
-                    border: 1px solid rgba(24, 38, 69, 0.75);
-                    color: #142447;
-                    box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
-                    -webkit-text-fill-color: #142447;
-                  }
-                  .settings-reminder-time-input::placeholder {
-                    color: rgba(20, 36, 71, 0.72);
-                    opacity: 1;
-                  }
-                  .settings-reminder-time-input::-webkit-calendar-picker-indicator {
-                    cursor: pointer;
-                    opacity: 1;
-                    width: 24px;
-                    height: 24px;
-                    filter: none;
-                    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23D4A843' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E");
-                    background-size: contain;
-                    background-repeat: no-repeat;
-                    background-position: center;
-                  }
-                  .settings-reminder-time-input::-webkit-datetime-edit-fields-wrapper { padding: 0; }
-                  .settings-reminder-time-input::-webkit-datetime-edit-text { color: rgba(20, 36, 71, 0.7); padding: 0 3px; }
-                  .settings-reminder-time-input::-webkit-datetime-edit-hour-field,
-                  .settings-reminder-time-input::-webkit-datetime-edit-minute-field,
-                  .settings-reminder-time-input::-webkit-datetime-edit-ampm-field {
-                    color: #142447;
-                  }
-                  .settings-reminder-time-input:focus {
-                    outline: none;
-                    border-color: rgba(24, 38, 69, 0.95);
-                    box-shadow: 0 0 0 2px rgba(24, 38, 69, 0.2);
-                  }
-                `}
-              </style>
-              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', marginBottom: '8px' }}>
-                {t('settings.reminderTime')}
-              </p>
-              <input
-                type="time"
-                className="settings-reminder-time-input"
-                value={draftReminderTime}
-                onChange={handleReminderTimeInputChange}
-              />
-            </div>
-          )}
-
+        {/* SECTION 4 - COMMUNITY */}
+        <p style={{
+          fontSize: '11px',
+          letterSpacing: '1.5px',
+          color: 'rgba(212,168,67,0.7)',
+          textTransform: 'uppercase',
+          marginBottom: '8px',
+          fontWeight: 600,
+        }}>
+          Community
+        </p>
+        <div style={{
+          background: 'rgba(255,255,255,0.06)',
+          border: '1px solid rgba(212,168,67,0.2)',
+          borderRadius: '16px',
+          backdropFilter: 'blur(12px)',
+          marginBottom: '24px',
+        }}>
+          {/* Public Profile */}
           <button
             type="button"
-            onClick={handleSendTestNotification}
-            disabled={testNotifRunning}
+            onClick={() => setPublicProfileOpen(true)}
             style={{
-              marginTop: dailyReminderEnabled ? '12px' : '0',
+              minHeight: '52px',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 16px',
               width: '100%',
-              borderRadius: '12px',
-              border: '1px solid #D4AF37',
-              background: '#D4AF37',
-              color: '#1a1a1a',
-              padding: '10px 12px',
-              fontSize: '14px',
-              fontWeight: 600,
-              cursor: testNotifRunning ? 'wait' : 'pointer',
-              opacity: testNotifRunning ? 0.75 : 1,
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
             }}
           >
-            {testNotifRunning ? 'Sending test notification...' : 'Send Test Notification'}
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: 'rgba(212,168,67,0.1)',
+              color: '#D4A843',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              🌍
+            </div>
+            <div style={{ marginLeft: '14px', flex: 1 }}>
+              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+                Public Profile
+              </p>
+            </div>
+            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+          </button>
+          {/* Ministry Supporter */}
+          <button
+            type="button"
+            onClick={() => window.open('https://abidinganchor.com/support', '_blank', 'noopener,noreferrer')}
+            style={{
+              minHeight: '52px',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 16px',
+              width: '100%',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: 'rgba(212,168,67,0.1)',
+              color: '#D4A843',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              ⭐
+            </div>
+            <div style={{ marginLeft: '14px', flex: 1 }}>
+              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+                Ministry Supporter
+              </p>
+              {profile?.is_supporter && (
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
+                  Active
+                </p>
+              )}
+            </div>
+            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
           </button>
         </div>
 
-        {/* Replay Tutorial */}
-        <button
-          type="button"
-          onClick={handleReplayTutorial}
-          className="glass-panel"
-          style={{
-            width: '100%',
-            borderRadius: '16px',
-            padding: '16px 20px',
-            color: 'var(--text-primary)',
-            fontSize: '16px',
-            fontWeight: 500,
-            cursor: 'pointer',
-            textAlign: 'left',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}
-        >
-          <span>{t('settings.replayTutorial')}</span>
-          <span style={{ color: 'rgba(255,255,255,0.4)' }}>↺</span>
-        </button>
-
-        {/* Feedback */}
-        <div>
-          <p className="text-section-header" style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span aria-hidden>{'\u{1F4AC}'}</span>
-            <span>Feedback</span>
-          </p>
+        {/* SECTION 5 - SUPPORT */}
+        <p style={{
+          fontSize: '11px',
+          letterSpacing: '1.5px',
+          color: 'rgba(212,168,67,0.7)',
+          textTransform: 'uppercase',
+          marginBottom: '8px',
+          fontWeight: 600,
+        }}>
+          Support
+        </p>
+        <div style={{
+          background: 'rgba(255,255,255,0.06)',
+          border: '1px solid rgba(212,168,67,0.2)',
+          borderRadius: '16px',
+          backdropFilter: 'blur(12px)',
+          marginBottom: '24px',
+        }}>
+          {/* Share App */}
+          <button
+            type="button"
+            onClick={() => setShareAppOpen(true)}
+            style={{
+              minHeight: '52px',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 16px',
+              width: '100%',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: 'rgba(212,168,67,0.1)',
+              color: '#D4A843',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              📤
+            </div>
+            <div style={{ marginLeft: '14px', flex: 1 }}>
+              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+                Share App
+              </p>
+            </div>
+            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+          </button>
+          {/* Rate Us */}
+          <button
+            type="button"
+            onClick={() => setRateUsOpen(true)}
+            style={{
+              minHeight: '52px',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 16px',
+              width: '100%',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: 'rgba(212,168,67,0.1)',
+              color: '#D4A843',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              ⭐
+            </div>
+            <div style={{ marginLeft: '14px', flex: 1 }}>
+              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+                Rate Us
+              </p>
+            </div>
+            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+          </button>
+          {/* Contact Support */}
           <button
             type="button"
             onClick={openFeedbackModal}
-            className="glass-panel"
             style={{
-              width: '100%',
-              borderRadius: '16px',
-              padding: '16px 20px',
-              color: 'var(--text-primary)',
-              fontSize: '16px',
-              fontWeight: 500,
-              cursor: 'pointer',
-              textAlign: 'left',
+              minHeight: '52px',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between',
+              padding: '0 16px',
+              width: '100%',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
             }}
           >
-            <span>Send Feedback</span>
-            <span style={{ color: 'rgba(255,255,255,0.4)' }}>→</span>
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: 'rgba(212,168,67,0.1)',
+              color: '#D4A843',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              💬
+            </div>
+            <div style={{ marginLeft: '14px', flex: 1 }}>
+              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+                Contact Support
+              </p>
+            </div>
+            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+          </button>
+          {/* Support the Ministry */}
+          <button
+            type="button"
+            onClick={() => window.open('https://abidinganchor.com/support', '_blank', 'noopener,noreferrer')}
+            style={{
+              minHeight: '52px',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 16px',
+              width: '100%',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: 'rgba(212,168,67,0.1)',
+              color: '#D4A843',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              🙏
+            </div>
+            <div style={{ marginLeft: '14px', flex: 1 }}>
+              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+                Support the Ministry
+              </p>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
+                Help keep Abiding Anchor free for everyone
+              </p>
+            </div>
+            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
           </button>
         </div>
 
-        {/* Legal & Privacy */}
-        <div>
-          <p className="text-section-header" style={{ marginBottom: '10px' }}>
-            Legal & Privacy
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <Link
-              to="/legal"
-              className="glass-panel"
-              style={{
-                width: '100%',
-                borderRadius: '16px',
-                padding: '16px 20px',
-                color: 'var(--text-primary)',
-                fontSize: '16px',
-                fontWeight: 500,
-                cursor: 'pointer',
-                textAlign: 'left',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                textDecoration: 'none',
-                boxSizing: 'border-box',
-              }}
-            >
-              <span>{t('header.legalPage')}</span>
-              <span style={{ color: 'rgba(255,255,255,0.4)' }}>→</span>
-            </Link>
-            <Link
-              to="/privacy"
-              className="glass-panel"
-              style={{
-                width: '100%',
-                borderRadius: '16px',
-                padding: '16px 20px',
-                color: 'var(--text-primary)',
-                fontSize: '16px',
-                fontWeight: 500,
-                cursor: 'pointer',
-                textAlign: 'left',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                textDecoration: 'none',
-                boxSizing: 'border-box',
-              }}
-            >
-              <span>{t('header.privacyPolicy')}</span>
-              <span style={{ color: 'rgba(255,255,255,0.4)' }}>→</span>
-            </Link>
+        {/* SECTION 6 - ABOUT */}
+        <p style={{
+          fontSize: '11px',
+          letterSpacing: '1.5px',
+          color: 'rgba(212,168,67,0.7)',
+          textTransform: 'uppercase',
+          marginBottom: '8px',
+          fontWeight: 600,
+        }}>
+          About
+        </p>
+        <div style={{
+          background: 'rgba(255,255,255,0.06)',
+          border: '1px solid rgba(212,168,67,0.2)',
+          borderRadius: '16px',
+          backdropFilter: 'blur(12px)',
+          marginBottom: '24px',
+        }}>
+          {/* What's New */}
+          <button
+            type="button"
+            onClick={() => setWhatsNewOpen(true)}
+            style={{
+              minHeight: '52px',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 16px',
+              width: '100%',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: 'rgba(212,168,67,0.1)',
+              color: '#D4A843',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              🎉
+            </div>
+            <div style={{ marginLeft: '14px', flex: 1 }}>
+              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+                What's New
+              </p>
+            </div>
+            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+          </button>
+          {/* Privacy Policy */}
+          <Link
+            to="/privacy"
+            style={{
+              minHeight: '52px',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 16px',
+              width: '100%',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              textDecoration: 'none',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: 'rgba(212,168,67,0.1)',
+              color: '#D4A843',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              🔒
+            </div>
+            <div style={{ marginLeft: '14px', flex: 1 }}>
+              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+                Privacy Policy
+              </p>
+            </div>
+            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+          </Link>
+          {/* Terms of Service */}
+          <Link
+            to="/legal"
+            style={{
+              minHeight: '52px',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 16px',
+              width: '100%',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              textDecoration: 'none',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: 'rgba(212,168,67,0.1)',
+              color: '#D4A843',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              📄
+            </div>
+            <div style={{ marginLeft: '14px', flex: 1 }}>
+              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+                Terms of Service
+              </p>
+            </div>
+            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+          </Link>
+          {/* Version */}
+          <div style={{
+            minHeight: '52px',
+            display: 'flex',
+            alignItems: 'center',
+            padding: '0 16px',
+            width: '100%',
+          }}>
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: 'rgba(212,168,67,0.1)',
+              color: '#D4A843',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              ℹ️
+            </div>
+            <div style={{ marginLeft: '14px', flex: 1 }}>
+              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+                Version
+              </p>
+            </div>
+            <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}>1.0.0</span>
           </div>
         </div>
 
-        {/* About AbidingAnchor */}
-        <div className="glass-panel" style={{
-          borderRadius: '16px',
-          padding: '20px'
-        }}>
-          <p style={{ color: '#D4A843', fontSize: '18px', fontWeight: 700, marginBottom: '12px' }}>
-            {t('settings.aboutTitle')}
-          </p>
-          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '14px', lineHeight: '1.6', marginBottom: '8px' }}>
-            {t('settings.aboutBody')}
-          </p>
-          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '14px', lineHeight: '1.6' }}>
-            {t('settings.aboutVersion')}
-          </p>
-        </div>
-
-        {/* Sign Out Button */}
+        {/* SIGN OUT BUTTON */}
         <button
           type="button"
           onClick={handleSignOut}
           style={{
             width: '100%',
-            background: 'rgba(255,80,80,0.9)',
-            border: 'none',
-            borderRadius: '16px',
-            padding: '16px',
-            color: 'var(--text-primary)',
+            minHeight: '52px',
+            background: 'rgba(220,50,50,0.12)',
+            border: '1px solid rgba(220,50,50,0.3)',
+            borderRadius: '12px',
+            color: '#ff6b6b',
             fontSize: '16px',
-            fontWeight: 700,
-            cursor: 'pointer'
-          }}
-        >
-          {t('settings.signOut')}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setDeleteAccountError('')
-            setDeleteAccountModalOpen(true)
-          }}
-          style={{
-            width: '100%',
-            marginTop: '12px',
-            background: 'rgba(90, 45, 45, 0.55)',
-            border: '1px solid rgba(140, 80, 80, 0.45)',
-            borderRadius: '16px',
-            padding: '16px',
-            color: 'var(--text-primary)',
-            fontSize: '16px',
-            fontWeight: 700,
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
             cursor: 'pointer',
+            marginBottom: '24px',
           }}
         >
-          {t('settings.deleteAccount')}
+          🚪 Sign Out
         </button>
       </section>
-
-      <div
-        aria-live="polite"
-        style={{
-          position: 'fixed',
-          left: '50%',
-          bottom: '96px',
-          transform: `translateX(-50%) translateY(${reminderToastVisible ? '0' : '10px'})`,
-          opacity: reminderToastVisible ? 1 : 0,
-          transition: 'opacity 0.2s ease, transform 0.2s ease',
-          pointerEvents: 'none',
-          zIndex: 10060,
-          background: '#D4A843',
-          color: '#0a1432',
-          fontWeight: 700,
-          fontSize: '14px',
-          borderRadius: '999px',
-          padding: '10px 16px',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.28)',
-          border: '1px solid rgba(255,255,255,0.35)',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        {reminderToastText}
-      </div>
 
       {feedbackModalOpen ? (
         <div
@@ -1379,8 +1391,40 @@ export default function Settings() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '20px',
+              paddingTop: '8px',
+            }}>
+              <button
+                type="button"
+                onClick={closeFeedbackModal}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(212,168,67,0.3)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: '#D4A843',
+                  fontSize: '20px',
+                }}
+              >
+                ←
+              </button>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
+                  Contact Support
+                </span>
+              </div>
+              <div style={{ width: '40px' }} />
+            </div>
             {feedbackSuccess ? (
-              <div className="px-5 py-10 text-center">
+              <div className="px-5 pb-6 text-center">
                 <p
                   id="settings-feedback-success"
                   className="text-base font-semibold leading-relaxed"
@@ -1390,15 +1434,8 @@ export default function Settings() {
                 </p>
               </div>
             ) : (
-              <div className="px-5 pb-6 pt-5">
-                <h2
-                  id="settings-feedback-title"
-                  className="m-0 text-lg font-semibold leading-snug"
-                  style={{ color: 'var(--gold, #D4A843)' }}
-                >
-                  Send Feedback {'\u{1F4AC}'}
-                </h2>
-                <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+              <div className="px-5 pb-6">
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                   Help us improve Abiding Anchor {'\u{1F64F}'}
                 </p>
 
@@ -1480,69 +1517,6 @@ export default function Settings() {
         </div>
       ) : null}
 
-      {reminderTimeConfirmOpen ? (
-        <div
-          className="fixed inset-0 z-[10050] flex items-center justify-center p-4"
-          style={{ background: 'var(--glass-scrim)' }}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="settings-reminder-confirm-title"
-        >
-          <button
-            type="button"
-            className="absolute inset-0 cursor-default border-0"
-            style={{ background: 'transparent' }}
-            aria-label={t('common.close')}
-            onClick={cancelReminderTimeConfirm}
-          />
-          <div
-            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
-            style={{
-              background: 'var(--modal-bg)',
-              border: '1px solid rgba(212, 168, 67, 0.35)',
-              boxShadow: 'var(--glass-shadow)',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="px-5 pb-6 pt-5">
-              <h2
-                id="settings-reminder-confirm-title"
-                className="m-0 text-lg font-semibold leading-snug"
-                style={{ color: 'var(--gold, #D4A843)' }}
-              >
-                {t('settings.reminderConfirmTitle', {
-                  time: formatTimeForReminderConfirm(draftReminderTime),
-                })}
-              </h2>
-              <button
-                type="button"
-                onClick={confirmReminderTime}
-                className="mt-5 w-full rounded-xl border py-3 text-base font-semibold transition"
-                style={{
-                  border: '1px solid rgba(212, 168, 67, 0.55)',
-                  background: '#D4A843',
-                  color: '#0a1432',
-                }}
-              >
-                {t('settings.reminderConfirm')}
-              </button>
-              <button
-                type="button"
-                onClick={cancelReminderTimeConfirm}
-                className="mt-3 w-full rounded-xl border py-3 text-base font-medium transition"
-                style={{
-                  borderColor: 'var(--glass-border)',
-                  background: 'transparent',
-                  color: 'var(--text-primary)',
-                }}
-              >
-                {t('settings.reminderCancel')}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
       {deleteAccountModalOpen ? (
         <div
           className="fixed inset-0 z-[10050] flex items-center justify-center p-4"
@@ -1567,15 +1541,40 @@ export default function Settings() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="px-5 pb-6 pt-5">
-              <h2
-                id="settings-delete-account-title"
-                className="m-0 text-lg font-semibold leading-snug"
-                style={{ color: 'var(--gold, #D4A843)' }}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '20px',
+              paddingTop: '8px',
+            }}>
+              <button
+                type="button"
+                onClick={() => setDeleteAccountModalOpen(false)}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(212,168,67,0.3)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: '#D4A843',
+                  fontSize: '20px',
+                }}
               >
-                {t('settings.deleteAccountConfirmTitle')}
-              </h2>
-              <p className="mt-3 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                ←
+              </button>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
+                  Delete Account
+                </span>
+              </div>
+              <div style={{ width: '40px' }} />
+            </div>
+            <div className="px-5 pb-6">
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                 {t('settings.deleteAccountConfirmBody')}
               </p>
               {deleteAccountError ? (
@@ -1609,6 +1608,526 @@ export default function Settings() {
               >
                 {t('common.cancel')}
               </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Notifications Modal */}
+      {notificationsOpen ? (
+        <div
+          className="fixed inset-0 z-[10050] flex items-center justify-center p-4"
+          style={{ background: 'var(--glass-scrim)' }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default border-0"
+            style={{ background: 'transparent' }}
+            aria-label={t('common.close')}
+            onClick={() => setNotificationsOpen(false)}
+          />
+          <div
+            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
+            style={{
+              background: 'var(--modal-bg)',
+              border: '1px solid var(--glass-border)',
+              boxShadow: 'var(--glass-shadow)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '20px',
+              paddingTop: '8px',
+            }}>
+              <button
+                type="button"
+                onClick={() => setNotificationsOpen(false)}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(212,168,67,0.3)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: '#D4A843',
+                  fontSize: '20px',
+                }}
+              >
+                ←
+              </button>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
+                  Notifications
+                </span>
+              </div>
+              <div style={{ width: '40px' }} />
+            </div>
+            <div className="px-5 pb-6">
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                Notification settings coming soon.
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* App Language Modal */}
+      {languageOpen ? (
+        <div
+          className="fixed inset-0 z-[10050] flex items-center justify-center p-4"
+          style={{ background: 'var(--glass-scrim)' }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default border-0"
+            style={{ background: 'transparent' }}
+            aria-label={t('common.close')}
+            onClick={() => setLanguageOpen(false)}
+          />
+          <div
+            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
+            style={{
+              background: 'var(--modal-bg)',
+              border: '1px solid var(--glass-border)',
+              boxShadow: 'var(--glass-shadow)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '20px',
+              paddingTop: '8px',
+            }}>
+              <button
+                type="button"
+                onClick={() => setLanguageOpen(false)}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(212,168,67,0.3)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: '#D4A843',
+                  fontSize: '20px',
+                }}
+              >
+                ←
+              </button>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
+                  App Language
+                </span>
+              </div>
+              <div style={{ width: '40px' }} />
+            </div>
+            <div className="px-5 pb-6">
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                Current: {(i18nHook.resolvedLanguage || i18nHook.language || 'en').toUpperCase()}
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Bible Translation Modal */}
+      {translationOpen ? (
+        <div
+          className="fixed inset-0 z-[10050] flex items-center justify-center p-4"
+          style={{ background: 'var(--glass-scrim)' }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default border-0"
+            style={{ background: 'transparent' }}
+            aria-label={t('common.close')}
+            onClick={() => setTranslationOpen(false)}
+          />
+          <div
+            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
+            style={{
+              background: 'var(--modal-bg)',
+              border: '1px solid var(--glass-border)',
+              boxShadow: 'var(--glass-shadow)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '20px',
+              paddingTop: '8px',
+            }}>
+              <button
+                type="button"
+                onClick={() => setTranslationOpen(false)}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(212,168,67,0.3)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: '#D4A843',
+                  fontSize: '20px',
+                }}
+              >
+                ←
+              </button>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
+                  Bible Translation
+                </span>
+              </div>
+              <div style={{ width: '40px' }} />
+            </div>
+            <div className="px-5 pb-6">
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                Current: {selectedTranslation}
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Font Size Modal */}
+      {fontSizeOpen ? (
+        <div
+          className="fixed inset-0 z-[10050] flex items-center justify-center p-4"
+          style={{ background: 'var(--glass-scrim)' }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default border-0"
+            style={{ background: 'transparent' }}
+            aria-label={t('common.close')}
+            onClick={() => setFontSizeOpen(false)}
+          />
+          <div
+            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
+            style={{
+              background: 'var(--modal-bg)',
+              border: '1px solid var(--glass-border)',
+              boxShadow: 'var(--glass-shadow)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '20px',
+              paddingTop: '8px',
+            }}>
+              <button
+                type="button"
+                onClick={() => setFontSizeOpen(false)}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(212,168,67,0.3)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: '#D4A843',
+                  fontSize: '20px',
+                }}
+              >
+                ←
+              </button>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
+                  Font Size
+                </span>
+              </div>
+              <div style={{ width: '40px' }} />
+            </div>
+            <div className="px-5 pb-6">
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                Font size settings coming soon.
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Public Profile Modal */}
+      {publicProfileOpen ? (
+        <div
+          className="fixed inset-0 z-[10050] flex items-center justify-center p-4"
+          style={{ background: 'var(--glass-scrim)' }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default border-0"
+            style={{ background: 'transparent' }}
+            aria-label={t('common.close')}
+            onClick={() => setPublicProfileOpen(false)}
+          />
+          <div
+            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
+            style={{
+              background: 'var(--modal-bg)',
+              border: '1px solid var(--glass-border)',
+              boxShadow: 'var(--glass-shadow)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '20px',
+              paddingTop: '8px',
+            }}>
+              <button
+                type="button"
+                onClick={() => setPublicProfileOpen(false)}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(212,168,67,0.3)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: '#D4A843',
+                  fontSize: '20px',
+                }}
+              >
+                ←
+              </button>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
+                  Public Profile
+                </span>
+              </div>
+              <div style={{ width: '40px' }} />
+            </div>
+            <div className="px-5 pb-6">
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                Public profile settings coming soon.
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Share App Modal */}
+      {shareAppOpen ? (
+        <div
+          className="fixed inset-0 z-[10050] flex items-center justify-center p-4"
+          style={{ background: 'var(--glass-scrim)' }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default border-0"
+            style={{ background: 'transparent' }}
+            aria-label={t('common.close')}
+            onClick={() => setShareAppOpen(false)}
+          />
+          <div
+            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
+            style={{
+              background: 'var(--modal-bg)',
+              border: '1px solid var(--glass-border)',
+              boxShadow: 'var(--glass-shadow)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '20px',
+              paddingTop: '8px',
+            }}>
+              <button
+                type="button"
+                onClick={() => setShareAppOpen(false)}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(212,168,67,0.3)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: '#D4A843',
+                  fontSize: '20px',
+                }}
+              >
+                ←
+              </button>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
+                  Share App
+                </span>
+              </div>
+              <div style={{ width: '40px' }} />
+            </div>
+            <div className="px-5 pb-6">
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                Share Abiding Anchor with friends coming soon.
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Rate Us Modal */}
+      {rateUsOpen ? (
+        <div
+          className="fixed inset-0 z-[10050] flex items-center justify-center p-4"
+          style={{ background: 'var(--glass-scrim)' }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default border-0"
+            style={{ background: 'transparent' }}
+            aria-label={t('common.close')}
+            onClick={() => setRateUsOpen(false)}
+          />
+          <div
+            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
+            style={{
+              background: 'var(--modal-bg)',
+              border: '1px solid var(--glass-border)',
+              boxShadow: 'var(--glass-shadow)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '20px',
+              paddingTop: '8px',
+            }}>
+              <button
+                type="button"
+                onClick={() => setRateUsOpen(false)}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(212,168,67,0.3)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: '#D4A843',
+                  fontSize: '20px',
+                }}
+              >
+                ←
+              </button>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
+                  Rate Us
+                </span>
+              </div>
+              <div style={{ width: '40px' }} />
+            </div>
+            <div className="px-5 pb-6">
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                Rate Abiding Anchor on the app store coming soon.
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* What's New Modal */}
+      {whatsNewOpen ? (
+        <div
+          className="fixed inset-0 z-[10050] flex items-center justify-center p-4"
+          style={{ background: 'var(--glass-scrim)' }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default border-0"
+            style={{ background: 'transparent' }}
+            aria-label={t('common.close')}
+            onClick={() => setWhatsNewOpen(false)}
+          />
+          <div
+            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
+            style={{
+              background: 'var(--modal-bg)',
+              border: '1px solid var(--glass-border)',
+              boxShadow: 'var(--glass-shadow)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '20px',
+              paddingTop: '8px',
+            }}>
+              <button
+                type="button"
+                onClick={() => setWhatsNewOpen(false)}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(212,168,67,0.3)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: '#D4A843',
+                  fontSize: '20px',
+                }}
+              >
+                ←
+              </button>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
+                  What's New
+                </span>
+              </div>
+              <div style={{ width: '40px' }} />
+            </div>
+            <div className="px-5 pb-6">
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                Latest updates and features coming soon.
+              </p>
             </div>
           </div>
         </div>

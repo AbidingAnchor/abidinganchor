@@ -59,6 +59,10 @@ export default function LoadingScreen() {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.88; }
         }
+        @keyframes dotAppear {
+          0%, 100% { opacity: 0; }
+          50% { opacity: 1; }
+        }
         .aa-loading-screen {
           --loading-screen-bg: linear-gradient(180deg, #07112a 0%, #0b1738 58%, #091021 100%);
         }
@@ -110,7 +114,10 @@ export default function LoadingScreen() {
             textShadow: '0 1px 14px rgba(0,0,0,0.45)',
           }}
         >
-          Abiding in His Word...
+          Abiding in His Word
+          <span style={{ display: 'inline-block', fontSize: 'inherit', color: '#D4A843', opacity: 0, animation: 'dotAppear 1.5s infinite 0s' }}>.</span>
+          <span style={{ display: 'inline-block', fontSize: 'inherit', color: '#D4A843', opacity: 0, animation: 'dotAppear 1.5s infinite 0.5s' }}>.</span>
+          <span style={{ display: 'inline-block', fontSize: 'inherit', color: '#D4A843', opacity: 0, animation: 'dotAppear 1.5s infinite 1s' }}>.</span>
         </p>
       </div>
     </div>

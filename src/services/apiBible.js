@@ -3,11 +3,30 @@
  * @see https://scripture.api.bible/
  */
 
-const BASE = 'https://api.scripture.api.bible/v1'
+const BASE = 'https://rest.api.bible/v1'
 
 /** Default KJV (API.Bible). Other languages: resolved via /v1/bibles?language= or VITE_API_BIBLE_ID_* env. */
 export const API_BIBLE_ID_BY_LANG = {
   en: 'de4e12af7f28f599-02',
+  hi: '1e8ab327edbce67f-01',
+}
+
+function abbrevMatches(row, re) {
+  const ab = row?.abbreviation
+  const locals = [ab?.local, ab?.short, ab?.long].filter(Boolean).join(' ')
+  const name = row?.name || row?.title || row?.description || ''
+  return re.test(locals) || re.test(name)
+}
+
+/** Prefer HINIRV, then ERV-HI, then BSI; otherwise first Hindi bible in the catalog response. */
+function pickPreferredHindiBibleId(rows) {
+  if (!rows?.length) return null
+  const prefs = [/HINIRV|IRVHin|IRV.*Hindi/i, /ERV-HI|ERV.*HI/i, /BSI|Bible Society of India/i]
+  for (const re of prefs) {
+    const hit = rows.find((r) => abbrevMatches(r, re))
+    if (hit?.id) return hit.id
+  }
+  return rows[0]?.id || null
 }
 
 function getApiKey() {
@@ -40,12 +59,13 @@ export async function resolveBibleIdForLanguage(lang) {
     return envOverride
   }
 
-  if (API_BIBLE_ID_BY_LANG[code]) {
-    bibleIdCache[code] = API_BIBLE_ID_BY_LANG[code]
-    return API_BIBLE_ID_BY_LANG[code]
+  const mapped = API_BIBLE_ID_BY_LANG[code]
+  if (mapped) {
+    bibleIdCache[code] = mapped
+    return mapped
   }
 
-  const iso = { en: 'eng', es: 'spa', pt: 'por', fr: 'fra', de: 'deu' }[code] || 'eng'
+  const iso = { en: 'eng', es: 'spa', pt: 'por', fr: 'fra', de: 'deu', hi: 'hin' }[code] || 'eng'
   try {
     const res = await fetch(`${BASE}/bibles?language=${iso}`, { headers: headers() })
     if (!res.ok) {
@@ -53,8 +73,11 @@ export async function resolveBibleIdForLanguage(lang) {
       return API_BIBLE_ID_BY_LANG.en
     }
     const json = await res.json()
-    const first = json.data?.[0]?.id
-    const id = first || API_BIBLE_ID_BY_LANG.en
+    const rows = json.data || []
+    const id =
+      code === 'hi'
+        ? pickPreferredHindiBibleId(rows) || rows[0]?.id || API_BIBLE_ID_BY_LANG.en
+        : rows[0]?.id || API_BIBLE_ID_BY_LANG.en
     bibleIdCache[code] = id
     return id
   } catch {

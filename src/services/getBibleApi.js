@@ -10,6 +10,7 @@ export const UI_LANG_TO_GETBIBLE = {
   pt: 'almeida',
   fr: 'ls1910',
   de: 'schlachter',
+  // Hindi: no verified v2 slug (e.g. /v2/hindi/... returns 404); Hindi text uses API.Bible when configured.
 }
 
 /**
