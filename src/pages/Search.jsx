@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import BibleReader from '../components/BibleReader'
 import { saveToJournal } from '../utils/journal'
 import SaveToast from '../components/SaveToast'
@@ -11,6 +12,7 @@ import { bibleBooks } from '../data/bibleBooks'
 import { searchBrowseBooks } from '../data/searchBrowseBooks'
 import { useAuth } from '../context/AuthContext'
 import { userStorageKey } from '../utils/userStorage'
+import { BIBLE_LANG_MAP } from '../utils/bibleTranslation'
 
 const quickSuggestionsRow1 = ['faith', 'love', 'peace', 'strength', 'hope']
 const quickSuggestionsRow2 = ['fear', 'greed', 'healing', 'forgiveness', 'anger']
@@ -228,27 +230,30 @@ function mapBibleApiToResults(data) {
   return []
 }
 
-async function fetchKeywordSearch(query) {
-  const encoded = encodeURIComponent(query.trim());
-  const url = `https://bolls.life/v2/find/WEB?search=${encoded}&match_case=false&match_whole=false&limit=20&page=1`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error("Search service unavailable. Try again shortly.");
-  const data = await res.json();
+async function fetchKeywordSearch(query, uiLang = 'en', t) {
+  const encoded = encodeURIComponent(query.trim())
+  const translation = BIBLE_LANG_MAP[uiLang] || 'WEB'
+  const url = `https://bolls.life/v2/find/${translation}?search=${encoded}&match_case=false&match_whole=false&limit=20&page=1`
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(t('search.unableToSearch'))
+  const data = await res.json()
 
   // API returns { exact_matches, total, results: [...] }
-  const verses = data.results || data; // fallback if bare array
+  const verses = data.results || data
   if (!Array.isArray(verses) || verses.length === 0) {
-    throw new Error(`No results found for "${query}".`);
+    throw new Error(t('search.noVersesFoundSearch'))
   }
 
   return verses.slice(0, 20).map((v) => ({
-    reference: `${BOOK_NAMES[v.book] || `Book ${v.book}`} ${v.chapter}:${v.verse}`,
-    text: v.text.replace(/<[^>]*>/g, "").trim(),
-  }));
+    reference: `${t(`bible.books.${bibleBooks[Math.max(0, Number(v.book) - 1)]?.apiName}`, { defaultValue: BOOK_NAMES[v.book] || String(v.book) })} ${v.chapter}:${v.verse}`,
+    text: (v.text || '').replace(/[ⓐ-ⓩ]/gu, '').replace(/<[^>]*>/g, '').replace(/\s{2,}/g, ' ').trim(),
+  }))
 }
 
 function Search({ onOpenWorship }) {
   const { user } = useAuth()
+  const { t, i18n } = useTranslation()
+  const uiLang = (i18n.resolvedLanguage || i18n.language || 'en').toLowerCase().split(/[-_]/)[0]
   const [searchMode, setSearchMode] = useState('keyword')
   const [searchTerm, setSearchTerm] = useState('')
   const [aiQuestion, setAiQuestion] = useState('')
@@ -307,7 +312,7 @@ function Search({ onOpenWorship }) {
 
     if (!isVerseReference) {
       setResults([])
-      setKeywordHint(curatedResults.length > 0 ? '' : 'No curated topic yet. Try another keyword or search by reference.')
+      setKeywordHint(curatedResults.length > 0 ? '' : t('search.noCuratedTopic'))
       setShowFullBibleResults(false)
       setFullBibleResults([])
       setFullBibleError('')
@@ -324,14 +329,14 @@ function Search({ onOpenWorship }) {
         const data = await response.json()
         if (!response.ok || data.error) {
           setResults([])
-          setKeywordHint('No verses found. Try a different reference.')
+          setKeywordHint(t('search.noVersesFound'))
           return
         }
         setResults(mapBibleApiToResults(data))
       } catch {
         if (!controller.signal.aborted) {
           setResults([])
-          setKeywordHint('Unable to search right now. Please try again.')
+          setKeywordHint(t('search.unableToSearch'))
         }
       } finally {
         if (!controller.signal.aborted) setIsLoading(false)
@@ -342,7 +347,7 @@ function Search({ onOpenWorship }) {
       controller.abort()
       clearTimeout(timeoutId)
     }
-  }, [trimmedSearch, isVerseReference, curatedResults.length, searchMode])
+  }, [trimmedSearch, isVerseReference, curatedResults.length, searchMode, t])
 
   const handleSaveToJournal = async (result) => {
     const saved = await saveToJournal({
@@ -361,11 +366,11 @@ function Search({ onOpenWorship }) {
     setFullBibleError('')
     setFullBiblePage(1)
     try {
-      const parsedResults = await fetchKeywordSearch(trimmedSearch)
+      const parsedResults = await fetchKeywordSearch(trimmedSearch, uiLang, t)
       setFullBibleResults(parsedResults)
     } catch (error) {
       setFullBibleResults([])
-      setFullBibleError(error instanceof Error ? error.message : 'Unable to complete full Bible search right now. Please try again.')
+      setFullBibleError(error instanceof Error ? error.message : t('search.unableToSearch'))
     } finally {
       setIsFullBibleLoading(false)
     }
@@ -426,14 +431,14 @@ function Search({ onOpenWorship }) {
                 marginBottom: '8px',
                 margin: '0 0 8px 0',
               }}>
-                Seek & Find
+                {t('search.title')}
               </h1>
               <p style={{
                 color: 'rgba(255, 255, 255, 0.5)',
                 fontSize: '15px',
                 margin: 0,
               }}>
-                God's Word has an answer for every season of life.
+                {t('search.subtitle')}
               </p>
             </header>
 
@@ -449,7 +454,7 @@ function Search({ onOpenWorship }) {
                   border: searchMode === 'keyword' ? 'none' : '1px solid rgba(212,168,67,0.2)',
                   color: searchMode === 'keyword' ? '#0a1428' : 'rgba(255,255,255,0.6)',
                   cursor: 'pointer',
-                }}>Search by Keyword</button>
+                }}>{t('search.byKeyword')}</button>
                 <button type="button" onClick={() => setSearchMode('topic')} style={{
                   borderRadius: '50px',
                   height: '44px',
@@ -460,7 +465,7 @@ function Search({ onOpenWorship }) {
                   border: searchMode === 'topic' ? 'none' : '1px solid rgba(212,168,67,0.2)',
                   color: searchMode === 'topic' ? '#0a1428' : 'rgba(255,255,255,0.6)',
                   cursor: 'pointer',
-                }}>Search by Topic</button>
+                }}>{t('search.byTopic')}</button>
               </div>
               {searchMode === 'keyword' ? (
                 <label htmlFor="scripture-search" style={{
@@ -485,7 +490,7 @@ function Search({ onOpenWorship }) {
                     onChange={(event) => setSearchTerm(event.target.value)}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
-                    placeholder="Search by reference or keyword (e.g. John 3:16, fear, love)"
+                    placeholder={t('search.placeholder')}
                     style={{
                       width: '100%',
                       background: 'transparent',
@@ -522,7 +527,7 @@ function Search({ onOpenWorship }) {
                             flexShrink: 0,
                             cursor: 'pointer'
                           }}>
-                            {suggestion}
+                            {t(`search.topics.${suggestion}`)}
                           </button>
                         ))}
                       </div>
@@ -539,7 +544,7 @@ function Search({ onOpenWorship }) {
                             flexShrink: 0,
                             cursor: 'pointer'
                           }}>
-                            {suggestion}
+                            {t(`search.topics.${suggestion}`)}
                           </button>
                         ))}
                       </div>
@@ -557,7 +562,7 @@ function Search({ onOpenWorship }) {
                           color: selectedTopic === topic ? '#0a1428' : '#D4A843',
                           cursor: 'pointer'
                         }}>
-                          {topic}
+                          {t(`search.topics.${topic}`)}
                         </button>
                       ))}
                     </div>
@@ -568,20 +573,22 @@ function Search({ onOpenWorship }) {
 
             {searchMode === 'topic' ? (
               <section className="space-y-3">
-                <h2 className="text-section-header m-0">Search Results</h2>
+                <h2 className="text-section-header m-0">{t('search.results')}</h2>
                 {selectedTopic ? (
                   <div className="space-y-3">
-                    <p className="text-sm font-semibold uppercase tracking-[0.15em] text-accent-gold">Verses on {selectedTopic}</p>
+                    <p className="text-sm font-semibold uppercase tracking-[0.15em] text-accent-gold">
+                      {t('search.curatedVerses', { keyword: t(`search.topics.${selectedTopic.toLowerCase()}`) })}
+                    </p>
                     {(TOPIC_VERSES[selectedTopic.toLowerCase()] || []).map((result) => (
                       <article key={result.ref} className="app-card rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4">
                         <p className="text-gold text-xs font-semibold uppercase tracking-[0.18em]">{result.ref}</p>
                         <p className="text-scripture mt-2 text-white [font-family:'Lora',serif] italic">{result.text}</p>
                         <div className="mt-3 flex justify-end gap-2">
                           <button type="button" onClick={() => handleSaveToJournal({ reference: result.ref, text: result.text })} className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
-                            Save to Journal
+                            {t('search.saveToJournal')}
                           </button>
                           <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.ref })} className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
-                            Share as Image
+                            {t('search.shareAsImage')}
                           </button>
                         </div>
                       </article>
@@ -596,16 +603,16 @@ function Search({ onOpenWorship }) {
                       color: '#1a1a2e',
                     }}
                   >
-                    Pick a topic to begin.
+                    {t('search.pickTopic')}
                   </article>
                 )}
               </section>
             ) : trimmedSearch ? (
               <>
               <section className="space-y-3">
-                <h2 className="text-section-header">Search Results for "{trimmedSearch}"</h2>
+                <h2 className="text-section-header">{t('search.resultsFor', { query: trimmedSearch })}</h2>
                 {isLoading ? (
-                  <div className="rounded-xl p-4" style={{ ...glassCard, ...bodyStyle }}>Searching...</div>
+                  <div className="rounded-xl p-4" style={{ ...glassCard, ...bodyStyle }}>{t('search.searching')}</div>
                 ) : keywordHint ? (
                   <article className="rounded-xl p-4" style={{ ...glassCard, ...bodyStyle }}>{keywordHint}</article>
                 ) : null}
@@ -618,10 +625,10 @@ function Search({ onOpenWorship }) {
                         <p className="text-scripture mt-2 text-white [font-family:'Lora',serif] italic">{result.text}</p>
                         <div className="mt-3 flex justify-end">
                           <button type="button" onClick={() => handleSaveToJournal(result)} className="rounded-lg border border-gold px-3 py-1.5 text-xs font-medium text-gold">
-                            Save to Journal
+                            {t('search.saveToJournal')}
                           </button>
                           <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.reference })} className="ml-2 rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
-                            Share as Image
+                            {t('search.shareAsImage')}
                           </button>
                         </div>
                       </article>
@@ -633,17 +640,17 @@ function Search({ onOpenWorship }) {
                   <div className="space-y-3">
                     {curatedResults.length > 0 ? (
                       <>
-                        <p className="text-sm font-semibold uppercase tracking-[0.15em] text-accent-gold">Curated Verses for "{keyword}"</p>
+                        <p className="text-sm font-semibold uppercase tracking-[0.15em] text-accent-gold">{t('search.curatedVerses', { keyword })}</p>
                         {curatedResults.map((result) => (
                           <article key={result.ref} className="app-card rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4">
                             <p className="text-gold text-xs font-semibold uppercase tracking-[0.18em]">{result.ref}</p>
                             <p className="text-scripture mt-2 text-white [font-family:'Lora',serif] italic">{result.text}</p>
                             <div className="mt-3 flex justify-end">
                               <button type="button" onClick={() => handleSaveToJournal({ reference: result.ref, text: result.text })} className="rounded-lg border border-gold px-3 py-1.5 text-xs font-medium text-gold">
-                                Save to Journal
+                                {t('search.saveToJournal')}
                               </button>
                               <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.ref })} className="ml-2 rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
-                                Share as Image
+                                {t('search.shareAsImage')}
                               </button>
                             </div>
                           </article>
@@ -652,16 +659,16 @@ function Search({ onOpenWorship }) {
                     ) : null}
 
                     <button type="button" onClick={handleSearchFullBible} className="w-full rounded-xl border border-gold bg-gold px-4 py-2 text-sm font-semibold text-primary-purple">
-                       Search Full Bible
+                       {t('search.searchFullBible')}
                      </button>
                   </div>
                 )}
 
                 {!isVerseReference && showFullBibleResults && (
                   <div className="space-y-3">
-                    <p className="text-sm font-semibold uppercase tracking-[0.15em] text-accent-gold">More from Full Bible Search</p>
+                    <p className="text-sm font-semibold uppercase tracking-[0.15em] text-accent-gold">{t('search.moreFromFullBible')}</p>
                     {isFullBibleLoading ? (
-                      <article className="rounded-xl p-4" style={{ ...glassCard, ...bodyStyle }}>Searching full Bible...</article>
+                      <article className="rounded-xl p-4" style={{ ...glassCard, ...bodyStyle }}>{t('search.searchingFullBible')}</article>
                     ) : fullBibleResults.length > 0 ? (
                       pagedFullBibleResults.map((result, index) => (
                         <article key={`${result.reference}-${index}`} className="app-card rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4">
@@ -669,17 +676,17 @@ function Search({ onOpenWorship }) {
                           <p className="text-scripture mt-2 text-white [font-family:'Lora',serif] italic">{result.text}</p>
                           <div className="mt-3 flex justify-end">
                             <button type="button" onClick={() => handleSaveToJournal(result)} className="rounded-lg border border-gold px-3 py-1.5 text-xs font-medium text-gold">
-                              Save to Journal
+                              {t('search.saveToJournal')}
                             </button>
                             <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.reference })} className="ml-2 rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
-                              Share as Image
+                              {t('search.shareAsImage')}
                             </button>
                           </div>
                         </article>
                       ))
                     ) : (
                       <article className="rounded-xl p-4" style={{ ...glassCard, ...bodyStyle }}>
-                        {fullBibleError || 'No additional verses found for this keyword.'}
+                        {fullBibleError || t('search.noVersesFoundSearch')}
                       </article>
                     )}
                     {fullBibleResults.length > FULL_BIBLE_PAGE_SIZE ? (
@@ -690,10 +697,10 @@ function Search({ onOpenWorship }) {
                           disabled={fullBiblePage === 1}
                           className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
                         >
-                          Previous
+                          {t('common.back')}
                         </button>
                         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-accent-gold">
-                          Page {fullBiblePage} of {totalFullBiblePages}
+                          {fullBiblePage}/{totalFullBiblePages}
                         </p>
                         <button
                           type="button"
@@ -701,7 +708,7 @@ function Search({ onOpenWorship }) {
                           disabled={fullBiblePage === totalFullBiblePages}
                           className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
                         >
-                          Next
+                          {t('common.next')}
                         </button>
                       </div>
                     ) : null}
@@ -709,7 +716,7 @@ function Search({ onOpenWorship }) {
                 )}
 
                 {isVerseReference && results.length === 0 && !keywordHint && !isLoading ? (
-                  <article className="rounded-xl p-4" style={{ ...glassCard, ...bodyStyle }}>No verses found. Try a different search.</article>
+                  <article className="rounded-xl p-4" style={{ ...glassCard, ...bodyStyle }}>{t('search.noVersesFoundSearch')}</article>
                 ) : null}
               </section>
               </>
@@ -717,7 +724,7 @@ function Search({ onOpenWorship }) {
               <>
               <section className="space-y-3">
                 <h2 style={{ color: '#D4A843', fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', margin: '0 0 12px 0' }}>
-                  ✦ Ask the AI Companion
+                  ✦ {t('search.askAI')}
                 </h2>
                 <div style={{
                   background: 'rgba(255,255,255,0.04)',
@@ -726,7 +733,7 @@ function Search({ onOpenWorship }) {
                   padding: '16px',
                 }}>
                   <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '13px', marginBottom: '12px', margin: '0 0 12px 0' }}>
-                    Get deep insights on any scripture
+                    {t('search.aiSubtitle')}
                   </p>
                   <Link
                     to="/ai-companion"
@@ -744,13 +751,13 @@ function Search({ onOpenWorship }) {
                       textDecoration: 'none',
                     }}
                   >
-                    Open AI Companion
+                    {t('search.openAI')}
                   </Link>
                 </div>
               </section>
 
               <section className="space-y-3">
-                <h2 style={{ color: '#D4A843', fontSize: '18px', fontWeight: 700, marginBottom: '12px', margin: '0 0 12px 0' }}>Browse by Book</h2>
+                <h2 style={{ color: '#D4A843', fontSize: '18px', fontWeight: 700, marginBottom: '12px', margin: '0 0 12px 0' }}>{t('search.browseByBook')}</h2>
                 <div style={{ display: 'inline-flex', gap: '8px' }}>
                   <button type="button" onClick={() => setTestament('old')} style={{
                     borderRadius: '50px',
@@ -761,7 +768,7 @@ function Search({ onOpenWorship }) {
                     border: testament === 'old' ? 'none' : '1px solid rgba(212,168,67,0.2)',
                     color: testament === 'old' ? '#0a1428' : 'rgba(255,255,255,0.6)',
                     cursor: 'pointer'
-                  }}>Old Testament</button>
+                  }}>{t('search.oldTestament')}</button>
                   <button type="button" onClick={() => setTestament('new')} style={{
                     borderRadius: '50px',
                     padding: '8px 20px',
@@ -771,7 +778,7 @@ function Search({ onOpenWorship }) {
                     border: testament === 'new' ? 'none' : '1px solid rgba(212,168,67,0.2)',
                     color: testament === 'new' ? '#0a1428' : 'rgba(255,255,255,0.6)',
                     cursor: 'pointer'
-                  }}>New Testament</button>
+                  }}>{t('search.newTestament')}</button>
                 </div>
                 <div
                   style={{
@@ -794,9 +801,9 @@ function Search({ onOpenWorship }) {
                       e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
                     }}>
                       <button type="button" onClick={() => handleBookTap(book)} style={{ background: 'none', border: 'none', textAlign: 'left', padding: 0, width: '100%', cursor: 'pointer' }}>
-                        <p style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff', margin: 0 }}>{book.name}</p>
+                        <p style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff', margin: 0 }}>{t(`bible.books.${book.apiName}`)}</p>
                         <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', margin: '4px 0 0 0' }}>
-                          {book.chapters} {book.chapters === 1 ? 'chapter' : 'chapters'}
+                          {book.chapters} {t('search.chapters')}
                         </p>
                       </button>
                     </article>

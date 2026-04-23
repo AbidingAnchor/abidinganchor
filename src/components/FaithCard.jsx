@@ -362,7 +362,6 @@ export default function FaithCard({
               textShadow: previewTextShadow,
             }}
           >
-            abidinganchor.vercel.app
           </p>
         </div>
       </div>

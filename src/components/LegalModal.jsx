@@ -1,9 +1,11 @@
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 const LEGACY_KEY = 'abidinganchor-legal-agreed'
 const LEGAL_ACCEPTED_KEY = 'legalAccepted'
 
 export default function LegalModal({ onAgreed }) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const alreadyAccepted =
     localStorage.getItem(LEGAL_ACCEPTED_KEY) === 'true' ||
@@ -58,8 +60,8 @@ export default function LegalModal({ onAgreed }) {
           </span>
         </div>
         <h2 style={{ fontSize: '28px', fontWeight: 800, color: '#fff' }}>Welcome to AbidingAnchor</h2>
-        <p className="mt-1" style={{ color: '#D4A843', fontStyle: 'italic', fontSize: '16px' }}>Anchored in His Word</p>
-        <p className="mt-2" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>Your quiet place with God&apos;s Word</p>
+        <p className="mt-1" style={{ color: '#D4A843', fontStyle: 'italic', fontSize: '16px' }}>{t('legal.anchoredInWord')}</p>
+        <p className="mt-2" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>{t('legal.quietPlace')}</p>
         <div className="mx-auto mt-4 h-px w-full" style={{ background: 'rgba(212,168,67,0.65)' }} />
         <p className="mt-4 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>
           By using this app, you agree to our

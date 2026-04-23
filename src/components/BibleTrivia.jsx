@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useMemo, useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { userStorageKey } from '../utils/userStorage'
+import { fetchVerse } from '../utils/bibleTranslation'
 
 function todayKey() {
   return new Date().toISOString().slice(0, 10)
@@ -25,152 +27,8 @@ function writeJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value))
 }
 
-const QUESTIONS = [
-  {
-    category: 'Old Testament',
-    q: 'Who led Israel out of Egypt?',
-    options: ['Joshua', 'Moses', 'David', 'Elijah'],
-    a: 1,
-  },
-  {
-    category: 'Old Testament',
-    q: 'What was the first book of the Bible?',
-    options: ['Exodus', 'Genesis', 'Leviticus', 'Psalms'],
-    a: 1,
-  },
-  {
-    category: 'Psalms',
-    q: 'Which Psalm begins, “The LORD is my shepherd”?',
-    options: ['Psalm 1', 'Psalm 19', 'Psalm 23', 'Psalm 91'],
-    a: 2,
-  },
-  {
-    category: 'Prophecy',
-    q: 'Which prophet saw a vision of dry bones coming to life?',
-    options: ['Ezekiel', 'Amos', 'Jonah', 'Hosea'],
-    a: 0,
-  },
-  {
-    category: 'New Testament',
-    q: 'Who wrote many letters to early churches in the New Testament?',
-    options: ['Peter', 'Paul', 'James', 'Jude'],
-    a: 1,
-  },
-  {
-    category: 'Miracles',
-    q: 'Jesus fed 5,000 people with five loaves and how many fish?',
-    options: ['One', 'Two', 'Three', 'Seven'],
-    a: 1,
-  },
-  {
-    category: 'New Testament',
-    q: 'Where was Jesus born?',
-    options: ['Nazareth', 'Bethlehem', 'Jerusalem', 'Capernaum'],
-    a: 1,
-  },
-  {
-    category: 'Old Testament',
-    q: 'Who fought Goliath?',
-    options: ['Saul', 'Solomon', 'David', 'Samuel'],
-    a: 2,
-  },
-  {
-    category: 'Prophecy',
-    q: 'Which book contains the “valley of dry bones” prophecy?',
-    options: ['Isaiah', 'Jeremiah', 'Ezekiel', 'Daniel'],
-    a: 2,
-  },
-  {
-    category: 'Miracles',
-    q: 'What did Jesus do at the wedding in Cana?',
-    options: ['Healed the sick', 'Walked on water', 'Turned water into wine', 'Raised Lazarus'],
-    a: 2,
-  },
-  {
-    category: 'Psalms',
-    q: 'Which Psalm says “Your word is a lamp to my feet”?',
-    options: ['Psalm 119', 'Psalm 150', 'Psalm 27', 'Psalm 34'],
-    a: 0,
-  },
-  {
-    category: 'New Testament',
-    q: 'Which Gospel is written by a physician?',
-    options: ['Matthew', 'Mark', 'Luke', 'John'],
-    a: 2,
-  },
-  {
-    category: 'Miracles',
-    q: 'Who did Jesus raise from the dead after four days?',
-    options: ['Jairus’ daughter', 'Lazarus', 'Tabitha', 'Eutychus'],
-    a: 1,
-  },
-  {
-    category: 'Old Testament',
-    q: 'What did God provide for Israel to eat in the wilderness?',
-    options: ['Manna', 'Fish', 'Grapes', 'Honey'],
-    a: 0,
-  },
-  {
-    category: 'New Testament',
-    q: 'What is the Great Commission reference?',
-    options: ['Matthew 28:19-20', 'John 3:16', 'Romans 8:28', 'Psalm 23:1'],
-    a: 0,
-  },
-  {
-    category: 'Prophecy',
-    q: 'Which prophet was swallowed by a great fish?',
-    options: ['Jonah', 'Micah', 'Zechariah', 'Malachi'],
-    a: 0,
-  },
-  {
-    category: 'Psalms',
-    q: 'Who is traditionally credited with writing many Psalms?',
-    options: ['Moses', 'David', 'Isaiah', 'Daniel'],
-    a: 1,
-  },
-  {
-    category: 'Miracles',
-    q: 'Jesus walked on what?',
-    options: ['Sand', 'Water', 'Fire', 'Clouds'],
-    a: 1,
-  },
-  {
-    category: 'New Testament',
-    q: 'Paul was also known as…',
-    options: ['Saul', 'Silas', 'Stephen', 'Simeon'],
-    a: 0,
-  },
-  {
-    category: 'Old Testament',
-    q: 'What city’s walls fell after Israel marched around them?',
-    options: ['Jerusalem', 'Jericho', 'Bethlehem', 'Nineveh'],
-    a: 1,
-  },
-  {
-    category: 'Prophecy',
-    q: 'Which prophet spoke of the “Suffering Servant” (Isaiah 53)?',
-    options: ['Isaiah', 'Haggai', 'Obadiah', 'Nahum'],
-    a: 0,
-  },
-  {
-    category: 'New Testament',
-    q: 'Who baptized Jesus?',
-    options: ['John the Baptist', 'Peter', 'Paul', 'Andrew'],
-    a: 0,
-  },
-]
-
-function pickQuestions(count = 10) {
-  const pool = [...QUESTIONS]
-  const picked = []
-  while (picked.length < Math.min(count, pool.length)) {
-    const idx = Math.floor(Math.random() * pool.length)
-    picked.push(pool.splice(idx, 1)[0])
-  }
-  return picked
-}
-
 export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = false }) {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const storageKeys = useMemo(
     () => ({
@@ -180,22 +38,163 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
     [user?.id],
   )
 
+  const QUESTIONS = [
+    {
+      category: t('trivia.categoryOldTestament'),
+      q: t('trivia.q1'),
+      options: [t('trivia.q1o1'), t('trivia.q1o2'), t('trivia.q1o3'), t('trivia.q1o4')],
+      a: 1,
+    },
+    {
+      category: t('trivia.categoryOldTestament'),
+      q: t('trivia.q2'),
+      options: [t('trivia.q2o1'), t('trivia.q2o2'), t('trivia.q2o3'), t('trivia.q2o4')],
+      a: 1,
+    },
+    {
+      category: t('trivia.categoryPsalms'),
+      q: t('trivia.q3'),
+      options: [t('trivia.q3o1'), t('trivia.q3o2'), t('trivia.q3o3'), t('trivia.q3o4')],
+      a: 2,
+    },
+    {
+      category: t('trivia.categoryProphecy'),
+      q: t('trivia.q4'),
+      options: [t('trivia.q4o1'), t('trivia.q4o2'), t('trivia.q4o3'), t('trivia.q4o4')],
+      a: 0,
+    },
+    {
+      category: t('trivia.categoryNewTestament'),
+      q: t('trivia.q5'),
+      options: [t('trivia.q5o1'), t('trivia.q5o2'), t('trivia.q5o3'), t('trivia.q5o4')],
+      a: 1,
+    },
+    {
+      category: t('trivia.categoryMiracles'),
+      q: t('trivia.q6'),
+      options: [t('trivia.q6o1'), t('trivia.q6o2'), t('trivia.q6o3'), t('trivia.q6o4')],
+      a: 1,
+    },
+    {
+      category: t('trivia.categoryNewTestament'),
+      q: t('trivia.q7'),
+      options: [t('trivia.q7o1'), t('trivia.q7o2'), t('trivia.q7o3'), t('trivia.q7o4')],
+      a: 1,
+    },
+    {
+      category: t('trivia.categoryOldTestament'),
+      q: t('trivia.q8'),
+      options: [t('trivia.q8o1'), t('trivia.q8o2'), t('trivia.q8o3'), t('trivia.q8o4')],
+      a: 2,
+    },
+    {
+      category: t('trivia.categoryProphecy'),
+      q: t('trivia.q9'),
+      options: [t('trivia.q9o1'), t('trivia.q9o2'), t('trivia.q9o3'), t('trivia.q9o4')],
+      a: 2,
+    },
+    {
+      category: t('trivia.categoryMiracles'),
+      q: t('trivia.q10'),
+      options: [t('trivia.q10o1'), t('trivia.q10o2'), t('trivia.q10o3'), t('trivia.q10o4')],
+      a: 2,
+    },
+    {
+      category: t('trivia.categoryPsalms'),
+      q: t('trivia.q11'),
+      options: [t('trivia.q11o1'), t('trivia.q11o2'), t('trivia.q11o3'), t('trivia.q11o4')],
+      a: 0,
+    },
+    {
+      category: t('trivia.categoryNewTestament'),
+      q: t('trivia.q12'),
+      options: [t('trivia.q12o1'), t('trivia.q12o2'), t('trivia.q12o3'), t('trivia.q12o4')],
+      a: 2,
+    },
+    {
+      category: t('trivia.categoryMiracles'),
+      q: t('trivia.q13'),
+      options: [t('trivia.q13o1'), t('trivia.q13o2'), t('trivia.q13o3'), t('trivia.q13o4')],
+      a: 1,
+    },
+    {
+      category: t('trivia.categoryOldTestament'),
+      q: t('trivia.q14'),
+      options: [t('trivia.q14o1'), t('trivia.q14o2'), t('trivia.q14o3'), t('trivia.q14o4')],
+      a: 0,
+    },
+    {
+      category: t('trivia.categoryNewTestament'),
+      q: t('trivia.q15'),
+      options: [t('trivia.q15o1'), t('trivia.q15o2'), t('trivia.q15o3'), t('trivia.q15o4')],
+      a: 0,
+    },
+    {
+      category: t('trivia.categoryProphecy'),
+      q: t('trivia.q16'),
+      options: [t('trivia.q16o1'), t('trivia.q16o2'), t('trivia.q16o3'), t('trivia.q16o4')],
+      a: 0,
+    },
+    {
+      category: t('trivia.categoryPsalms'),
+      q: t('trivia.q17'),
+      options: [t('trivia.q17o1'), t('trivia.q17o2'), t('trivia.q17o3'), t('trivia.q17o4')],
+      a: 1,
+    },
+    {
+      category: t('trivia.categoryMiracles'),
+      q: t('trivia.q18'),
+      options: [t('trivia.q18o1'), t('trivia.q18o2'), t('trivia.q18o3'), t('trivia.q18o4')],
+      a: 1,
+    },
+    {
+      category: t('trivia.categoryNewTestament'),
+      q: t('trivia.q19'),
+      options: [t('trivia.q19o1'), t('trivia.q19o2'), t('trivia.q19o3'), t('trivia.q19o4')],
+      a: 0,
+    },
+    {
+      category: t('trivia.categoryOldTestament'),
+      q: t('trivia.q20'),
+      options: [t('trivia.q20o1'), t('trivia.q20o2'), t('trivia.q20o3'), t('trivia.q20o4')],
+      a: 1,
+    },
+    {
+      category: t('trivia.categoryProphecy'),
+      q: t('trivia.q21'),
+      options: [t('trivia.q21o1'), t('trivia.q21o2'), t('trivia.q21o3'), t('trivia.q21o4')],
+      a: 0,
+    },
+    {
+      category: t('trivia.categoryNewTestament'),
+      q: t('trivia.q22'),
+      options: [t('trivia.q22o1'), t('trivia.q22o2'), t('trivia.q22o3'), t('trivia.q22o4')],
+      a: 0,
+    },
+  ]
+
+  function pickQuestions(count) {
+    const shuffled = [...QUESTIONS].sort(() => Math.random() - 0.5)
+    return shuffled.slice(0, count)
+  }
+
   const [roundQuestions, setRoundQuestions] = useState(() => pickQuestions(10))
   const [index, setIndex] = useState(0)
   const [selected, setSelected] = useState(null)
   const [score, setScore] = useState(0)
   const [done, setDone] = useState(false)
   const [confetti, setConfetti] = useState(false)
-
-  const current = roundQuestions[index]
+  const [triviaVerseText, setTriviaVerseText] = useState('')
+  const [triviaVerseLoading, setTriviaVerseLoading] = useState(true)
+  const [triviaShareVerseText, setTriviaShareVerseText] = useState('')
+  
+  const currentQuestion = roundQuestions[index]
   const progress = Math.round(((index + (done ? 1 : 0)) / roundQuestions.length) * 100)
-
-  const streak = useMemo(() => readJson(storageKeys.streak, { count: 0, lastDay: '' }), [storageKeys.streak])
-
+  
   const handleAnswer = (choiceIdx) => {
     if (selected !== null) return
     setSelected(choiceIdx)
-    const correct = choiceIdx === current.a
+    const correct = choiceIdx === currentQuestion.a
     if (correct) setScore((s) => s + 1)
     setTimeout(() => {
       if (index >= roundQuestions.length - 1) {
@@ -207,21 +206,21 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
         const nextCount =
           prev.lastDay === day ? prev.count : prev.lastDay === yesterdayKey() ? prev.count + 1 : 1
         writeJson(storageKeys.streak, { count: nextCount, lastDay: day })
-
+  
         const statsPrev = readJson(storageKeys.stats, { gamesCompleted: 0, psalmsCorrect: 0, bestScore: 0, lastScore: 0 })
         const psalmsCorrectThisRound =
-          current.category === 'Psalms' && correct ? 1 : 0
+          currentQuestion.category === 'Psalms' && correct ? 1 : 0
         const psalmsTotalCorrect =
           statsPrev.psalmsCorrect +
           psalmsCorrectThisRound +
           roundQuestions
             .slice(0, index)
-            .reduce((acc, q, i) => {
+            .reduce(() => {
               // This round already scored via UI; approximate by counting correct choices we tracked only via score.
               // We keep it simple by only incrementing for last question here plus previous psalms are counted on completion below.
-              return acc
+              return 0
             }, 0)
-
+  
         const finalScore = correct ? score + 1 : score
         writeJson(storageKeys.stats, {
           ...statsPrev,
@@ -230,7 +229,7 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
           lastScore: finalScore,
           psalmsCorrect: psalmsTotalCorrect,
         })
-
+  
         onRoundComplete?.({ score: finalScore, total: roundQuestions.length })
       } else {
         setIndex((i) => i + 1)
@@ -238,7 +237,7 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
       }
     }, 650)
   }
-
+  
   const restart = () => {
     setRoundQuestions(pickQuestions(10))
     setIndex(0)
@@ -246,12 +245,42 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
     setScore(0)
     setDone(false)
   }
+  
+  useEffect(() => {
+    const loadTriviaVerse = async () => {
+      setTriviaVerseLoading(true)
+      try {
+        const text = await fetchVerse(51, 3, 16, 'en')
+        setTriviaVerseText(text)
+      } catch {
+        setTriviaVerseText(t('trivia.defaultVerse'))
+      } finally {
+        setTriviaVerseLoading(false)
+      }
+    }
+  
+    loadTriviaVerse()
+  }, [t])
+  
+  useEffect(() => {
+    const loadShareVerse = async () => {
+      try {
+        const text = await fetchVerse(19, 119, 105, 'en')
+        setTriviaShareVerseText(text)
+      } catch {
+        setTriviaShareVerseText(t('trivia.defaultShareVerse'))
+      }
+    }
+  
+    loadShareVerse()
+  }, [t])
 
   const shareScore = async () => {
-    const text = `AbidingAnchor — Daily Trivia\nScore: ${score}/${roundQuestions.length}\n\n“Your word is a lamp to my feet.” (Psalm 119:105)`
+    const verseText = triviaShareVerseText || 'Your word is a lamp to my feet'
+    const text = `${t('trivia.title')}\n${t('trivia.scoreLabel')}: ${score}/${roundQuestions.length}\n\n"${verseText}" (Psalm 119:105)`
     try {
       await navigator.clipboard.writeText(text)
-      alert('Score copied to clipboard!')
+      alert(t('trivia.scoreCopied'))
     } catch {
       alert(text)
     }
@@ -273,10 +302,10 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
 
       <div className="mb-3 flex items-center justify-between">
         <p className="text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: '#D4A843' }}>
-          🎮 Daily Trivia
+          {t('trivia.title')}
         </p>
         <button type="button" onClick={onExit} className="text-xs text-white/70">
-          ← Back
+          {t('common.back')}
         </button>
       </div>
 
@@ -284,23 +313,23 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
         <>
           <div className="mb-2 flex items-center justify-between text-xs text-white/70">
             <span>
-              Question {index + 1} of {roundQuestions.length}
+              {t('trivia.questionOf', { current: index + 1, total: roundQuestions.length })}
             </span>
-            <span>Score: {score}</span>
+            <span>{t('trivia.scoreLabel')}: {score}</span>
           </div>
           <div className="mb-3 h-2 overflow-hidden rounded-full bg-white/20">
             <div className="h-full rounded-full" style={{ width: `${progress}%`, background: '#D4A843' }} />
           </div>
 
           <div className="glass-panel rounded-2xl p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/70">{current.category}</p>
-            <p className="mt-2 text-lg font-semibold text-white">{current.q}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/70">{currentQuestion.category}</p>
+            <p className="mt-2 text-lg font-semibold text-white">{currentQuestion.q}</p>
           </div>
 
           <div className="mt-3 grid grid-cols-1 gap-2">
-            {current.options.map((opt, optIdx) => {
+            {currentQuestion.options.map((opt, optIdx) => {
               const isChosen = selected === optIdx
-              const isCorrect = optIdx === current.a
+              const isCorrect = optIdx === currentQuestion.a
               let bg = 'rgba(255,255,255,0.08)'
               let border = 'rgba(255,255,255,0.18)'
               if (selected !== null && isChosen && isCorrect) {
@@ -348,20 +377,20 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
               ))
             : null}
           <p className="text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: '#D4A843' }}>
-            Round Complete
+            {t('trivia.roundComplete')}
           </p>
           <p className="mt-2 text-3xl font-bold text-white">
             {score}/{roundQuestions.length}
           </p>
           <p className="mt-2 text-sm text-white/80">
-            “Let the word of Christ dwell in you richly…” — Colossians 3:16
+            {triviaVerseLoading ? `"${t('trivia.fallbackVerse')}" — Colossians 3:16` : `"${triviaVerseText}…" — Colossians 3:16`}
           </p>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             <button type="button" onClick={restart} className="rounded-xl px-4 py-2 text-sm font-semibold text-[#1a1a1a]" style={{ background: '#D4A843' }}>
-              Play Again
+              {t('trivia.playAgain')}
             </button>
             <button type="button" onClick={shareScore} className="rounded-xl border border-[#D4A843] px-4 py-2 text-sm font-semibold text-[#D4A843]">
-              Share your score
+              {t('trivia.shareScore')}
             </button>
           </div>
         </div>

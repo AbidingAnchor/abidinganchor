@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
 
 function weekKeyForDate(date = new Date()) {
@@ -97,7 +98,8 @@ async function fetchPrayerRowsLast7Days(uid, sinceIso) {
   }
 }
 
-export default function WeeklyRecap({ userId, profile, weekStorageKey, autoGenerate = false, onDismiss }) {
+export default function WeeklyRecap({ weekStorageKey, autoGenerate = false }) {
+  const { t } = useTranslation()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [recap, setRecap] = useState('')
@@ -243,7 +245,7 @@ export default function WeeklyRecap({ userId, profile, weekStorageKey, autoGener
             fontSize: '16px',
           }}
         >
-          View Weekly Recap
+          {t('weeklyRecap.viewButton')}
         </button>
       </article>
     )
@@ -261,7 +263,7 @@ export default function WeeklyRecap({ userId, profile, weekStorageKey, autoGener
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', alignItems: 'center' }}>
         <p style={{ margin: 0, color: 'var(--text-primary)', fontWeight: 800, fontSize: '14px' }}>
-          Weekly Spiritual Recap ✨
+          {t('weeklyRecap.title')} ✨
         </p>
         <button
           type="button"
@@ -280,22 +282,22 @@ export default function WeeklyRecap({ userId, profile, weekStorageKey, autoGener
             fontSize: '11px',
           }}
         >
-          Dismiss
+          {t('common.dismiss')}
         </button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '8px', marginTop: '10px' }}>
-        <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>📖 {stats.chaptersRead} ch</div>
-        <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>📝 {stats.journals} journal</div>
-        <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>🙏 {stats.prayers} prayers</div>
-        <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>🔥 {stats.streak} streak</div>
+        <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>📖 {stats.chaptersRead} {t('weeklyRecap.chapters')}</div>
+        <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>📝 {stats.journals} {t('weeklyRecap.journal')}</div>
+        <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>🙏 {stats.prayers} {t('weeklyRecap.prayers')}</div>
+        <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>🔥 {stats.streak} {t('weeklyRecap.streak')}</div>
       </div>
 
       {recap ? (
         <p style={{ margin: '10px 0 0', color: 'var(--text-primary)', fontSize: '14px', lineHeight: 1.6 }}>{recap}</p>
       ) : (
         <p style={{ margin: '10px 0 0', color: 'var(--text-secondary)', fontSize: '13px', lineHeight: 1.5 }}>
-          {loading ? 'Generating your recap…' : 'Generate a personalized recap from your week with God.'}
+          {loading ? t('weeklyRecap.generating') : t('weeklyRecap.generatePrompt')}
         </p>
       )}
 
@@ -321,7 +323,7 @@ export default function WeeklyRecap({ userId, profile, weekStorageKey, autoGener
           opacity: loading ? 0.85 : 1,
         }}
       >
-        {loading ? 'Preparing Recap…' : (recap ? 'Regenerate Weekly Recap' : 'View Weekly Recap')}
+        {loading ? 'Preparing Recap…' : (recap ? 'Regenerate Weekly Recap' : t('weeklyRecap.viewButton'))}
       </button>
     </article>
   )

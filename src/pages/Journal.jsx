@@ -497,14 +497,14 @@ function Journal() {
             marginBottom: '8px',
             margin: '0 0 8px 0',
           }}>
-            Journal
+            {t('journal.pageTitle')}
           </h1>
           <p style={{
             color: 'rgba(255, 255, 255, 0.5)',
             fontSize: '15px',
             margin: 0,
           }}>
-            Your faith journey, written in ink
+            {t('journal.pageSubtitle')}
           </p>
         </div>
 
@@ -524,17 +524,17 @@ function Journal() {
         }}>
           <div style={{ textAlign: 'center', minWidth: '60px' }}>
             <p style={{ color: '#D4A843', fontSize: '28px', fontWeight: 800, margin: '0 0 4px 0', lineHeight: 1 }}>{totalEntries}</p>
-            <p style={{ color: 'rgba(255, 255, 255, 0.45)', fontSize: '11px', letterSpacing: '1.5px', margin: 0, fontWeight: 600, textTransform: 'uppercase' }}>{totalEntries === 1 ? 'ENTRY' : 'ENTRIES'}</p>
+            <p style={{ color: 'rgba(255, 255, 255, 0.45)', fontSize: '11px', letterSpacing: '1.5px', margin: 0, fontWeight: 600, textTransform: 'uppercase' }}>{totalEntries === 1 ? t('journal.entrySingular') : t('journal.entryPlural')}</p>
           </div>
           <div style={{ width: '1px', height: '32px', background: 'rgba(255, 255, 255, 0.1)' }} />
           <div style={{ textAlign: 'center', minWidth: '60px' }}>
             <p style={{ color: '#D4A843', fontSize: '28px', fontWeight: 800, margin: '0 0 4px 0', lineHeight: 1 }}>{writingStreak}</p>
-            <p style={{ color: 'rgba(255, 255, 255, 0.45)', fontSize: '11px', letterSpacing: '1.5px', margin: 0, fontWeight: 600, textTransform: 'uppercase' }}>{writingStreak === 1 ? 'DAY' : 'DAYS'}</p>
+            <p style={{ color: 'rgba(255, 255, 255, 0.45)', fontSize: '11px', letterSpacing: '1.5px', margin: 0, fontWeight: 600, textTransform: 'uppercase' }}>{writingStreak === 1 ? t('journal.day') : t('journal.days')}</p>
           </div>
           <div style={{ width: '1px', height: '32px', background: 'rgba(255, 255, 255, 0.1)' }} />
           <div style={{ textAlign: 'center', minWidth: '60px' }}>
-            <p style={{ color: '#D4A843', fontSize: '28px', fontWeight: 800, margin: '0 0 4px 0', lineHeight: 1 }}>{entries.length > 0 ? new Date(entries[entries.length - 1].created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '—'}</p>
-            <p style={{ color: 'rgba(255, 255, 255, 0.45)', fontSize: '11px', letterSpacing: '1.5px', margin: 0, fontWeight: 600, textTransform: 'uppercase' }}>STARTED</p>
+            <p style={{ color: '#D4A843', fontSize: '28px', fontWeight: 800, margin: '0 0 4px 0', lineHeight: 1 }}>{entries.length > 0 ? new Date(entries[entries.length - 1].created_at).toLocaleDateString(i18n.language, { month: 'short', year: 'numeric' }) : '—'}</p>
+            <p style={{ color: 'rgba(255, 255, 255, 0.45)', fontSize: '11px', letterSpacing: '1.5px', margin: 0, fontWeight: 600, textTransform: 'uppercase' }}>{t('journal.dayStreakLabel', { n: writingStreak })}</p>
           </div>
         </div>
 
@@ -545,7 +545,7 @@ function Journal() {
             color: 'rgba(255, 255, 255, 0.5)',
             animation: 'fadeIn 0.6s ease-out 0.2s both',
           }}>
-            Loading…
+            {t('common.loading')}
           </div>
         ) : entries.length > 0 ? (
           <div style={{ animation: 'fadeIn 0.6s ease-out 0.2s both' }}>
@@ -563,7 +563,7 @@ function Journal() {
                 textTransform: 'uppercase',
                 fontWeight: 600,
               }}>
-                ENTRIES
+                {t('journal.entriesLabel').toUpperCase()}
               </p>
               <button
                 type="button"
@@ -658,8 +658,8 @@ function Journal() {
               <>
                 {visibleEntries.map((entry, index) => {
                   const date = new Date(entry.created_at || Date.now())
-                  const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase()
-                  const monthDay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                  const dayName = date.toLocaleDateString(i18n.language, { weekday: 'long' }).toUpperCase()
+                  const monthDay = date.toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })
                   const wordCount = (entry.note || '').split(/\s+/).filter(w => w).length
                   const readTime = Math.max(1, Math.ceil(wordCount / 200))
                   const note = (entry.note || '').toLowerCase()
@@ -739,9 +739,9 @@ function Journal() {
                         {entry.note || getEntryBodyPreview(entry)}
                       </p>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', color: 'rgba(255, 255, 255, 0.4)', fontSize: '12px' }}>
-                        <span>{wordCount} words</span>
+                        <span>{wordCount} {t('journal.wordsLabel', { count: wordCount })}</span>
                         <span>•</span>
-                        <span>{readTime} min read</span>
+                        <span>{readTime} {t('journal.minReadLabel')}</span>
                       </div>
                     </div>
                   )
@@ -900,7 +900,7 @@ function Journal() {
                     transition: 'all 0.2s ease',
                   }}
                 >
-                  Close
+                  {t('common.close')}
                 </button>
                 <button
                   type="button"
@@ -916,7 +916,7 @@ function Journal() {
                     transition: 'all 0.2s ease',
                   }}
                 >
-                  Delete
+                  {t('common.delete')}
                 </button>
               </div>
               
@@ -928,7 +928,7 @@ function Journal() {
                   marginBottom: '8px',
                   lineHeight: 1,
                 }}>
-                  {new Date(showReaderModal.created_at || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  {new Date(showReaderModal.created_at || Date.now()).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })}
                 </p>
                 <p style={{
                   color: '#D4A843',
@@ -936,7 +936,7 @@ function Journal() {
                   fontWeight: 600,
                   letterSpacing: '0.18em',
                 }}>
-                  {new Date(showReaderModal.created_at || Date.now()).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase()}
+                  {new Date(showReaderModal.created_at || Date.now()).toLocaleDateString(i18n.language, { weekday: 'long' }).toUpperCase()}
                 </p>
               </div>
               
@@ -1017,7 +1017,7 @@ function Journal() {
               fontSize: '13px',
               marginBottom: '8px',
             }}>
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+              {new Date().toLocaleDateString(i18n.language, { weekday: 'long', month: 'long', day: 'numeric' })}
             </p>
             <textarea
               value={simpleComposeDraft}
@@ -1057,13 +1057,13 @@ function Journal() {
                 fontSize: '13px',
                 fontWeight: 500,
               }}>
-                {simpleComposeDraft.trim().split(/\s+/).filter(w => w).length} words
+                {simpleComposeDraft.trim().split(/\s+/).filter(w => w).length} {t('journal.wordsLabel', { count: simpleComposeDraft.trim().split(/\s+/).filter(w => w).length })}
               </p>
               <p style={{
                 color: 'rgba(255, 255, 255, 0.4)',
                 fontSize: '12px',
               }}>
-                ~{Math.max(1, Math.ceil(simpleComposeDraft.trim().split(/\s+/).filter(w => w).length / 200))} min read
+                ~{Math.max(1, Math.ceil(simpleComposeDraft.trim().split(/\s+/).filter(w => w).length / 200))} {t('journal.minReadLabel')}
               </p>
             </div>
             <button
@@ -1087,7 +1087,7 @@ function Journal() {
                 transition: 'all 0.2s ease',
               }}
             >
-              {simpleComposeSaving ? 'Saving…' : 'Save Entry'}
+              {simpleComposeSaving ? t('common.saving') : t('journal.saveEntry')}
             </button>
             <button
               type="button"
@@ -1104,7 +1104,7 @@ function Journal() {
                 transition: 'all 0.2s ease',
               }}
             >
-              Cancel
+              {t('common.cancel')}
             </button>
           </div>
         </>,
@@ -1434,7 +1434,7 @@ function Journal() {
                     border: 'none'
                   }}
                 >
-                  Next →
+                  {t('common.next')} →
                 </button>
               )}
             </div>

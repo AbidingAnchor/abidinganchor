@@ -147,17 +147,17 @@ export default function EditProfile() {
     if (!user?.id || saving) return
     const nextUsername = username.trim()
     if (nextUsername && hasProfanityInUsername(nextUsername)) {
-      setProfileError('Please choose an appropriate username.')
+      setProfileError(t('profile.usernameProfanityError'))
       return
     }
     if (nextUsername) {
       const { taken, error: availErr } = await checkUsernameTaken(supabase, nextUsername, user.id)
       if (availErr) {
-        setProfileError('Could not verify username. Try again.')
+        setProfileError(t('profile.usernameCheckError'))
         return
       }
       if (taken) {
-        setProfileError('Username already taken')
+        setProfileError(t('profile.usernameTaken'))
         return
       }
     }
@@ -252,7 +252,7 @@ export default function EditProfile() {
         </button>
         <div style={{ flex: 1, textAlign: 'center' }}>
           <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
-            Edit Profile
+            {t('profile.editTitle')}
           </span>
         </div>
         <div style={{ width: '40px' }} />
@@ -334,7 +334,7 @@ export default function EditProfile() {
                   }}
                 >
                   <span aria-hidden>⚓</span>
-                  <span>Ministry Supporter</span>
+                  <span>{t('profile.ministrySupporterBadge')}</span>
                 </div>
               ) : null}
               {uploadStatus === 'success' ? (
@@ -375,7 +375,7 @@ export default function EditProfile() {
 
         <div className="glass-panel" style={{ borderRadius: '16px', padding: '20px' }}>
           <p style={{ color: 'var(--text-secondary)', fontSize: '13px', lineHeight: 1.45, marginBottom: '14px' }}>
-            Username, bio, and favorite verse are saved together with Save Profile below.
+            {t('profile.profileFieldsHint')}
           </p>
           <UsernameInput
             value={username}
@@ -385,8 +385,8 @@ export default function EditProfile() {
             }}
             excludeUserId={user?.id}
             disabled={reachedUsernameLimit}
-            placeholder="Your display name"
-            labelText="Username / Display name"
+            placeholder={t('profile.displayNamePlaceholder')}
+            labelText={t('profile.displayNameLabel')}
             emptyAllowsSubmit
             inputStyle={{ width: '100%', marginBottom: 0 }}
           />
@@ -397,25 +397,23 @@ export default function EditProfile() {
           ) : null}
           {unlimitedUsername ? (
             <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '12px', marginBottom: '12px' }}>
-              Unlimited username changes (admin)
+              {t('profile.usernameUnlimited')}
             </p>
           ) : null}
           {!unlimitedUsername && !reachedUsernameLimit && remainingUsernameChanges > 0 ? (
             <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '12px', marginBottom: '12px' }}>
-              {remainingUsernameChanges === 1
-                ? '1 username change remaining'
-                : `${remainingUsernameChanges} username changes remaining`}
+              {t(`profile.usernameRemaining_${remainingUsernameChanges === 1 ? 'one' : 'other'}`, { count: remainingUsernameChanges })}
             </p>
           ) : null}
           {!unlimitedUsername && reachedUsernameLimit ? (
-            <p style={{ color: '#D4A843', fontSize: '12px', marginBottom: '12px' }}>Username can only be changed once</p>
+            <p style={{ color: '#D4A843', fontSize: '12px', marginBottom: '12px' }}>{t('profile.usernameLocked')}</p>
           ) : null}
 
-          <label style={{ color: 'var(--text-primary)', display: 'block', fontSize: '14px', marginBottom: '8px' }}>Bio</label>
+          <label style={{ color: 'var(--text-primary)', display: 'block', fontSize: '14px', marginBottom: '8px' }}>{t('profile.bioLabel')}</label>
           <textarea
             value={bio}
             onChange={(e) => setBio(e.target.value.slice(0, BIO_MAX))}
-            placeholder="Tell others a little about you"
+            placeholder={t('profile.bioPlaceholder')}
             rows={3}
             className="glass-input-field"
             style={{ width: '100%', borderRadius: '12px', padding: '12px', resize: 'none' }}
@@ -424,11 +422,11 @@ export default function EditProfile() {
             {bio.length}/{BIO_MAX}
           </p>
 
-          <label style={{ color: 'var(--text-primary)', display: 'block', fontSize: '14px', marginBottom: '8px', marginTop: '10px' }}>Favorite verse</label>
+          <label style={{ color: 'var(--text-primary)', display: 'block', fontSize: '14px', marginBottom: '8px', marginTop: '10px' }}>{t('profile.favoriteVerseLabel')}</label>
           <textarea
             value={favoriteVerse}
             onChange={(e) => setFavoriteVerse(e.target.value)}
-            placeholder="John 3:16 - For God so loved the world..."
+            placeholder={t('profile.favoriteVersePlaceholder')}
             rows={3}
             className="glass-input-field"
             style={{ width: '100%', borderRadius: '12px', padding: '12px', resize: 'vertical' }}
@@ -451,7 +449,7 @@ export default function EditProfile() {
               opacity: saving ? 0.75 : 1,
             }}
           >
-            {saving ? 'Saving...' : 'Save Profile'}
+            {saving ? t('profile.savingProfile') : t('profile.saveProfile')}
           </button>
         </div>
       </section>
@@ -476,7 +474,7 @@ export default function EditProfile() {
           fontWeight: 700,
         }}
       >
-        Profile updated
+        {t('profile.updated')}
       </div>
     </div>
   )

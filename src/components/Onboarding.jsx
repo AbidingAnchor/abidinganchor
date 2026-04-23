@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { fetchVerse } from '../utils/bibleTranslation'
 import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
 import { supabase } from '../lib/supabase'
 import { userStorageKey } from '../utils/userStorage'
@@ -87,10 +88,28 @@ export default function Onboarding({ onComplete }) {
   const [loading, setLoading] = useState(false)
   const [isCompleting, setIsCompleting] = useState(false)
   const [fadeIn, setFadeIn] = useState(false)
+  const [onboardingVerseText, setOnboardingVerseText] = useState('')
+  const [onboardingVerseLoading, setOnboardingVerseLoading] = useState(true)
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setFadeIn(true))
     return () => cancelAnimationFrame(id)
+  }, [])
+
+  useEffect(() => {
+    const loadOnboardingVerse = async () => {
+      setOnboardingVerseLoading(true)
+      try {
+        const text = await fetchVerse(43, 15, 4, 'en')
+        setOnboardingVerseText(text)
+      } catch {
+        setOnboardingVerseText('Abide in me, and I in you')
+      } finally {
+        setOnboardingVerseLoading(false)
+      }
+    }
+
+    loadOnboardingVerse()
   }, [])
 
   useEffect(() => {
@@ -391,7 +410,7 @@ export default function Onboarding({ onComplete }) {
                 fontStyle: 'italic',
                 marginBottom: '32px'
               }}>
-                Abide in me, and I in you — John 15:4
+                {onboardingVerseLoading ? 'Abide in me, and I in you — John 15:4' : `${onboardingVerseText} — John 15:4`}
               </p>
                 <button
                 type="button"

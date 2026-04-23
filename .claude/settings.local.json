@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:bolls.life)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:api.getbible.net)"
+    ]
+  }
+}

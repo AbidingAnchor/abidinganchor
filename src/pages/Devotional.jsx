@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import DevotionalReader from '../components/DevotionalReader'
 import { devotionalTopics, devotionals } from '../data/devotionals'
 import { useAuth } from '../context/AuthContext'
@@ -39,6 +40,7 @@ function getTodayDevotional() {
 }
 
 export default function Devotional() {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const keys = useMemo(
     () => ({
@@ -159,7 +161,7 @@ export default function Devotional() {
       <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '220px', paddingBottom: '110px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
         <section className="space-y-4">
           <div className="glass-panel rounded-3xl p-5 text-white" style={{ boxShadow: '0 0 24px rgba(212,168,67,0.15)' }}>
-            <p className="text-xs uppercase tracking-[0.2em] text-white/80">Today&apos;s Devotional</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-white/80">{t('devotional.todayTitle')}</p>
             <h1 className="mt-2 text-3xl font-bold" style={{ color: '#D4A843' }}>{today.title}</h1>
             <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/75">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
             <p className="mt-3 text-sm text-white/85">{today.scripture}</p>
@@ -168,26 +170,26 @@ export default function Devotional() {
             </p>
             <div className="mt-4 flex gap-2">
               <button type="button" onClick={() => openReader(today)} className="rounded-xl px-4 py-2 text-sm font-semibold text-[#1a1a1a]" style={{ background: '#D4A843' }}>
-                {isTodayStarted ? 'Continue Reading' : 'Start Today'}
+                {isTodayStarted ? t('devotional.continueReading') : t('devotional.startToday')}
               </button>
-              <Link to="/faith-journey" className="rounded-xl border border-white/35 px-4 py-2 text-sm text-white/90">Journey</Link>
+              <Link to="/faith-journey" className="rounded-xl border border-white/35 px-4 py-2 text-sm text-white/90">{t('devotional.journey')}</Link>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <div className="glass-panel rounded-xl p-3 text-white">
-              <p className="text-xs uppercase tracking-[0.12em] text-white/75">Streak</p>
+              <p className="text-xs uppercase tracking-[0.12em] text-white/75">{t('devotional.streak')}</p>
               <p className={`mt-1 text-xl font-bold ${streak.count ? 'streak-shimmer' : ''}`} style={{ color: '#D4A843' }}>🔥 {streak.count || 0}</p>
             </div>
             <div className="glass-panel rounded-xl p-3 text-white">
-              <p className="text-xs uppercase tracking-[0.12em] text-white/75">Completed</p>
+              <p className="text-xs uppercase tracking-[0.12em] text-white/75">{t('devotional.completed')}</p>
               <p className="mt-1 text-xl font-bold" style={{ color: '#D4A843' }}>{totalCompleted}</p>
             </div>
           </div>
 
           {streak.missedRecently ? (
             <p className="glass-panel rounded-xl p-3 text-sm text-white/85">
-              Grace for today. If you missed a day, begin again - God&apos;s mercies are new every morning.
+              {t('devotional.graceNote')}
             </p>
           ) : null}
 
@@ -216,27 +218,27 @@ export default function Devotional() {
                 <h2 className="mt-2 text-lg font-semibold">{d.title}</h2>
                 <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/70">{d.scripture}</p>
                 <button type="button" onClick={() => openReader(d)} className="mt-3 rounded-lg px-3 py-1.5 text-xs font-semibold text-[#1a1a1a]" style={{ background: '#D4A843' }}>
-                  Read
+                  {t('devotional.read')}
                 </button>
               </article>
             ))}
           </div>
 
           <div className="glass-panel rounded-2xl p-4 text-white">
-            <p className="text-xs uppercase tracking-[0.14em] text-white/75">Tomorrow</p>
+            <p className="text-xs uppercase tracking-[0.14em] text-white/75">{t('devotional.tomorrow')}</p>
             {isTodayCompleted ? (
               <>
-                <p className="mt-2 text-sm text-[#D4A843]">Unlocked preview</p>
+                <p className="mt-2 text-sm text-[#D4A843]">{t('devotional.unlockedPreview')}</p>
                 <p className="mt-1 font-semibold">{nextDay.title}</p>
                 <p className="text-xs text-white/70">{nextDay.scripture}</p>
               </>
             ) : (
-              <p className="mt-2 text-sm text-white/85">Complete today&apos;s devotional to unlock tomorrow&apos;s preview.</p>
+              <p className="mt-2 text-sm text-white/85">{t('devotional.unlockTomorrow')}</p>
             )}
           </div>
 
           <div className="glass-panel rounded-2xl p-4 text-white">
-            <p className="text-sm font-semibold" style={{ color: '#D4A843' }}>Favorites</p>
+            <p className="text-sm font-semibold" style={{ color: '#D4A843' }}>{t('devotional.favorites')}</p>
             {loading ? (
               <div className="mt-2 space-y-2">
                 <div className="gold-skeleton" />
@@ -254,7 +256,7 @@ export default function Devotional() {
                   ))}
               </div>
             ) : (
-              <p className="mt-2 text-sm text-white/75">💛 Nothing saved yet.</p>
+              <p className="mt-2 text-sm text-white/75">💛 {t('devotional.nothingSaved')}</p>
             )}
           </div>
         </section>

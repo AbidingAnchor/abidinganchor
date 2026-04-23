@@ -1,31 +1,44 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
+import { useFellowship } from '../context/FellowshipContext'
 import { supabase } from '../lib/supabase'
-
-const POST_TYPES = [
-  { id: 'general', emoji: '💬', label: 'General', placeholder: 'Share something with your fellowship...' },
-  { id: 'prayer', emoji: '🙏', label: 'Prayer Request', placeholder: 'Share your prayer request...' },
-  { id: 'verse', emoji: '📖', label: 'Verse Share', placeholder: 'Share a verse and what it means to you...' },
-  { id: 'testimony', emoji: '✨', label: 'Testimony', placeholder: 'Share what God has done in your life...' },
-]
-
-const REACTION_TYPES = [
-  { id: 'praying', emoji: '🙏', label: 'Praying' },
-  { id: 'fire', emoji: '🔥', label: 'Fire' },
-  { id: 'love', emoji: '❤️', label: 'Love' },
-  { id: 'amen', emoji: '✝️', label: 'Amen' },
-]
+import { fetchVerse } from '../utils/bibleTranslation'
 
 // Note: 'pray' is used for the prayer counter on prayer request posts
 
 export default function Fellowship() {
+  const { t, i18n } = useTranslation()
   const { user, profile } = useAuth()
-  const [view, setView] = useState('none') // 'none', 'create', 'inside'
-  const [loading, setLoading] = useState(true)
-  const [fellowship, setFellowship] = useState(null)
-  const [members, setMembers] = useState([])
-  const [posts, setPosts] = useState([])
+  const {
+    fellowship,
+    setFellowship,
+    members,
+    setMembers,
+    posts,
+    setPosts,
+    postReactions,
+    setPostReactions,
+    view,
+    setView,
+    triggerRefetch,
+    addDeletedFellowshipId,
+  } = useFellowship()
+
+  const POST_TYPES = useMemo(() => [
+    { id: 'general', emoji: '💬', label: t('fellowship.postTypeGeneral'), placeholder: t('fellowship.postTypeGeneralPlaceholder') },
+    { id: 'prayer', emoji: '🙏', label: t('fellowship.postTypePrayer'), placeholder: t('fellowship.postTypePrayerPlaceholder') },
+    { id: 'verse', emoji: '📖', label: t('fellowship.postTypeVerse'), placeholder: t('fellowship.postTypeVersePlaceholder') },
+    { id: 'testimony', emoji: '✨', label: t('fellowship.postTypeTestimony'), placeholder: t('fellowship.postTypeTestimonyPlaceholder') },
+  ], [t])
+
+  const REACTION_TYPES = useMemo(() => [
+    { id: 'praying', emoji: '🙏', label: t('fellowship.reactionPraying') },
+    { id: 'fire', emoji: '🔥', label: t('fellowship.reactionFire') },
+    { id: 'love', emoji: '❤️', label: t('fellowship.reactionLove') },
+    { id: 'amen', emoji: '✝️', label: t('fellowship.reactionAmen') },
+  ], [t])
   
   // Create fellowship form
   const [fellowshipName, setFellowshipName] = useState('')
@@ -53,10 +66,7 @@ export default function Fellowship() {
   const [postError, setPostError] = useState('')
   
   // Reactions and comments
-  const [postReactions, setPostReactions] = useState({})
   const [postComments, setPostComments] = useState({})
-  const [showCommentsSheet, setShowCommentsSheet] = useState(null)
-  const [commentInput, setCommentInput] = useState('')
   
   // Profile modal
   const [showProfileModal, setShowProfileModal] = useState(null)
@@ -70,187 +80,28 @@ export default function Fellowship() {
   // Remove member
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(null)
   const [removingMember, setRemovingMember] = useState(false)
-  
+
+  // Community verse
+  const [communityVerseText, setCommunityVerseText] = useState('')
+  const [communityVerseLoading, setCommunityVerseLoading] = useState(true)
+
   useEffect(() => {
-    fetchUserFellowship()
-  }, [user?.id])
-  
-  const fetchUserFellowship = async () => {
-    if (!user?.id) {
-      setLoading(false)
-      return
+    const loadCommunityVerse = async () => {
+      setCommunityVerseLoading(true)
+      const lang = (i18n.resolvedLanguage || i18n.language || 'en').toLowerCase().split(/[-_]/)[0]
+      try {
+        const text = await fetchVerse(40, 18, 20, lang)
+        setCommunityVerseText(text)
+      } catch {
+        // Fall back to English if fetch fails
+        setCommunityVerseText('For where two or three gather in my name, there am I with them.')
+      } finally {
+        setCommunityVerseLoading(false)
+      }
     }
-    
-    try {
-      setLoading(true)
 
-      // Resolve fellowship IDs explicitly (avoids PostgREST .or + subquery returning
-      // multiple rows / PGRST116 when the user belongs to several groups).
-      const { data: memberRows, error: memberIdsError } = await supabase
-        .from('fellowship_members')
-        .select('fellowship_id')
-        .eq('user_id', user.id)
-
-      if (memberIdsError) throw memberIdsError
-
-      const { data: createdRows, error: createdIdsError } = await supabase
-        .from('fellowships')
-        .select('id')
-        .eq('created_by', user.id)
-
-      if (createdIdsError) throw createdIdsError
-
-      const fellowshipIdSet = new Set([
-        ...(memberRows || []).map((r) => r.fellowship_id).filter(Boolean),
-        ...(createdRows || []).map((r) => r.id).filter(Boolean),
-      ])
-      const fellowshipIds = [...fellowshipIdSet]
-
-      if (fellowshipIds.length === 0) {
-        setView('none')
-        setFellowship(null)
-        setMembers([])
-        setPosts([])
-        return
-      }
-
-      const { data: fellowshipData, error: fellowshipError } = await supabase
-        .from('fellowships')
-        .select('*')
-        .in('id', fellowshipIds)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-
-      if (fellowshipError) throw fellowshipError
-
-      if (!fellowshipData) {
-        setView('none')
-        setFellowship(null)
-        setMembers([])
-        setPosts([])
-        return
-      }
-      
-      setFellowship(fellowshipData)
-      setView('inside')
-      
-      // Fetch members
-      const { data: membersData, error: membersError } = await supabase
-        .from('fellowship_members')
-        .select('user_id, role, joined_at')
-        .eq('fellowship_id', fellowshipData.id)
-      
-      if (membersError) throw membersError
-      
-      const userIds = (membersData || []).map(m => m.user_id)
-      let profilesById = {}
-      
-      if (userIds.length > 0) {
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('id, display_name, username, email, avatar_url')
-          .in('id', userIds)
-        
-        if (profileError) throw profileError
-        profilesById = (profileData || []).reduce((acc, p) => {
-          acc[p.id] = p
-          return acc
-        }, {})
-      }
-      
-      const membersWithProfiles = (membersData || []).map(m => ({
-        ...m,
-        profile: profilesById[m.user_id] || null
-      }))
-      
-      setMembers(membersWithProfiles)
-      
-      // Fetch posts
-      const { data: postsData, error: postsError } = await supabase
-        .from('fellowship_posts')
-        .select('*')
-        .eq('fellowship_id', fellowshipData.id)
-        .order('created_at', { ascending: false })
-      
-      if (postsError) throw postsError
-      
-      const postUserIds = (postsData || []).map(p => p.user_id)
-      let postProfilesById = {}
-      
-      if (postUserIds.length > 0) {
-        const { data: postProfileData, error: postProfileError } = await supabase
-          .from('profiles')
-          .select('id, display_name, username, email, avatar_url')
-          .in('id', postUserIds)
-        
-        if (postProfileError) throw postProfileError
-        postProfilesById = (postProfileData || []).reduce((acc, p) => {
-          acc[p.id] = p
-          return acc
-        }, {})
-      }
-      
-      const postsWithProfiles = (postsData || []).map(p => ({
-        ...p,
-        profile: postProfilesById[p.user_id] || null
-      }))
-      
-      setPosts(postsWithProfiles)
-      
-      // Fetch reactions for all posts
-      const postIds = (postsData || []).map(p => p.id)
-      if (postIds.length > 0) {
-        const { data: reactionsData, error: reactionsError } = await supabase
-          .from('fellowship_reactions')
-          .select('*')
-          .in('post_id', postIds)
-        
-        if (!reactionsError && reactionsData) {
-          // Group reactions by post_id
-          const reactionsByPost = reactionsData.reduce((acc, r) => {
-            if (!acc[r.post_id]) {
-              acc[r.post_id] = []
-            }
-            acc[r.post_id].push(r)
-            return acc
-          }, {})
-          
-          // Calculate counts and user reactions
-          const reactionsState = {}
-          Object.keys(reactionsByPost).forEach(postId => {
-            const postReactions = reactionsByPost[postId]
-            const counts = { praying: 0, fire: 0, love: 0, amen: 0, pray: 0 }
-            let userReaction = null
-            let hasPrayed = false
-            
-            postReactions.forEach(r => {
-              if (r.reaction_type === 'praying') counts.praying++
-              if (r.reaction_type === 'fire') counts.fire++
-              if (r.reaction_type === 'love') counts.love++
-              if (r.reaction_type === 'amen') counts.amen++
-              if (r.reaction_type === 'pray') {
-                counts.pray++
-                hasPrayed = r.user_id === user.id
-              }
-              if (r.user_id === user.id) {
-                userReaction = r.reaction_type
-              }
-            })
-            
-            reactionsState[postId] = { ...counts, userReaction, hasPrayed }
-          })
-          
-          setPostReactions(reactionsState)
-        }
-      }
-      
-    } catch (error) {
-      console.error('Error fetching fellowship:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+    loadCommunityVerse()
+  }, [i18n.resolvedLanguage, i18n.language])
   
   const handleCreateFellowship = async () => {
     if (!fellowshipName.trim() || !user?.id) return
@@ -296,11 +147,11 @@ export default function Fellowship() {
       setFellowshipName('')
       setFellowshipDescription('')
       setView('inside')
-      await fetchUserFellowship()
+      triggerRefetch()
       
     } catch (error) {
       console.error('Error creating fellowship:', error)
-      setCreateError('Failed to create fellowship. Please try again.')
+      setCreateError(t('fellowship.createError'))
     } finally {
       setCreating(false)
     }
@@ -323,7 +174,7 @@ export default function Fellowship() {
       if (inviteError) throw inviteError
       
       if (!inviteData) {
-        setJoinError('Invalid invite code')
+        setJoinError(t('fellowship.invalidInviteCode'))
         return
       }
       
@@ -336,7 +187,7 @@ export default function Fellowship() {
         .maybeSingle()
       
       if (existingMember) {
-        setJoinError('You are already a member of this fellowship')
+        setJoinError(t('fellowship.alreadyMember'))
         return
       }
       
@@ -354,11 +205,11 @@ export default function Fellowship() {
       setInviteCode('')
       setShowJoinModal(false)
       setView('inside')
-      await fetchUserFellowship()
+      triggerRefetch()
       
     } catch (error) {
       console.error('Error joining fellowship:', error)
-      setJoinError('Failed to join fellowship. Please try again.')
+      setJoinError(t('fellowship.joinError'))
     } finally {
       setJoining(false)
     }
@@ -396,7 +247,7 @@ export default function Fellowship() {
       
     } catch (error) {
       console.error('Error creating post:', error)
-      setPostError('Failed to create post. Please try again.')
+      setPostError(t('fellowship.postError'))
     } finally {
       setPosting(false)
     }
@@ -463,7 +314,7 @@ export default function Fellowship() {
       const fromAuthEmail = emailLocalPart(authUserForSelfEmail.email)
       if (fromAuthEmail) return fromAuthEmail
     }
-    return 'Member'
+    return t('fellowship.member')
   }
 
   const getDisplayName = (profile, authorUserId) =>
@@ -499,34 +350,61 @@ export default function Fellowship() {
     try {
       setDeletingGroup(true)
       
+      console.log('Starting delete for fellowship:', fellowship.id)
+      
       // Delete all posts
-      await supabase
+      const { error: postsError } = await supabase
         .from('fellowship_posts')
         .delete()
         .eq('fellowship_id', fellowship.id)
       
+      if (postsError) {
+        console.error('Failed to delete posts:', postsError)
+        throw postsError
+      }
+      console.log('Posts deleted successfully')
+      
       // Delete all members
-      await supabase
+      const { error: membersError } = await supabase
         .from('fellowship_members')
         .delete()
         .eq('fellowship_id', fellowship.id)
       
+      if (membersError) {
+        console.error('Failed to delete members:', membersError)
+        throw membersError
+      }
+      console.log('Members deleted successfully')
+      
       // Delete the fellowship
-      await supabase
+      const { error: fellowshipError } = await supabase
         .from('fellowships')
         .delete()
         .eq('id', fellowship.id)
       
-      setShowDeleteConfirm(false)
-      setShowDeleteMenu(false)
-      setView('none')
+      if (fellowshipError) {
+        console.error('Failed to delete fellowship:', fellowshipError)
+        throw fellowshipError
+      }
+      console.log('Fellowship deleted successfully from Supabase')
+      
+      // Immediately add to deleted IDs set to prevent restoration
+      addDeletedFellowshipId(fellowship.id)
+      
+      // Update local state immediately BEFORE any refetch
       setFellowship(null)
       setMembers([])
       setPosts([])
+      setView('none')
+      
+      setShowDeleteConfirm(false)
+      setShowDeleteMenu(false)
+      
+      // No refetch after delete - local state + deletedFellowshipIdsRef is sufficient
       
       // Show toast
       const toast = document.createElement('div')
-      toast.textContent = 'Fellowship group deleted'
+      toast.textContent = t('fellowship.groupDeleted')
       toast.style.cssText = `
         position: fixed;
         bottom: 100px;
@@ -547,6 +425,26 @@ export default function Fellowship() {
       }, 3000)
     } catch (err) {
       console.error('Error deleting group:', err)
+      // Show error toast
+      const toast = document.createElement('div')
+      toast.textContent = t('fellowship.deleteError')
+      toast.style.cssText = `
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(220,38,38,0.95);
+        color: white;
+        padding: 12px 24px;
+        borderRadius: 12px;
+        fontSize: 14px;
+        fontWeight: 600;
+        zIndex: 2000;
+      `
+      document.body.appendChild(toast)
+      setTimeout(() => {
+        toast.remove()
+      }, 3000)
     } finally {
       setDeletingGroup(false)
     }
@@ -570,7 +468,7 @@ export default function Fellowship() {
       
       // Show toast
       const toast = document.createElement('div')
-      toast.textContent = `${memberName} has been removed`
+      toast.textContent = t('fellowship.memberRemoved', { name: memberName })
       toast.style.cssText = `
         position: fixed;
         bottom: 100px;
@@ -610,10 +508,10 @@ export default function Fellowship() {
     const diffHours = Math.floor(diffMs / 3600000)
     const diffDays = Math.floor(diffMs / 86400000)
     
-    if (diffMins < 1) return 'Just now'
-    if (diffMins < 60) return `${diffMins}m ago`
-    if (diffHours < 24) return `${diffHours}h ago`
-    if (diffDays < 7) return `${diffDays}d ago`
+    if (diffMins < 1) return t('fellowship.justNow')
+    if (diffMins < 60) return t('fellowship.minutesAgo', { n: diffMins })
+    if (diffHours < 24) return t('fellowship.hoursAgo', { n: diffHours })
+    if (diffDays < 7) return t('fellowship.daysAgo', { n: diffDays })
     return date.toLocaleDateString()
   }
   
@@ -623,28 +521,28 @@ export default function Fellowship() {
     // Optimistic update
     setPostReactions(prev => {
       const reactions = prev[postId] || { praying: 0, fire: 0, love: 0, amen: 0, pray: 0, userReaction: null, hasPrayed: false }
-      oldUserReaction = reactions.userReaction
+      const newReactions = { ...reactions }
       
+      // If user is un-reacting
       if (reactions.userReaction === reactionType) {
-        // Remove reaction
-        reactions[reactionType] = Math.max(0, reactions[reactionType] - 1)
-        reactions.userReaction = null
+        newReactions[reactionType]--
+        newReactions.userReaction = null
+        if (reactionType === 'pray') newReactions.hasPrayed = false
       } else {
-        // Add new reaction
+        // If user is changing reaction or adding new reaction
         if (reactions.userReaction) {
-          reactions[reactions.userReaction] = Math.max(0, reactions[reactions.userReaction] - 1)
+          newReactions[reactions.userReaction]--
         }
-        reactions[reactionType] = (reactions[reactionType] || 0) + 1
-        reactions.userReaction = reactionType
+        newReactions[reactionType]++
+        newReactions.userReaction = reactionType
+        if (reactionType === 'pray') newReactions.hasPrayed = true
       }
-      
-      return { ...prev, [postId]: { ...reactions } }
+      return { ...prev, [postId]: newReactions }
     })
     
-    // Sync with Supabase
     try {
       if (oldUserReaction === reactionType) {
-        // Delete reaction
+        // Remove reaction
         await supabase
           .from('fellowship_reactions')
           .delete()
@@ -652,16 +550,15 @@ export default function Fellowship() {
           .eq('user_id', user.id)
           .eq('reaction_type', reactionType)
       } else {
-        // Remove old reaction if exists
-        if (oldUserReaction) {
-          await supabase
-            .from('fellowship_reactions')
-            .delete()
-            .eq('post_id', postId)
-            .eq('user_id', user.id)
-            .eq('reaction_type', oldUserReaction)
-        }
-        // Add new reaction
+        // Add or change reaction
+        // First, remove existing reaction if any
+        await supabase
+          .from('fellowship_reactions')
+          .delete()
+          .eq('post_id', postId)
+          .eq('user_id', user.id)
+        
+        // Then, insert new reaction
         await supabase
           .from('fellowship_reactions')
           .insert({
@@ -671,1874 +568,434 @@ export default function Fellowship() {
           })
       }
     } catch (error) {
-      console.error('Error updating reaction:', error)
+      console.error('Error handling reaction:', error)
       // Revert optimistic update on error
-      // (In production, you'd want to refetch reactions)
+      setPostReactions(prev => ({ ...prev, [postId]: oldUserReaction }))
     }
   }
   
-  const handlePrayForPost = async (postId) => {
-    let hasPrayed = false
-    
-    // Check if already prayed
-    setPostReactions(prev => {
-      const reactions = prev[postId] || { praying: 0, fire: 0, love: 0, amen: 0, pray: 0, userReaction: null, hasPrayed: false }
-      hasPrayed = reactions.hasPrayed
-      return prev
-    })
-    
-    if (hasPrayed) return
-    
-    // Optimistic update
-    setPostReactions(prev => {
-      const reactions = prev[postId] || { praying: 0, fire: 0, love: 0, amen: 0, pray: 0, userReaction: null, hasPrayed: false }
-      reactions.pray = (reactions.pray || 0) + 1
-      reactions.hasPrayed = true
-      return { ...prev, [postId]: { ...reactions } }
-    })
-    
-    // Sync with Supabase
-    try {
-      await supabase
-        .from('fellowship_reactions')
-        .insert({
-          post_id: postId,
-          user_id: user.id,
-          reaction_type: 'pray',
-        })
-    } catch (error) {
-      console.error('Error adding prayer reaction:', error)
-    }
-  }
-  
-  const handleOpenComments = async (postId) => {
-    setShowCommentsSheet(postId)
-    
-    // Fetch comments for this post
-    try {
-      const { data: commentsData, error: commentsError } = await supabase
-        .from('fellowship_comments')
-        .select('*')
-        .eq('post_id', postId)
-        .order('created_at', { ascending: true })
-      
-      if (!commentsError && commentsData) {
-        // Fetch profiles for commenters
-        const commenterIds = commentsData.map(c => c.user_id)
-        let profilesById = {}
-        
-        if (commenterIds.length > 0) {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('id, display_name, username, email, avatar_url')
-            .in('id', commenterIds)
-          
-          profilesById = (profileData || []).reduce((acc, p) => {
-            acc[p.id] = p
-            return acc
-          }, {})
-        }
-        
-        const commentsWithProfiles = commentsData.map(c => ({
-          ...c,
-          profile: profilesById[c.user_id] || null
-        }))
-        
-        setPostComments(prev => ({ ...prev, [postId]: commentsWithProfiles }))
-      }
-    } catch (error) {
-      console.error('Error fetching comments:', error)
-    }
-  }
-  
-  const handleCloseComments = () => {
-    setShowCommentsSheet(null)
-    setCommentInput('')
-  }
-  
-  const handleSubmitComment = async () => {
-    if (!commentInput.trim() || !showCommentsSheet) return
-    
-    const content = commentInput.trim()
-    
-    // Optimistic update
-    const newComment = {
-      id: Date.now(),
-      user_id: user.id,
-      profile: profile,
-      content: content,
-      created_at: new Date().toISOString(),
-    }
-    
-    setPostComments(prev => ({
-      ...prev,
-      [showCommentsSheet]: [...(prev[showCommentsSheet] || []), newComment]
-    }))
-    
-    setCommentInput('')
-    
-    // Sync with Supabase
-    try {
-      const { data, error } = await supabase
-        .from('fellowship_comments')
-        .insert({
-          post_id: showCommentsSheet,
-          user_id: user.id,
-          content: content,
-        })
-        .select()
-        .maybeSingle()
-      
-      if (error) throw error
-      
-      // Update with real data from Supabase
-      setPostComments(prev => {
-        const comments = prev[showCommentsSheet] || []
-        const updatedComments = comments.map(c => 
-          c.id === newComment.id ? { ...data, profile } : c
-        )
-        return { ...prev, [showCommentsSheet]: updatedComments }
-      })
-    } catch (error) {
-      console.error('Error adding comment:', error)
-    }
-  }
-  
-  if (loading) {
-    return (
-      <div className="content-scroll" style={{ padding: '60px 16px 0' }}>
-        <div className="flex items-center justify-center h-48">
-          <p style={{ color: '#D4A843', fontSize: '16px' }}>Loading…</p>
-        </div>
-      </div>
-    )
-  }
-  
-  return (
-    <div className="content-scroll" style={{ padding: '60px 16px 0' }}>
-      {view === 'none' && (
-        <div style={{ maxWidth: '390px', margin: '0 auto', textAlign: 'center' }}>
-          {/* Gold Anchor/Cross Icon */}
-          <div style={{
-            fontSize: '64px',
-            marginBottom: '24px',
-            filter: 'drop-shadow(0 0 20px rgba(212, 168, 67, 0.4))'
-          }}>
-            ⚓
-          </div>
-          
-          {/* Title */}
-          <h1 style={{
-            color: '#D4A843',
-            fontSize: '32px',
-            fontWeight: 700,
-            marginBottom: '12px',
-            letterSpacing: '-0.02em',
-          }}>
-            Fellowship
-          </h1>
-          
-          {/* Subtitle */}
-          <p style={{
-            color: 'rgba(255, 255, 255, 0.7)',
-            fontSize: '15px',
-            marginBottom: '40px',
-            lineHeight: 1.6,
-          }}>
-            Do faith together with the people closest to you
-          </p>
-          
-          {/* Create Button */}
-          <button
-            onClick={() => setView('create')}
-            style={{
-              width: '100%',
-              padding: '16px 24px',
-              borderRadius: '16px',
-              border: 'none',
-              background: 'linear-gradient(135deg, #D4A843 0%, #B8922F 100%)',
-              color: '#0a0f28',
-              fontSize: '16px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              marginBottom: '16px',
-              boxShadow: '0 4px 20px rgba(212, 168, 67, 0.3)',
-              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-            }}
-            onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
-            onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
-          >
-            Create a Fellowship
-          </button>
-          
-          {/* Join Button */}
-          <button
-            onClick={() => setShowJoinModal(true)}
-            style={{
-              width: '100%',
-              padding: '16px 24px',
-              borderRadius: '16px',
-              border: '1px solid rgba(212, 168, 67, 0.5)',
-              background: 'transparent',
-              color: '#D4A843',
-              fontSize: '16px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              marginBottom: '24px',
-              transition: 'background 0.2s ease, border-color 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(212, 168, 67, 0.1)'
-              e.currentTarget.style.borderColor = 'rgba(212, 168, 67, 0.7)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent'
-              e.currentTarget.style.borderColor = 'rgba(212, 168, 67, 0.5)'
-            }}
-          >
-            Join with Invite Code
-          </button>
-          
-          {/* Small text */}
-          <p style={{
-            color: 'rgba(255, 255, 255, 0.45)',
-            fontSize: '12px',
-            lineHeight: 1.5,
-          }}>
-            Private and invite-only. Your faith journey, shared intentionally.
-          </p>
-        </div>
-      )}
-      
-      {view === 'create' && (
-        <div style={{ maxWidth: '390px', margin: '0 auto' }}>
-          {/* Back button */}
+  // Modals
+  const createFellowshipModal = createPortal(
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md shadow-xl">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">{t('fellowship.createFellowship')}</h2>
+        <p className="text-gray-600 dark:text-gray-300 mb-4">{t('fellowship.createFellowshipDescription')}</p>
+        <input
+          type="text"
+          className="w-full p-3 mb-3 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+          placeholder={t('fellowship.namePlaceholder')}
+          value={fellowshipName}
+          onChange={(e) => setFellowshipName(e.target.value)}
+        />
+        <textarea
+          className="w-full p-3 mb-4 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+          placeholder={t('fellowship.descriptionPlaceholder')}
+          value={fellowshipDescription}
+          onChange={(e) => setFellowshipDescription(e.target.value)}
+        />
+        {createError && <p className="text-red-500 mb-4">{createError}</p>}
+        <div className="flex justify-end space-x-3">
           <button
             onClick={() => setView('none')}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'rgba(255, 255, 255, 0.6)',
-              fontSize: '14px',
-              cursor: 'pointer',
-              marginBottom: '24px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}
+            className="px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition duration-200"
           >
-            ← Back
+            {t('common.cancel')}
           </button>
-          
-          {/* Title */}
-          <h1 style={{
-            color: '#D4A843',
-            fontSize: '28px',
-            fontWeight: 700,
-            marginBottom: '32px',
-          }}>
-            Create Fellowship
-          </h1>
-          
-          {/* Form */}
-          <div style={{
-            background: 'rgba(10, 15, 40, 0.95)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            border: '1px solid rgba(212, 168, 67, 0.25)',
-            borderRadius: '20px',
-            padding: '24px',
-          }}>
-            {/* Fellowship Name */}
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{
-                display: 'block',
-                color: 'rgba(255, 255, 255, 0.8)',
-                fontSize: '13px',
-                fontWeight: 500,
-                marginBottom: '8px',
-              }}>
-                Fellowship Name
-              </label>
-              <input
-                type="text"
-                value={fellowshipName}
-                onChange={(e) => setFellowshipName(e.target.value)}
-                placeholder="e.g., Sunday School Group"
-                style={{
-                  width: '100%',
-                  padding: '14px 16px',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  color: '#ffffff',
-                  fontSize: '15px',
-                  outline: 'none',
-                  boxSizing: 'border-box',
-                }}
-              />
+          <button
+            onClick={handleCreateFellowship}
+            disabled={creating || !fellowshipName.trim()}
+            className="px-4 py-2 rounded-lg bg-yellow-500 text-white font-bold hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+          >
+            {creating ? t('common.creating') : t('fellowship.create')}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  )
+
+  const joinFellowshipModal = createPortal(
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md shadow-xl">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">{t('fellowship.joinFellowship')}</h2>
+        <p className="text-gray-600 dark:text-gray-300 mb-4">{t('fellowship.joinFellowshipDescription')}</p>
+        <input
+          type="text"
+          className="w-full p-3 mb-3 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+          placeholder={t('fellowship.inviteCodePlaceholder')}
+          value={inviteCode}
+          onChange={(e) => setInviteCode(e.target.value)}
+        />
+        {joinError && <p className="text-red-500 mb-4">{joinError}</p>}
+        <div className="flex justify-end space-x-3">
+          <button
+            onClick={() => setShowJoinModal(false)}
+            className="px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition duration-200"
+          >
+            {t('common.cancel')}
+          </button>
+          <button
+            onClick={handleJoinWithCode}
+            disabled={joining || !inviteCode.trim()}
+            className="px-4 py-2 rounded-lg bg-yellow-500 text-white font-bold hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+          >
+            {joining ? t('common.joining') : t('fellowship.join')}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  )
+
+  const inviteMembersModal = createPortal(
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md shadow-xl">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">{t('fellowship.inviteMembers')}</h2>
+        <p className="text-gray-600 dark:text-gray-300 mb-4">{t('fellowship.inviteMembersDescription')}</p>
+        {generatedInviteCode ? (
+          <div className="mb-4">
+            <p className="text-gray-700 dark:text-gray-200 mb-2 font-medium">{t('fellowship.inviteCode')}:</p>
+            <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-3">
+              <code className="flex-grow text-gray-900 dark:text-white text-lg font-mono truncate">{generatedInviteCode}</code>
+              <button
+                onClick={handleCopyInviteLink}
+                className="ml-3 px-3 py-1 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition duration-200"
+              >
+                {copied ? t('common.copied') : t('common.copy')}
+              </button>
             </div>
-            
-            {/* Description (Optional) */}
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{
-                display: 'block',
-                color: 'rgba(255, 255, 255, 0.8)',
-                fontSize: '13px',
-                fontWeight: 500,
-                marginBottom: '8px',
-              }}>
-                Description <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>(optional)</span>
-              </label>
-              <textarea
-                value={fellowshipDescription}
-                onChange={(e) => setFellowshipDescription(e.target.value)}
-                placeholder="A brief description of your fellowship"
-                rows={3}
-                style={{
-                  width: '100%',
-                  padding: '14px 16px',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  color: '#ffffff',
-                  fontSize: '15px',
-                  outline: 'none',
-                  resize: 'none',
-                  boxSizing: 'border-box',
-                  fontFamily: 'inherit',
-                }}
-              />
-            </div>
-            
-            {/* Error */}
-            {createError && (
-              <p style={{ color: '#ff6b6b', fontSize: '13px', marginBottom: '16px' }}>
-                {createError}
-              </p>
-            )}
-            
-            {/* Create Button */}
-            <button
-              onClick={handleCreateFellowship}
-              disabled={!fellowshipName.trim() || creating}
-              style={{
-                width: '100%',
-                padding: '16px',
-                borderRadius: '12px',
-                border: 'none',
-                background: !fellowshipName.trim() || creating
-                  ? 'rgba(212, 168, 67, 0.3)'
-                  : 'linear-gradient(135deg, #D4A843 0%, #B8922F 100%)',
-                color: '#0a0f28',
-                fontSize: '16px',
-                fontWeight: 600,
-                cursor: !fellowshipName.trim() || creating ? 'not-allowed' : 'pointer',
-                marginBottom: '12px',
-                opacity: !fellowshipName.trim() || creating ? 0.6 : 1,
-              }}
-            >
-              {creating ? 'Creating…' : 'Create'}
-            </button>
-            
-            {/* Cancel Button */}
-            <button
-              onClick={() => {
-                setView('none')
-                setFellowshipName('')
-                setFellowshipDescription('')
-                setCreateError('')
-              }}
-              style={{
-                width: '100%',
-                padding: '14px',
-                borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                background: 'transparent',
-                color: 'rgba(255, 255, 255, 0.6)',
-                fontSize: '15px',
-                cursor: 'pointer',
-              }}
-            >
-              Cancel
-            </button>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t('fellowship.inviteCodeShareInstruction')}</p>
+          </div>
+        ) : (
+          <button
+            onClick={handleGenerateInvite}
+            disabled={generatingInvite}
+            className="w-full px-4 py-2 rounded-lg bg-yellow-500 text-white font-bold hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+          >
+            {generatingInvite ? t('fellowship.generatingCode') : t('fellowship.generateInviteCode')}
+          </button>
+        )}
+        
+        <div className="flex justify-end space-x-3 mt-4">
+          <button
+            onClick={() => setShowInviteModal(false)}
+            className="px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition duration-200"
+          >
+            {t('common.close')}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  )
+
+  const createPostModal = createPortal(
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md shadow-xl">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">{t('fellowship.createPost')}</h2>
+        <textarea
+          className="w-full p-3 mb-4 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+          placeholder={t('fellowship.postContentPlaceholder')}
+          value={postContent}
+          onChange={(e) => setPostContent(e.target.value)}
+          rows="5"
+        />
+        <div className="mb-4">
+          <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">{t('fellowship.postType')}:</label>
+          <div className="flex flex-wrap gap-2">
+            {POST_TYPES.map((type) => (
+              <button
+                key={type.id}
+                onClick={() => setPostType(type.id)}
+                className={`px-3 py-1 rounded-full text-sm font-medium ${postType === type.id ? 'bg-yellow-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200'}`}
+              >
+                {type.emoji} {type.label}
+              </button>
+            ))}
           </div>
         </div>
-      )}
-      
-      {view === 'inside' && fellowship && (
-        <div style={{ maxWidth: '390px', margin: '0 auto' }}>
-          {/* Header */}
-          <div style={{ marginBottom: '24px', position: 'relative' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div>
-                <h1 style={{
-                  color: '#ffffff',
-                  fontSize: '32px',
-                  fontWeight: 800,
-                  marginBottom: '8px',
-                }}>
-                  Fellowship
-                </h1>
-                <p style={{
-                  color: 'rgba(255, 255, 255, 0.5)',
-                  fontSize: '15px',
-                  margin: 0,
-                }}>
-                  Grow together in faith
-                </p>
-              </div>
-              {isAdmin && (
-                <div style={{ position: 'relative' }}>
-                  <button
-                    type="button"
-                    aria-label="Fellowship menu"
-                    onClick={() => setShowDeleteMenu(!showDeleteMenu)}
-                    style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '50%',
-                      background: 'rgba(255, 255, 255, 0.08)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      color: 'rgba(255, 255, 255, 0.6)',
-                      fontSize: '20px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      padding: 0,
-                      lineHeight: 1,
-                    }}
-                  >
-                    ⋯
-                  </button>
-                  {showDeleteMenu && (
-                    <div style={{
-                      position: 'absolute',
-                      right: 0,
-                      top: '100%',
-                      marginTop: '8px',
-                      background: 'rgba(10, 20, 50, 0.98)',
-                      border: '1px solid rgba(212, 168, 67, 0.3)',
-                      borderRadius: '12px',
-                      padding: '8px',
-                      minWidth: '160px',
-                      zIndex: 100,
-                      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)',
-                    }}>
-                      <button
-                        onClick={() => {
-                          setShowDeleteMenu(false)
-                          setShowDeleteConfirm(true)
-                        }}
-                        style={{
-                          width: '100%',
-                          background: 'none',
-                          border: 'none',
-                          color: '#ff6b6b',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          padding: '8px 12px',
-                          textAlign: 'left',
-                          borderRadius: '8px',
-                        }}
-                      >
-                        🗑️ Delete Group
-                      </button>
-                    </div>
-                  )}
-                </div>
+        {postError && <p className="text-red-500 mb-4">{postError}</p>}
+        <div className="flex justify-end space-x-3">
+          <button
+            onClick={() => setShowPostModal(false)}
+            className="px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition duration-200"
+          >
+            {t('common.cancel')}
+          </button>
+          <button
+            onClick={handleCreatePost}
+            disabled={posting || !postContent.trim()}
+            className="px-4 py-2 rounded-lg bg-yellow-500 text-white font-bold hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+          >
+            {posting ? t('common.posting') : t('fellowship.post')}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  )
+
+  const profileModal = createPortal(
+    showProfileModal && profileData ? (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md shadow-xl">
+          <div className="flex items-center mb-4">
+            <div className="w-16 h-16 rounded-full bg-yellow-200 dark:bg-yellow-700 flex items-center justify-center text-3xl font-bold text-yellow-800 dark:text-yellow-200 mr-4">
+              {getInitials(getDisplayName(profileData))}
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{getDisplayName(profileData)}</h2>
+              {profileData.username && (
+                <p className="text-gray-600 dark:text-gray-400">@{profileData.username}</p>
               )}
             </div>
           </div>
-          
-          {/* Members Section */}
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.06)',
-            border: '1px solid rgba(212, 168, 67, 0.2)',
-            borderRadius: '16px',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            padding: '20px',
-            marginBottom: '24px',
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h2 style={{
-                color: '#D4A843',
-                fontSize: '11px',
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '1.5px',
-                margin: 0,
-              }}>
-                MEMBERS ({members.length})
-              </h2>
-              <button
-                onClick={handleGenerateInvite}
-                disabled={generatingInvite}
-                style={{
-                  padding: '6px 16px',
-                  borderRadius: '50px',
-                  border: '1px solid #D4A843',
-                  background: 'transparent',
-                  color: '#D4A843',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  cursor: generatingInvite ? 'not-allowed' : 'pointer',
-                  opacity: generatingInvite ? 0.6 : 1,
-                }}
-              >
-                {generatingInvite ? 'Generating…' : 'Invite Members'}
-              </button>
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">{t('profile.joined')}</p>
+              <p className="text-gray-800 dark:text-gray-200">{new Date(profileData.created_at).toLocaleDateString()}</p>
             </div>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {members.map((member) => (
-                <div
-                  key={member.user_id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                  }}
-                >
-                  {/* Avatar */}
-                  {member.profile?.avatar_url ? (
-                    <img
-                      src={member.profile.avatar_url}
-                      alt=""
-                      style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '50%',
-                        objectFit: 'cover',
-                      }}
-                    />
-                  ) : (
-                    <div style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      background: 'rgba(212, 168, 67, 0.2)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#D4A843',
-                      fontSize: '14px',
-                      fontWeight: 700,
-                    }}>
+            <div>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">{t('profile.lessonsCompleted')}</p>
+              <p className="text-gray-800 dark:text-gray-200">{profileData.lessons_completed}</p>
+            </div>
+            <div>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">{t('profile.readingStreak')}</p>
+              <p className="text-gray-800 dark:text-gray-200">{profileData.reading_streak} {t('profile.days')}</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowProfileModal(null)}
+            className="w-full px-4 py-2 rounded-lg bg-yellow-500 text-white font-bold hover:bg-yellow-600 transition duration-200"
+          >
+            {t('common.close')}
+          </button>
+        </div>
+      </div>
+    ) : null,
+    document.body
+  )
+
+  const deleteGroupConfirmModal = createPortal(
+    showDeleteConfirm && fellowship ? (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md shadow-xl">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">{t('fellowship.deleteGroupConfirmTitle')}</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-4">{t('fellowship.deleteGroupConfirmDescription', { fellowshipName: fellowship.name })}</p>
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={() => setShowDeleteConfirm(false)}
+              className="px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition duration-200"
+            >
+              {t('common.cancel')}
+            </button>
+            <button
+              onClick={handleDeleteGroup}
+              disabled={deletingGroup}
+              className="px-4 py-2 rounded-lg bg-red-600 text-white font-bold hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+            >
+              {deletingGroup ? t('common.deleting') : t('common.delete')}
+            </button>
+          </div>
+        </div>
+      </div>
+    ) : null,
+    document.body
+  )
+
+  const removeMemberConfirmModal = createPortal(
+    showRemoveConfirm && fellowship ? (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md shadow-xl">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">{t('fellowship.removeMemberConfirmTitle')}</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-4">{t('fellowship.removeMemberConfirmDescription', { memberName: getMemberDisplayName(members.find(m => m.user_id === showRemoveConfirm)) })}</p>
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={() => setShowRemoveConfirm(null)}
+              className="px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition duration-200"
+            >
+              {t('common.cancel')}
+            </button>
+            <button
+              onClick={() => handleRemoveMember(showRemoveConfirm, getMemberDisplayName(members.find(m => m.user_id === showRemoveConfirm)))}
+              disabled={removingMember}
+              className="px-4 py-2 rounded-lg bg-red-600 text-white font-bold hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+            >
+              {removingMember ? t('common.removing') : t('common.remove')}
+            </button>
+          </div>
+        </div>
+      </div>
+    ) : null,
+    document.body
+  )
+
+  return (
+    <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
+      {view === 'none' && (
+        <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-3">{t('fellowship.title')}</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md">{t('fellowship.subtitle')}</p>
+          
+          <button
+            onClick={() => setView('create')}
+            className="bg-yellow-500 text-white font-bold py-3 px-6 rounded-full text-lg mb-4 shadow-lg hover:bg-yellow-600 transition duration-200"
+          >
+            {t('fellowship.createFellowship')}
+          </button>
+          <button
+            onClick={() => setShowJoinModal(true)}
+            className="text-yellow-600 dark:text-yellow-400 font-semibold py-3 px-6 rounded-full text-lg hover:bg-yellow-100 dark:hover:bg-yellow-900 transition duration-200"
+          >
+            {t('fellowship.joinWithCode')}
+          </button>
+        </div>
+      )}
+
+      {view === 'create' && (
+        <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+          {createFellowshipModal}
+        </div>
+      )}
+
+      {showJoinModal && joinFellowshipModal}
+      {showInviteModal && inviteMembersModal}
+      {showPostModal && createPostModal}
+      {showProfileModal && profileModal}
+      {showDeleteConfirm && deleteGroupConfirmModal}
+      {showRemoveConfirm && removeMemberConfirmModal}
+
+      {view === 'inside' && fellowship && (
+        <div className="flex flex-col flex-grow">
+          <header className="bg-white dark:bg-gray-800 shadow-sm p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <button onClick={() => setView('none')} className="text-gray-600 dark:text-gray-300 mr-3 p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <h1 className="text-xl font-bold text-gray-800 dark:text-white">{fellowship.name}</h1>
+              </div>
+              <div className="relative">
+                <button onClick={() => setShowDeleteMenu(!showDeleteMenu)} className="text-gray-600 dark:text-gray-300 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                  </svg>
+                </button>
+                {showDeleteMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg z-10">
+                    <button
+                      onClick={() => { setShowInviteModal(true); setShowDeleteMenu(false); }}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
+                    >
+                      {t('fellowship.inviteMembers')}
+                    </button>
+                    {isAdmin && (
+                      <button
+                        onClick={() => { setShowDeleteConfirm(true); setShowDeleteMenu(false); }}
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100 dark:hover:bg-red-700"
+                      >
+                        {t('fellowship.deleteGroup')}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </header>
+          
+          <div className="flex flex-col flex-grow overflow-hidden">
+            <div className="flex-shrink-0 bg-white dark:bg-gray-800 p-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-2">{t('fellowship.membersLabel')} ({members.length})</h2>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {members.map(member => (
+                  <div
+                    key={member.user_id}
+                    onClick={() => handleProfileTap(member.user_id)}
+                    className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-full pr-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-200"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-blue-200 dark:bg-blue-700 flex items-center justify-center text-sm font-medium text-blue-800 dark:text-blue-200 mr-2">
                       {getInitials(getMemberDisplayName(member))}
                     </div>
-                  )}
-                  
-                  {/* Name */}
-                  <div style={{ flex: 1 }}>
-                    <p style={{
-                      color: '#ffffff',
-                      fontSize: '15px',
-                      fontWeight: 500,
-                      margin: 0,
-                    }}>
-                      {getMemberDisplayName(member)}
-                    </p>
-                    <p style={{
-                      color: 'rgba(255, 255, 255, 0.5)',
-                      fontSize: '12px',
-                      margin: '2px 0 0',
-                      textTransform: 'capitalize',
-                    }}>
-                      {member.role}
-                    </p>
+                    <span className="text-gray-800 dark:text-gray-200 text-sm font-medium">{getMemberDisplayName(member)}</span>
+                    {member.role === 'admin' && (
+                      <span className="ml-2 px-2 py-0.5 text-xs font-semibold bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 rounded-full">{t('fellowship.admin')}</span>
+                    )}
+                    {isAdmin && member.user_id !== user?.id && (
+                      <button onClick={(e) => { e.stopPropagation(); setShowRemoveConfirm(member.user_id); }} className="ml-2 text-gray-500 hover:text-red-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    )}
                   </div>
-                  
-                  {/* Remove button for admin */}
-                  {isAdmin && member.user_id !== user?.id && (
-                    <button
-                      onClick={() => setShowRemoveConfirm({
-                      memberId: member.user_id,
-                      memberName: getMemberDisplayName(member),
-                    })}
-                      style={{
-                        width: '28px',
-                        height: '28px',
-                        borderRadius: '50%',
-                        background: 'rgba(255, 50, 50, 0.1)',
-                        border: '1px solid rgba(255, 50, 50, 0.3)',
-                        color: '#ff6b6b',
-                        fontSize: '14px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                      }}
-                    >
-                      ✕
-                    </button>
-                  )}
+                ))}
+              </div>
+
+              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mb-4">
+                <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2">{t('fellowship.communityVerseLabel')}</h3>
+                {communityVerseLoading ? (
+                  <p className="text-gray-600 dark:text-gray-400">{t('common.loading')}</p>
+                ) : (
+                  <p className="italic text-gray-700 dark:text-gray-300">"{communityVerseText}"</p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex-shrink-0 p-4 bg-white dark:bg-gray-800">
+              <button
+                onClick={() => setShowPostModal(true)}
+                className="w-full bg-yellow-400 text-yellow-900 font-bold py-2 px-4 rounded-full flex items-center justify-center shadow-md hover:bg-yellow-300 transition duration-200"
+              >
+                <span className="text-xl mr-2">+
+                </span> {t('fellowship.shareUpdate')}
+              </button>
+            </div>
+
+            <div className="flex-grow overflow-y-auto p-4">
+              {posts.length === 0 && (
+                <p className="text-gray-500 dark:text-gray-400 text-center mt-8">
+                  {t('fellowship.noPosts')}
+                </p>
+              )}
+              {posts.map(post => (
+                <div key={post.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-4">
+                  <div className="flex items-center mb-3">
+                    <div className="w-10 h-10 rounded-full bg-blue-200 dark:bg-blue-700 flex items-center justify-center text-xl font-bold text-blue-800 dark:text-blue-200 mr-3">
+                      {getInitials(getDisplayName(post.profile, post.user_id))}
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-800 dark:text-white">{getDisplayName(post.profile, post.user_id)}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{formatDate(post.created_at)}</p>
+                    </div>
+                  </div>
+                  <p className="text-gray-800 dark:text-gray-200 mb-3">{post.content}</p>
+                  <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+                    <div className="flex space-x-3">
+                      {REACTION_TYPES.map(reactionType => {
+                        const count = postReactions[post.id]?.[reactionType.id] || 0
+                        const userReacted = postReactions[post.id]?.userReaction === reactionType.id
+                        return (
+                          <button
+                            key={reactionType.id}
+                            onClick={() => handleReaction(post.id, reactionType.id)}
+                            className={`flex items-center p-1 rounded-full ${userReacted ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                          >
+                            {reactionType.emoji} {count > 0 && <span className="ml-1">{count}</span>}
+                          </button>
+                        )
+                      })}
+                    </div>
+                    <span className="hover:text-gray-800 dark:hover:text-gray-200">
+                      {t('fellowship.comments', { count: postComments[post.id]?.length || 0 })}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
-          
-          {/* Posts Section */}
-          <div>
-            <h2 style={{
-              color: '#D4A843',
-              fontSize: '14px',
-              fontWeight: 600,
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              marginBottom: '16px',
-            }}>
-              Feed
-            </h2>
-            
-            {posts.length === 0 ? (
-              <div style={{
-                background: 'rgba(10, 15, 40, 0.95)',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                border: '1px solid rgba(212, 168, 67, 0.25)',
-                borderRadius: '20px',
-                padding: '32px',
-                textAlign: 'center',
-              }}>
-                <p style={{
-                  color: 'rgba(255, 255, 255, 0.5)',
-                  fontSize: '14px',
-                }}>
-                  No posts yet. Be the first to share!
-                </p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {posts.map((post, index) => {
-                  const postTypeConfig = POST_TYPES.find(t => t.id === post.post_type) || POST_TYPES[0]
-                  const getPostBorderColor = (type) => {
-                    switch(type) {
-                      case 'prayer': return '#9B7FD4'
-                      case 'verse': return '#5B9BD5'
-                      case 'testimony': return '#D4A843'
-                      default: return '#D4A843'
-                    }
-                  }
-                  const borderColor = getPostBorderColor(post.post_type)
-                  return (
-                    <div
-                      key={post.id}
-                      style={{
-                        background: 'rgba(255, 255, 255, 0.06)',
-                        border: '1px solid rgba(212, 168, 67, 0.2)',
-                        borderRadius: '16px',
-                        backdropFilter: 'blur(12px)',
-                        WebkitBackdropFilter: 'blur(12px)',
-                        borderLeft: `3px solid ${borderColor}`,
-                        padding: '20px',
-                        animation: `fadeIn 0.4s ease-out ${index * 0.1}s both`,
-                      }}
-                    >
-                      {/* Post Type Badge */}
-                      <div style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '6px 12px',
-                        borderRadius: '50px',
-                        background: 'rgba(212, 168, 67, 0.15)',
-                        border: '1px solid rgba(212, 168, 67, 0.3)',
-                        marginBottom: '12px',
-                      }}>
-                        <span style={{ fontSize: '14px' }}>{postTypeConfig.emoji}</span>
-                        <span style={{
-                          color: '#D4A843',
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          letterSpacing: '1px',
-                        }}>
-                          {postTypeConfig.label}
-                        </span>
-                      </div>
-                      
-                      {/* Header */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                        {/* Avatar */}
-                        {post.profile?.avatar_url ? (
-                          <img
-                            src={post.profile.avatar_url}
-                            alt=""
-                            onClick={() => handleProfileTap(post.user_id)}
-                            style={{
-                              width: '40px',
-                              height: '40px',
-                              borderRadius: '50%',
-                              objectFit: 'cover',
-                              cursor: 'pointer',
-                            }}
-                          />
-                        ) : (
-                          <div 
-                            onClick={() => handleProfileTap(post.user_id)}
-                            style={{
-                              width: '40px',
-                              height: '40px',
-                              borderRadius: '50%',
-                              background: 'linear-gradient(135deg, #D4A843 0%, #B8860B 100%)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              color: '#ffffff',
-                              fontSize: '14px',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                            }}>
-                            {getInitials(getDisplayName(post.profile, post.user_id))}
-                          </div>
-                        )}
-                        
-                        {/* Name & Time */}
-                        <div style={{ flex: 1 }}>
-                          <p 
-                            onClick={() => handleProfileTap(post.user_id)}
-                            style={{
-                              color: '#ffffff',
-                              fontSize: '15px',
-                              fontWeight: 700,
-                              margin: 0,
-                              cursor: 'pointer',
-                            }}>
-                            {getDisplayName(post.profile, post.user_id)}
-                          </p>
-                          <p style={{
-                            color: 'rgba(255, 255, 255, 0.4)',
-                            fontSize: '12px',
-                            margin: '2px 0 0',
-                          }}>
-                            {formatDate(post.created_at)}
-                          </p>
-                        </div>
-                      </div>
-                      
-                      {/* Content */}
-                      <p style={{
-                        color: '#ffffff',
-                        fontSize: '16px',
-                        lineHeight: 1.6,
-                        margin: '0 0 16px 0',
-                      }}>
-                        {post.content}
-                      </p>
-                      
-                      {/* Prayer Counter for Prayer Request posts */}
-                      {post.post_type === 'prayer' && (
-                        <div style={{
-                          textAlign: 'center',
-                          padding: '16px',
-                          background: 'rgba(155, 127, 212, 0.1)',
-                          borderRadius: '12px',
-                          marginBottom: '16px',
-                          border: '1px solid rgba(155, 127, 212, 0.2)',
-                        }}>
-                          <p style={{
-                            color: 'rgba(255, 255, 255, 0.7)',
-                            fontSize: '13px',
-                            margin: '0 0 8px 0',
-                          }}>
-                            🙏 People praying for this
-                          </p>
-                          <p style={{
-                            color: '#D4A843',
-                            fontSize: '32px',
-                            fontWeight: 700,
-                            margin: '0 0 12px 0',
-                          }}>
-                            {postReactions[post.id]?.pray || 0}
-                          </p>
-                          <button
-                            onClick={() => handlePrayForPost(post.id)}
-                            disabled={postReactions[post.id]?.hasPrayed}
-                            style={{
-                              width: '100%',
-                              padding: '12px',
-                              borderRadius: '12px',
-                              border: 'none',
-                              background: postReactions[post.id]?.hasPrayed
-                                ? 'rgba(212, 168, 67, 0.3)'
-                                : 'linear-gradient(135deg, #D4A843 0%, #B8860B 100%)',
-                              color: postReactions[post.id]?.hasPrayed
-                                ? 'rgba(255, 255, 255, 0.6)'
-                                : '#0a0f28',
-                              fontSize: '15px',
-                              fontWeight: 600,
-                              cursor: postReactions[post.id]?.hasPrayed ? 'not-allowed' : 'pointer',
-                              transition: 'all 0.2s ease',
-                            }}
-                          >
-                            {postReactions[post.id]?.hasPrayed ? 'Praying 🙏' : "I'm Praying"}
-                          </button>
-                        </div>
-                      )}
-                      
-                      {/* Reactions Bar (for non-prayer posts) */}
-                      {post.post_type !== 'prayer' && (
-                        <div style={{
-                          display: 'flex',
-                          gap: '8px',
-                          flexWrap: 'wrap',
-                          marginBottom: '12px',
-                        }}>
-                          {REACTION_TYPES.map((reaction) => {
-                            const reactions = postReactions[post.id] || {}
-                            const isActive = reactions.userReaction === reaction.id
-                            const count = reactions[reaction.id] || 0
-                            return (
-                              <button
-                                key={reaction.id}
-                                onClick={() => handleReaction(post.id, reaction.id)}
-                                style={{
-                                  padding: '6px 12px',
-                                  borderRadius: '50px',
-                                  border: isActive
-                                    ? '1px solid rgba(212, 168, 67, 0.4)'
-                                    : '1px solid rgba(255, 255, 255, 0.12)',
-                                  background: isActive
-                                    ? 'rgba(212, 168, 67, 0.2)'
-                                    : 'rgba(255, 255, 255, 0.08)',
-                                  color: isActive
-                                    ? '#D4A843'
-                                    : 'rgba(255, 255, 255, 0.7)',
-                                  fontSize: '13px',
-                                  fontWeight: isActive ? 600 : 500,
-                                  cursor: 'pointer',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                  transition: 'all 0.15s ease',
-                                }}
-                                onMouseDown={(e) => {
-                                  e.currentTarget.style.transform = 'scale(1.3)'
-                                }}
-                                onMouseUp={(e) => {
-                                  e.currentTarget.style.transform = 'scale(1)'
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.transform = 'scale(1)'
-                                }}
-                              >
-                                <span>{reaction.emoji}</span>
-                                <span>{count > 0 ? count : ''}</span>
-                              </button>
-                            )
-                          })}
-                        </div>
-                      )}
-                      
-                      {/* Comments Button */}
-                      <button
-                        onClick={() => handleOpenComments(post.id)}
-                        style={{
-                          padding: '6px 12px',
-                          borderRadius: '50px',
-                          border: '1px solid rgba(255, 255, 255, 0.1)',
-                          background: 'rgba(255, 255, 255, 0.06)',
-                          color: 'rgba(255, 255, 255, 0.6)',
-                          fontSize: '13px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          transition: 'all 0.2s ease',
-                        }}
-                      >
-                        <span>💬</span>
-                        <span>{(postComments[post.id]?.length || 0) > 0 ? `${postComments[post.id].length} replies` : 'Reply'}</span>
-                      </button>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-          
-          {/* Share Button */}
-          <button
-            onClick={() => setShowPostModal(true)}
-            style={{
-              marginTop: '20px',
-              width: '100%',
-              padding: '16px',
-              borderRadius: '50px',
-              border: 'none',
-              background: '#D4A843',
-              color: '#0a1428',
-              fontSize: '16px',
-              fontWeight: 700,
-              cursor: 'pointer',
-            }}
-          >
-            Share with Fellowship
-          </button>
-          
-          {/* Community Verse Card */}
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.04)',
-            border: '1px solid rgba(212, 168, 67, 0.15)',
-            borderRadius: '16px',
-            padding: '20px',
-            borderLeft: '3px solid #D4A843',
-            marginTop: '24px',
-          }}>
-            <p style={{
-              color: 'rgba(212, 168, 67, 0.7)',
-              fontSize: '11px',
-              letterSpacing: '1.5px',
-              textTransform: 'uppercase',
-              margin: '0 0 12px 0',
-              fontWeight: 600,
-            }}>
-              Community Verse
-            </p>
-            <p style={{
-              color: 'rgba(255, 255, 255, 0.85)',
-              fontSize: '15px',
-              fontStyle: 'italic',
-              lineHeight: 1.7,
-              margin: '0 0 12px 0',
-            }}>
-              For where two or three gather in my name, there am I with them.
-            </p>
-            <p style={{
-              color: '#D4A843',
-              fontSize: '13px',
-              fontWeight: 700,
-              margin: 0,
-            }}>
-              Matthew 18:20
-            </p>
           </div>
         </div>
-      )}
-      
-      {/* Join Modal */}
-      {showJoinModal && typeof document !== 'undefined' ? createPortal(
-        <>
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(0, 0, 0, 0.6)',
-              zIndex: 10050,
-            }}
-            onClick={() => {
-              setShowJoinModal(false)
-              setInviteCode('')
-              setJoinError('')
-            }}
-          />
-          <div
-            role="dialog"
-            aria-modal="true"
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              position: 'fixed',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: 'min(90vw, 390px)',
-              maxWidth: '390px',
-              background: 'rgba(10, 15, 40, 0.97)',
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
-              border: '1px solid rgba(212, 168, 67, 0.25)',
-              borderRadius: '24px',
-              padding: '24px',
-              zIndex: 10051,
-            }}
-          >
-            <h2 style={{
-              color: '#D4A843',
-              fontSize: '22px',
-              fontWeight: 700,
-              marginBottom: '8px',
-              textAlign: 'center',
-            }}>
-              Join Fellowship
-            </h2>
-            <p style={{
-              color: 'rgba(255, 255, 255, 0.6)',
-              fontSize: '14px',
-              marginBottom: '24px',
-              textAlign: 'center',
-            }}>
-              Enter the invite code shared with you
-            </p>
-            
-            <input
-              type="text"
-              value={inviteCode}
-              onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-              placeholder="Enter invite code"
-              style={{
-                width: '100%',
-                padding: '16px',
-                borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                background: 'rgba(255, 255, 255, 0.05)',
-                color: '#ffffff',
-                fontSize: '16px',
-                textAlign: 'center',
-                letterSpacing: '0.2em',
-                textTransform: 'uppercase',
-                outline: 'none',
-                marginBottom: '16px',
-                boxSizing: 'border-box',
-              }}
-            />
-            
-            {joinError && (
-              <p style={{ color: '#ff6b6b', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>
-                {joinError}
-              </p>
-            )}
-            
-            <button
-              onClick={handleJoinWithCode}
-              disabled={!inviteCode.trim() || joining}
-              style={{
-                width: '100%',
-                padding: '16px',
-                borderRadius: '12px',
-                border: 'none',
-                background: !inviteCode.trim() || joining
-                  ? 'rgba(212, 168, 67, 0.3)'
-                  : 'linear-gradient(135deg, #D4A843 0%, #B8922F 100%)',
-                color: '#0a0f28',
-                fontSize: '16px',
-                fontWeight: 600,
-                cursor: !inviteCode.trim() || joining ? 'not-allowed' : 'pointer',
-                marginBottom: '12px',
-                opacity: !inviteCode.trim() || joining ? 0.6 : 1,
-              }}
-            >
-              {joining ? 'Joining…' : 'Join'}
-            </button>
-            
-            <button
-              onClick={() => {
-                setShowJoinModal(false)
-                setInviteCode('')
-                setJoinError('')
-              }}
-              style={{
-                width: '100%',
-                padding: '14px',
-                borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                background: 'transparent',
-                color: 'rgba(255, 255, 255, 0.6)',
-                fontSize: '15px',
-                cursor: 'pointer',
-              }}
-            >
-              Cancel
-            </button>
-          </div>
-        </>,
-        document.body,
-      ) : null}
-      
-      {/* Invite Modal */}
-      {showInviteModal && typeof document !== 'undefined' ? createPortal(
-        <>
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(0, 0, 0, 0.6)',
-              zIndex: 10050,
-            }}
-            onClick={() => {
-              setShowInviteModal(false)
-              setGeneratedInviteCode('')
-              setCopied(false)
-            }}
-          />
-          <div
-            role="dialog"
-            aria-modal="true"
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              position: 'fixed',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: 'min(90vw, 390px)',
-              maxWidth: '390px',
-              background: 'rgba(10, 15, 40, 0.97)',
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
-              border: '1px solid rgba(212, 168, 67, 0.25)',
-              borderRadius: '24px',
-              padding: '24px',
-              zIndex: 10051,
-            }}
-          >
-            <h2 style={{
-              color: '#D4A843',
-              fontSize: '22px',
-              fontWeight: 700,
-              marginBottom: '8px',
-              textAlign: 'center',
-            }}>
-              Invite Members
-            </h2>
-            <p style={{
-              color: 'rgba(255, 255, 255, 0.6)',
-              fontSize: '14px',
-              marginBottom: '24px',
-              textAlign: 'center',
-            }}>
-              Share this link to invite others to your fellowship
-            </p>
-            
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
-              borderRadius: '12px',
-              padding: '16px',
-              marginBottom: '16px',
-            }}>
-              <p style={{
-                color: 'rgba(255, 255, 255, 0.9)',
-                fontSize: '13px',
-                margin: '0 0 8px 0',
-                wordBreak: 'break-all',
-              }}>
-                https://abidinganchor.com/join/{generatedInviteCode}
-              </p>
-            </div>
-            
-            <button
-              onClick={handleCopyInviteLink}
-              style={{
-                width: '100%',
-                padding: '16px',
-                borderRadius: '12px',
-                border: 'none',
-                background: 'linear-gradient(135deg, #D4A843 0%, #B8922F 100%)',
-                color: '#0a0f28',
-                fontSize: '16px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                marginBottom: '12px',
-              }}
-            >
-              {copied ? 'Copied!' : 'Copy Link'}
-            </button>
-            
-            <button
-              onClick={() => {
-                setShowInviteModal(false)
-                setGeneratedInviteCode('')
-                setCopied(false)
-              }}
-              style={{
-                width: '100%',
-                padding: '14px',
-                borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                background: 'transparent',
-                color: 'rgba(255, 255, 255, 0.6)',
-                fontSize: '15px',
-                cursor: 'pointer',
-              }}
-            >
-              Close
-            </button>
-          </div>
-        </>,
-        document.body,
-      ) : null}
-      
-      {/* Create Post Modal */}
-      {showPostModal && typeof document !== 'undefined' ? createPortal(
-        <>
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(0, 0, 0, 0.6)',
-              zIndex: 10050,
-            }}
-            onClick={() => {
-              setShowPostModal(false)
-              setPostContent('')
-              setPostType('general')
-              setPostError('')
-            }}
-          />
-          <div
-            role="dialog"
-            aria-modal="true"
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              width: '100%',
-              maxWidth: '390px',
-              margin: '0 auto',
-              maxHeight: '85vh',
-              overflowY: 'auto',
-              background: 'linear-gradient(180deg, rgba(15, 20, 50, 0.98), rgba(8, 12, 35, 0.99))',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(212, 168, 67, 0.25)',
-              borderTop: '1px solid rgba(212, 168, 67, 0.4)',
-              borderRadius: '24px 24px 0 0',
-              padding: '24px',
-              zIndex: 10051,
-              animation: 'slideUp 0.3s ease-out',
-            }}
-          >
-            <h2 style={{
-              color: '#D4A843',
-              fontSize: '22px',
-              fontWeight: 700,
-              marginBottom: '8px',
-              textAlign: 'center',
-            }}>
-              Share with Fellowship
-            </h2>
-            <p style={{
-              color: 'rgba(255, 255, 255, 0.6)',
-              fontSize: '14px',
-              marginBottom: '20px',
-              textAlign: 'center',
-            }}>
-              What's on your heart today?
-            </p>
-            
-            {/* Post Type Selector */}
-            <div style={{
-              display: 'flex',
-              gap: '8px',
-              marginBottom: '16px',
-              overflowX: 'auto',
-              paddingBottom: '4px',
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-            }}>
-              {POST_TYPES.map((type) => (
-                <button
-                  key={type.id}
-                  onClick={() => setPostType(type.id)}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: '99px',
-                    border: postType === type.id
-                      ? 'none'
-                      : '1px solid rgba(212, 168, 67, 0.3)',
-                    background: postType === type.id
-                      ? 'linear-gradient(135deg, #D4A843 0%, #B8860B 100%)'
-                      : 'rgba(255, 255, 255, 0.05)',
-                    color: postType === type.id
-                      ? '#ffffff'
-                      : '#D4A843',
-                    fontSize: '13px',
-                    fontWeight: postType === type.id ? 600 : 500,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px',
-                    transition: 'all 0.2s ease',
-                    boxShadow: postType === type.id ? '0 4px 12px rgba(212, 168, 67, 0.4)' : 'none',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  <span>{type.emoji}</span>
-                  <span>{type.label}</span>
-                </button>
-              ))}
-            </div>
-            
-            <textarea
-              value={postContent}
-              onChange={(e) => setPostContent(e.target.value)}
-              placeholder={POST_TYPES.find(t => t.id === postType)?.placeholder || 'Share something with your fellowship...'}
-              style={{
-                width: '100%',
-                padding: '16px',
-                borderRadius: '16px',
-                border: '1px solid rgba(212, 168, 67, 0.2)',
-                background: 'rgba(255, 255, 255, 0.04)',
-                color: '#ffffff',
-                fontSize: '16px',
-                outline: 'none',
-                resize: 'none',
-                minHeight: '120px',
-                marginBottom: '16px',
-                boxSizing: 'border-box',
-                fontFamily: 'inherit',
-                lineHeight: 1.6,
-                transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(212, 168, 67, 0.8)'
-                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(212, 168, 67, 0.1)'
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(212, 168, 67, 0.2)'
-                e.currentTarget.style.boxShadow = 'none'
-              }}
-            />
-            
-            {postError && (
-              <p style={{ color: '#ff6b6b', fontSize: '13px', marginBottom: '16px' }}>
-                {postError}
-              </p>
-            )}
-            
-            <button
-              onClick={handleCreatePost}
-              disabled={!postContent.trim() || posting}
-              style={{
-                width: '100%',
-                padding: '16px',
-                borderRadius: '12px',
-                border: 'none',
-                background: !postContent.trim() || posting
-                  ? 'rgba(212, 168, 67, 0.3)'
-                  : 'linear-gradient(135deg, #D4A843 0%, #B8922F 100%)',
-                color: '#0a0f28',
-                fontSize: '16px',
-                fontWeight: 600,
-                cursor: !postContent.trim() || posting ? 'not-allowed' : 'pointer',
-                marginBottom: '12px',
-                opacity: !postContent.trim() || posting ? 0.6 : 1,
-                boxShadow: !postContent.trim() || posting ? 'none' : '0 4px 20px rgba(212, 168, 67, 0.4)',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              {posting ? 'Posting…' : 'Post'}
-            </button>
-            
-            <button
-              onClick={() => {
-                setShowPostModal(false)
-                setPostContent('')
-                setPostType('general')
-                setPostError('')
-              }}
-              style={{
-                width: '100%',
-                padding: '14px',
-                borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                background: 'transparent',
-                color: 'rgba(255, 255, 255, 0.6)',
-                fontSize: '15px',
-                cursor: 'pointer',
-              }}
-            >
-              Cancel
-            </button>
-          </div>
-        </>,
-        document.body,
-      ) : null}
-      
-      {/* Comments Sheet */}
-      {showCommentsSheet && typeof document !== 'undefined' ? createPortal(
-        <>
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(0, 0, 0, 0.6)',
-              zIndex: 10050,
-            }}
-            onClick={handleCloseComments}
-          />
-          <div
-            role="dialog"
-            aria-modal="true"
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              width: '100%',
-              maxWidth: '390px',
-              margin: '0 auto',
-              maxHeight: '70vh',
-              overflowY: 'auto',
-              background: 'linear-gradient(180deg, rgba(15, 20, 50, 0.98), rgba(8, 12, 35, 0.99))',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(212, 168, 67, 0.25)',
-              borderTop: '1px solid rgba(212, 168, 67, 0.4)',
-              borderRadius: '24px 24px 0 0',
-              padding: '24px',
-              zIndex: 10051,
-              animation: 'slideUp 0.3s ease-out',
-            }}
-          >
-            <h2 style={{
-              color: '#D4A843',
-              fontSize: '20px',
-              fontWeight: 700,
-              marginBottom: '16px',
-            }}>
-              Comments
-            </h2>
-            
-            {/* Comments List */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
-              {(postComments[showCommentsSheet] || []).length === 0 ? (
-                <p style={{
-                  color: 'rgba(255, 255, 255, 0.5)',
-                  fontSize: '14px',
-                  textAlign: 'center',
-                  padding: '24px 0',
-                }}>
-                  No comments yet. Be the first!
-                </p>
-              ) : (
-                (postComments[showCommentsSheet] || []).map((comment) => (
-                  <div
-                    key={comment.id}
-                    style={{
-                      display: 'flex',
-                      gap: '12px',
-                      padding: '12px',
-                      background: 'rgba(255, 255, 255, 0.04)',
-                      borderRadius: '12px',
-                    }}
-                  >
-                    <div style={{
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #D4A843 0%, #B8860B 100%)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#ffffff',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      flexShrink: 0,
-                    }}>
-                      {getInitials(getDisplayName(comment.profile, comment.user_id))}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                        <span style={{
-                          color: '#ffffff',
-                          fontSize: '13px',
-                          fontWeight: 600,
-                        }}>
-                          {getDisplayName(comment.profile, comment.user_id)}
-                        </span>
-                        <span style={{
-                          color: 'rgba(255, 255, 255, 0.4)',
-                          fontSize: '11px',
-                        }}>
-                          {formatDate(comment.created_at)}
-                        </span>
-                      </div>
-                      <p style={{
-                        color: 'rgba(255, 255, 255, 0.85)',
-                        fontSize: '14px',
-                        margin: 0,
-                        lineHeight: 1.5,
-                      }}>
-                        {comment.content}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-            
-            {/* Comment Input */}
-            <div style={{
-              display: 'flex',
-              gap: '8px',
-              alignItems: 'flex-end',
-            }}>
-              <input
-                type="text"
-                value={commentInput}
-                onChange={(e) => setCommentInput(e.target.value)}
-                placeholder="Add a comment..."
-                style={{
-                  flex: 1,
-                  padding: '12px 16px',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(212, 168, 67, 0.2)',
-                  background: 'rgba(255, 255, 255, 0.04)',
-                  color: '#ffffff',
-                  fontSize: '14px',
-                  outline: 'none',
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(212, 168, 67, 0.8)'
-                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(212, 168, 67, 0.1)'
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(212, 168, 67, 0.2)'
-                  e.currentTarget.style.boxShadow = 'none'
-                }}
-              />
-              <button
-                onClick={handleSubmitComment}
-                disabled={!commentInput.trim()}
-                style={{
-                  padding: '12px 16px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  background: !commentInput.trim()
-                    ? 'rgba(212, 168, 67, 0.3)'
-                    : 'linear-gradient(135deg, #D4A843 0%, #B8860B 100%)',
-                  color: '#0a0f28',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: !commentInput.trim() ? 'not-allowed' : 'pointer',
-                  opacity: !commentInput.trim() ? 0.6 : 1,
-                }}
-              >
-                Send
-              </button>
-            </div>
-          </div>
-        </>,
-        document.body,
-      ) : null}
-      
-      {/* Profile Modal */}
-      {showProfileModal && profileData ? (
-        <>
-          {/* Backdrop */}
-          <div
-            onClick={() => setShowProfileModal(null)}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(0,0,0,0.5)',
-              zIndex: 999,
-            }}
-          />
-          {/* Modal */}
-          <div style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            background: 'rgba(10,20,50,0.98)',
-            border: '1px solid rgba(212,168,67,0.3)',
-            borderRadius: '20px',
-            padding: '24px',
-            width: '280px',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            zIndex: 1000,
-            boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-          }}>
-            {/* Close button */}
-            <button
-              onClick={() => setShowProfileModal(null)}
-              style={{
-                position: 'absolute',
-                top: '12px',
-                right: '12px',
-                background: 'none',
-                border: 'none',
-                color: 'rgba(255,255,255,0.4)',
-                fontSize: '20px',
-                cursor: 'pointer',
-                padding: '4px',
-              }}
-            >
-              ×
-            </button>
-            
-            {/* Avatar */}
-            <div style={{ textAlign: 'center' }}>
-              {profileData.avatar_url ? (
-                <img
-                  src={profileData.avatar_url}
-                  alt=""
-                  style={{
-                    width: '64px',
-                    height: '64px',
-                    borderRadius: '50%',
-                    objectFit: 'cover',
-                    border: '2px solid #D4A843',
-                  }}
-                />
-              ) : (
-                <div style={{
-                  width: '64px',
-                  height: '64px',
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #D4A843 0%, #B8860B 100%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#ffffff',
-                  fontSize: '24px',
-                  fontWeight: 700,
-                  border: '2px solid #D4A843',
-                  margin: '0 auto',
-                }}>
-                  {getInitials(profileData.display_name || profileData.username)}
-                </div>
-              )}
-            </div>
-            
-            {/* Display name */}
-            <p style={{
-              color: '#ffffff',
-              fontSize: '20px',
-              fontWeight: 800,
-              textAlign: 'center',
-              marginTop: '12px',
-              margin: '12px 0 0 0',
-            }}>
-              {profileData.display_name || profileData.username}
-            </p>
-            
-            {/* Badges row */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: '8px',
-              marginTop: '8px',
-            }}>
-              {profileData.lessons_completed > 0 && (
-                <span style={{
-                  background: 'rgba(212,168,67,0.2)',
-                  border: '1px solid rgba(212,168,67,0.4)',
-                  borderRadius: '50px',
-                  padding: '4px 12px',
-                  fontSize: '12px',
-                  color: '#D4A843',
-                  fontWeight: 600,
-                }}>
-                  {profileData.lessons_completed} Badges
-                </span>
-              )}
-            </div>
-            
-            {/* Streak */}
-            {profileData.reading_streak > 0 && (
-              <p style={{
-                color: '#D4A843',
-                fontSize: '13px',
-                textAlign: 'center',
-                marginTop: '8px',
-                margin: '8px 0 0 0',
-              }}>
-                🔥 {profileData.reading_streak} day streak
-              </p>
-            )}
-            
-            {/* Member since */}
-            <p style={{
-              fontSize: '12px',
-              color: 'rgba(255,255,255,0.4)',
-              textAlign: 'center',
-              marginTop: '4px',
-              margin: '4px 0 0 0',
-            }}>
-              Member since {new Date(profileData.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-            </p>
-          </div>
-        </>
-      ) : null}
-      
-      {/* Delete Group Confirmation Modal */}
-      {showDeleteConfirm && (
-        <>
-          <div
-            onClick={() => setShowDeleteConfirm(false)}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(0,0,0,0.5)',
-              zIndex: 999,
-            }}
-          />
-          <div style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            background: 'rgba(10,20,50,0.98)',
-            border: '1px solid rgba(212,168,67,0.3)',
-            borderRadius: '20px',
-            padding: '24px',
-            width: '320px',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            zIndex: 1000,
-            boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-          }}>
-            <h3 style={{
-              color: '#ffffff',
-              fontSize: '18px',
-              fontWeight: 700,
-              marginBottom: '12px',
-              margin: '0 0 12px 0',
-            }}>
-              Delete Fellowship Group
-            </h3>
-            <p style={{
-              color: 'rgba(255,255,255,0.7)',
-              fontSize: '14px',
-              lineHeight: 1.6,
-              marginBottom: '24px',
-              margin: '0 0 24px 0',
-            }}>
-              Are you sure you want to delete this fellowship group? This cannot be undone. All posts and members will be removed.
-            </p>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={deletingGroup}
-                style={{
-                  flex: 1,
-                  padding: '12px 20px',
-                  borderRadius: '50px',
-                  border: '1px solid #D4A843',
-                  background: 'transparent',
-                  color: '#D4A843',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: deletingGroup ? 'not-allowed' : 'pointer',
-                  opacity: deletingGroup ? 0.6 : 1,
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteGroup}
-                disabled={deletingGroup}
-                style={{
-                  flex: 1,
-                  padding: '12px 20px',
-                  borderRadius: '50px',
-                  border: 'none',
-                  background: '#ff6b6b',
-                  color: '#ffffff',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: deletingGroup ? 'not-allowed' : 'pointer',
-                  opacity: deletingGroup ? 0.6 : 1,
-                }}
-              >
-                {deletingGroup ? 'Deleting…' : 'Delete Group'}
-              </button>
-            </div>
-          </div>
-        </>
-      )}
-      
-      {/* Remove Member Confirmation Modal */}
-      {showRemoveConfirm && (
-        <>
-          <div
-            onClick={() => setShowRemoveConfirm(null)}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(0,0,0,0.5)',
-              zIndex: 999,
-            }}
-          />
-          <div style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            background: 'rgba(10,20,50,0.98)',
-            border: '1px solid rgba(212,168,67,0.3)',
-            borderRadius: '20px',
-            padding: '24px',
-            width: '320px',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            zIndex: 1000,
-            boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-          }}>
-            <h3 style={{
-              color: '#ffffff',
-              fontSize: '18px',
-              fontWeight: 700,
-              marginBottom: '12px',
-              margin: '0 0 12px 0',
-            }}>
-              Remove Member
-            </h3>
-            <p style={{
-              color: 'rgba(255,255,255,0.7)',
-              fontSize: '14px',
-              lineHeight: 1.6,
-              marginBottom: '24px',
-              margin: '0 0 24px 0',
-            }}>
-              Remove {showRemoveConfirm.memberName} from the group?
-            </p>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button
-                onClick={() => setShowRemoveConfirm(null)}
-                disabled={removingMember}
-                style={{
-                  flex: 1,
-                  padding: '12px 20px',
-                  borderRadius: '50px',
-                  border: '1px solid #D4A843',
-                  background: 'transparent',
-                  color: '#D4A843',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: removingMember ? 'not-allowed' : 'pointer',
-                  opacity: removingMember ? 0.6 : 1,
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleRemoveMember(showRemoveConfirm.memberId, showRemoveConfirm.memberName)}
-                disabled={removingMember}
-                style={{
-                  flex: 1,
-                  padding: '12px 20px',
-                  borderRadius: '50px',
-                  border: 'none',
-                  background: '#ff6b6b',
-                  color: '#ffffff',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: removingMember ? 'not-allowed' : 'pointer',
-                  opacity: removingMember ? 0.6 : 1,
-                }}
-              >
-                {removingMember ? 'Removing…' : 'Remove'}
-              </button>
-            </div>
-          </div>
-        </>
       )}
     </div>
   )

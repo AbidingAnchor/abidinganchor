@@ -30,6 +30,10 @@ export async function applyDailyStreakOnAppOpen(userId) {
     userId,
     error: error ?? null,
     data: profile ?? null,
+    currentStreak: profile?.reading_streak,
+    lastActiveDate: profile?.last_active_date,
+    longestStreak: profile?.longest_streak,
+    streakStartDate: profile?.streak_start_date,
   })
 
   if (error) {
@@ -103,8 +107,11 @@ export async function applyDailyStreakOnAppOpen(userId) {
 
   console.log('[dailyAppStreak] profiles UPDATE streak fields', {
     userId,
+    prevStreak,
     next,
     today,
+    last,
+    streakStartDate,
     error: updateError ?? null,
     returnedRows: updatedRows ?? null,
   })

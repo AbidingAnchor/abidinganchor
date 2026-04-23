@@ -184,6 +184,8 @@ async function ensureProfile(user) {
 }
 
 export function AuthProvider({ children }) {
+  console.log('AuthProvider rendering')
+  
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [suspendedInfo, setSuspendedInfo] = useState(null)

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { toPng } from 'html-to-image'
 import { Share } from '@capacitor/share'
 import { Filesystem, Directory } from '@capacitor/filesystem'
@@ -9,6 +10,7 @@ import { useAuth } from '../context/AuthContext'
 import { userStorageKey } from '../utils/userStorage'
 
 export default function ShareCard() {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const location = useLocation()
   const cardRef = useRef(null)
@@ -34,8 +36,8 @@ export default function ShareCard() {
   const cardStyles = [
     {
       id: 'celestial',
-      name: 'Celestial',
-      description: 'Dark navy + stars',
+      name: t('shareCard.celestial'),
+      description: t('shareCard.celestialDesc'),
       previewBg:
         'radial-gradient(ellipse at top, #1e3a6e 0%, #162955 50%, #0d1f3c 100%)',
       previewStars: true,
@@ -45,8 +47,8 @@ export default function ShareCard() {
     },
     {
       id: 'dawn',
-      name: 'Dawn',
-      description: 'Purple to gold gradient',
+      name: t('shareCard.dawn'),
+      description: t('shareCard.dawnDesc'),
       previewBg: 'linear-gradient(135deg, #2d1b69 0%, #5a2d82 40%, #c2773a 80%, #e8a84e 100%)',
       labelColor: '#FFFFFF',
       subColor: 'rgba(255,255,255,0.85)',
@@ -54,8 +56,8 @@ export default function ShareCard() {
     },
     {
       id: 'scripture',
-      name: 'Scripture',
-      description: 'Dark green, earthy',
+      name: t('shareCard.scripture'),
+      description: t('shareCard.scriptureDesc'),
       previewBg: 'linear-gradient(180deg, #2d6a4f 0%, #1e4d35 100%)',
       labelColor: '#FFFFFF',
       subColor: 'rgba(255,248,231,0.85)',
@@ -63,8 +65,8 @@ export default function ShareCard() {
     },
     {
       id: 'midnight',
-      name: 'Midnight',
-      description: 'Pure black, minimal',
+      name: t('shareCard.midnight'),
+      description: t('shareCard.midnightDesc'),
       previewBg: 'linear-gradient(180deg, #000000 0%, #0a0a0f 55%, #000000 100%)',
       labelColor: '#FFFFFF',
       subColor: 'rgba(255,255,255,0.78)',
@@ -72,8 +74,8 @@ export default function ShareCard() {
     },
     {
       id: 'golden',
-      name: 'Golden Hour',
-      description: 'Warm gold gradient',
+      name: t('shareCard.goldenHour'),
+      description: t('shareCard.goldenHourDesc'),
       previewBg: 'linear-gradient(165deg, #fff5e6 0%, #ffd89b 38%, #e8a84e 72%, #c77d2a 100%)',
       labelColor: '#1a1a1a',
       subColor: 'rgba(26,26,26,0.75)',
@@ -81,8 +83,8 @@ export default function ShareCard() {
     },
     {
       id: 'ocean',
-      name: 'Ocean',
-      description: 'Deep blue & teal',
+      name: t('shareCard.ocean'),
+      description: t('shareCard.oceanDesc'),
       previewBg: 'linear-gradient(180deg, #1a3a6e 0%, #1e6091 50%, #1a8a7a 100%)',
       labelColor: '#FFFFFF',
       subColor: 'rgba(224,255,251,0.88)',
@@ -90,8 +92,8 @@ export default function ShareCard() {
     },
     {
       id: 'rose',
-      name: 'Rose Garden',
-      description: 'Soft pink & cream',
+      name: t('shareCard.roseGarden'),
+      description: t('shareCard.roseGardenDesc'),
       previewBg: 'linear-gradient(170deg, #fffdfb 0%, #fce7f3 40%, #fbcfe8 75%, #f9a8d4 100%)',
       labelColor: '#4a044e',
       subColor: 'rgba(74,4,78,0.72)',
@@ -99,8 +101,8 @@ export default function ShareCard() {
     },
     {
       id: 'forest',
-      name: 'Forest',
-      description: 'Deep green & earth',
+      name: t('shareCard.forest'),
+      description: t('shareCard.forestDesc'),
       previewBg: 'linear-gradient(180deg, #2d6a4f 0%, #3d8b6f 60%, #2a5c44 100%)',
       labelColor: '#FFFFFF',
       subColor: 'rgba(240,253,244,0.88)',
@@ -109,23 +111,23 @@ export default function ShareCard() {
   ]
 
   const fontOptions = [
-    { id: 'serif', name: 'Serif', description: 'Georgia' },
-    { id: 'modern', name: 'Modern', description: 'Inter' },
-    { id: 'elegant', name: 'Elegant', description: 'Cinzel' },
-    { id: 'handwritten', name: 'Handwritten', description: 'cursive' },
+    { id: 'serif', name: t('shareCard.fontSerif'), description: t('shareCard.fontSerifDesc') },
+    { id: 'modern', name: t('shareCard.fontModern'), description: t('shareCard.fontModernDesc') },
+    { id: 'elegant', name: t('shareCard.fontElegant'), description: t('shareCard.fontElegantDesc') },
+    { id: 'handwritten', name: t('shareCard.fontHandwritten'), description: t('shareCard.fontHandwrittenDesc') },
   ]
 
   const textColorOptions = [
-    { id: 'white', label: 'White', swatch: '#FFFFFF' },
-    { id: 'gold', label: 'Gold', swatch: '#D4A843' },
-    { id: 'cream', label: 'Cream', swatch: '#FFF8E7' },
-    { id: 'dark', label: 'Dark', swatch: '#1a1a1a' },
-    { id: 'red', label: 'Red', swatch: '#E53E3E' },
-    { id: 'blue', label: 'Blue', swatch: '#3B82F6' },
-    { id: 'purple', label: 'Purple', swatch: '#8B5CF6' },
-    { id: 'green', label: 'Green', swatch: '#10B981' },
-    { id: 'pink', label: 'Pink', swatch: '#EC4899' },
-    { id: 'orange', label: 'Orange', swatch: '#F97316' },
+    { id: 'white', label: t('shareCard.colorWhite'), swatch: '#FFFFFF' },
+    { id: 'gold', label: t('shareCard.colorGold'), swatch: '#D4A843' },
+    { id: 'cream', label: t('shareCard.colorCream'), swatch: '#FFF8E7' },
+    { id: 'dark', label: t('shareCard.colorDark'), swatch: '#1a1a1a' },
+    { id: 'red', label: t('shareCard.colorRed'), swatch: '#E53E3E' },
+    { id: 'blue', label: t('shareCard.colorBlue'), swatch: '#3B82F6' },
+    { id: 'purple', label: t('shareCard.colorPurple'), swatch: '#8B5CF6' },
+    { id: 'green', label: t('shareCard.colorGreen'), swatch: '#10B981' },
+    { id: 'pink', label: t('shareCard.colorPink'), swatch: '#EC4899' },
+    { id: 'orange', label: t('shareCard.colorOrange'), swatch: '#F97316' },
   ]
 
   const handleGenerateAndShare = async () => {
@@ -151,8 +153,8 @@ export default function ShareCard() {
       
       // Share using Capacitor Share API
       await Share.share({
-        title: 'Sharing from AbidingAnchor 🕊️',
-        text: 'Check out this faith card from AbidingAnchor',
+        title: t('shareCard.shareTitle'),
+        text: t('shareCard.shareText'),
         files: [file],
       })
 
@@ -165,7 +167,7 @@ export default function ShareCard() {
       setGenerating(false)
     } catch (error) {
       console.error('Error generating or sharing card:', error)
-      alert('There was an error sharing your card. Please try again.')
+      alert(t('shareCard.shareError'))
       setGenerating(false)
     }
   }
@@ -189,7 +191,7 @@ export default function ShareCard() {
       const permissions = await Camera.requestPermissions({ permissions: ['photos'] })
       
       if (!permissions.photos) {
-        alert('Photo permissions are needed to save the card to your gallery.')
+        alert(t('shareCard.permissionError'))
         setGenerating(false)
         return
       }
@@ -203,14 +205,14 @@ export default function ShareCard() {
         directory: Directory.External,
       })
       
-      alert('Card saved to your gallery! 🕊️')
+      alert(t('shareCard.savedToGallery'))
       setGenerating(false)
     } catch (error) {
       console.error('Error saving to gallery:', error)
       if (error.message?.includes('permission')) {
-        alert('Photo permissions are needed to save the card to your gallery. Please enable them in your device settings.')
+        alert(t('shareCard.permissionError'))
       } else {
-        alert('There was an error saving the card. Please try again.')
+        alert(t('shareCard.saveError'))
       }
       setGenerating(false)
     }
@@ -230,10 +232,10 @@ export default function ShareCard() {
       {/* Screen Title */}
       <div className="text-center mb-4">
         <h1 className="text-page-title text-gold-accent mb-2">
-          Share Your Faith 🕊️
+          {t('shareCard.title')}
         </h1>
         <p className="text-white/80 italic text-sm">
-          Let your light shine. Matthew 5:16
+          {t('shareCard.subtitle')}
         </p>
       </div>
 
@@ -255,7 +257,7 @@ export default function ShareCard() {
       {generating && (
         <div className="glass p-4 rounded-2xl text-center mb-2">
           <p className="text-gold-accent text-lg font-semibold mb-2">
-            Preparing your card... 🙏
+            {t('shareCard.preparing')}
           </p>
           <div className="w-12 h-12 mx-auto rounded-full border-4 border-[#D4A843]/30 border-t-[#D4A843] animate-spin" />
         </div>
@@ -264,7 +266,7 @@ export default function ShareCard() {
       {/* Card Style Options - 2x2 grid */}
       <div className="mb-2">
         <p className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--section-title)' }}>
-          Card Style
+          {t('shareCard.cardStyle')}
         </p>
         <div className="grid grid-cols-2 gap-3">
           {cardStyles.map((style) => {
@@ -312,7 +314,7 @@ export default function ShareCard() {
       {/* Font */}
       <div className="mb-4">
         <p className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--section-title)' }}>
-          Font
+          {t('shareCard.font')}
         </p>
         <div className="grid grid-cols-2 gap-3">
           {fontOptions.map((f) => (
@@ -342,7 +344,7 @@ export default function ShareCard() {
       {/* Text color */}
       <div className="mb-4">
         <p className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--section-title)' }}>
-          Text Color
+          {t('shareCard.textColor')}
         </p>
         <div className="flex flex-wrap gap-4 justify-center sm:justify-start">
           {textColorOptions.map((c) => (
@@ -351,7 +353,7 @@ export default function ShareCard() {
               type="button"
               onClick={() => setTextColorChoice(c.id)}
               className="flex flex-col items-center gap-2 min-w-[4.5rem]"
-              aria-label={`Text color ${c.label}`}
+              aria-label={t('shareCard.textColorAria', { color: c.label })}
               aria-pressed={textColorChoice === c.id}
             >
               <span
@@ -375,17 +377,17 @@ export default function ShareCard() {
       {/* Customization Fields */}
       <div className="mb-4">
         <p className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--section-title)' }}>
-          Customize
+          {t('shareCard.customize')}
         </p>
         
         {/* Verse Reference */}
         <div className="mb-3">
-          <label className="text-sm mb-2 block" style={{ color: 'var(--text-primary)' }}>Verse Reference</label>
+          <label className="text-sm mb-2 block" style={{ color: 'var(--text-primary)' }}>{t('shareCard.verseReference')}</label>
           <input
             type="text"
             value={verseReference}
             onChange={(e) => setVerseReference(e.target.value)}
-            placeholder="e.g., Psalm 23:1"
+            placeholder={t('shareCard.verseReferencePlaceholder')}
             className="w-full rounded-xl p-3 text-base outline-none transition-all"
             style={{
               background: 'var(--input-bg)',
@@ -397,11 +399,11 @@ export default function ShareCard() {
 
         {/* Verse Text */}
         <div className="mb-3">
-          <label className="text-sm mb-2 block" style={{ color: 'var(--text-primary)' }}>Verse Text</label>
+          <label className="text-sm mb-2 block" style={{ color: 'var(--text-primary)' }}>{t('shareCard.verseText')}</label>
           <textarea
             value={verseText}
             onChange={(e) => setVerseText(e.target.value)}
-            placeholder="Enter the scripture verse..."
+            placeholder={t('shareCard.verseTextPlaceholder')}
             rows={3}
             className="w-full rounded-xl p-3 text-base outline-none resize-none transition-all"
             style={{
@@ -414,11 +416,11 @@ export default function ShareCard() {
 
         {/* Personal Reflection */}
         <div className="mb-4">
-          <label className="text-sm mb-2 block" style={{ color: 'var(--text-primary)' }}>Personal Reflection (optional)</label>
+          <label className="text-sm mb-2 block" style={{ color: 'var(--text-primary)' }}>{t('shareCard.personalReflection')}</label>
           <textarea
             value={userReflection}
             onChange={(e) => setUserReflection(e.target.value)}
-            placeholder="What does this verse mean to you?"
+            placeholder={t('shareCard.reflectionPlaceholder')}
             rows={3}
             className="w-full rounded-xl p-3 text-base outline-none resize-none transition-all"
             style={{
@@ -435,7 +437,7 @@ export default function ShareCard() {
           disabled={generating}
           className="btn-primary w-full gold-glow-pulse disabled:opacity-50 disabled:cursor-not-allowed mb-3"
         >
-          {generating ? 'Generating...' : 'Generate & Share'}
+          {generating ? t('shareCard.generating') : t('shareCard.generateAndShare')}
         </button>
 
         {/* Save to Gallery Button */}
@@ -448,7 +450,7 @@ export default function ShareCard() {
             borderRadius: '12px',
           }}
         >
-          Save to Gallery
+          {t('shareCard.saveToGallery')}
         </button>
       </div>
     </div>

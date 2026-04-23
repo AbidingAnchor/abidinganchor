@@ -266,6 +266,37 @@ export default function Settings() {
     navigate('/auth', { replace: true })
   }
 
+  const handleLanguageChange = async (code) => {
+    try {
+      await i18nHook.changeLanguage(code)
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, code)
+      setLanguageOpen(false)
+      // Show toast
+      const toast = document.createElement('div')
+      toast.textContent = 'Language updated'
+      toast.style.cssText = `
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(212, 168, 67, 0.95);
+        color: #0a1432;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        z-index: 10060;
+        animation: fadeInUp 0.3s ease;
+      `
+      document.body.appendChild(toast)
+      setTimeout(() => {
+        toast.remove()
+      }, 2500)
+    } catch (error) {
+      console.error('Language change error:', error)
+    }
+  }
+
   const handleConfirmDeleteAccount = async () => {
     setDeleteAccountError('')
     setDeleteAccountSubmitting(true)
@@ -541,7 +572,7 @@ export default function Settings() {
                   paddingBottom: '4px',
                 }}
               >
-                🔥 {Math.max(0, Number(profile?.reading_streak) || 0)} day streak
+                🔥 {Math.max(0, Number(profile?.reading_streak) || 0)} {t('settings.dayStreak')}
               </div>
             </div>
             <div
@@ -652,7 +683,7 @@ export default function Settings() {
           marginBottom: '8px',
           fontWeight: 600,
         }}>
-          Account
+          {t('settings.sectionAccount')}
         </p>
         <div style={{
           background: 'rgba(255,255,255,0.06)',
@@ -692,7 +723,7 @@ export default function Settings() {
             </div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
               <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                Edit Profile
+                {t('settings.editProfile')}
               </p>
             </div>
             <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
@@ -728,7 +759,7 @@ export default function Settings() {
             </div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
               <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                Notifications
+                {t('settings.notifications')}
               </p>
             </div>
             <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
@@ -763,7 +794,7 @@ export default function Settings() {
             </div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
               <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                App Language
+                {t('settings.uiLanguage')}
               </p>
               <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
                 {(i18nHook.resolvedLanguage || i18nHook.language || 'en').toUpperCase()}
@@ -782,7 +813,7 @@ export default function Settings() {
           marginBottom: '8px',
           fontWeight: 600,
         }}>
-          Reading
+          {t('settings.sectionReading')}
         </p>
         <div style={{
           background: 'rgba(255,255,255,0.06)',
@@ -822,7 +853,7 @@ export default function Settings() {
             </div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
               <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                Bible Translation
+                {t('settings.bibleTranslation')}
               </p>
               <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
                 {selectedTranslation}
@@ -861,7 +892,7 @@ export default function Settings() {
             </div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
               <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                Font Size
+                {t('settings.fontSize')}
               </p>
             </div>
             <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
@@ -893,7 +924,7 @@ export default function Settings() {
             </div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
               <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                Reading Reminders
+                {t('settings.dailyReminder')}
               </p>
             </div>
             <button
@@ -933,7 +964,7 @@ export default function Settings() {
           marginBottom: '8px',
           fontWeight: 600,
         }}>
-          Community
+          {t('settings.sectionCommunity')}
         </p>
         <div style={{
           background: 'rgba(255,255,255,0.06)',
@@ -973,7 +1004,7 @@ export default function Settings() {
             </div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
               <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                Public Profile
+                {t('settings.publicProfile')}
               </p>
             </div>
             <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
@@ -1008,11 +1039,11 @@ export default function Settings() {
             </div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
               <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                Ministry Supporter
+                {t('settings.ministrySupporter')}
               </p>
               {profile?.is_supporter && (
                 <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
-                  Active
+                  {t('settings.active')}
                 </p>
               )}
             </div>
@@ -1029,7 +1060,7 @@ export default function Settings() {
           marginBottom: '8px',
           fontWeight: 600,
         }}>
-          Support
+          {t('settings.sectionSupport')}
         </p>
         <div style={{
           background: 'rgba(255,255,255,0.06)',
@@ -1069,7 +1100,7 @@ export default function Settings() {
             </div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
               <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                Share App
+                {t('settings.shareApp')}
               </p>
             </div>
             <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
@@ -1105,7 +1136,7 @@ export default function Settings() {
             </div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
               <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                Rate Us
+                {t('settings.rateUs')}
               </p>
             </div>
             <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
@@ -1141,7 +1172,7 @@ export default function Settings() {
             </div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
               <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                Contact Support
+                {t('settings.contactSupport')}
               </p>
             </div>
             <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
@@ -1176,10 +1207,10 @@ export default function Settings() {
             </div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
               <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                Support the Ministry
+                {t('settings.supportMinistry')}
               </p>
               <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
-                Help keep Abiding Anchor free for everyone
+                {t('settings.supportMinistryDesc')}
               </p>
             </div>
             <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
@@ -1195,7 +1226,7 @@ export default function Settings() {
           marginBottom: '8px',
           fontWeight: 600,
         }}>
-          About
+          {t('settings.sectionAbout')}
         </p>
         <div style={{
           background: 'rgba(255,255,255,0.06)',
@@ -1235,7 +1266,7 @@ export default function Settings() {
             </div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
               <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                What's New
+                {t('settings.whatsNew')}
               </p>
             </div>
             <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
@@ -1271,7 +1302,7 @@ export default function Settings() {
             </div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
               <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                Privacy Policy
+                {t('settings.privacyPolicy')}
               </p>
             </div>
             <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
@@ -1307,7 +1338,7 @@ export default function Settings() {
             </div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
               <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                Terms of Service
+                {t('settings.termsOfService')}
               </p>
             </div>
             <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
@@ -1335,7 +1366,7 @@ export default function Settings() {
             </div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
               <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                Version
+                {t('settings.version')}
               </p>
             </div>
             <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}>1.0.0</span>
@@ -1363,7 +1394,7 @@ export default function Settings() {
             marginBottom: '24px',
           }}
         >
-          🚪 Sign Out
+          🚪 {t('settings.signOut')}
         </button>
       </section>
 
@@ -1670,9 +1701,221 @@ export default function Settings() {
               <div style={{ width: '40px' }} />
             </div>
             <div className="px-5 pb-6">
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                Notification settings coming soon.
-              </p>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {/* Row 1: Daily Reminder */}
+                <div
+                  onClick={handleDailyReminderToggle}
+                  style={{
+                    minHeight: '52px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0 16px',
+                    width: '100%',
+                    cursor: 'pointer',
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  }}
+                >
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
+                    background: 'rgba(212,168,67,0.1)',
+                    color: '#D4A843',
+                    fontSize: '18px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    🔔
+                  </div>
+                  <div style={{ marginLeft: '14px', flex: 1 }}>
+                    <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+                      Daily Reminder
+                    </p>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
+                      Get reminded to read the Bible
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); handleDailyReminderToggle(); }}
+                    style={{
+                      width: '52px',
+                      height: '28px',
+                      borderRadius: '14px',
+                      background: dailyReminderEnabled ? '#D4A843' : 'rgba(255,255,255,0.15)',
+                      border: 'none',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      transition: 'background 0.2s ease'
+                    }}
+                  >
+                    <div style={{
+                      position: 'absolute',
+                      top: '2px',
+                      left: dailyReminderEnabled ? '26px' : '2px',
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      background: '#ffffff',
+                      transition: 'left 0.2s ease'
+                    }} />
+                  </button>
+                </div>
+
+                {/* Row 2: Reminder Time */}
+                <div
+                  style={{
+                    minHeight: '52px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0 16px',
+                    width: '100%',
+                    cursor: 'pointer',
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  }}
+                >
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
+                    background: 'rgba(212,168,67,0.1)',
+                    color: '#D4A843',
+                    fontSize: '18px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    ⏰
+                  </div>
+                  <div style={{ marginLeft: '14px', flex: 1 }}>
+                    <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+                      Reminder Time
+                    </p>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
+                      08:00 AM
+                    </p>
+                  </div>
+                  <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+                </div>
+
+                {/* Row 3: Fellowship Notifications */}
+                <div
+                  style={{
+                    minHeight: '52px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0 16px',
+                    width: '100%',
+                    cursor: 'pointer',
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  }}
+                >
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
+                    background: 'rgba(212,168,67,0.1)',
+                    color: '#D4A843',
+                    fontSize: '18px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    👥
+                  </div>
+                  <div style={{ marginLeft: '14px', flex: 1 }}>
+                    <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+                      Fellowship Notifications
+                    </p>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
+                      New posts in your group
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    style={{
+                      width: '52px',
+                      height: '28px',
+                      borderRadius: '14px',
+                      background: 'rgba(255,255,255,0.15)',
+                      border: 'none',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      transition: 'background 0.2s ease'
+                    }}
+                  >
+                    <div style={{
+                      position: 'absolute',
+                      top: '2px',
+                      left: '2px',
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      background: '#ffffff',
+                      transition: 'left 0.2s ease'
+                    }} />
+                  </button>
+                </div>
+
+                {/* Row 4: Prayer Notifications */}
+                <div
+                  style={{
+                    minHeight: '52px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0 16px',
+                    width: '100%',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
+                    background: 'rgba(212,168,67,0.1)',
+                    color: '#D4A843',
+                    fontSize: '18px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    🙏
+                  </div>
+                  <div style={{ marginLeft: '14px', flex: 1 }}>
+                    <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+                      Prayer Notifications
+                    </p>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
+                      Updates on your prayers
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    style={{
+                      width: '52px',
+                      height: '28px',
+                      borderRadius: '14px',
+                      background: 'rgba(255,255,255,0.15)',
+                      border: 'none',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      transition: 'background 0.2s ease'
+                    }}
+                  >
+                    <div style={{
+                      position: 'absolute',
+                      top: '2px',
+                      left: '2px',
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      background: '#ffffff',
+                      transition: 'left 0.2s ease'
+                    }} />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1735,9 +1978,66 @@ export default function Settings() {
               <div style={{ width: '40px' }} />
             </div>
             <div className="px-5 pb-6">
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+              <p className="text-sm leading-relaxed mb-4" style={{ color: 'var(--text-secondary)' }}>
                 Current: {(i18nHook.resolvedLanguage || i18nHook.language || 'en').toUpperCase()}
               </p>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {UI_LANG_OPTIONS.map((lang) => {
+                  const isSelected = (i18nHook.resolvedLanguage || i18nHook.language || 'en') === lang.code
+                  const flagEmojis = {
+                    us: '🇺🇸',
+                    es: '🇪🇸',
+                    br: '🇧🇷',
+                    fr: '🇫🇷',
+                    de: '🇩🇪',
+                    ph: '🇵🇭',
+                    kr: '🇰🇷',
+                    in: '🇮🇳',
+                  }
+                  const nativeNames = {
+                    en: 'English',
+                    es: 'Español',
+                    pt: 'Português',
+                    fr: 'Français',
+                    de: 'Deutsch',
+                    tl: 'Filipino',
+                    ko: '한국어',
+                    hi: 'हिंदी',
+                  }
+                  return (
+                    <button
+                      key={lang.code}
+                      type="button"
+                      onClick={() => handleLanguageChange(lang.code)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '16px',
+                        borderBottom: '1px solid rgba(255,255,255,0.06)',
+                        cursor: 'pointer',
+                        background: 'none',
+                        border: 'none',
+                        width: '100%',
+                        textAlign: 'left',
+                      }}
+                    >
+                      <span style={{ fontSize: '24px' }}>{flagEmojis[lang.flagIso] || '🌐'}</span>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontSize: '16px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+                          {lang.fallbackLabel}
+                        </p>
+                        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
+                          {nativeNames[lang.code] || lang.fallbackLabel}
+                        </p>
+                      </div>
+                      {isSelected && (
+                        <span style={{ color: '#D4A843', fontSize: '20px', fontWeight: 700 }}>✓</span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           </div>
         </div>
@@ -1865,9 +2165,31 @@ export default function Settings() {
               <div style={{ width: '40px' }} />
             </div>
             <div className="px-5 pb-6">
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                Font size settings coming soon.
-              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                {['Small', 'Medium', 'Large', 'X-Large', 'XX-Large'].map((size) => (
+                  <button
+                    key={size}
+                    type="button"
+                    onClick={() => {
+                      localStorage.setItem('bible_font_size', size)
+                      setFontSizeOpen(false)
+                    }}
+                    style={{
+                      padding: '10px 20px',
+                      borderRadius: '8px',
+                      background: size === 'Medium' ? '#D4A843' : 'rgba(255,255,255,0.06)',
+                      border: size === 'Medium' ? 'none' : '1px solid #D4A843',
+                      color: size === 'Medium' ? '#0a1428' : '#ffffff',
+                      fontWeight: size === 'Medium' ? 700 : 400,
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -1995,9 +2317,62 @@ export default function Settings() {
               <div style={{ width: '40px' }} />
             </div>
             <div className="px-5 pb-6">
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                Share Abiding Anchor with friends coming soon.
-              </p>
+              <button
+                type="button"
+                onClick={async () => {
+                  const shareData = {
+                    title: 'Abiding Anchor',
+                    text: "I've been using Abiding Anchor for Bible study and prayer. It's free forever and has no ads! Check it out:",
+                    url: 'https://www.abidinganchor.com'
+                  }
+                  
+                  try {
+                    if (navigator.share) {
+                      await navigator.share(shareData)
+                    } else {
+                      await navigator.clipboard.writeText(shareData.url)
+                      const toast = document.createElement('div')
+                      toast.textContent = 'Link copied to clipboard!'
+                      toast.style.cssText = `
+                        position: fixed;
+                        bottom: 100px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        background: rgba(212, 168, 67, 0.95);
+                        color: #0a1432;
+                        padding: 12px 24px;
+                        border-radius: 12px;
+                        font-size: 14px;
+                        font-weight: 600;
+                        z-index: 10060;
+                        animation: fadeInUp 0.3s ease;
+                      `
+                      document.body.appendChild(toast)
+                      setTimeout(() => toast.remove(), 2500)
+                    }
+                    setShareAppOpen(false)
+                  } catch (error) {
+                    console.error('Share error:', error)
+                  }
+                }}
+                style={{
+                  width: '100%',
+                  minHeight: '52px',
+                  background: '#D4A843',
+                  border: '1px solid #D4A843',
+                  borderRadius: '12px',
+                  color: '#0a1428',
+                  fontSize: '16px',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  cursor: 'pointer',
+                }}
+              >
+                📤 Share Now
+              </button>
             </div>
           </div>
         </div>
@@ -2125,9 +2500,32 @@ export default function Settings() {
               <div style={{ width: '40px' }} />
             </div>
             <div className="px-5 pb-6">
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                Latest updates and features coming soon.
-              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <p style={{ fontSize: '14px', fontWeight: 700, color: '#D4A843', margin: '0 0 8px' }}>
+                    Version 1.3.0
+                  </p>
+                  <ul style={{ margin: 0, paddingLeft: '20px', color: 'rgba(255,255,255,0.85)', fontSize: '13px', lineHeight: 1.7 }}>
+                    <li>Fixed daily streak calculation and display</li>
+                    <li>Added Hindi translations throughout the app</li>
+                    <li>Implemented notification settings with toggles</li>
+                    <li>Added font size options for Bible reading</li>
+                    <li>Implemented native share functionality</li>
+                  </ul>
+                </div>
+                <div>
+                  <p style={{ fontSize: '14px', fontWeight: 700, color: '#D4A843', margin: '0 0 8px' }}>
+                    Version 1.2.0
+                  </p>
+                  <ul style={{ margin: 0, paddingLeft: '20px', color: 'rgba(255,255,255,0.85)', fontSize: '13px', lineHeight: 1.7 }}>
+                    <li>Weekly Spiritual Recap with AI summary</li>
+                    <li>Wall of Honor for supporters</li>
+                    <li>Ministry transparency dashboard</li>
+                    <li>Improved onboarding flow</li>
+                    <li>Bug fixes and performance improvements</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         </div>

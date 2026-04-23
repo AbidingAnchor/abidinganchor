@@ -9,6 +9,7 @@ import GuidedPrayersSection from '../components/GuidedPrayersSection'
 import GuestPreviewBanner from '../components/GuestPreviewBanner'
 import { getGuestBrowse } from '../utils/guestBrowse'
 import { useGuestSignupModal } from '../context/GuestSignupModalContext'
+import { fetchVerse } from '../utils/bibleTranslation'
 
 export default function Prayer() {
   const { t, i18n } = useTranslation()
@@ -27,6 +28,8 @@ export default function Prayer() {
   const [deletingPrayerId, setDeletingPrayerId] = useState(null)
   const [toast, setToast] = useState(null)
   const toastTimerRef = useRef(null)
+  const [dailyVerseText, setDailyVerseText] = useState('')
+  const [dailyVerseLoading, setDailyVerseLoading] = useState(true)
 
   const load = useCallback(async (opts = {}) => {
     const silent = opts.silent === true
@@ -66,7 +69,35 @@ export default function Prayer() {
     setShowAddModal(true)
     setMainTab('mine')
     navigate(location.pathname, { replace: true, state: {} })
-  }, [location.state, location.pathname, navigate])
+  }, [location.state, navigate])
+
+  useEffect(() => {
+    const loadDailyVerse = async () => {
+      setDailyVerseLoading(true)
+      const lang = (i18n.resolvedLanguage || i18n.language || 'en').toLowerCase().split(/[-_]/)[0]
+      const cacheKey = `verse-cache-${lang}-50-4-6`
+      const cached = localStorage.getItem(cacheKey)
+      if (cached) {
+        console.log('[Prayer] using cached verse')
+        setDailyVerseText(cached)
+        setDailyVerseLoading(false)
+        return
+      }
+      try {
+        const text = await fetchVerse(50, 4, 6, lang)
+        console.log('[Prayer] verse result:', text)
+        localStorage.setItem(cacheKey, text)
+        setDailyVerseText(text)
+      } catch (err) {
+        console.error('[Prayer] Failed to fetch Philippians 4:6:', err)
+        setDailyVerseText('')
+      } finally {
+        setDailyVerseLoading(false)
+      }
+    }
+
+    loadDailyVerse()
+  }, [i18n.resolvedLanguage, i18n.language])
 
   useEffect(() => {
     if (!toast) return
@@ -181,14 +212,14 @@ export default function Prayer() {
             marginBottom: '8px',
             letterSpacing: '-0.02em',
           }}>
-            Prayer
+            {t('prayer.prayer')}
           </h1>
           <p style={{
             color: 'rgba(255, 255, 255, 0.5)',
             fontSize: '15px',
             marginBottom: '20px',
           }}>
-            Come before Him with an open heart
+            {t('prayer.prayerSubtitle')}
           </p>
         </div>
 
@@ -222,7 +253,7 @@ export default function Prayer() {
               transition: 'all 0.2s ease',
             }}
           >
-            My Prayers
+            {t('prayer.tabMyPrayers')}
           </button>
           <button
             type="button"
@@ -247,7 +278,7 @@ export default function Prayer() {
               transition: 'all 0.2s ease',
             }}
           >
-            Prayer Wall
+            {t('prayer.tabPrayerWall')}
           </button>
         </div>
 
@@ -266,7 +297,7 @@ export default function Prayer() {
                 letterSpacing: '0.18em',
                 marginBottom: '16px',
               }}>
-                MY PRAYERS
+                {t('prayer.tabMyPrayers')}
               </p>
             </div>
 
@@ -276,7 +307,7 @@ export default function Prayer() {
                 padding: '48px 24px',
                 color: 'rgba(255, 255, 255, 0.5)',
               }}>
-                Loading…
+                {t('prayer.loading')}
               </div>
             ) : items.length === 0 ? (
               <>
@@ -311,14 +342,14 @@ export default function Prayer() {
                     fontWeight: 800,
                     marginBottom: '8px',
                   }}>
-                    Your prayers are heard
+                    {t('prayer.prayersHeard')}
                   </h3>
                   <p style={{
                     color: 'rgba(255, 255, 255, 0.5)',
                     fontSize: '15px',
                     marginBottom: '24px',
                   }}>
-                    Start by sharing your heart with God
+                    {t('prayer.prayersEmpty')}
                   </p>
                   <button
                     type="button"
@@ -336,7 +367,7 @@ export default function Prayer() {
                       boxShadow: '0 4px 20px rgba(212, 168, 67, 0.4)',
                     }}
                   >
-                    Add Your First Prayer
+                    {t('prayer.addFirstPrayer')}
                   </button>
                 </div>
                 
@@ -358,7 +389,7 @@ export default function Prayer() {
                     marginBottom: '12px',
                     fontWeight: 600,
                   }}>
-                    A PRAYER FOR TODAY
+                    {t('prayer.prayerForToday')}
                   </p>
                   <p style={{
                     fontSize: '15px',
@@ -367,14 +398,14 @@ export default function Prayer() {
                     lineHeight: 1.7,
                     marginBottom: '12px',
                   }}>
-                    Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God.
+                    {dailyVerseLoading ? '...' : dailyVerseText}
                   </p>
                   <p style={{
                     fontSize: '13px',
                     color: '#D4A843',
                     fontWeight: 700,
                   }}>
-                    Philippians 4:6
+                    {dailyVerseLoading ? '...' : `${t('bible.books.philippians')} 4:6`}
                   </p>
                 </div>
               </>
@@ -431,7 +462,7 @@ export default function Prayer() {
                             fontWeight: 600,
                             marginBottom: '2px',
                           }}>
-                            {row.answered ? 'Answered' : 'Still believing'}
+                            {row.answered ? t('prayer.answeredBadge') : t('prayer.stillBelievingBtn')}
                           </p>
                           <p style={{
                             color: 'rgba(255, 255, 255, 0.5)',
@@ -474,7 +505,7 @@ export default function Prayer() {
                               transition: 'all 0.2s ease',
                             }}
                           >
-                            Still Believing
+                            {t('prayer.stillBelievingBtn')}
                           </button>
                           <button
                             type="button"
@@ -492,7 +523,7 @@ export default function Prayer() {
                               transition: 'all 0.2s ease',
                             }}
                           >
-                            God Answered
+                            {t('prayer.godAnswered')}
                           </button>
                         </>
                       ) : (
@@ -511,7 +542,7 @@ export default function Prayer() {
                             transition: 'all 0.2s ease',
                           }}
                         >
-                          Unmark Answered
+                          {t('prayer.unmarkBtn')}
                         </button>
                       )}
                       
@@ -534,7 +565,7 @@ export default function Prayer() {
                               opacity: deletingPrayerId === row.id ? 0.6 : 1,
                             }}
                           >
-                            {deletingPrayerId === row.id ? 'Deleting…' : 'Yes, Delete'}
+                            {deletingPrayerId === row.id ? t('prayer.deleting') : t('prayer.yesDelete')}
                           </button>
                           <button
                             type="button"
@@ -551,7 +582,7 @@ export default function Prayer() {
                               cursor: deletingPrayerId === row.id ? 'not-allowed' : 'pointer',
                             }}
                           >
-                            Cancel
+                            {t('common.cancel')}
                           </button>
                         </div>
                       ) : (
@@ -570,7 +601,7 @@ export default function Prayer() {
                             marginLeft: 'auto',
                           }}
                         >
-                          Delete
+                          {t('common.delete')}
                         </button>
                       )}
                     </div>
@@ -581,76 +612,7 @@ export default function Prayer() {
           </>
         ) : (
           <>
-            {/* Guided Prayers Section */}
-            <div style={{
-              marginBottom: '32px',
-              animation: 'fadeIn 0.6s ease-out 0.2s both',
-            }}>
-              <p style={{
-                color: '#D4A843',
-                fontSize: '11px',
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '0.18em',
-                marginBottom: '16px',
-              }}>
-                GUIDED PRAYERS
-              </p>
-              <div style={{
-                display: 'flex',
-                gap: '16px',
-                overflowX: 'auto',
-                paddingBottom: '12px',
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
-              }}>
-                {[
-                  { filename: 'Prayer1Morning.mp3', name: 'Morning Prayer', duration: '5 min', emoji: '🌅', gradient: 'linear-gradient(135deg, rgba(255, 183, 77, 0.2) 0%, rgba(255, 143, 77, 0.3) 100%)', border: 'rgba(212, 168, 67, 0.3)' },
-                  { filename: 'Prayer2Evening.mp3', name: 'Evening Prayer', duration: '7 min', emoji: '🌆', gradient: 'linear-gradient(135deg, rgba(251, 146, 60, 0.2) 0%, rgba(249, 115, 22, 0.3) 100%)', border: 'rgba(251, 146, 60, 0.3)' },
-                  { filename: 'Prayer3Night.mp3', name: 'Night Prayer', duration: '8 min', emoji: '🌙', gradient: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(109, 40, 217, 0.3) 100%)', border: 'rgba(139, 92, 246, 0.3)' },
-                  { filename: 'Prayer4Anxiety.mp3', name: 'Anxiety Relief', duration: '10 min', emoji: '🙏', gradient: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.3) 100%)', border: 'rgba(59, 130, 246, 0.3)' },
-                  { filename: 'Prayer5Gratitude.mp3', name: 'Gratitude', duration: '6 min', emoji: '💚', gradient: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.3) 100%)', border: 'rgba(16, 185, 129, 0.3)' },
-                  { filename: 'Prayer6Strength.mp3', name: 'Strength', duration: '9 min', emoji: '💪', gradient: 'linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.3) 100%)', border: 'rgba(239, 68, 68, 0.3)' },
-                  { filename: 'Prayer7Healing.mp3', name: 'Healing', duration: '12 min', emoji: '🌿', gradient: 'linear-gradient(135deg, rgba(20, 184, 166, 0.2) 0%, rgba(13, 148, 136, 0.3) 100%)', border: 'rgba(20, 184, 166, 0.3)' },
-                  { filename: 'Prayer8Peace.mp3', name: 'Peace', duration: '8 min', emoji: '☮️', gradient: 'linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(147, 51, 234, 0.3) 100%)', border: 'rgba(168, 85, 247, 0.3)' },
-                ].map((prayer) => (
-                  <div
-                    key={prayer.filename}
-                    style={{
-                      minWidth: '160px',
-                      height: '200px',
-                      borderRadius: '20px',
-                      background: prayer.gradient,
-                      border: `1px solid ${prayer.border}`,
-                      padding: '20px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: '32px', marginBottom: '12px' }}>{prayer.emoji}</div>
-                      <h3 style={{ color: '#ffffff', fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>{prayer.name}</h3>
-                      <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '12px' }}>{prayer.duration}</p>
-                    </div>
-                    <div style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #D4A843 0%, #B8860B 100%)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#0a0f28',
-                      fontSize: '18px',
-                    }}>▶</div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <GuidedPrayersSection />
 
             <PrayerWall />
           </>
@@ -732,14 +694,14 @@ export default function Prayer() {
                   fontWeight: 600,
                   marginBottom: '8px',
                 }}>
-                  Add Prayer
+                  {t('prayer.addPrayer')}
                 </h2>
                 <p style={{
                   color: 'rgba(255, 255, 255, 0.6)',
                   fontSize: '13px',
                   marginBottom: '20px',
                 }}>
-                  Share your heart with God
+                  {t('prayer.addPrayerSub')}
                 </p>
                 <textarea
                   value={draft}
@@ -757,7 +719,7 @@ export default function Prayer() {
                     resize: 'none',
                     marginBottom: '16px',
                   }}
-                  placeholder="Pour out your heart to Him…"
+                  placeholder={t('prayer.placeholder')}
                   onFocus={(e) => {
                     e.currentTarget.style.borderColor = 'rgba(212, 168, 67, 0.8)'
                     e.currentTarget.style.boxShadow = '0 0 0 3px rgba(212, 168, 67, 0.1)'
@@ -788,7 +750,7 @@ export default function Prayer() {
                     transition: 'all 0.2s ease',
                   }}
                 >
-                  {saving ? 'Saving…' : 'Save Prayer'}
+                  {saving ? t('journal.saving') : t('prayer.savePrayer')}
                 </button>
                 <button
                   type="button"
@@ -805,7 +767,7 @@ export default function Prayer() {
                     transition: 'all 0.2s ease',
                   }}
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
               </div>
             </>,

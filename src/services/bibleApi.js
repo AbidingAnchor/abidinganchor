@@ -15,8 +15,8 @@ export const POPULAR_BIBLES = [
   { id: '4d8e89ab47e00e51-01', name: 'Almeida Revista e Corrigida', abbr: 'ARC', language: 'Português' },
   {
     id: '1e8ab327edbce67f-01',
-    name: 'Indian Revised Version (IRV) Hindi',
-    abbr: 'IRVHin',
+    name: 'Hindi Bible (IRV)',
+    abbr: 'IRV',
     language: 'हिंदी',
   },
 ];

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { getDailyEncounter } from '../utils/dailyEncounter'
+import { fetchVerse } from '../utils/bibleTranslation'
 import { getLocalCalendarDateKey } from '../utils/localCalendarDate'
 import {
   alignPresenceLocalWithProfile,
@@ -44,7 +45,66 @@ function withAsyncTimeout(promise, ms, label) {
   })
 }
 
-function Home({ onOpenWorship, worshipStatus }) {
+function parseVerseReference(reference) {
+  const match = reference.match(/(\d?\s*\w+)\s+(\d+):(\d+)/)
+  if (!match) return [null, null, null]
+  const bookName = match[1]
+  const chapter = parseInt(match[2], 10)
+  const verseNum = parseInt(match[3], 10)
+  const bookMap = {
+    'John': 43,
+    '1 Corinthians': 46,
+    'Romans': 45,
+    'Hebrews': 58,
+    '2 Corinthians': 47,
+    'Mark': 41,
+    'Jeremiah': 24,
+    'Psalm': 19,
+    'Philippians': 50,
+    'Isaiah': 23,
+    'Ephesians': 49,
+    '1 Thessalonians': 52,
+    '1 John': 62,
+    'Colossians': 51,
+    'Proverbs': 20,
+    'Joshua': 6,
+    '2 Timothy': 55,
+  }
+  const book = bookMap[bookName] || 19
+  return [book, chapter, verseNum]
+}
+
+function localizeReference(reference, t) {
+  const match = reference.match(/(\d?\s*\w+)\s+(\d+):(\d+)/)
+  if (!match) return reference
+  const bookName = match[1].trim()
+  const chapter = match[2]
+  const verseNum = match[3]
+  const bookKeyMap = {
+    'John': 'bible.books.john',
+    '1 Corinthians': 'bible.books.1corinthians',
+    'Romans': 'bible.books.romans',
+    'Hebrews': 'bible.books.hebrews',
+    '2 Corinthians': 'bible.books.2corinthians',
+    'Mark': 'bible.books.mark',
+    'Jeremiah': 'bible.books.jeremiah',
+    'Psalm': 'bible.books.psalms',
+    'Philippians': 'bible.books.philippians',
+    'Isaiah': 'bible.books.isaiah',
+    'Ephesians': 'bible.books.ephesians',
+    '1 Thessalonians': 'bible.books.1thessalonians',
+    '1 John': 'bible.books.1john',
+    'Colossians': 'bible.books.colossians',
+    'Proverbs': 'bible.books.proverbs',
+    'Joshua': 'bible.books.joshua',
+    '2 Timothy': 'bible.books.2timothy',
+  }
+  const bookKey = bookKeyMap[bookName]
+  const localizedBook = bookKey ? t(bookKey) : bookName
+  return `${localizedBook} ${chapter}:${verseNum}`
+}
+
+function Home() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { user, profile, loading, refreshProfile } = useAuth()
@@ -54,7 +114,11 @@ function Home({ onOpenWorship, worshipStatus }) {
   const { activeDays: profileWeekActiveDays } = useStreakTracker(user?.id)
   const [journalWeekActiveDays, setJournalWeekActiveDays] = useState([])
   const [dailyEncounter, setDailyEncounter] = useState(() => getDailyEncounter())
+  const [dailyVerseText, setDailyVerseText] = useState('')
+  const [dailyVerseLoading, setDailyVerseLoading] = useState(true)
   const [toastTrigger, setToastTrigger] = useState(0)
+  const [verseOfWeekText, setVerseOfWeekText] = useState('')
+  const [verseOfWeekLoading, setVerseOfWeekLoading] = useState(true)
   const [showFirstJournalCelebration, setShowFirstJournalCelebration] = useState(false)
   const [journalCount, setJournalCount] = useState(0)
   const [suppressPersonalWelcome, setSuppressPersonalWelcome] = useState(false)
@@ -63,7 +127,6 @@ function Home({ onOpenWorship, worshipStatus }) {
   const [presenceOptimisticDone, setPresenceOptimisticDone] = useState(false)
   const [presenceCtaSyncing, setPresenceCtaSyncing] = useState(false)
   const [presenceSaveError, setPresenceSaveError] = useState(null)
-  const [latestUpdate, setLatestUpdate] = useState(null)
   const presenceGlowTimerRef = useRef(null)
   /** Reuse one in-flight sync promise so concurrent callers await the same work (no silent `null`). */
   const streakSyncPromiseRef = useRef(null)
@@ -84,7 +147,7 @@ function Home({ onOpenWorship, worshipStatus }) {
       }
     }
     return getPresenceViewModel(syncPresenceState(user.id))
-  }, [user?.id, profile?.id, profile?.last_active_date, profile?.reading_streak, profile, presenceOptimisticDone])
+  }, [user?.id, profile?.id, profile?.last_active_date, profile?.reading_streak, presenceOptimisticDone])
 
   const mergedWeekActiveDays = useMemo(() => {
     const set = new Set([...profileWeekActiveDays, ...journalWeekActiveDays])
@@ -96,6 +159,14 @@ function Home({ onOpenWorship, worshipStatus }) {
     const today = getLocalCalendarDateKey()
     const last = profileLastActiveDateKey(profile?.last_active_date)
     let n = Number(profile?.reading_streak) || 0
+    console.log('[Home] Streak from profile:', {
+      reading_streak: profile?.reading_streak,
+      last_active_date: profile?.last_active_date,
+      last,
+      today,
+      computedStreak: n,
+      presenceOptimisticDone,
+    })
     if (last === today) n = Math.max(n, 1)
     if (presenceOptimisticDone && profile?.id === user?.id && last !== today) n = Math.max(n, 1)
     return n
@@ -142,7 +213,12 @@ function Home({ onOpenWorship, worshipStatus }) {
           STREAK_SYNC_TIMEOUT_MS,
           'profiles.select merge read',
         )
-        console.log('[presence-check-in] step 3 PostgREST response:', { data: row, error: selectError })
+        console.log('[presence-check-in] step 3 PostgREST response:', { 
+          data: row, 
+          error: selectError,
+          reading_streak: row?.reading_streak,
+          last_active_date: row?.last_active_date,
+        })
 
         if (selectError) {
           console.error('[presence-check-in] step 3 select error (full)', JSON.stringify(selectError, null, 2), selectError)
@@ -187,6 +263,13 @@ function Home({ onOpenWorship, worshipStatus }) {
         }
 
         let rs = Number(row.reading_streak) || 0
+        console.log('[presence-check-in] step 4: calculating merged streak', {
+          rowReadingStreak: row.reading_streak,
+          streakResultCurrentStreak: streakResult?.currentStreak,
+          last,
+          today,
+          calculatedRs: rs,
+        })
         if (streakResult?.ok) {
           rs = Math.max(rs, Number(streakResult.currentStreak) || 0)
         }
@@ -316,7 +399,7 @@ function Home({ onOpenWorship, worshipStatus }) {
     if (legacyStreakRepairKeyRef.current === key) return
     legacyStreakRepairKeyRef.current = key
     void syncStreakToSupabase()
-  }, [user?.id, profile?.id, profile?.last_active_date, profile?.reading_streak, syncStreakToSupabase])
+  }, [user?.id, profile, syncStreakToSupabase])
 
   const markPresenceFromEngagement = useCallback(async () => {
     if (!user?.id) return
@@ -352,35 +435,43 @@ function Home({ onOpenWorship, worshipStatus }) {
   }, [refreshProfile])
 
   useEffect(() => {
-    let active = true
-    const loadLatestUpdate = async () => {
+    const loadDailyVerse = async () => {
+      setDailyVerseLoading(true)
+      const lang = (i18n.resolvedLanguage || i18n.language || 'en').toLowerCase().split(/[-_]/)[0]
+      const verse = dailyEncounter.reference
+      const [book, chapter, verseNum] = parseVerseReference(verse)
+      const cacheKey = `verse-cache-${lang}-${book}-${chapter}-${verseNum}`
+      const cached = localStorage.getItem(cacheKey)
+      if (cached) {
+        console.log('[Home] using cached daily verse')
+        setDailyVerseText(cached)
+        setDailyVerseLoading(false)
+        return
+      }
       try {
-        const { data, error } = await supabase
-          .from('app_updates')
-          .select('id, version, title, description, features, created_at')
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle()
-        if (error) throw error
-        if (!active || !data) return
-        const dismissedKey = `app-update-dismissed-${data.id}`
-        const dismissed = localStorage.getItem(dismissedKey) === 'true'
-        setLatestUpdate(dismissed ? null : data)
-      } catch {
-        if (active) setLatestUpdate(null)
+        const text = await fetchVerse(book, chapter, verseNum, lang)
+        console.log('[Home] daily verse result:', text)
+        localStorage.setItem(cacheKey, text)
+        setDailyVerseText(text)
+      } catch (err) {
+        console.error('[Home] daily verse fetch failed:', err)
+        setDailyVerseText('')
+      } finally {
+        setDailyVerseLoading(false)
       }
     }
-    loadLatestUpdate()
-    return () => {
-      active = false
-    }
-  }, [])
 
-  const dismissLatestUpdate = useCallback(() => {
-    if (!latestUpdate?.id) return
-    localStorage.setItem(`app-update-dismissed-${latestUpdate.id}`, 'true')
-    setLatestUpdate(null)
-  }, [latestUpdate?.id])
+    loadDailyVerse()
+  }, [dailyEncounter.reference, i18n.resolvedLanguage, i18n.language])
+
+
+  // Refresh profile on mount to ensure reading_streak is up to date
+  useEffect(() => {
+    if (user?.id && !loading) {
+      refreshProfile()
+    }
+  }, [user?.id, loading, refreshProfile])
+
 
   useEffect(() => {
     return () => {
@@ -388,19 +479,48 @@ function Home({ onOpenWorship, worshipStatus }) {
     }
   }, [])
 
+  useEffect(() => {
+    const loadVerseOfWeek = async () => {
+      setVerseOfWeekLoading(true)
+      const lang = (i18n.resolvedLanguage || i18n.language || 'en').toLowerCase().split(/[-_]/)[0]
+      console.log('[Home] fetching verse for lang:', lang)
+      const cacheKey = `verse-cache-${lang}-19-23-1`
+      const cached = localStorage.getItem(cacheKey)
+      if (cached) {
+        console.log('[Home] using cached verse')
+        setVerseOfWeekText(cached)
+        setVerseOfWeekLoading(false)
+        return
+      }
+      try {
+        const text = await fetchVerse(19, 23, 1, lang)
+        console.log('[Home] verse result:', text)
+        localStorage.setItem(cacheKey, text)
+        setVerseOfWeekText(text)
+      } catch (err) {
+        console.error('[Home] verse fetch failed:', err)
+        setVerseOfWeekText(t('home.verseWeekText'))
+      } finally {
+        setVerseOfWeekLoading(false)
+      }
+    }
+
+    loadVerseOfWeek()
+  }, [i18n.resolvedLanguage, i18n.language, t])
+
   const handleSaveDailyVerse = useCallback(async () => {
     if (isGuestSession) {
       openGuestSignupModal()
       return
     }
     const result = await saveToJournal({
-      verse: dailyEncounter.text,
+      verse: dailyVerseLoading ? '' : dailyVerseText,
       reference: dailyEncounter.reference,
       tags: [t('home.journalTagDaily')],
     })
     if (result?.isFirstJournalEntry) setShowFirstJournalCelebration(true)
     setToastTrigger((x) => x + 1)
-  }, [dailyEncounter, t, isGuestSession, openGuestSignupModal])
+  }, [dailyEncounter, dailyVerseText, dailyVerseLoading, t, isGuestSession, openGuestSignupModal])
 
   const handleSaveVerseOfWeek = useCallback(async () => {
     if (isGuestSession) {
@@ -408,8 +528,8 @@ function Home({ onOpenWorship, worshipStatus }) {
       return
     }
     const result = await saveToJournal({
-      verse: t('home.verseWeekText'),
-      reference: t('home.verseWeekRef'),
+      verse: verseOfWeekLoading ? t('home.verseWeekText') : verseOfWeekText,
+      reference: verseOfWeekLoading ? t('home.verseWeekRef') : `${t('bible.books.psalms')} 23:1`,
       tags: [t('home.journalTagDaily')],
     })
     if (result?.isFirstJournalEntry) setShowFirstJournalCelebration(true)
@@ -490,39 +610,39 @@ function Home({ onOpenWorship, worshipStatus }) {
     link.href = canvas.toDataURL('image/png')
     link.download = t('home.pngDownloadName')
     link.click()
-  }, [dailyEncounter, t])
+  }, [dailyVerseText, dailyVerseLoading, dailyEncounter, t])
 
   const handleEncounterWrite = useCallback(() => {
     markPresenceFromEngagement()
     navigate('/journal', {
       state: {
         dailyEncounter: {
-          verseText: dailyEncounter.text,
+          verseText: dailyVerseLoading ? '' : dailyVerseText,
           reference: dailyEncounter.reference,
-          reflection: dailyEncounter.reflection,
-          prompt: dailyEncounter.prompt,
+          reflection: t(dailyEncounter.reflectionKey),
+          prompt: t(dailyEncounter.promptKey),
         },
       },
     })
-  }, [markPresenceFromEngagement, navigate, dailyEncounter])
+  }, [markPresenceFromEngagement, navigate, dailyEncounter, dailyVerseText, dailyVerseLoading, t])
 
   const handleEncounterPray = useCallback(() => {
     markPresenceFromEngagement()
     const seed = [
       `${dailyEncounter.reference}`,
       '',
-      dailyEncounter.text,
+      dailyVerseLoading ? '' : dailyVerseText,
       '',
-      dailyEncounter.reflection,
+      t(dailyEncounter.reflectionKey),
       '',
-      dailyEncounter.prompt,
+      t(dailyEncounter.promptKey),
     ].join('\n')
     navigate('/prayer', {
       state: {
         dailyPrayerSeed: { text: seed },
       },
     })
-  }, [markPresenceFromEngagement, navigate, dailyEncounter])
+  }, [markPresenceFromEngagement, navigate, dailyEncounter, dailyVerseText, dailyVerseLoading, t])
 
   const handleEncounterAskAi = useCallback(() => {
     if (isGuestSession) {
@@ -533,14 +653,14 @@ function Home({ onOpenWorship, worshipStatus }) {
     navigate('/ai-companion', {
       state: {
         aiCompanionContext: {
-          verse: dailyEncounter.text,
+          verse: dailyVerseLoading ? '' : dailyVerseText,
           reference: dailyEncounter.reference,
-          reflection: dailyEncounter.reflection,
-          prompt: dailyEncounter.prompt,
+          reflection: t(dailyEncounter.reflectionKey),
+          prompt: t(dailyEncounter.promptKey),
         },
       },
     })
-  }, [isGuestSession, markPresenceFromEngagement, navigate, dailyEncounter, openGuestSignupModal])
+  }, [isGuestSession, markPresenceFromEngagement, navigate, dailyEncounter, dailyVerseText, dailyVerseLoading, t, openGuestSignupModal])
 
   useEffect(() => {
     let active = true
@@ -627,11 +747,17 @@ function Home({ onOpenWorship, worshipStatus }) {
                 letterSpacing: '0.02em',
                 lineHeight: 1.5,
               }}>
-                You are loved beyond measure.
+                {t('home.enc2')}
               </p>
             </div>
             <DailyEncounterCard
-              encounter={dailyEncounter}
+              encounter={{
+                ...dailyEncounter,
+                text: dailyVerseText,
+                reference: localizeReference(dailyEncounter.reference, t),
+                reflection: t(dailyEncounter.reflectionKey),
+                prompt: t(dailyEncounter.promptKey),
+              }}
               onWrite={handleEncounterWrite}
               onPray={handleEncounterPray}
               onAskAi={handleEncounterAskAi}
@@ -719,8 +845,8 @@ function Home({ onOpenWorship, worshipStatus }) {
                   fontSize: '24px',
                   marginBottom: '8px',
                 }}>🎵</div>
-                <p style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: 0 }}>Worship Mode</p>
-                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '4px 0 0 0' }}>Music for your soul</p>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: 0 }}>{t('home.worshipMode')}</p>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '4px 0 0 0' }}>{t('home.worshipSubtitle')}</p>
               </Link>
               <Link
                 to="/reading-plans"
@@ -875,7 +1001,7 @@ function Home({ onOpenWorship, worshipStatus }) {
                 fontStyle: 'italic',
                 fontFamily: 'Georgia, serif',
               }}>
-                "{t('home.verseWeekText')}"
+                "{verseOfWeekLoading ? t('home.verseWeekText') : verseOfWeekText}"
               </p>
             </div>
             <p style={{ 
@@ -884,7 +1010,7 @@ function Home({ onOpenWorship, worshipStatus }) {
               fontWeight: 700, 
               letterSpacing: '0.1em',
               color: '#D4A843'
-            }}>{t('home.verseWeekRef')}</p>
+            }}>{verseOfWeekLoading ? t('home.verseWeekRef') : `${t('bible.books.psalms')} 23:1`}</p>
             <div className="mt-4 flex justify-end">
               <button
                 type="button"

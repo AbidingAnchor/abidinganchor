@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 export default function Legal() {
+  const navigate = useNavigate()
   useEffect(() => {
     document.title = 'Legal — AbidingAnchor'
   }, [])
@@ -12,6 +13,31 @@ export default function Legal() {
         className="content-scroll"
         style={{ padding: '0 16px', paddingTop: '220px', paddingBottom: '120px', maxWidth: '680px', margin: '0 auto', width: '100%' }}
       >
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          marginBottom: '20px',
+        }}>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            style={{
+              width: '40px',
+              height: '40px',
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(212,168,67,0.3)',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: '#D4A843',
+              fontSize: '20px',
+            }}
+          >
+            ←
+          </button>
+        </div>
         <section className="space-y-4">
           <header className="space-y-1 text-center">
             <h1 className="text-3xl font-bold" style={{ color: '#D4A843', textShadow: '0 1px 8px rgba(0,60,120,0.4)' }}>

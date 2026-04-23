@@ -14,6 +14,7 @@ function hashLooksLikeRecovery(hash) {
 }
 
 export default function ResetPassword() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [linkStatus, setLinkStatus] = useState('checking') // checking | ready | invalid
@@ -179,7 +180,7 @@ export default function ResetPassword() {
             textShadow: '0 1px 4px rgba(0,0,0,0.3)',
           }}
         >
-          Anchored in His Word
+          {t('legal.anchoredInWord')}
         </p>
       </div>
 

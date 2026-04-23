@@ -5,11 +5,12 @@ import { dedupeVersesByNumber, prepareBibleReaderVerseText } from '../utils/kjvV
 import { BOOK_CDN_TO_OSIS } from '../utils/bookOsisMap'
 import { fetchApiBibleChapterVerses, resolveBibleIdForLanguage } from '../services/apiBible'
 import { fetchGetBibleChapter, resolveGetBibleTranslationId } from '../services/getBibleApi'
-import { POPULAR_BIBLES, getSavedBibleId } from '../services/bibleApi'
+import { POPULAR_BIBLES, getSavedBibleId, saveBibleId } from '../services/bibleApi'
 import BibleTranslationSelector from './BibleTranslationSelector'
 import { useAuth } from '../context/AuthContext'
 import { userStorageKey } from '../utils/userStorage'
 import { supabase } from '../lib/supabase'
+import { BIBLE_LANG_MAP } from '../utils/bibleTranslation'
 
 /** Free JSON API — see https://bible-api.com/ and GET /data for supported translations (public domain). */
 const BIBLE_API_COM = 'https://bible-api.com'
@@ -186,7 +187,7 @@ function loadStrongsGreekDataset() {
   return strongsGreekDatasetPromise
 }
 
-export default function BibleReader({ open, onClose, mode = 'read', onModeChange }) {
+export default function BibleReader({ open, onModeChange }) {
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
   const uiLang = (i18n.resolvedLanguage || i18n.language || 'en').toLowerCase().split(/[-_]/)[0]
@@ -215,15 +216,157 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
   const [showTranslationPicker, setShowTranslationPicker] = useState(false)
   const [translationDropdownRect, setTranslationDropdownRect] = useState(null)
   const translationButtonRef = useRef(null)
-  const [translationId, setTranslationId] = useState(DEFAULT_BIBLE_API_COM_TRANSLATION)
+  const [activeTranslationId, setActiveTranslationId] = useState(DEFAULT_BIBLE_API_COM_TRANSLATION)
+  const [bibleId, setBibleId] = useState(() => getSavedBibleId() || DEFAULT_BIBLE_API_COM_TRANSLATION)
+  const bibleIdRef = useRef(bibleId)
   const [fontSize, setFontSize] = useState(BIBLE_FONT_DEFAULT)
   const [showReadingControls, setShowReadingControls] = useState(false)
   const [showHindiBiblePicker, setShowHindiBiblePicker] = useState(false)
   const [cachedHindiCatalogId, setCachedHindiCatalogId] = useState(null)
   const [hindiSavedBibleId, setHindiSavedBibleId] = useState(null)
 
+  const selectedBook = useMemo(() => {
+    const book = BOOKS[bookIndex];
+    if (book) {
+      return { ...book, bookNumber: bookIndex + 1 };
+    }
+    return null;
+  }, [bookIndex]);
+
+  const getBibleSlug = resolveGetBibleTranslationId(uiLang, activeTranslationId)
+  const showEnglishBibleVersions = uiLang === 'en'
+  const showHindiApiBiblePicker = uiLang === 'hi' && HAS_API_BIBLE
+
+  const loadChapter = useCallback(async (overrideBibleId, currentBook, currentChapter) => {
+    let cancelled = false
+    setLoading(true)
+
+    const idToUse = overrideBibleId || bibleIdRef.current
+
+    const loadFromBibleApiCom = () => {
+      const url = `${BIBLE_API_COM}/${encodeURIComponent(currentBook.cdnName)}+${currentChapter}?translation=${encodeURIComponent(activeTranslationId)}`
+      return fetch(url)
+        .then((r) => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`)
+          return r.json()
+        })
+        .then((data) => {
+          const rows = dedupeVersesByNumber(data.verses || [])
+          return rows.map((v) => ({
+            verse: v.verse,
+            text: prepareBibleReaderVerseText(v.text),
+          }))
+        })
+    }
+
+    try {
+      // LANGUAGE-SPECIFIC BIBLE FETCHING — runs BEFORE getBibleSlug check
+      // bolls.life free API: https://bolls.life/get-text/{translation}/{book}/{chapter}/
+      // Filipino (tl/fil) has no bolls.life translation — falls through to GetBible (tagalog slug).
+      const translation = BIBLE_LANG_MAP[uiLang]
+      if (translation) {
+        try {
+          const bookNum = currentBook.bookNumber // use param, not stale closure bookIndex
+          const url = `https://bolls.life/get-text/${translation}/${bookNum}/${currentChapter}/`
+          console.log('[BibleReader] Fetching', uiLang, 'Bible:', url)
+          const res = await fetch(url)
+          if (res.ok) {
+            const data = await res.json()
+            if (!cancelled && data?.length) {
+              const normalized = data.map((v) => ({
+                verse: v.verse,
+                text: prepareBibleReaderVerseText((v.text || '').replace(/[ⓐ-ⓩ]/g, '').replace(/<[^>]*>/g, '').replace(/\s{2,}/g, ' ').trim()),
+              }))
+              setVerses(normalized)
+              setLoading(false)
+              return
+            }
+          }
+        } catch (err) {
+          console.error('[BibleReader] bolls.life error:', err)
+        }
+      }
+
+      if (getBibleSlug) {
+        const { verses: rawGb } = await fetchGetBibleChapter(getBibleSlug, currentBook.bookNumber, currentChapter)
+        if (!cancelled) {
+          if (rawGb?.length) {
+            const normalized = dedupeVersesByNumber(
+              rawGb.map((v) => ({
+                verse: v.verse,
+                text: prepareBibleReaderVerseText(v.text),
+              })),
+            )
+            setVerses(normalized)
+          } else {
+            setVerses([])
+          }
+          setLoading(false)
+          return
+        }
+      }
+      if (HAS_API_BIBLE && (showEnglishBibleVersions || uiLang === 'hi')) {
+        let currentBibleId = await resolveBibleIdForLanguage(uiLang)
+        if (uiLang === 'hi') {
+          const catalogHi = currentBibleId
+          if (catalogHi && !cancelled) setCachedHindiCatalogId(catalogHi)
+          let saved = hindiSavedBibleId
+          try {
+            saved = saved ?? getSavedBibleId()
+          } catch {
+            saved = null
+          }
+          const hindiIds = new Set(
+            POPULAR_BIBLES.filter((b) => b.language === 'हिंदी' && b.id).map((b) => b.id),
+          )
+          if (catalogHi) hindiIds.add(catalogHi)
+          if (saved && hindiIds.has(saved)) currentBibleId = saved
+        }
+        const osis = BOOK_CDN_TO_OSIS[currentBook.cdnName]
+        if (idToUse && osis) { // Use idToUse here
+          console.log('[BibleReader] Fetching Bible with ID:', idToUse) // Fixed console.log
+          const raw = await fetchApiBibleChapterVerses(idToUse, osis, currentChapter) // Use idToUse here
+          if (!cancelled && raw?.length) {
+            const normalized = dedupeVersesByNumber(
+              raw.map((v) => ({
+                verse: v.verse,
+                text: prepareBibleReaderVerseText(v.text),
+              })),
+            )
+            setVerses(normalized)
+            setLoading(false)
+            return
+          }
+        }
+      }
+      const rows = await loadFromBibleApiCom()
+      if (!cancelled) {
+        setVerses(rows || [])
+        setLoading(false)
+      }
+    } catch (err) {
+      if (import.meta.env.DEV) console.error('Error loading verses:', err)
+      if (!cancelled) {
+        setVerses([])
+        setLoading(false)
+      }
+    }
+
+  }, [
+    activeTranslationId,
+    getBibleSlug,
+    hindiSavedBibleId,
+    open,
+    showEnglishBibleVersions,
+    uiLang,
+    setLoading,
+    setVerses,
+    setCachedHindiCatalogId,
+    bibleIdRef,
+  ])
+
   useEffect(() => {
-    setTranslationId(getStoredTranslationId(user?.id))
+    setActiveTranslationId(getStoredTranslationId(user?.id))
     try {
       const raw = localStorage.getItem(userStorageKey(user?.id, 'bible-font-size'))
       if (raw != null) setFontSize(clampBibleFontSize(parseInt(raw, 10)))
@@ -233,17 +376,61 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
   }, [user?.id])
 
   useEffect(() => {
+    bibleIdRef.current = bibleId
+  }, [bibleId])
+
+  useEffect(() => {
     if (uiLang === 'hi') {
       try {
-        setHindiSavedBibleId(getSavedBibleId())
+        const savedId = getSavedBibleId()
+        setHindiSavedBibleId(savedId)
+        // Auto-switch to Hindi Bible if still using default English KJV
+        const HINDI_BIBLE_ID = '1e8ab327edbce67f-01'
+        const DEFAULT_ENGLISH_ID = 'de4e12af7f28f599-02'
+        const ENGLISH_IDS = new Set([
+          DEFAULT_ENGLISH_ID,
+          '592420522e16049f-01', // ESV
+          '7142879509583d59-04', // NIV
+          'b32b9d1b64b4ef29-04', // NLT
+          '592420522e16049f-02', // NKJV
+        ])
+        // Only auto-switch if current Bible is an English version
+        if (ENGLISH_IDS.has(savedId)) {
+          console.log('[BibleReader] Auto-switching to Hindi Bible:', HINDI_BIBLE_ID)
+          saveBibleId(HINDI_BIBLE_ID)
+          setHindiSavedBibleId(HINDI_BIBLE_ID)
+          bibleIdRef.current = HINDI_BIBLE_ID // Add this line
+          loadChapter(HINDI_BIBLE_ID, selectedBook, chapter) // Replace setVerses([]) and setLoading(true)
+        }
       } catch {
         setHindiSavedBibleId(null)
       }
     } else {
       setHindiSavedBibleId(null)
       setCachedHindiCatalogId(null)
+      // Restore to English when switching back from Hindi
+      try {
+        const savedId = getSavedBibleId()
+        const HINDI_BIBLE_ID = '1e8ab327edbce67f-01'
+        if (savedId === HINDI_BIBLE_ID) {
+          console.log('[BibleReader] Restoring to English Bible:', 'de4e12af7f28f599-02')
+          saveBibleId('de4e12af7f28f599-02')
+        }
+      } catch {
+        /* ignore */
+      }
     }
-  }, [uiLang, user?.id])
+  }, [uiLang, user?.id, loadChapter, selectedBook, chapter])
+
+  useEffect(() => {
+    let newBibleId = null;
+    if (uiLang === 'hi') {
+      newBibleId = hindiSavedBibleId;
+    } else {
+      newBibleId = activeTranslationId;
+    }
+    setBibleId(newBibleId);
+  }, [uiLang, activeTranslationId, hindiSavedBibleId, setBibleId]);
 
   useEffect(() => {
     try {
@@ -253,12 +440,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
     }
   }, [fontSize, user?.id])
 
-  const selectedBook = BOOKS[bookIndex]
   const maxChapter = selectedBook?.chapters || 1
-  const bookNumber = bookIndex + 1
-  const getBibleSlug = resolveGetBibleTranslationId(uiLang, translationId)
-  const showEnglishBibleVersions = uiLang === 'en'
-  const showHindiApiBiblePicker = uiLang === 'hi' && HAS_API_BIBLE
   const hindiBiblePickerList = useMemo(() => {
     if (!showHindiApiBiblePicker) return []
     const fromPopular = POPULAR_BIBLES.filter((b) => b.language === 'हिंदी' && b.id)
@@ -279,7 +461,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
     return Array.from(byId.values())
   }, [showHindiApiBiblePicker, cachedHindiCatalogId])
   const hindiPillAbbr =
-    hindiBiblePickerList.find((b) => b.id === (hindiSavedBibleId || cachedHindiCatalogId))?.abbr || 'HINIRV'
+    hindiBiblePickerList.find((b) => b.id === (hindiSavedBibleId || cachedHindiCatalogId))?.name || 'Hindi Bible (IRV)'
   const bookKey = selectedBook?.cdnName || ''
 
   useEffect(() => {
@@ -293,6 +475,16 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
       cancelled = true
     }
   }, [open, uiLang])
+
+  // Re-fetch chapter when Hindi Bible ID changes
+  useEffect(() => {
+    if (uiLang === 'hi' && hindiSavedBibleId && selectedBook && chapter && open) {
+      console.log('[BibleReader] Hindi Bible ID changed, re-fetching chapter:', hindiSavedBibleId)
+      // Trigger re-fetch by clearing verses to force reload
+      setVerses([])
+      setLoading(true)
+    }
+  }, [hindiSavedBibleId, uiLang, selectedBook, chapter, open])
   const filteredBooks = useMemo(() => {
     const start = testamentFilter === 'old' ? 0 : OLD_TESTAMENT_LAST_INDEX + 1
     const end = testamentFilter === 'old' ? OLD_TESTAMENT_LAST_INDEX : BOOKS.length - 1
@@ -309,9 +501,9 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
         label: t(tr.labelKey),
         subtitle: t(tr.subtitleKey),
       })),
-    [t, i18n.language],
+    [t],
   )
-  const selectedTranslation = translationOptions.find((x) => x.id === translationId) ?? translationOptions[0]
+  const selectedTranslation = translationOptions.find((x) => x.id === activeTranslationId) ?? translationOptions[0]
 
   const bookDisplayName = (book) =>
     book ? t(`bible.books.${book.cdnName}`, { defaultValue: book.name }) : ''
@@ -370,109 +562,12 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
     }
   }, [open, user?.id])
 
+
+
   useEffect(() => {
     if (!open || !selectedBook) return
-
-    let cancelled = false
-    setLoading(true)
-
-    const loadFromBibleApiCom = () => {
-      const url = `${BIBLE_API_COM}/${encodeURIComponent(selectedBook.cdnName)}+${chapter}?translation=${encodeURIComponent(translationId)}`
-      return fetch(url)
-        .then((r) => {
-          if (!r.ok) throw new Error(`HTTP ${r.status}`)
-          return r.json()
-        })
-        .then((data) => {
-          const rows = dedupeVersesByNumber(data.verses || [])
-          return rows.map((v) => ({
-            verse: v.verse,
-            text: prepareBibleReaderVerseText(v.text),
-          }))
-        })
-    }
-
-    ;(async () => {
-      try {
-        if (getBibleSlug) {
-          const { verses: rawGb } = await fetchGetBibleChapter(getBibleSlug, bookNumber, chapter)
-          if (!cancelled) {
-            if (rawGb?.length) {
-              const normalized = dedupeVersesByNumber(
-                rawGb.map((v) => ({
-                  verse: v.verse,
-                  text: prepareBibleReaderVerseText(v.text),
-                })),
-              )
-              setVerses(normalized)
-            } else {
-              setVerses([])
-            }
-            setLoading(false)
-            return
-          }
-        }
-        if (HAS_API_BIBLE && (showEnglishBibleVersions || uiLang === 'hi')) {
-          let bibleId = await resolveBibleIdForLanguage(uiLang)
-          if (uiLang === 'hi') {
-            const catalogHi = bibleId
-            if (catalogHi && !cancelled) setCachedHindiCatalogId(catalogHi)
-            let saved = hindiSavedBibleId
-            try {
-              saved = saved ?? getSavedBibleId()
-            } catch {
-              saved = null
-            }
-            const hindiIds = new Set(
-              POPULAR_BIBLES.filter((b) => b.language === 'हिंदी' && b.id).map((b) => b.id),
-            )
-            if (catalogHi) hindiIds.add(catalogHi)
-            if (saved && hindiIds.has(saved)) bibleId = saved
-          }
-          const osis = BOOK_CDN_TO_OSIS[selectedBook.cdnName]
-          if (bibleId && osis) {
-            const raw = await fetchApiBibleChapterVerses(bibleId, osis, chapter)
-            if (!cancelled && raw?.length) {
-              const normalized = dedupeVersesByNumber(
-                raw.map((v) => ({
-                  verse: v.verse,
-                  text: prepareBibleReaderVerseText(v.text),
-                })),
-              )
-              setVerses(normalized)
-              setLoading(false)
-              return
-            }
-          }
-        }
-        const rows = await loadFromBibleApiCom()
-        if (!cancelled) {
-          setVerses(rows || [])
-          setLoading(false)
-        }
-      } catch (err) {
-        if (import.meta.env.DEV) console.error('Error loading verses:', err)
-        if (!cancelled) {
-          setVerses([])
-          setLoading(false)
-        }
-      }
-    })()
-
-    return () => {
-      cancelled = true
-    }
-  }, [
-    open,
-    selectedBook,
-    chapter,
-    translationId,
-    uiLang,
-    getBibleSlug,
-    bookNumber,
-    showEnglishBibleVersions,
-    hindiSavedBibleId,
-  ])
+    loadChapter(null, selectedBook, chapter)
+  }, [open, selectedBook, chapter, loadChapter])
 
   useEffect(() => {
     if (!showBookPicker) return
@@ -492,7 +587,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
     setCrossRefs([])
     setCrossRefsLoading(false)
     setNoteDraft('')
-  }, [open, bookKey, chapter, translationId])
+  }, [open, bookKey, chapter, activeTranslationId])
 
   useEffect(() => {
     if (!jumpHighlightTarget) return undefined
@@ -639,7 +734,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
 
   const fetchReferenceVerseText = async (ref) => {
     try {
-      const chapterUrl = `${BIBLE_API_COM}/${encodeURIComponent(ref.book)}+${ref.chapter}?translation=${encodeURIComponent(translationId)}`
+      const chapterUrl = `${BIBLE_API_COM}/${encodeURIComponent(ref.book)}+${ref.chapter}?translation=${encodeURIComponent(activeTranslationId)}`
       const res = await fetch(chapterUrl)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
@@ -789,11 +884,11 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
 
   useEffect(() => {
     try {
-      localStorage.setItem(translationStorageKey(user?.id), translationId)
+      localStorage.setItem(translationStorageKey(user?.id), activeTranslationId)
     } catch {
       /* ignore */
     }
-  }, [translationId, user?.id])
+  }, [activeTranslationId, user?.id])
 
   const handleBookSelect = (index) => {
     setBookIndex(index)
@@ -2044,7 +2139,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
               {!HAS_API_BIBLE ? (
                 <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
                   {translationOptions.map((opt, index) => {
-                    const active = opt.id === translationId
+                    const active = opt.id === activeTranslationId
                     return (
                       <li
                         key={opt.id}
@@ -2062,7 +2157,7 @@ export default function BibleReader({ open, onClose, mode = 'read', onModeChange
                           role="option"
                           aria-selected={active}
                           onClick={() => {
-                            setTranslationId(opt.id)
+                            setActiveTranslationId(opt.id)
                             setShowTranslationPicker(false)
                           }}
                           style={{

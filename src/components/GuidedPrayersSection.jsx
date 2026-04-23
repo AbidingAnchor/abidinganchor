@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
-import { GUIDED_PRAYERS, GUIDED_PRAYER_CATEGORIES } from '../data/guidedPrayers'
+import { GUIDED_PRAYERS } from '../data/guidedPrayers'
 
 function formatTime(seconds) {
   if (!Number.isFinite(seconds) || seconds < 0) return '0:00'
@@ -10,29 +10,14 @@ function formatTime(seconds) {
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
-function categoryLabelKey(cat) {
-  if (cat === 'All') return 'all'
-  return cat.toLowerCase()
-}
-
 export default function GuidedPrayersSection() {
   const { t } = useTranslation()
-  const [filter, setFilter] = useState('All')
   const [modalPrayer, setModalPrayer] = useState(null)
   const [playing, setPlaying] = useState(false)
   const [loading, setLoading] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const audioRef = useRef(null)
-
-  const filteredPrayers = useMemo(() => {
-    if (filter === 'All') return GUIDED_PRAYERS
-    return GUIDED_PRAYERS.filter((p) => p.category === filter)
-  }, [filter])
-
-  const navigationList = useMemo(() => {
-    return filteredPrayers.length ? filteredPrayers : GUIDED_PRAYERS
-  }, [filteredPrayers])
 
   const openPlayer = useCallback((prayer) => {
     setModalPrayer(prayer)
@@ -53,20 +38,20 @@ export default function GuidedPrayersSection() {
   }, [])
 
   const goPrev = useCallback(() => {
-    if (!modalPrayer || navigationList.length === 0) return
-    let idx = navigationList.findIndex((p) => p.id === modalPrayer.id)
+    if (!modalPrayer || GUIDED_PRAYERS.length === 0) return
+    let idx = GUIDED_PRAYERS.findIndex((p) => p.id === modalPrayer.id)
     if (idx < 0) idx = 0
-    const prev = navigationList[(idx - 1 + navigationList.length) % navigationList.length]
+    const prev = GUIDED_PRAYERS[(idx - 1 + GUIDED_PRAYERS.length) % GUIDED_PRAYERS.length]
     setModalPrayer(prev)
-  }, [modalPrayer, navigationList])
+  }, [modalPrayer])
 
   const goNext = useCallback(() => {
-    if (!modalPrayer || navigationList.length === 0) return
-    let idx = navigationList.findIndex((p) => p.id === modalPrayer.id)
+    if (!modalPrayer || GUIDED_PRAYERS.length === 0) return
+    let idx = GUIDED_PRAYERS.findIndex((p) => p.id === modalPrayer.id)
     if (idx < 0) idx = 0
-    const next = navigationList[(idx + 1) % navigationList.length]
+    const next = GUIDED_PRAYERS[(idx + 1) % GUIDED_PRAYERS.length]
     setModalPrayer(next)
-  }, [modalPrayer, navigationList])
+  }, [modalPrayer])
 
   useEffect(() => {
     const audio = audioRef.current
@@ -186,56 +171,56 @@ export default function GuidedPrayersSection() {
         {t('prayer.guided.subtitle')}
       </p>
 
-      <div className="guided-prayer-pills-scroll mb-4" role="tablist" aria-label={t('prayer.guided.filterAria')}>
-        {GUIDED_PRAYER_CATEGORIES.map((cat) => (
-          <button
-            key={cat}
-            type="button"
-            role="tab"
-            aria-selected={filter === cat}
-            className={`guided-prayer-pill ${filter === cat ? 'guided-prayer-pill--active' : ''}`}
-            onClick={() => setFilter(cat)}
+      <div style={{
+        display: 'flex',
+        flexDirection: 'row',
+        gap: '16px',
+        overflowX: 'auto',
+        paddingBottom: '12px',
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
+        width: '100%',
+      }}>
+        {GUIDED_PRAYERS.map((prayer) => (
+          <div
+            key={prayer.id}
+            style={{
+              minWidth: '160px',
+              width: '160px',
+              height: '200px',
+              borderRadius: '20px',
+              background: prayer.gradient,
+              border: `1px solid ${prayer.border}`,
+              padding: '20px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+              flexShrink: 0,
+            }}
+            onClick={() => openPlayer(prayer)}
           >
-            {t(`prayer.guided.categories.${categoryLabelKey(cat)}`)}
-          </button>
+            <div>
+              <div style={{ fontSize: '32px', marginBottom: '12px' }}>{prayer.emoji}</div>
+              <h3 style={{ color: '#ffffff', fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>{t(prayer.title)}</h3>
+              <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '12px' }}>{t('prayer.guided.durationMinutes', { n: prayer.duration })}</p>
+            </div>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #D4A843 0%, #B8860B 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#0a0f28',
+              fontSize: '18px',
+            }}>▶</div>
+          </div>
         ))}
       </div>
-
-      <ul className="list-none p-0 m-0 flex flex-col gap-3">
-        {filteredPrayers.map((prayer) => (
-          <li key={prayer.id}>
-            <button
-              type="button"
-              className="guided-prayer-card w-full text-left flex items-center gap-3 px-4 py-3.5"
-              onClick={() => openPlayer(prayer)}
-            >
-              <span className="text-2xl leading-none select-none" aria-hidden>
-                {prayer.emoji}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold text-[15px] leading-snug truncate">{prayer.title}</p>
-                <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--guided-prayer-card-muted)' }}>
-                  {t(`prayer.guided.categories.${categoryLabelKey(prayer.category)}`)}
-                </p>
-              </div>
-              <span
-                className="text-xs font-medium tabular-nums shrink-0"
-                style={{ color: 'var(--guided-prayer-card-muted)' }}
-              >
-                {prayer.duration}
-              </span>
-              <span
-                className="guided-prayer-play-icon"
-                aria-hidden
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
 
       {modalPrayer && typeof document !== 'undefined'
         ? createPortal(
@@ -277,10 +262,10 @@ export default function GuidedPrayersSection() {
 
                     <div className="text-center mb-6 shrink-0">
                       <p id="guided-player-title" className="text-xl font-bold leading-tight px-2">
-                        {modalPrayer.title}
+                        {t(modalPrayer.title)}
                       </p>
                       <p className="text-sm mt-2" style={{ color: 'var(--guided-prayer-card-muted)' }}>
-                        {t(`prayer.guided.categories.${categoryLabelKey(modalPrayer.category)}`)}
+                        {t(`prayer.guided.${modalPrayer.category}`)}
                       </p>
                     </div>
 

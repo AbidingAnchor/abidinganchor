@@ -6,17 +6,11 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { userStorageKey } from '../utils/userStorage'
 
-const REPORT_REASONS = ['Inappropriate content', 'Offensive language', 'Spam', 'Other']
 const MODERATOR_ROLES = new Set(['founder', 'admin', 'mod'])
-const MUTE_OPTIONS = [
-  { id: '24h', label: '24 hours', hours: 24 },
-  { id: '7d', label: '7 days', hours: 24 * 7 },
-  { id: '30d', label: '30 days', hours: 24 * 30 },
-]
 const ROLE_STYLES = {
   founder: {
     nameColor: '#C9A84C',
-    badgeLabel: '👑 Founder',
+    badgeLabelKey: 'prayerWall.roles.founder',
     badgeStyle: {
       background: 'rgba(201, 168, 76, 0.15)',
       border: '1px solid #C9A84C',
@@ -28,7 +22,7 @@ const ROLE_STYLES = {
   },
   admin: {
     nameColor: '#C9A84C',
-    badgeLabel: '⚓ Admin',
+    badgeLabelKey: 'prayerWall.roles.admin',
     badgeStyle: {
       background: 'rgba(201, 168, 76, 0.15)',
       border: '1px solid #C9A84C',
@@ -40,7 +34,7 @@ const ROLE_STYLES = {
   },
   mod: {
     nameColor: '#7EB8D4',
-    badgeLabel: '🛡️ Mod',
+    badgeLabelKey: 'prayerWall.roles.mod',
     badgeStyle: {
       background: 'rgba(126, 184, 212, 0.15)',
       border: '1px solid #7EB8D4',
@@ -52,13 +46,24 @@ const ROLE_STYLES = {
   },
   user: {
     nameColor: '#ffffff',
-    badgeLabel: '',
+    badgeLabelKey: '',
     badgeStyle: null,
   },
 }
 
 export default function PrayerWall() {
   const { t } = useTranslation()
+  const reportReasons = [
+    t('prayerWall.reportReasons.inappropriate'),
+    t('prayerWall.reportReasons.offensive'),
+    t('prayerWall.reportReasons.spam'),
+    t('prayerWall.reportReasons.other'),
+  ]
+  const muteOptions = [
+    { id: '24h', label: t('prayerWall.mute.24h'), hours: 24 },
+    { id: '7d', label: t('prayerWall.mute.7d'), hours: 24 * 7 },
+    { id: '30d', label: t('prayerWall.mute.30d'), hours: 24 * 30 },
+  ]
   const { user, profile, signOut } = useAuth()
   const navigate = useNavigate()
   const [prayers, setPrayers] = useState([])
@@ -71,13 +76,13 @@ export default function PrayerWall() {
   const [animatingPrayer, setAnimatingPrayer] = useState(null)
   const [showReportModal, setShowReportModal] = useState(false)
   const [selectedPrayer, setSelectedPrayer] = useState(null)
-  const [reportReason, setReportReason] = useState(REPORT_REASONS[0])
+  const [reportReason, setReportReason] = useState('')
   const [reportSubmitting, setReportSubmitting] = useState(false)
   const [reportError, setReportError] = useState('')
   const [showReportToast, setShowReportToast] = useState(false)
   const [showModerationModal, setShowModerationModal] = useState(false)
   const [moderationTarget, setModerationTarget] = useState(null)
-  const [muteDurationId, setMuteDurationId] = useState(MUTE_OPTIONS[0].id)
+  const [muteDurationId, setMuteDurationId] = useState('24h')
   const [moderationError, setModerationError] = useState('')
   const [moderating, setModerating] = useState(false)
   const [submitError, setSubmitError] = useState('')
@@ -90,6 +95,11 @@ export default function PrayerWall() {
   useEffect(() => {
     loadPrayedPrayers()
   }, [user?.id])
+
+  useEffect(() => {
+    setReportReason((current) => (reportReasons.includes(current) ? current : reportReasons[0]))
+    setMuteDurationId((current) => (muteOptions.some((opt) => opt.id === current) ? current : muteOptions[0].id))
+  }, [reportReasons, muteOptions])
 
   const prayedStorageKey = user?.id ? userStorageKey(user.id, 'prayed-prayer-ids') : null
 
@@ -152,12 +162,12 @@ export default function PrayerWall() {
         ...row,
         profiles: profilesById[row.user_id]
           ? {
-              username: profilesById[row.user_id].username || 'Anonymous',
+              username: profilesById[row.user_id].username || t('prayerWall.anonymous'),
               role: profilesById[row.user_id].role || 'user',
               avatar_url: profilesById[row.user_id].avatar_url || null,
             }
           : {
-              username: 'Anonymous',
+              username: t('prayerWall.anonymous'),
               role: 'user',
               avatar_url: null,
             },
@@ -243,12 +253,12 @@ export default function PrayerWall() {
       const isMutedActive = mutedUntil && mutedUntil.getTime() > Date.now()
 
       if (isBanned) {
-        setSubmitError('Your account has been banned from the Prayer Wall.')
+        setSubmitError(t('prayerWall.errors.banned'))
         return
       }
 
       if (isMutedActive) {
-        setSubmitError(`You are currently muted until ${mutedUntil.toLocaleString()}. Please use this time to reflect and return with a heart ready to uplift others.`)
+        setSubmitError(t('prayerWall.errors.mutedUntil', { until: mutedUntil.toLocaleString() }))
         return
       }
 
@@ -270,7 +280,7 @@ export default function PrayerWall() {
       const prayerWithProfile = {
         ...data,
         profiles: {
-          username: profile?.username || profile?.full_name || user?.user_metadata?.full_name || 'Anonymous',
+          username: profile?.username || profile?.full_name || user?.user_metadata?.full_name || t('prayerWall.anonymous'),
           role: profile?.role || 'user',
         },
       }
@@ -290,7 +300,7 @@ export default function PrayerWall() {
 
   const openReportModal = (prayer) => {
     setSelectedPrayer(prayer)
-    setReportReason(REPORT_REASONS[0])
+    setReportReason(reportReasons[0])
     setReportError('')
     setShowReportModal(true)
   }
@@ -298,13 +308,13 @@ export default function PrayerWall() {
   const closeReportModal = () => {
     setShowReportModal(false)
     setSelectedPrayer(null)
-    setReportReason(REPORT_REASONS[0])
+    setReportReason(reportReasons[0])
     setReportError('')
   }
 
   const openModerationModal = (prayer) => {
     setModerationTarget(prayer)
-    setMuteDurationId(MUTE_OPTIONS[0].id)
+    setMuteDurationId(muteOptions[0].id)
     setModerationError('')
     setShowModerationModal(true)
   }
@@ -319,7 +329,7 @@ export default function PrayerWall() {
   const handleMuteUser = async () => {
     const targetUserId = moderationTarget?.user_id
     if (!targetUserId || moderating) return
-    const selectedOption = MUTE_OPTIONS.find((opt) => opt.id === muteDurationId) || MUTE_OPTIONS[0]
+    const selectedOption = muteOptions.find((opt) => opt.id === muteDurationId) || muteOptions[0]
     const mutedUntilIso = new Date(Date.now() + selectedOption.hours * 60 * 60 * 1000).toISOString()
 
     try {
@@ -333,7 +343,7 @@ export default function PrayerWall() {
       closeModerationModal()
     } catch (error) {
       console.error('Error muting user:', error)
-      setModerationError('Unable to mute user right now.')
+      setModerationError(t('prayerWall.errors.muteFailed'))
       setModerating(false)
     }
   }
@@ -356,7 +366,7 @@ export default function PrayerWall() {
       closeModerationModal()
     } catch (error) {
       console.error('Error banning user:', error)
-      setModerationError('Unable to ban user right now.')
+      setModerationError(t('prayerWall.errors.banFailed'))
       setModerating(false)
     }
   }
@@ -386,10 +396,10 @@ export default function PrayerWall() {
           profile?.full_name ||
           user?.user_metadata?.full_name ||
           user?.email ||
-          'Unknown user'
+          t('prayerWall.unknownUser')
         const reportedUserName =
           selectedPrayer?.profiles?.username ||
-          'Unknown user'
+          t('prayerWall.unknownUser')
 
         const message = [
           '🚨 New Report — AbidingAnchor',
@@ -417,7 +427,7 @@ export default function PrayerWall() {
       setTimeout(() => setShowReportToast(false), 3000)
     } catch (error) {
       console.error('Error submitting report:', error)
-      setReportError('Unable to submit report right now. Please try again.')
+      setReportError(t('prayerWall.errors.reportFailed'))
     } finally {
       setReportSubmitting(false)
     }
@@ -427,9 +437,9 @@ export default function PrayerWall() {
     const roleKey = (prayer?.profiles?.role || 'user').toLowerCase()
     const roleStyle = ROLE_STYLES[roleKey] || ROLE_STYLES.user
     return {
-      name: prayer?.profiles?.username || 'Anonymous',
+      name: prayer?.profiles?.username || t('prayerWall.anonymous'),
       nameColor: roleStyle.nameColor,
-      badgeLabel: roleStyle.badgeLabel,
+      badgeLabel: roleStyle.badgeLabelKey ? t(roleStyle.badgeLabelKey) : '',
       badgeStyle: roleStyle.badgeStyle,
       avatarUrl: prayer?.profiles?.avatar_url || null,
       userId: prayer?.user_id || null,

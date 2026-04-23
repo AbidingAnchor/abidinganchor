@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import ReactDOM from 'react-dom'
 import { VERSE_FLASHCARDS, FLASHCARD_FILTER_OPTIONS } from '../data/verseFlashcards'
 import { useAuth } from '../context/AuthContext'
 import { userStorageKey } from '../utils/userStorage'
+import { useTranslation } from 'react-i18next'
 
 function readProgress(storageKey) {
   try {
@@ -16,18 +18,7 @@ function writeProgress(storageKey, obj) {
   localStorage.setItem(storageKey, JSON.stringify(obj))
 }
 
-function matchesFilter(verse, filter) {
-  if (filter === 'All') return true
-  if (filter === 'Old Testament') return verse.bookGroup === 'Old Testament'
-  if (filter === 'New Testament') return verse.bookGroup === 'New Testament'
-  if (filter === 'Psalms') return verse.bookGroup === 'Psalms'
-  if (filter === 'Proverbs') return verse.bookGroup === 'Proverbs'
-  if (filter === 'Faith') return verse.theme === 'Faith'
-  if (filter === 'Hope') return verse.theme === 'Hope'
-  if (filter === 'Love') return verse.theme === 'Love'
-  if (filter === 'Strength') return verse.theme === 'Strength'
-  return true
-}
+
 
 function ProgressRing({ percent }) {
   const r = 18
@@ -55,15 +46,48 @@ function ProgressRing({ percent }) {
 }
 
 export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertical = false }) {
+  const { t } = useTranslation()
+  
+  const matchesFilter = (verse, filter) => {
+    if (filter === 'flashcards.all') return true
+    if (filter === 'flashcards.bookGroups.oldTestament') return verse.bookGroup === 'flashcards.bookGroups.oldTestament'
+    if (filter === 'flashcards.bookGroups.newTestament') return verse.bookGroup === 'flashcards.bookGroups.newTestament'
+    if (filter === 'flashcards.bookGroups.psalms') return verse.bookGroup === 'flashcards.bookGroups.psalms'
+    if (filter === 'flashcards.bookGroups.proverbs') return verse.bookGroup === 'flashcards.bookGroups.proverbs'
+    if (filter === 'flashcards.themes.faith') return verse.theme === 'flashcards.themes.faith'
+    if (filter === 'flashcards.themes.hope') return verse.theme === 'flashcards.themes.hope'
+    if (filter === 'flashcards.themes.love') return verse.theme === 'flashcards.themes.love'
+    if (filter === 'flashcards.themes.strength') return verse.theme === 'flashcards.themes.strength'
+    return true
+  }
+
+  const translateFilterOption = (option) => {
+    return t(option);
+  };
+
   const { user } = useAuth()
   const progressKey = useMemo(() => userStorageKey(user?.id, 'verse-progress'), [user?.id])
   const [progress, setProgress] = useState({})
-  const [category, setCategory] = useState('All')
+  const [category, setCategory] = useState('flashcards.all')
   const [idx, setIdx] = useState(0)
   const [flipped, setFlipped] = useState(false)
   const [checkFlash, setCheckFlash] = useState(false)
   const [filterMenuOpen, setFilterMenuOpen] = useState(false)
+  const [buttonPosition, setButtonPosition] = useState(null)
   const filterMenuRef = useRef(null)
+  const buttonRef = useRef(null)
+
+  useEffect(() => {
+    if (filterMenuOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect()
+      setButtonPosition({
+        top: rect.bottom + window.scrollY + 8,
+        right: window.innerWidth - rect.right,
+      })
+    } else {
+      setButtonPosition(null)
+    }
+  }, [filterMenuOpen])
 
   useEffect(() => {
     setProgress(readProgress(progressKey))
@@ -97,11 +121,11 @@ export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertica
     return (
       <div className="glass-panel rounded-2xl p-4 text-white">
         <p className="text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: '#D4A843' }}>
-          📖 Verse Flashcards
+          📖 {t('flashcards.title')}
         </p>
-        <p className="mt-4 text-sm text-white/80">No verses match this filter.</p>
+        <p className="mt-4 text-sm text-white/80">{t('flashcards.noVersesMatch')}</p>
         <button type="button" onClick={onExit} className="mt-4 text-xs text-white/70">
-          ← Back
+          {t('common.back')}
         </button>
       </div>
     )
@@ -164,10 +188,10 @@ export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertica
 
       <div className="mb-3 flex shrink-0 items-center justify-between">
         <p className="text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: '#D4A843' }}>
-          📖 Verse Flashcards
+          📖 {t('flashcards.title')}
         </p>
         <button type="button" onClick={onExit} className="text-xs text-white/70">
-          ← Back
+          {t('common.back')}
         </button>
       </div>
 
@@ -175,15 +199,16 @@ export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertica
         <div className="flex items-center gap-2">
           <ProgressRing percent={percent} />
           <div>
-            <p className="text-sm font-semibold text-white">Progress</p>
+            <p className="text-sm font-semibold text-white">{t('flashcards.progress')}</p>
             <p className="text-xs text-white/70">
-              {memorizedCount} memorized • {VERSE_FLASHCARDS.length} total
+              {memorizedCount} {t('flashcards.memorized')} • {VERSE_FLASHCARDS.length} {t('flashcards.total')}
             </p>
           </div>
         </div>
         <div className="relative w-full sm:max-w-[220px]" ref={filterMenuRef}>
           <button
             type="button"
+            ref={buttonRef}
             onClick={() => setFilterMenuOpen((o) => !o)}
             className="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-white sm:max-w-[220px]"
             style={{
@@ -194,14 +219,126 @@ export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertica
             aria-expanded={filterMenuOpen}
             aria-haspopup="listbox"
           >
-            <span className="truncate">{category}</span>
+            <span className="truncate">{translateFilterOption(category)}</span>
             <span className="shrink-0 text-[#D4A843]/90" aria-hidden>
               ▼
             </span>
           </button>
-          {filterMenuOpen ? (
+        </div>
+      </div>
+
+      <div className="flip-wrap relative w-full shrink-0">
+        {checkFlash ? (
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              top: '10px',
+              right: '10px',
+              zIndex: 5,
+              background: 'rgba(212,168,67,0.18)',
+              border: '1px solid rgba(212,168,67,0.55)',
+              borderRadius: '999px',
+              padding: '8px 10px',
+              color: '#D4A843',
+              fontWeight: 800,
+              animation: 'check-pop 600ms ease',
+            }}
+          >
+            {t('flashcards.memorizedCheck')}
+          </div>
+        ) : null}
+
+        {/* Compact card (max 280px); glass-panel picks up day / evening / night from body + index.css */}
+        <div className="relative h-[260px] w-full max-h-[280px]">
+          <button
+            type="button"
+            onClick={() => setFlipped((f) => !f)}
+            className={`verse-flip-card glass-panel h-full w-full rounded-2xl p-0 text-left ${flipped ? 'flipped' : ''}`}
+          >
+            <div className="flip-face flex flex-col justify-between overflow-y-auto p-5 md:p-6">
+              <div className="min-h-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/70">{t('flashcards.tapToFlip')}</p>
+                <p className="mt-2 text-lg font-bold leading-snug md:text-xl" style={{ color: '#D4A843' }}>
+                  {current.ref}
+                </p>
+                <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-white/55">{t('flashcards.category')}</p>
+                <p className="mt-0.5 text-sm text-white/90">{t(current.bookGroup)}</p>
+                <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-white/55">{t('flashcards.theme')}</p>
+                <p className="mt-0.5 text-sm text-white/85">{t(current.theme)}</p>
+              </div>
+              <p className="mt-3 shrink-0 text-xs text-white/60">
+                {currentProg ? t('flashcards.memorized') : t('flashcards.statusStillLearning')}
+              </p>
+            </div>
+            <div className="flip-face flip-back flex flex-col overflow-hidden p-5 text-center md:p-6">
+              <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2">
+                <p className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/70">
+                  {t('flashcards.tapToFlipBack')}
+                </p>
+                <p className="min-h-0 w-full max-w-full flex-1 overflow-y-auto text-base leading-relaxed text-white [font-family:'Lora',serif] italic md:text-lg md:leading-relaxed">
+                  {current.text}
+                </p>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-3 grid shrink-0 grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => mark(false)}
+          className="glass-panel rounded-xl px-4 py-3 text-sm font-semibold text-white"
+        >
+          {t('flashcards.stillLearning')}
+        </button>
+        <button
+          type="button"
+          onClick={() => mark(true)}
+          className="rounded-xl px-4 py-3 text-sm font-semibold text-[#1a1a1a]"
+          style={{ background: '#D4A843' }}
+        >
+          {t('flashcards.memorized')}
+        </button>
+      </div>
+
+      <div className="mt-2 flex shrink-0 items-center justify-between text-xs text-white/70">
+        <button
+          type="button"
+          onClick={() => {
+            setIdx((i) => (i - 1 + safeLen) % safeLen)
+            setFlipped(false)
+          }}
+        >
+          {t('flashcards.prev')}
+        </button>
+        <span>
+          {t('flashcards.cardCount', { current: ((idx % safeLen) + 1), total: safeLen })}
+        </span>
+        <button
+          type="button"
+          onClick={() => {
+            setIdx((i) => (i + 1) % safeLen)
+            setFlipped(false)
+          }}
+        >
+          {t('flashcards.next')}
+        </button>
+      </div>
+
+      {filterMenuOpen &&
+        ReactDOM.createPortal(
+          <div
+            style={{
+              position: 'fixed',
+              top: buttonPosition?.top + 'px',
+              right: buttonPosition?.right + 'px',
+              zIndex: 9999,
+            }}
+          >
             <ul
-              className="verse-flashcard-filter-scroll absolute right-0 top-full z-30 mt-1 max-h-[min(280px,50vh)] w-full min-w-[200px] overflow-y-auto rounded-lg py-1 shadow-xl sm:max-w-[220px]"
+              className="verse-flashcard-filter-scroll max-h-[min(280px,50vh)] w-full min-w-[200px] max-w-[220px] overflow-y-auto rounded-lg py-1 shadow-xl"
               role="listbox"
               style={{
                 background: 'rgba(12, 20, 38, 0.98)',
@@ -226,114 +363,14 @@ export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertica
                       setFilterMenuOpen(false)
                     }}
                   >
-                    {c}
+                    {translateFilterOption(c)}
                   </button>
                 </li>
               ))}
             </ul>
-          ) : null}
-        </div>
-      </div>
-
-      <div className="flip-wrap relative w-full shrink-0">
-        {checkFlash ? (
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              top: '10px',
-              right: '10px',
-              zIndex: 5,
-              background: 'rgba(212,168,67,0.18)',
-              border: '1px solid rgba(212,168,67,0.55)',
-              borderRadius: '999px',
-              padding: '8px 10px',
-              color: '#D4A843',
-              fontWeight: 800,
-              animation: 'check-pop 600ms ease',
-            }}
-          >
-            ✓ Memorized
-          </div>
-        ) : null}
-
-        {/* Compact card (max 280px); glass-panel picks up day / evening / night from body + index.css */}
-        <div className="relative h-[260px] w-full max-h-[280px]">
-          <button
-            type="button"
-            onClick={() => setFlipped((f) => !f)}
-            className={`verse-flip-card glass-panel h-full w-full rounded-2xl p-0 text-left ${flipped ? 'flipped' : ''}`}
-          >
-            <div className="flip-face flex flex-col justify-between overflow-y-auto p-5 md:p-6">
-              <div className="min-h-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/70">Tap to flip</p>
-                <p className="mt-2 text-lg font-bold leading-snug md:text-xl" style={{ color: '#D4A843' }}>
-                  {current.ref}
-                </p>
-                <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-white/55">Category</p>
-                <p className="mt-0.5 text-sm text-white/90">{current.bookGroup}</p>
-                <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-white/55">Theme</p>
-                <p className="mt-0.5 text-sm text-white/85">{current.theme}</p>
-              </div>
-              <p className="mt-3 shrink-0 text-xs text-white/60">
-                {currentProg ? 'Status: Memorized' : 'Status: Still Learning'}
-              </p>
-            </div>
-            <div className="flip-face flip-back flex flex-col overflow-hidden p-5 text-center md:p-6">
-              <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2">
-                <p className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/70">
-                  Tap to flip back
-                </p>
-                <p className="min-h-0 w-full max-w-full flex-1 overflow-y-auto text-base leading-relaxed text-white [font-family:'Lora',serif] italic md:text-lg md:leading-relaxed">
-                  {current.text}
-                </p>
-              </div>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      <div className="mt-3 grid shrink-0 grid-cols-2 gap-2">
-        <button
-          type="button"
-          onClick={() => mark(false)}
-          className="glass-panel rounded-xl px-4 py-3 text-sm font-semibold text-white"
-        >
-          Still Learning
-        </button>
-        <button
-          type="button"
-          onClick={() => mark(true)}
-          className="rounded-xl px-4 py-3 text-sm font-semibold text-[#1a1a1a]"
-          style={{ background: '#D4A843' }}
-        >
-          Memorized ✓
-        </button>
-      </div>
-
-      <div className="mt-2 flex shrink-0 items-center justify-between text-xs text-white/70">
-        <button
-          type="button"
-          onClick={() => {
-            setIdx((i) => (i - 1 + safeLen) % safeLen)
-            setFlipped(false)
-          }}
-        >
-          ← Prev
-        </button>
-        <span>
-          Card {((idx % safeLen) + 1)} / {safeLen}
-        </span>
-        <button
-          type="button"
-          onClick={() => {
-            setIdx((i) => (i + 1) % safeLen)
-            setFlipped(false)
-          }}
-        >
-          Next →
-        </button>
-      </div>
+          </div>,
+          document.body
+        )}
     </div>
   )
 }

@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
+import { fetchVerse } from '../utils/bibleTranslation'
 
 export default function DevotionalReader({
   devotional,
@@ -10,14 +11,32 @@ export default function DevotionalReader({
 }) {
   const [copied, setCopied] = useState(false)
   const [justCompleted, setJustCompleted] = useState(false)
+  const [devotionalVerseText, setDevotionalVerseText] = useState('')
+  const [devotionalVerseLoading, setDevotionalVerseLoading] = useState(true)
+
+  useEffect(() => {
+    const loadDevotionalVerse = async () => {
+      setDevotionalVerseLoading(true)
+      try {
+        const text = await fetchVerse(19, 119, 105, 'en')
+        setDevotionalVerseText(text)
+      } catch {
+        setDevotionalVerseText('Your word is a lamp for my feet, a light on my path.')
+      } finally {
+        setDevotionalVerseLoading(false)
+      }
+    }
+
+    loadDevotionalVerse()
+  }, [])
 
   const encouragement = useMemo(() => {
     if (!isCompleted && !justCompleted) return null
     return {
       reference: 'Psalm 119:105',
-      text: 'Your word is a lamp for my feet, a light on my path.',
+      text: devotionalVerseLoading ? 'Your word is a lamp for my feet, a light on my path.' : devotionalVerseText,
     }
-  }, [isCompleted, justCompleted])
+  }, [isCompleted, justCompleted, devotionalVerseText, devotionalVerseLoading])
 
   const handleShare = async () => {
     const text = `${devotional.title}\n${devotional.scripture}\n"${devotional.verse}"`

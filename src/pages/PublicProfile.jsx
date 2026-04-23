@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
-function formatMemberSince(iso) {
-  if (!iso) return 'Unknown'
+function formatMemberSince(iso, t) {
+  if (!iso) return t('profile.unknown')
   const parsed = new Date(iso)
-  if (Number.isNaN(parsed.getTime())) return 'Unknown'
+  if (Number.isNaN(parsed.getTime())) return t('profile.unknown')
   return parsed.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
@@ -16,22 +17,23 @@ function computeTotalDaysActive(profile) {
   return Math.max(weeklyCount, readingStreak)
 }
 
-function buildFaithBadges({ profile, hasReadChapter, hasPrayerWallPost }) {
+function buildFaithBadges({ profile, hasReadChapter, hasPrayerWallPost, t }) {
   const badges = []
   const streak = Math.max(0, Number(profile?.reading_streak) || 0)
 
-  if (profile?.is_founding_member) badges.push('⚓ Founding Member')
-  if (profile?.is_supporter) badges.push('⚓ Ministry Supporter')
-  if (streak >= 3) badges.push('🔥 Streak Starter')
-  if (streak >= 7) badges.push('⚡ On Fire')
-  if (streak >= 30) badges.push('👑 Faithful')
-  if (hasReadChapter) badges.push('📖 Word Seeker')
-  if (hasPrayerWallPost) badges.push('🙏 Prayer Warrior')
+  if (profile?.is_founding_member) badges.push(t('profile.badges.foundingMember'))
+  if (profile?.is_supporter) badges.push(t('profile.badges.ministrySupporter'))
+  if (streak >= 3) badges.push(t('profile.badges.streakStarter'))
+  if (streak >= 7) badges.push(t('profile.badges.onFire'))
+  if (streak >= 30) badges.push(t('profile.badges.faithful'))
+  if (hasReadChapter) badges.push(t('profile.badges.wordSeeker'))
+  if (hasPrayerWallPost) badges.push(t('profile.badges.prayerWarrior'))
 
   return badges
 }
 
 export default function PublicProfile() {
+  const { t } = useTranslation()
   const { userId } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -48,7 +50,7 @@ export default function PublicProfile() {
     const run = async () => {
       if (!userId) {
         if (alive) {
-          setError('User not found.')
+          setError(t('profile.notFound'))
           setLoading(false)
         }
         return
@@ -63,7 +65,7 @@ export default function PublicProfile() {
           .maybeSingle()
         if (fetchError) throw fetchError
         if (!data) {
-          setError('This profile is not available.')
+          setError(t('profile.notFound'))
           setProfile(null)
           setHasPrayerWallPost(false)
         } else {
@@ -75,7 +77,7 @@ export default function PublicProfile() {
           setHasPrayerWallPost((prayerCount || 0) > 0)
         }
       } catch {
-        setError('Unable to load this profile right now.')
+        setError(t('profile.loadError'))
         setProfile(null)
         setHasPrayerWallPost(false)
       } finally {
@@ -86,13 +88,13 @@ export default function PublicProfile() {
     return () => {
       alive = false
     }
-  }, [userId])
+  }, [t, userId])
 
   const displayName = useMemo(() => {
     const username = profile?.username?.trim()
     const fullName = profile?.full_name?.trim()
-    return username || fullName || 'Beloved Member'
-  }, [profile?.username, profile?.full_name])
+    return username || fullName || t('profile.belovedMember')
+  }, [profile?.username, profile?.full_name, t])
 
   const initials = useMemo(() => {
     return (displayName?.[0] || 'A').toUpperCase()
@@ -101,7 +103,7 @@ export default function PublicProfile() {
   const bio = profile?.bio?.trim() || ''
   const favoriteVerse = profile?.favorite_verse?.trim() || ''
   const hasReadChapter = Math.max(0, Number(profile?.verses_read) || 0) > 0 || Boolean(profile?.last_chapter)
-  const faithBadges = buildFaithBadges({ profile, hasReadChapter, hasPrayerWallPost })
+  const faithBadges = buildFaithBadges({ profile, hasReadChapter, hasPrayerWallPost, t })
 
   const handlePrayForUser = async () => {
     if (!profile?.id || praying) return
@@ -120,10 +122,10 @@ export default function PublicProfile() {
           pray_count: 0,
         })
       if (insertError) throw insertError
-      setToast(`Prayer added for ${displayName} 🙏`)
+      setToast(t('profile.prayerAdded', { name: displayName }))
       setTimeout(() => setToast(''), 2600)
     } catch {
-      setToast('Unable to add prayer right now.')
+      setToast(t('profile.prayerError'))
       setTimeout(() => setToast(''), 2600)
     } finally {
       setPraying(false)
@@ -134,8 +136,8 @@ export default function PublicProfile() {
     if (!profile?.id) return
     const shareUrl = `https://abidinganchor.com/profile/${profile.id}`
     const sharePayload = {
-      title: `${displayName}'s Abiding Anchor Profile`,
-      text: 'Check out my faith profile on Abiding Anchor! 🙏',
+      title: t('profile.shareTitle', { name: displayName }),
+      text: t('profile.shareText'),
       url: shareUrl,
     }
     try {
@@ -191,9 +193,7 @@ export default function PublicProfile() {
             ←
           </button>
           <div style={{ flex: 1, textAlign: 'center' }}>
-            <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
-              Public Profile
-            </span>
+            <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>{t('profile.title')}</span>
           </div>
           <div style={{ width: '40px' }} />
         </div>
@@ -213,7 +213,7 @@ export default function PublicProfile() {
                 cursor: 'pointer',
               }}
             >
-              🔗 Share Profile
+              🔗 {t('profile.share')}
             </button>
             <Link
               to="/community-prayer"
@@ -228,13 +228,13 @@ export default function PublicProfile() {
                 border: '1px solid rgba(20,20,20,0.18)',
               }}
             >
-              Back
+              {t('profile.back')}
             </Link>
           </div>
         </div>
 
         {loading ? (
-          <article className="app-card p-5 text-secondary">Loading profile…</article>
+          <article className="app-card p-5 text-secondary">{t('profile.loading')}</article>
         ) : null}
 
         {!loading && error ? (
@@ -318,7 +318,7 @@ export default function PublicProfile() {
                   background: 'rgba(212,175,55,0.08)',
                 }}
               >
-                <p style={{ margin: 0, color: '#D4AF37', fontSize: '12px', fontWeight: 700, letterSpacing: '0.04em' }}>FAVORITE VERSE</p>
+                <p style={{ margin: 0, color: '#D4AF37', fontSize: '12px', fontWeight: 700, letterSpacing: '0.04em' }}>{t('profile.favoriteVerse')}</p>
                 <p style={{ margin: '6px 0 0', color: 'var(--text-primary)', fontSize: '14px', lineHeight: 1.5 }}>
                   {favoriteVerse}
                 </p>
@@ -327,27 +327,27 @@ export default function PublicProfile() {
 
             <div className="mt-4 grid gap-2">
               <div className="app-card" style={{ padding: '12px' }}>
-                <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '12px' }}>Reading Streak</p>
+                <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '12px' }}>{t('profile.readingStreak')}</p>
                 <p style={{ margin: '4px 0 0', color: 'var(--text-primary)', fontSize: '16px', fontWeight: 700 }}>
-                  🔥 {Math.max(0, Number(profile.reading_streak) || 0)} days
+                  🔥 {Math.max(0, Number(profile.reading_streak) || 0)} {t('profile.days')}
                 </p>
               </div>
               <div className="app-card" style={{ padding: '12px' }}>
-                <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '12px' }}>Total Days Active</p>
+                <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '12px' }}>{t('profile.totalDaysActive')}</p>
                 <p style={{ margin: '4px 0 0', color: 'var(--text-primary)', fontSize: '16px', fontWeight: 700 }}>
-                  {computeTotalDaysActive(profile)} days
+                  {computeTotalDaysActive(profile)} {t('profile.days')}
                 </p>
               </div>
               <div className="app-card" style={{ padding: '12px' }}>
-                <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '12px' }}>Member Since</p>
+                <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '12px' }}>{t('profile.memberSince')}</p>
                 <p style={{ margin: '4px 0 0', color: 'var(--text-primary)', fontSize: '16px', fontWeight: 700 }}>
-                  {formatMemberSince(profile.created_at)}
+                  {formatMemberSince(profile.created_at, t)}
                 </p>
               </div>
             </div>
 
             <button type="button" className="btn-primary mt-4 w-full" onClick={handlePrayForUser} disabled={praying}>
-              {praying ? 'Adding Prayer…' : `Pray for ${displayName}`}
+              {praying ? t('profile.addingPrayer') : t('profile.prayFor', { name: displayName })}
             </button>
             {toast ? (
               <p style={{ marginTop: '10px', marginBottom: 0, color: 'var(--text-secondary)', fontSize: '13px' }}>{toast}</p>
@@ -374,7 +374,7 @@ export default function PublicProfile() {
           }}
           aria-live="polite"
         >
-          Profile link copied! 🔗
+          {t('profile.shareCopied')}
         </div>
       ) : null}
     </div>

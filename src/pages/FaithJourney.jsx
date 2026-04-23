@@ -361,7 +361,7 @@ export default function FaithJourney() {
               onStart={() => setView('trivia')}
             />
             <LearningPathCard
-              icon="�"
+              icon="📖"
               title={t('faithJourney.cardFlash')}
               subtitle={t('faithJourney.cardFlashSub')}
               accentColor="#D4A843"

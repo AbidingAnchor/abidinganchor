@@ -1,35 +1,28 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 
 const CONTENT_MAX = 300
 
-const REACTIONS = [
-  { key: 'amen', icon: '🙏', label: 'Amen' },
-  { key: 'love', icon: '❤️', label: 'Love' },
-  { key: 'fire', icon: '🔥', label: 'Fire' },
-  { key: 'cross', icon: '✝️', label: 'Cross' },
-]
-
-function timeAgo(iso) {
+function timeAgo(iso, t) {
   if (!iso) return ''
   const sec = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
-  if (sec < 45) return 'just now'
-  if (sec < 3600) return `${Math.floor(sec / 60)}m ago`
-  if (sec < 86400) return `${Math.floor(sec / 3600)}h ago`
-  if (sec < 604800) return `${Math.floor(sec / 86400)}d ago`
+  if (sec < 45) return t('testimony.justNow')
+  if (sec < 3600) return t('testimony.minutesAgo', { count: Math.floor(sec / 60) })
+  if (sec < 86400) return t('testimony.hoursAgo', { count: Math.floor(sec / 3600) })
+  if (sec < 604800) return t('testimony.daysAgo', { count: Math.floor(sec / 86400) })
   return new Date(iso).toLocaleDateString()
 }
 
-function displayAuthorName(p) {
-  if (!p) return 'Friend'
-  return (p.full_name && String(p.full_name).trim()) || p.username || 'Friend'
+function displayAuthorName(p, t) {
+  if (!p) return t('testimony.friend')
+  return (p.full_name && String(p.full_name).trim()) || p.username || t('testimony.friend')
 }
 
-const ANONYMOUS_LABEL = 'Anonymous Believer'
-
 export default function TestimonyWall() {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const navigate = useNavigate()
   const [content, setContent] = useState('')
@@ -46,6 +39,16 @@ export default function TestimonyWall() {
   const [countsByTestimony, setCountsByTestimony] = useState({})
   /** testimonyId -> emoji key or undefined */
   const [myReactionByTestimony, setMyReactionByTestimony] = useState({})
+
+  const reactions = useMemo(
+    () => [
+      { key: 'amen', icon: '🙏', label: t('testimony.reactionAmen') },
+      { key: 'love', icon: '❤️', label: t('testimony.reactionLove') },
+      { key: 'fire', icon: '🔥', label: t('testimony.reactionFire') },
+      { key: 'cross', icon: '✝️', label: t('testimony.reactionCross') },
+    ],
+    [t],
+  )
 
   const trimmed = content.trim()
 
@@ -113,14 +116,14 @@ export default function TestimonyWall() {
       setMyReactionByTestimony(mine)
     } catch (err) {
       console.error('TestimonyWall load:', err)
-      setError('Could not load testimonies. Try again later.')
+      setError(t('testimony.loadError'))
       setRows([])
       setCountsByTestimony({})
       setMyReactionByTestimony({})
     } finally {
       setLoading(false)
     }
-  }, [user?.id])
+  }, [t, user?.id])
 
   useEffect(() => {
     void loadFeed()
@@ -142,7 +145,7 @@ export default function TestimonyWall() {
       await loadFeed()
     } catch (err) {
       console.error('TestimonyWall post:', err)
-      setError('Could not post your testimony. Please try again.')
+      setError(t('testimony.postError'))
     } finally {
       setPosting(false)
     }
@@ -150,7 +153,7 @@ export default function TestimonyWall() {
 
   const handleDeleteTestimony = async (testimonyId) => {
     if (!user?.id) return
-    if (!confirm('Are you sure you want to delete this testimony?')) return
+    if (!confirm(t('testimony.deleteConfirm'))) return
     
     try {
       // Delete reactions first
@@ -172,11 +175,11 @@ export default function TestimonyWall() {
       setMenuOpen(null)
       
       // Show toast
-      setToast('Testimony removed')
+      setToast(t('testimony.deleteSuccess'))
       setTimeout(() => setToast(null), 3000)
     } catch (err) {
       console.error('Error deleting testimony:', err)
-      setError('Could not delete testimony. Please try again.')
+      setError(t('testimony.deleteError'))
     }
   }
 
@@ -210,7 +213,7 @@ export default function TestimonyWall() {
       await loadFeed()
     } catch (err) {
       console.error('TestimonyWall reaction:', err)
-      setError('Could not update reaction.')
+      setError(t('testimony.reactionError'))
     } finally {
       setReactionBusy(null)
     }
@@ -245,7 +248,7 @@ export default function TestimonyWall() {
           marginBottom: '8px',
           margin: '0 0 8px 0',
         }}>
-          TESTIMONY WALL
+          {t('testimony.title')}
         </h1>
         <p style={{
           color: 'rgba(255, 255, 255, 0.5)',
@@ -253,7 +256,7 @@ export default function TestimonyWall() {
           fontStyle: 'italic',
           margin: 0,
         }}>
-          They overcame by the word of their testimony — Revelation 12:11
+          {t('testimony.verseQuote')} {t('testimony.verseRef')}
         </p>
       </header>
 
@@ -267,14 +270,14 @@ export default function TestimonyWall() {
         marginBottom: '20px',
       }}>
         <label htmlFor="testimony-input" style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>
-          Share your testimony
+          {t('testimony.shareYourTestimony')}
         </label>
         <textarea
           id="testimony-input"
           value={content}
           onChange={(e) => setContent(e.target.value.slice(0, CONTENT_MAX))}
           rows={4}
-          placeholder="What has God done in your life?"
+          placeholder={t('testimony.placeholder')}
           style={{
             width: '100%',
             borderRadius: '12px',
@@ -342,7 +345,7 @@ export default function TestimonyWall() {
                 }}
               />
             </button>
-            <span>Post Anonymously</span>
+            <span>{t('testimony.postAnonymously')}</span>
           </label>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
@@ -364,7 +367,7 @@ export default function TestimonyWall() {
               opacity: posting || !trimmed ? 0.65 : 1,
             }}
           >
-            {posting ? 'Posting…' : 'Post'}
+            {posting ? t('testimony.posting') : t('testimony.post')}
           </button>
         </div>
       </section>
@@ -383,10 +386,10 @@ export default function TestimonyWall() {
           margin: '0 0 12px 0',
           fontWeight: 600,
         }}>
-          Testimonies
+          {t('testimony.testimonies')}
         </h2>
         {loading ? (
-          <p style={{ color: 'var(--text-secondary)' }}>Loading…</p>
+          <p style={{ color: 'var(--text-secondary)' }}>{t('common.loading')}</p>
         ) : rows.length === 0 ? (
           <article style={{
             background: 'rgba(255, 255, 255, 0.04)',
@@ -400,13 +403,13 @@ export default function TestimonyWall() {
               margin: 0,
               color: 'rgba(255, 255, 255, 0.5)',
               fontSize: '15px',
-            }}>Be the first to share what God has done.</p>
+            }}>{t('testimony.beFirst')}</p>
           </article>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {rows.map((t) => {
               const isAnon = Boolean(t.is_anonymous)
-              const name = isAnon ? ANONYMOUS_LABEL : displayAuthorName(t.author_profile)
+              const name = isAnon ? t('testimony.anonymousBeliever') : displayAuthorName(t.author_profile, t)
               const avatarUrl = isAnon ? null : t.author_profile?.avatar_url
               const counts = countsByTestimony[t.id] || { amen: 0, love: 0, fire: 0, cross: 0 }
               const my = myReactionByTestimony[t.id]
@@ -461,7 +464,7 @@ export default function TestimonyWall() {
                           width: '100%',
                         }}
                       >
-                        🗑️ Delete Testimony
+                        🗑️ {t('testimony.deleteAction')}
                       </button>
                     </div>
                   )}
@@ -519,7 +522,7 @@ export default function TestimonyWall() {
                         </button>
                       )}
                       <p style={{ margin: '6px 0 0', fontSize: '14px', lineHeight: 1.55, color: 'var(--text-primary)' }}>{t.content}</p>
-                      <p style={{ margin: '8px 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>{timeAgo(t.created_at)}</p>
+                      <p style={{ margin: '8px 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>{timeAgo(t.created_at, t)}</p>
                       <div
                         style={{
                           display: 'flex',
@@ -529,7 +532,7 @@ export default function TestimonyWall() {
                           alignItems: 'center',
                         }}
                       >
-                        {REACTIONS.map((r) => {
+                        {reactions.map((r) => {
                           const active = my === r.key
                           const n = counts[r.key] ?? 0
                           return (

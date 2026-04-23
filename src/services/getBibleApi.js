@@ -10,7 +10,10 @@ export const UI_LANG_TO_GETBIBLE = {
   pt: 'almeida',
   fr: 'ls1910',
   de: 'schlachter',
-  // Hindi: no verified v2 slug (e.g. /v2/hindi/... returns 404); Hindi text uses API.Bible when configured.
+  // Filipino: "Ang Dating Biblia" (1905) — confirmed working at api.getbible.net/v2/tagalog/
+  tl: 'tagalog',
+  fil: 'tagalog',
+  // Hindi: no verified v2 slug on getbible; Hindi uses bolls.life HIOV as primary.
 }
 
 /**

@@ -37,19 +37,20 @@ function migrateLanguageStorage() {
 migrateLanguageStorage()
 
 const esMerged = deepMerge(es, { journeyMap: { stops: journeyStopsEs } })
-const ptMerged = deepMerge(pt, { journeyMap: { stops: journeyStopsPt } })
-const frMerged = deepMerge(fr, { journeyMap: { stops: journeyStopsFr } })
-const deMerged = deepMerge(de, { journeyMap: { stops: journeyStopsDe } })
-const tlMerged = deepMerge(en, tl)
-const koMerged = deepMerge(en, ko)
-const hiMerged = deepMerge(en, hi)
+const enMerged = deepMerge(en, { journeyMap: { stops: journeyStopsEs } })
+const ptMerged = deepMerge(enMerged, deepMerge(pt, { journeyMap: { stops: journeyStopsPt } }))
+const frMerged = deepMerge(enMerged, deepMerge(fr, { journeyMap: { stops: journeyStopsFr } }))
+const deMerged = deepMerge(enMerged, deepMerge(de, { journeyMap: { stops: journeyStopsDe } }))
+const tlMerged = deepMerge(enMerged, tl)
+const koMerged = deepMerge(enMerged, ko)
+const hiMerged = deepMerge(enMerged, hi)
 
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: {
-      en: { translation: en },
+      en: { translation: enMerged },
       es: { translation: esMerged },
       pt: { translation: ptMerged },
       fr: { translation: frMerged },

@@ -10,15 +10,22 @@ export async function getStreak() {
   try {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user?.id) return { currentStreak: 0, lastReadDate: null, longestStreak: 0 }
-    const { data, error } = await supabase.from('profiles').select('reading_streak,last_read_date,longest_streak').eq('id', user.id).single()
+    const { data, error } = await supabase.from('profiles').select('reading_streak,last_active_date,longest_streak').eq('id', user.id).single()
+    console.log('[getStreak] Reading from profiles:', {
+      userId: user.id,
+      reading_streak: data?.reading_streak,
+      last_active_date: data?.last_active_date,
+      longest_streak: data?.longest_streak,
+      error: error ?? null,
+    })
     if (error) throw error
     return {
       currentStreak: Number(data?.reading_streak || 0),
-      lastReadDate: data?.last_read_date || null,
+      lastReadDate: data?.last_active_date || null,
       longestStreak: Number(data?.longest_streak || 0),
     }
   } catch (err) {
-    console.error('Error getting streak:', err)
+    console.error('[getStreak] Error getting streak:', err)
     return { currentStreak: 0, lastReadDate: null, longestStreak: 0 }
   }
 }
