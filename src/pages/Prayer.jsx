@@ -34,6 +34,7 @@ export default function Prayer() {
   const load = useCallback(async (opts = {}) => {
     const silent = opts.silent === true
     if (!user?.id) {
+      console.log('[Prayer] No user ID, skipping load')
       setItems([])
       setAnsweredCount(0)
       setLoading(false)
@@ -41,6 +42,7 @@ export default function Prayer() {
     }
     if (!silent) setLoading(true)
     try {
+      console.log('[Prayer] Loading prayers for user:', user.id)
       const { data, error } = await supabase
         .from('personal_prayers')
         .select('*')
@@ -48,10 +50,12 @@ export default function Prayer() {
         .order('created_at', { ascending: false })
       if (error) throw error
       const rows = data || []
+      console.log('[Prayer] Loaded', rows.length, 'prayers:', rows)
       setItems(rows)
       setAnsweredCount(rows.filter((r) => r.answered).length)
     } catch (e) {
-      console.error('Error loading personal prayers:', e)
+      console.error('[Prayer] Error loading personal prayers:', e)
+      console.error('[Prayer] Error details:', JSON.stringify(e, null, 2))
       if (!silent) setItems([])
     } finally {
       if (!silent) setLoading(false)
@@ -65,11 +69,10 @@ export default function Prayer() {
   useEffect(() => {
     const seed = location.state?.dailyPrayerSeed
     if (!seed?.text?.trim()) return
-    setDraft(seed.text.trim())
-    setShowAddModal(true)
-    setMainTab('mine')
+    // Only auto-open modal if explicitly navigating with daily prayer seed
+    // Clear the state to prevent re-triggering on refresh
     navigate(location.pathname, { replace: true, state: {} })
-  }, [location.state, navigate])
+  }, [location.state, location.pathname, navigate])
 
   useEffect(() => {
     const loadDailyVerse = async () => {
