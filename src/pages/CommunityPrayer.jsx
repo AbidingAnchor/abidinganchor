@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useAuth } from '../context/AuthContext'
+import { SHIMMER_KEYFRAMES } from '../hooks/useNameStyle'
 import { supabase } from '../lib/supabase'
 import { getLocalCalendarDateKey } from '../utils/localCalendarDate'
-import { useAuth } from '../context/AuthContext'
 import { userStorageKey } from '../utils/userStorage'
 
 const FILTER_CATEGORIES = ['All', 'Health', 'Family', 'Guidance', 'Praise', 'Grief', 'Protection']
@@ -59,7 +60,7 @@ export default function CommunityPrayer() {
       if (authorIds.length > 0) {
         const { data: profileRows, error: profileError } = await supabase
           .from('profiles')
-          .select('id, username, full_name, avatar_url')
+          .select('id, username, full_name, avatar_url, supporter_tier')
           .in('id', authorIds)
         if (profileError) throw profileError
         profilesById = (profileRows || []).reduce((acc, row) => {
@@ -225,8 +226,25 @@ export default function CommunityPrayer() {
     return n || profileName || 'Anonymous'
   }
 
+  const getNameStyle = (supporterTier) => {
+    if (supporterTier === 'lifetime') {
+      return {
+        background: 'linear-gradient(90deg, #b8860b, #ffd700, #ffec8b, #ffd700, #b8860b)',
+        backgroundSize: '200%',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
+        animation: 'shimmer-gold 2s infinite linear',
+      }
+    } else if (supporterTier === 'monthly') {
+      return { color: '#93c5fd' }
+    }
+    return { color: 'var(--text-primary)' }
+  }
+
   return (
     <div style={{ position: 'relative', overflow: 'hidden' }}>
+      <style>{SHIMMER_KEYFRAMES}</style>
       <div
         className="content-scroll"
         style={{
@@ -389,7 +407,7 @@ export default function CommunityPrayer() {
                         {(displayAuthor(p)?.[0] || 'A').toUpperCase()}
                       </span>
                     )}
-                    <span>{displayAuthor(p)}</span>
+                    <span style={getNameStyle(p.author_profile?.supporter_tier)}>{displayAuthor(p)}</span>
                   </button>
                   <p className="mt-2 text-xs text-secondary">
                     {cnt === 0 ? 'No prayers yet' : `${cnt} ${cnt === 1 ? 'person has' : 'people have'} prayed`}

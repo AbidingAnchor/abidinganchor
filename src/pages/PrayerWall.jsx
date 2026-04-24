@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
+import { SHIMMER_KEYFRAMES } from '../hooks/useNameStyle'
 import { supabase } from '../lib/supabase'
 import { userStorageKey } from '../utils/userStorage'
 
@@ -149,7 +150,7 @@ export default function PrayerWall() {
       if (userIds.length > 0) {
         const { data: profileRows, error: profileError } = await supabase
           .from('profiles')
-          .select('id, username, role, avatar_url')
+          .select('id, username, role, avatar_url, supporter_tier')
           .in('id', userIds)
         if (profileError) throw profileError
         profilesById = (profileRows || []).reduce((acc, row) => {
@@ -165,11 +166,13 @@ export default function PrayerWall() {
               username: profilesById[row.user_id].username || t('prayerWall.anonymous'),
               role: profilesById[row.user_id].role || 'user',
               avatar_url: profilesById[row.user_id].avatar_url || null,
+              supporter_tier: profilesById[row.user_id].supporter_tier || 'free',
             }
           : {
               username: t('prayerWall.anonymous'),
               role: 'user',
               avatar_url: null,
+              supporter_tier: 'free',
             },
       }))
 
@@ -436,13 +439,31 @@ export default function PrayerWall() {
   const getPosterMeta = (prayer) => {
     const roleKey = (prayer?.profiles?.role || 'user').toLowerCase()
     const roleStyle = ROLE_STYLES[roleKey] || ROLE_STYLES.user
+    const supporterTier = prayer?.profiles?.supporter_tier || 'free'
+    
+    let nameStyle = { color: roleStyle.nameColor }
+    if (supporterTier === 'lifetime') {
+      nameStyle = {
+        background: 'linear-gradient(90deg, #b8860b, #ffd700, #ffec8b, #ffd700, #b8860b)',
+        backgroundSize: '200%',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
+        animation: 'shimmer-gold 2s infinite linear',
+      }
+    } else if (supporterTier === 'monthly') {
+      nameStyle = { color: '#93c5fd' }
+    }
+    
     return {
       name: prayer?.profiles?.username || t('prayerWall.anonymous'),
       nameColor: roleStyle.nameColor,
+      nameStyle,
       badgeLabel: roleStyle.badgeLabelKey ? t(roleStyle.badgeLabelKey) : '',
       badgeStyle: roleStyle.badgeStyle,
       avatarUrl: prayer?.profiles?.avatar_url || null,
       userId: prayer?.user_id || null,
+      supporterTier,
     }
   }
 
@@ -451,6 +472,7 @@ export default function PrayerWall() {
 
   return (
     <div className="w-full pt-4">
+      <style>{SHIMMER_KEYFRAMES}</style>
       {/* Screen Title */}
       <div className="flex items-center gap-3 mb-4">
         <span className="text-3xl">🙏</span>
@@ -550,7 +572,7 @@ export default function PrayerWall() {
                       {(poster.name?.[0] || 'A').toUpperCase()}
                     </span>
                   )}
-                  <p className="text-sm font-semibold" style={{ color: poster.nameColor, margin: 0 }}>
+                  <p className="text-sm font-semibold" style={{ ...poster.nameStyle, margin: 0 }}>
                     {poster.name}
                   </p>
                 </button>

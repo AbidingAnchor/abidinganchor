@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { SHIMMER_KEYFRAMES } from '../hooks/useNameStyle'
 
 function formatMemberSince(iso, t) {
   if (!iso) return t('profile.unknown')
@@ -60,7 +61,7 @@ export default function PublicProfile() {
       try {
         const { data, error: fetchError } = await supabase
           .from('profiles')
-          .select('id, username, full_name, avatar_url, bio, favorite_verse, is_supporter, is_founding_member, reading_streak, weekly_active_days, verses_read, last_chapter, created_at')
+          .select('id, username, full_name, avatar_url, bio, favorite_verse, is_supporter, is_founding_member, reading_streak, weekly_active_days, verses_read, last_chapter, created_at, supporter_tier')
           .eq('id', userId)
           .maybeSingle()
         if (fetchError) throw fetchError
@@ -104,6 +105,22 @@ export default function PublicProfile() {
   const favoriteVerse = profile?.favorite_verse?.trim() || ''
   const hasReadChapter = Math.max(0, Number(profile?.verses_read) || 0) > 0 || Boolean(profile?.last_chapter)
   const faithBadges = buildFaithBadges({ profile, hasReadChapter, hasPrayerWallPost, t })
+
+  const getNameStyle = (supporterTier) => {
+    if (supporterTier === 'lifetime') {
+      return {
+        background: 'linear-gradient(90deg, #b8860b, #ffd700, #ffec8b, #ffd700, #b8860b)',
+        backgroundSize: '200%',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
+        animation: 'shimmer-gold 2s infinite linear',
+      }
+    } else if (supporterTier === 'monthly') {
+      return { color: '#93c5fd' }
+    }
+    return { color: 'var(--text-primary)' }
+  }
 
   const handlePrayForUser = async () => {
     if (!profile?.id || praying) return
@@ -154,51 +171,57 @@ export default function PublicProfile() {
   }
 
   return (
-    <div style={{ position: 'relative', overflow: 'hidden' }}>
-      <div
-        className="content-scroll"
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          padding: '0 16px',
-          paddingTop: '16px',
-          paddingBottom: '120px',
-          maxWidth: '680px',
-          margin: '0 auto',
-          width: '100%',
-        }}
-      >
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          padding: '16px 16px 8px 16px',
-        }}>
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            style={{
-              width: '40px',
-              height: '40px',
-              background: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(212,168,67,0.3)',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              color: '#D4A843',
-              fontSize: '20px',
-            }}
-          >
-            ←
-          </button>
-          <div style={{ flex: 1, textAlign: 'center' }}>
-            <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>{t('profile.title')}</span>
-          </div>
-          <div style={{ width: '40px' }} />
+    <div
+      className="content-scroll content-scroll--nav-clear"
+      style={{
+        padding: '60px 16px 120px',
+        maxWidth: '680px',
+        margin: '0 auto',
+        width: '100%',
+        minHeight: '100dvh',
+        boxSizing: 'border-box',
+        background: 'var(--card-bg)',
+      }}
+    >
+      <style>{SHIMMER_KEYFRAMES}</style>
+      {loading && (
+        <div className="flex items-center justify-center h-48">
+          <p className="text-gold-accent text-lg">{t('profile.loading')}</p>
         </div>
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      )}
+      {error && (
+        <div className="flex items-center justify-center h-48">
+          <p className="text-red-300 text-lg">{error}</p>
+        </div>
+      )}
+      {!loading && !error && profile && (
+        <>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              style={{
+                width: '40px',
+                height: '40px',
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(212,168,67,0.3)',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                color: '#D4A843',
+                fontSize: '20px',
+              }}
+            >
+              ←
+            </button>
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>{t('profile.title')}</span>
+            </div>
+            <div style={{ width: '40px' }} />
+          </div>
+          <div className="mb-4 flex items-center justify-between gap-3">
             <button
               type="button"
               onClick={handleShareProfile}
@@ -231,7 +254,8 @@ export default function PublicProfile() {
               {t('profile.back')}
             </Link>
           </div>
-        </div>
+        </>
+      )}
 
         {loading ? (
           <article className="app-card p-5 text-secondary">{t('profile.loading')}</article>
@@ -269,7 +293,7 @@ export default function PublicProfile() {
                 </div>
               )}
               <div style={{ minWidth: 0, flex: 1 }}>
-                <p style={{ margin: 0, color: 'var(--text-primary)', fontSize: '20px', fontWeight: 700 }}>{displayName}</p>
+                <p style={{ margin: 0, fontSize: '20px', fontWeight: 700, ...getNameStyle(profile.supporter_tier) }}>{displayName}</p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
                   {faithBadges.length > 0 ? faithBadges.map((badge) => (
                     <span
@@ -354,29 +378,28 @@ export default function PublicProfile() {
             ) : null}
           </section>
         ) : null}
+        {shareToastVisible ? (
+          <div
+            style={{
+              position: 'fixed',
+              left: '50%',
+              bottom: '92px',
+              transform: 'translateX(-50%)',
+              zIndex: 10060,
+              background: '#D4AF37',
+              color: '#1a1a1a',
+              borderRadius: '999px',
+              padding: '10px 16px',
+              fontSize: '13px',
+              fontWeight: 700,
+              boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
+              border: '1px solid rgba(20,20,20,0.22)',
+            }}
+            aria-live="polite"
+          >
+            {t('profile.shareCopied')}
+          </div>
+        ) : null}
       </div>
-      {shareToastVisible ? (
-        <div
-          style={{
-            position: 'fixed',
-            left: '50%',
-            bottom: '92px',
-            transform: 'translateX(-50%)',
-            zIndex: 10060,
-            background: '#D4AF37',
-            color: '#1a1a1a',
-            borderRadius: '999px',
-            padding: '10px 16px',
-            fontSize: '13px',
-            fontWeight: 700,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
-            border: '1px solid rgba(20,20,20,0.22)',
-          }}
-          aria-live="polite"
-        >
-          {t('profile.shareCopied')}
-        </div>
-      ) : null}
-    </div>
   )
 }

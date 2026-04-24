@@ -1,9 +1,10 @@
-import { useState, useEffect, useMemo } from 'react'
-import { createPortal } from 'react-dom'
+import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
-import { useFellowship } from '../context/FellowshipContext'
+import { SHIMMER_KEYFRAMES } from '../hooks/useNameStyle'
 import { supabase } from '../lib/supabase'
+import { userStorageKey } from '../utils/userStorage'
 import { fetchVerse } from '../utils/bibleTranslation'
 
 // Note: 'pray' is used for the prayer counter on prayer request posts
@@ -328,13 +329,29 @@ export default function Fellowship() {
       member?.profile,
       member?.user_id === user?.id ? user : null,
     )
+
+  const getNameStyle = (supporterTier) => {
+    if (supporterTier === 'lifetime') {
+      return {
+        background: 'linear-gradient(90deg, #b8860b, #ffd700, #ffec8b, #ffd700, #b8860b)',
+        backgroundSize: '200%',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
+        animation: 'shimmer-gold 2s infinite linear',
+      }
+    } else if (supporterTier === 'monthly') {
+      return { color: '#93c5fd' }
+    }
+    return { color: 'inherit' }
+  }
   
   const handleProfileTap = async (userId) => {
     if (!userId) return
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, display_name, username, avatar_url, reading_streak, lessons_completed, created_at')
+        .select('id, display_name, username, avatar_url, reading_streak, lessons_completed, created_at, supporter_tier')
         .eq('id', userId)
         .maybeSingle()
       if (error) throw error
@@ -738,13 +755,14 @@ export default function Fellowship() {
   const profileModal = createPortal(
     showProfileModal && profileData ? (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <style>{SHIMMER_KEYFRAMES}</style>
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md shadow-xl">
           <div className="flex items-center mb-4">
             <div className="w-16 h-16 rounded-full bg-yellow-200 dark:bg-yellow-700 flex items-center justify-center text-3xl font-bold text-yellow-800 dark:text-yellow-200 mr-4">
               {getInitials(getDisplayName(profileData))}
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{getDisplayName(profileData)}</h2>
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white" style={getNameStyle(profileData.supporter_tier)}>{getDisplayName(profileData)}</h2>
               {profileData.username && (
                 <p className="text-gray-600 dark:text-gray-400">@{profileData.username}</p>
               )}
@@ -966,7 +984,7 @@ export default function Fellowship() {
                       {getInitials(getDisplayName(post.profile, post.user_id))}
                     </div>
                     <div>
-                      <p className="font-bold text-gray-800 dark:text-white">{getDisplayName(post.profile, post.user_id)}</p>
+                      <p className="font-bold text-gray-800 dark:text-white" style={getNameStyle(post.profile?.supporter_tier)}>{getDisplayName(post.profile, post.user_id)}</p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">{formatDate(post.created_at)}</p>
                     </div>
                   </div>

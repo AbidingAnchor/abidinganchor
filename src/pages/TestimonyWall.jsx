@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
+import { SHIMMER_KEYFRAMES } from '../hooks/useNameStyle'
 import { supabase } from '../lib/supabase'
 import { getAvatarBorderStyle, SUPPORTER_BORDER_KEYFRAMES } from '../utils/supporterBorder'
 
@@ -408,7 +409,7 @@ export default function TestimonyWall() {
           </article>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <style>{SUPPORTER_BORDER_KEYFRAMES}</style>
+            <style>{SUPPORTER_BORDER_KEYFRAMES}{SHIMMER_KEYFRAMES}</style>
             {rows.map((t) => {
               const isAnon = Boolean(t.is_anonymous)
               const name = isAnon ? t('testimony.anonymousBeliever') : displayAuthorName(t.author_profile, t)
@@ -420,6 +421,22 @@ export default function TestimonyWall() {
               const counts = countsByTestimony[t.id] || { amen: 0, love: 0, fire: 0, cross: 0 }
               const my = myReactionByTestimony[t.id]
               const isOwnPost = t.user_id === user?.id
+
+              const getNameStyle = (tier) => {
+                if (tier === 'lifetime') {
+                  return {
+                    background: 'linear-gradient(90deg, #b8860b, #ffd700, #ffec8b, #ffd700, #b8860b)',
+                    backgroundSize: '200%',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    animation: 'shimmer-gold 2s infinite linear',
+                  }
+                } else if (tier === 'monthly') {
+                  return { color: '#93c5fd' }
+                }
+                return { color: authorColor || 'var(--text-primary)' }
+              }
               return (
                 <article key={t.id} className="app-card" style={{ ...cardStyle, padding: '16px', position: 'relative' }}>
                   {isOwnPost && (
@@ -521,7 +538,7 @@ export default function TestimonyWall() {
                             cursor: t.user_id ? 'pointer' : 'default',
                             fontWeight: 700,
                             fontSize: '15px',
-                            color: authorColor || 'var(--text-primary)',
+                            ...getNameStyle(authorTier),
                             textAlign: 'left',
                           }}
                         >

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { SHIMMER_KEYFRAMES } from '../hooks/useNameStyle'
 import { supabase } from '../lib/supabase'
 
 const HALL_STYLES = `
@@ -20,6 +21,7 @@ const HALL_STYLES = `
     from { opacity: 0; transform: translateY(10px); }
     to   { opacity: 1; transform: translateY(0); }
   }
+  ${SHIMMER_KEYFRAMES}
 `
 
 function StarField({ count = 120 }) {
@@ -59,6 +61,22 @@ function NameRow({ name, color, tier, border, isOwn }) {
   const isLifetime = tier === 'lifetime'
   const badge = isLifetime ? '👑' : tier === 'monthly' ? '⭐' : null
 
+  const getNameStyle = (tier) => {
+    if (tier === 'lifetime') {
+      return {
+        background: 'linear-gradient(90deg, #b8860b, #ffd700, #ffec8b, #ffd700, #b8860b)',
+        backgroundSize: '200%',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
+        animation: 'shimmer-gold 2s infinite linear',
+      }
+    } else if (tier === 'monthly') {
+      return { color: '#93c5fd' }
+    }
+    return { color: color || '#ffffff' }
+  }
+
   return (
     <div style={{
       display: 'flex',
@@ -73,15 +91,7 @@ function NameRow({ name, color, tier, border, isOwn }) {
         style={{
           fontSize: isOwn ? '22px' : '18px',
           fontWeight: isOwn ? 900 : 700,
-          color: isLifetime ? 'transparent' : (color || '#ffffff'),
-          background: isLifetime
-            ? 'linear-gradient(90deg, #b8860b, #ffd700, #ffec8b, #ffd700, #b8860b)'
-            : undefined,
-          backgroundSize: isLifetime ? '200%' : undefined,
-          WebkitBackgroundClip: isLifetime ? 'text' : undefined,
-          WebkitTextFillColor: isLifetime ? 'transparent' : undefined,
-          backgroundClip: isLifetime ? 'text' : undefined,
-          animation: isLifetime ? 'hof-shimmer 2s infinite linear' : undefined,
+          ...getNameStyle(tier),
           letterSpacing: isOwn ? '0.03em' : '0.01em',
           textShadow: !isLifetime ? `0 0 8px ${color || 'rgba(255,255,255,0.3)'}40` : undefined,
         }}

@@ -20,6 +20,7 @@ import SaveToast from '../components/SaveToast'
 import FirstJournalEntryCelebration from '../components/FirstJournalEntryCelebration'
 import { useAuth } from '../context/AuthContext'
 import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
+import { useNameStyle, SHIMMER_KEYFRAMES } from '../hooks/useNameStyle'
 import { supabase } from '../lib/supabase'
 import Footer from '../components/Footer'
 import WeeklyRecap, { weekKeyForDate } from '../components/WeeklyRecap'
@@ -112,6 +113,7 @@ function Home() {
   const { openGuestSignupModal } = useGuestSignupModal()
   const skyPeriod = useThemeBackgroundType()
   const { activeDays: profileWeekActiveDays } = useStreakTracker(user?.id)
+  const nameStyle = useNameStyle(profile?.supporter_tier)
   const [journalWeekActiveDays, setJournalWeekActiveDays] = useState([])
   const [dailyEncounter, setDailyEncounter] = useState(() => getDailyEncounter())
   const [dailyVerseText, setDailyVerseText] = useState('')
@@ -709,6 +711,7 @@ function Home() {
 
   return (
     <>
+      <style>{SHIMMER_KEYFRAMES}</style>
       <div
         className="content-scroll home-page home-page-premium-enter"
         style={{
@@ -736,7 +739,7 @@ function Home() {
                 letterSpacing: '-0.02em',
                 lineHeight: 1.22,
               }}>
-                {timeGreeting}, {firstName} {timeEmoji}
+                {timeGreeting}, <span style={nameStyle}>{firstName}</span> {timeEmoji}
               </p>
               <p style={{
                 color: 'var(--text-secondary)',

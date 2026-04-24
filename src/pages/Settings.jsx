@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
+import { useNameStyle, SHIMMER_KEYFRAMES } from '../hooks/useNameStyle'
 import { supabase } from '../lib/supabase'
 import { getAvatarUploadExtension } from '../utils/avatarUrl'
 import { LANGUAGE_STORAGE_KEY, SUPPORTED_LANGS } from '../i18n.js'
@@ -60,6 +61,7 @@ export default function Settings() {
   const { t, i18n: i18nHook } = useTranslation()
   const navigate = useNavigate()
   const { user, profile, signOut, refreshProfile } = useAuth()
+  const nameStyle = useNameStyle(profile?.supporter_tier)
   const [selectedTranslation] = useState('WEB')
   const [uploadStatus, setUploadStatus] = useState('idle') // idle, uploading, success
   const [uploadError, setUploadError] = useState('')
@@ -460,6 +462,7 @@ export default function Settings() {
         @keyframes settings-avatar-spin {
           to { transform: rotate(360deg); }
         }
+        ${SHIMMER_KEYFRAMES}
       `}</style>
       <section>
 
@@ -556,7 +559,7 @@ export default function Settings() {
             </div>
             <div style={{ flex: 1 }}>
               <p style={{ color: '#ffffff', fontSize: '18px', fontWeight: 700, marginBottom: '4px' }}>
-                {displayName}
+                <span style={nameStyle}>{displayName}</span>
               </p>
               <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px', marginBottom: '8px' }}>
                 @{localUsername || 'user'}

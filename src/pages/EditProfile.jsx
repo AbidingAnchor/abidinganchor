@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
+import { SHIMMER_KEYFRAMES } from '../hooks/useNameStyle'
 import { supabase } from '../lib/supabase'
 import { getAvatarUploadExtension } from '../utils/avatarUrl'
 import UsernameInput from '../components/UsernameInput'
@@ -251,6 +252,7 @@ export default function EditProfile() {
 
   return (
     <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '120px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
+      <style>{SHIMMER_KEYFRAMES}</style>
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -525,6 +527,7 @@ export default function EditProfile() {
                   WebkitBackgroundClip: profile?.supporter_tier === 'lifetime' ? 'text' : undefined,
                   WebkitTextFillColor: profile?.supporter_tier === 'lifetime' ? 'transparent' : undefined,
                   backgroundClip: profile?.supporter_tier === 'lifetime' ? 'text' : undefined,
+                  animation: profile?.supporter_tier === 'lifetime' ? 'shimmer-gold 2s infinite linear' : undefined,
                 }}>
                   {displayName}
                   {' '}
