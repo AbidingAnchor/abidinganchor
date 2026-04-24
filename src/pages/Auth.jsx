@@ -18,6 +18,10 @@ const AUTH_LANG_OPTIONS = [
   { code: 'tl', flag: '🇵🇭', label: 'TL' },
   { code: 'ko', flag: '🇰🇷', label: 'KO' },
   { code: 'hi', flag: '🇮🇳', label: 'HI' },
+  { code: 'it', flag: '🇮🇹', label: 'IT' },
+  { code: 'ru', flag: '🇷🇺', label: 'RU' },
+  { code: 'ro', flag: '🇷🇴', label: 'RO' },
+  { code: 'zh', flag: '🇨🇳', label: 'ZH' },
 ]
 
 const FEATURE_ITEMS = [
