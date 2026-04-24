@@ -927,7 +927,11 @@
     "title": "Riepilogo settimanale",
     "viewButton": "Visualizza il riepilogo settimanale",
     "generating": "Generazione...",
-    "generatePrompt": "Genera riepilogo settimanale"
+    "generatePrompt": "Genera riepilogo settimanale",
+    "chapters": "capitoli",
+    "journal": "diario",
+    "prayers": "preghiere",
+    "streak": "serie"
   },
   "profile": {
     "joined": "Partecipato",

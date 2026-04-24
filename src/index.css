@@ -14,9 +14,9 @@
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-border-hover: rgba(255, 255, 255, 0.15);
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  --text-primary: rgba(255, 255, 255, 0.95);
-  --text-secondary: rgba(255, 255, 255, 0.65);
-  --text-muted: rgba(255, 255, 255, 0.40);
+  --text-primary: rgba(255, 255, 255, 0.98);
+  --text-secondary: rgba(255, 255, 255, 0.85);
+  --text-muted: rgba(255, 255, 255, 0.65);
   --gold: #D4A843;
   --gold-glow: rgba(212, 168, 67, 0.25);
   --gold-border: rgba(212, 168, 67, 0.35);
@@ -37,16 +37,16 @@
   --input-border: rgba(255, 255, 255, 0.10);
   --glass-nav-blur: 20px;
   --glass-scrim: rgba(5, 8, 22, 0.45);
-  --streak-text: rgba(255,255,255,0.90);
-  --verse-text: rgba(255,255,255,0.90);
-  --heading-text: rgba(255,255,255,0.95);
-  --label-text: rgba(255,255,255,0.70);
+  --streak-text: rgba(255,255,255,0.98);
+  --verse-text: rgba(255,255,255,0.98);
+  --heading-text: rgba(255,255,255,0.98);
+  --label-text: rgba(255,255,255,0.85);
   --section-title: #D4A843;
   /* Card chrome: fixed dark glass (time-of-day sky is separate) */
-  --card-parchment: rgba(15, 20, 45, 0.9);
-  --card-parchment-hover: rgba(22, 28, 58, 0.95);
-  --card-parchment-ink: rgba(255, 255, 255, 0.95);
-  --card-parchment-ink-muted: rgba(255, 255, 255, 0.72);
+  --card-parchment: rgba(255, 255, 255, 0.08);
+  --card-parchment-hover: rgba(255, 255, 255, 0.12);
+  --card-parchment-ink: rgba(255, 255, 255, 0.98);
+  --card-parchment-ink-muted: rgba(255, 255, 255, 0.85);
 
   /* Semantic aliases (night/sunset — body.theme-day* overrides for creamy day) */
   --card-bg: var(--card-parchment);
@@ -56,24 +56,25 @@
   --modal-bg: var(--nav-bg);
   --more-menu-item-bg: var(--card-parchment);
   --more-menu-item-hover: var(--card-parchment-hover);
-  --bible-chrome-bg: rgba(15, 20, 45, 0.95);
-  --bible-nav-bar-bg: rgba(15, 20, 45, 0.95);
+  --bible-chrome-bg: rgba(255, 255, 255, 0.08);
+  --bible-nav-bar-bg: rgba(255, 255, 255, 0.08);
   --bible-verse-well-bg: transparent;
   --bible-verse-well-border: transparent;
   --verse-number-color: var(--gold);
 
   /* Guided Prayers — glass list cards + player (night / celestial) */
-  --guided-prayer-card-bg: rgba(8, 20, 50, 0.75);
+  --guided-prayer-card-bg: rgba(255, 255, 255, 0.08);
   --guided-prayer-card-text: var(--text-primary);
   --guided-prayer-card-muted: var(--text-secondary);
   --guided-prayer-card-border: var(--gold);
-  --guided-prayer-player-surface: rgba(8, 16, 42, 0.88);
+  --guided-prayer-player-surface: rgba(255, 255, 255, 0.10);
   --guided-prayer-pill-active-text: #0f172a;
 }
 
 [data-theme="day"] {
   --sat: env(safe-area-inset-top, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
+  --page-bg: #f0ece3;
   --glass-bg: rgba(255, 255, 255, 0.55);
   --glass-bg-hover: rgba(255, 255, 255, 0.65);
   --glass-border: rgba(212, 168, 67, 0.25);
@@ -148,13 +149,13 @@
 body.theme-day,
 body.theme-morning,
 body.theme-afternoon {
-  --card-bg: rgba(245, 237, 214, 0.96);
+  --card-bg: #f5edd6;
   --card-border: rgba(212, 168, 67, 0.4);
   --card-text: #2a1f0e;
   --card-text-muted: rgba(42, 31, 14, 0.6);
-  --modal-bg: rgba(245, 237, 214, 0.98);
-  --more-menu-item-bg: rgba(235, 225, 200, 0.95);
-  --more-menu-item-hover: rgba(225, 215, 192, 0.98);
+  --modal-bg: #f5edd6;
+  --more-menu-item-bg: #ebe1c8;
+  --more-menu-item-hover: #e1d7c0;
   --card-parchment: var(--card-bg);
   --card-parchment-hover: var(--more-menu-item-hover);
   --card-parchment-ink: var(--card-text);
@@ -164,19 +165,19 @@ body.theme-afternoon {
   --text-primary: var(--card-text);
   --text-secondary: var(--card-text-muted);
   --text-muted: rgba(42, 31, 14, 0.45);
-  --bible-chrome-bg: rgba(245, 237, 214, 0.96);
-  --bible-nav-bar-bg: rgba(245, 237, 214, 0.96);
-  --bible-verse-well-bg: rgba(245, 237, 214, 0.92);
+  --bible-chrome-bg: #f5edd6;
+  --bible-nav-bar-bg: #f5edd6;
+  --bible-verse-well-bg: #f5edd6;
   --bible-verse-well-border: rgba(212, 168, 67, 0.3);
   --verse-number-color: #d4a843;
   --glass-border: rgba(212, 168, 67, 0.35);
   --gold-border: rgba(212, 168, 67, 0.45);
 
-  --guided-prayer-card-bg: rgba(255, 255, 255, 0.5);
+  --guided-prayer-card-bg: #ffffff;
   --guided-prayer-card-text: var(--card-text);
   --guided-prayer-card-muted: var(--card-text-muted);
   --guided-prayer-card-border: var(--verse-number-color);
-  --guided-prayer-player-surface: rgba(255, 252, 248, 0.98);
+  --guided-prayer-player-surface: #fffcf8;
   --guided-prayer-pill-active-text: var(--card-text);
 }
 

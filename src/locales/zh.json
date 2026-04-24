@@ -927,7 +927,11 @@
     "title": "每周回顾",
     "viewButton": "查看每周摘要",
     "generating": "生成...",
-    "generatePrompt": "生成每周回顾"
+    "generatePrompt": "生成每周回顾",
+    "chapters": "章",
+    "journal": "日记",
+    "prayers": "祈祷",
+    "streak": "连续"
   },
   "profile": {
     "joined": "已加入",

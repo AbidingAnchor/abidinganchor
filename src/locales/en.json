@@ -792,7 +792,11 @@
     "title": "Weekly Recap",
     "viewButton": "View Weekly Summary",
     "generating": "Generating...",
-    "generatePrompt": "Generate Weekly Recap"
+    "generatePrompt": "Generate Weekly Recap",
+    "chapters": "chapters",
+    "journal": "journal entries",
+    "prayers": "prayers",
+    "streak": "day streak"
   },
   "prayer": {
     "title": "Prayer",

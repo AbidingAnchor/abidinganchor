@@ -927,7 +927,11 @@
     "title": "Recapitulare săptămânală",
     "viewButton": "Vedeți rezumatul săptămânal",
     "generating": "Se generează...",
-    "generatePrompt": "Generați o recapitulare săptămânală"
+    "generatePrompt": "Generați o recapitulare săptămânală",
+    "chapters": "capitole",
+    "journal": "jurnal",
+    "prayers": "rugăciuni",
+    "streak": "serie"
   },
   "profile": {
     "joined": "S-a alăturat",
