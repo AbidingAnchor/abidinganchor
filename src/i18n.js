@@ -9,13 +9,17 @@ import de from './locales/de.json'
 import tl from './locales/tl.json'
 import ko from './locales/ko.json'
 import hi from './locales/hi.json'
+import it from './locales/it.json'
+import ru from './locales/ru.json'
+import ro from './locales/ro.json'
+import zh from './locales/zh.json'
 import journeyStopsEs from './locales/journeyMapStops.es.js'
 import journeyStopsPt from './locales/journeyMapStops.pt.js'
 import journeyStopsFr from './locales/journeyMapStops.fr.js'
 import journeyStopsDe from './locales/journeyMapStops.de.js'
 import { deepMerge } from './utils/deepMerge.js'
 
-export const SUPPORTED_LANGS = ['en', 'es', 'pt', 'fr', 'de', 'tl', 'ko', 'hi']
+export const SUPPORTED_LANGS = ['en', 'es', 'pt', 'fr', 'de', 'tl', 'ko', 'hi', 'it', 'ru', 'ro', 'zh']
 
 /** Persisted UI language (Settings + i18n). */
 export const LANGUAGE_STORAGE_KEY = 'abidinganchor-language'
@@ -44,6 +48,10 @@ const deMerged = deepMerge(enMerged, deepMerge(de, { journeyMap: { stops: journe
 const tlMerged = deepMerge(enMerged, tl)
 const koMerged = deepMerge(enMerged, ko)
 const hiMerged = deepMerge(enMerged, hi)
+const itMerged = deepMerge(enMerged, it)
+const ruMerged = deepMerge(enMerged, ru)
+const roMerged = deepMerge(enMerged, ro)
+const zhMerged = deepMerge(enMerged, zh)
 
 i18n
   .use(LanguageDetector)
@@ -58,6 +66,10 @@ i18n
       tl: { translation: tlMerged },
       ko: { translation: koMerged },
       hi: { translation: hiMerged },
+      it: { translation: itMerged },
+      ru: { translation: ruMerged },
+      ro: { translation: roMerged },
+      zh: { translation: zhMerged },
     },
     fallbackLng: 'en',
     supportedLngs: SUPPORTED_LANGS,

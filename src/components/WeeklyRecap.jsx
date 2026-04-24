@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import { useAiUsage } from '../hooks/useAiUsage'
+import { withAiLimit } from '../utils/withAiLimit'
 
 function weekKeyForDate(date = new Date()) {
   const d = new Date(date)
@@ -98,17 +101,21 @@ async function fetchPrayerRowsLast7Days(uid, sinceIso) {
   }
 }
 
-export default function WeeklyRecap({ weekStorageKey, autoGenerate = false }) {
+export default function WeeklyRecap({ weekStorageKey, autoGenerate = false, userId, onDismiss }) {
   const { t } = useTranslation()
+  const { profile } = useAuth()
+  const { checkAndIncrement } = useAiUsage()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [recap, setRecap] = useState('')
   const [stats, setStats] = useState({ chaptersRead: 0, journals: 0, prayers: 0, streak: 0 })
   const [dismissed, setDismissed] = useState(false)
+  const [limitReachedOpen, setLimitReachedOpen] = useState(false)
   const localDismissKey = useMemo(() => `weekly-recap-dismissed-${weekStorageKey}`, [weekStorageKey])
 
   const callAiRecap = async (payloadPrompt) => {
-    const endpoints = ['/api/ai-companion', '/.netlify/functions/ai-companion']
+    const API_URL = import.meta.env.VITE_AI_API_URL || '/api/ai-companion'
+    const endpoints = [API_URL, '/.netlify/functions/ai-companion']
     let lastError = null
     for (const endpoint of endpoints) {
       try {
@@ -198,7 +205,28 @@ export default function WeeklyRecap({ weekStorageKey, autoGenerate = false }) {
         return
       }
 
-      const aiText = await callAiRecap(payloadPrompt)
+      const aiCallFn = async () => {
+        return await callAiRecap(payloadPrompt)
+      }
+
+      const result = await withAiLimit(
+        checkAndIncrement,
+        aiCallFn,
+        {
+          isSupporter: profile?.is_supporter || false,
+          onLimitReached: () => {
+            setLimitReachedOpen(true)
+          }
+        }
+      )
+
+      if (result === null) {
+        setRecap('You have reached your daily AI limit. Upgrade to Supporter for unlimited access.')
+        setError('')
+        return
+      }
+
+      const aiText = await result
       setRecap(aiText || 'God is at work in your week. Keep seeking Him in Word and prayer.')
     } catch (e) {
       setRecap('Your weekly recap will be available on the live app 🙏')
@@ -325,6 +353,70 @@ export default function WeeklyRecap({ weekStorageKey, autoGenerate = false }) {
       >
         {loading ? 'Preparing Recap…' : (recap ? 'Regenerate Weekly Recap' : t('weeklyRecap.viewButton'))}
       </button>
+
+      {limitReachedOpen && (
+        <div
+          className="fixed inset-0 z-[10050] flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.7)' }}
+          onClick={() => setLimitReachedOpen(false)}
+        >
+          <div
+            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl"
+            style={{
+              background: 'var(--modal-bg)',
+              border: '1px solid var(--glass-border)',
+              padding: '24px',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ color: '#D4A843', fontSize: '20px', fontWeight: 700, marginBottom: '12px' }}>
+              Daily Limit Reached
+            </h2>
+            <p style={{ color: 'white', fontSize: '15px', lineHeight: 1.5, marginBottom: '16px' }}>
+              You've reached your daily limit of 5 AI interactions. Upgrade to Supporter for unlimited access to weekly recaps.
+            </p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                type="button"
+                onClick={() => setLimitReachedOpen(false)}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  background: 'transparent',
+                  color: 'white',
+                  fontSize: '15px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLimitReachedOpen(false)
+                  window.location.href = '/support'
+                }}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: '#D4A843',
+                  color: '#0a1432',
+                  fontSize: '15px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Upgrade to Supporter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </article>
   )
 }

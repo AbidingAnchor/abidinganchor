@@ -6,6 +6,10 @@ export const BIBLE_LANG_MAP = {
   pt: 'NTLH',
   hi: 'HIOV',
   ko: 'KRV',
+  ru: 'SYNOD',      // Russian Synodal Bible (bolls.life) ✅
+  zh: 'CUV',        // Chinese Union Version 和合本 (bolls.life) ✅
+  // Italian (it): uses getBible API → 'giovanni' (Giovanni Diodati 1649)
+  // Romanian (ro): uses getBible API → 'cornilescu'
   // French (fr): no valid bolls.life translation found; falls through to getBible API
   // German (de): no valid bolls.life translation found; falls through to getBible API
   // Tagalog (tl): no valid bolls.life translation; falls through to getBible API with 'tagalog' slug

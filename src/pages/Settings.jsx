@@ -24,6 +24,10 @@ const UI_LANG_META = {
   tl: { flagIso: 'ph', abbr: 'TL', labelKey: 'langTl', fallbackLabel: 'Filipino' },
   ko: { flagIso: 'kr', abbr: 'KO', labelKey: 'langKo', fallbackLabel: 'Korean' },
   hi: { flagIso: 'in', abbr: 'HI', labelKey: 'langHi', fallbackLabel: 'Hindi' },
+  it: { flagIso: 'it', abbr: 'IT', labelKey: 'langIt', fallbackLabel: 'Italian' },
+  ru: { flagIso: 'ru', abbr: 'RU', labelKey: 'langRu', fallbackLabel: 'Russian' },
+  ro: { flagIso: 'ro', abbr: 'RO', labelKey: 'langRo', fallbackLabel: 'Romanian' },
+  zh: { flagIso: 'cn', abbr: 'ZH', labelKey: 'langZh', fallbackLabel: 'Chinese' },
 }
 
 const UI_LANG_OPTIONS = SUPPORTED_LANGS
@@ -2003,7 +2007,12 @@ export default function Settings() {
                     tl: 'Filipino',
                     ko: '한국어',
                     hi: 'हिंदी',
+                    it: 'Italiano',
+                    ru: 'Русский',
+                    ro: 'Română',
+                    zh: '中文',
                   }
+                  const useTextInitials = ['it', 'ru', 'ro', 'zh'].includes(lang.code)
                   return (
                     <button
                       key={lang.code}
@@ -2022,7 +2031,24 @@ export default function Settings() {
                         textAlign: 'left',
                       }}
                     >
-                      <span style={{ fontSize: '24px' }}>{flagEmojis[lang.flagIso] || '🌐'}</span>
+                      {useTextInitials ? (
+                        <span style={{
+                          fontSize: '14px',
+                          fontWeight: 700,
+                          color: 'white',
+                          width: '32px',
+                          height: '32px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: 'rgba(255,255,255,0.08)',
+                          borderRadius: '8px',
+                        }}>
+                          {lang.abbr}
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: '24px' }}>{flagEmojis[lang.flagIso] || '🌐'}</span>
+                      )}
                       <div style={{ flex: 1 }}>
                         <p style={{ fontSize: '16px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
                           {lang.fallbackLabel}

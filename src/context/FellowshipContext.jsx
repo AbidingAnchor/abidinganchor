@@ -5,8 +5,6 @@ import { supabase } from '../lib/supabase'
 const FellowshipContext = createContext(null)
 
 export function FellowshipProvider({ children }) {
-  console.log('FellowshipProvider rendering')
-  
   const { user, loading: authLoading } = useAuth()
   const [fellowship, setFellowship] = useState(null)
   const [members, setMembers] = useState([])
@@ -19,8 +17,6 @@ export function FellowshipProvider({ children }) {
   const deletedFellowshipIdsRef = useRef(new Set())
 
   const fetchUserFellowship = useCallback(async () => {
-    console.log('fetchUserFellowship called from:', new Error().stack)
-    
     if (!user?.id) {
       setLoading(false)
       setView('none')

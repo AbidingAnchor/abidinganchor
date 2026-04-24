@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { userStorageKey } from '../utils/userStorage'
+import { useAiUsage } from '../hooks/useAiUsage'
+import { withAiLimit } from '../utils/withAiLimit'
 
 const quickPrompts = [
   'Explain this verse',
@@ -16,15 +18,17 @@ const welcomeMessage =
   "Peace be with you! 🕊️ I'm your AI Bible Study Companion, here to help you dive deeper into God's Word. You can ask me to explain any verse or passage, explore biblical topics, or find scriptures for what you're going through. What would you like to study today?"
 
 export default function AICompanion() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const historyKey = useMemo(() => userStorageKey(user?.id, 'ai-chats'), [user?.id])
   const location = useLocation()
   const navigate = useNavigate()
+  const { checkAndIncrement } = useAiUsage()
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [messages, setMessages] = useState([{ id: 'welcome', role: 'assistant', content: welcomeMessage }])
   const [sessionId, setSessionId] = useState(() => `${Date.now()}`)
+  const [limitReachedOpen, setLimitReachedOpen] = useState(false)
   const containerRef = useRef(null)
 
   const conversationHistory = useMemo(
@@ -73,8 +77,9 @@ export default function AICompanion() {
     setError('')
     setLoading(true)
 
-    try {
-      const response = await fetch('/api/ai-companion', {
+    const aiCallFn = async () => {
+      const API_URL = import.meta.env.VITE_AI_API_URL || '/api/ai-companion'
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'content-type': 'application/json'
@@ -85,8 +90,8 @@ export default function AICompanion() {
       })
 
       if (!response.ok) {
-        const text = await response.text()
-        throw new Error(`${response.status}: ${text}`)
+        const errorText = await response.text()
+        throw new Error(`${response.status}: ${errorText}`)
       }
 
       const data = await response.json()
@@ -96,16 +101,38 @@ export default function AICompanion() {
       if (user?.id && aiText) {
         void supabase.from('ai_logs').insert({ user_id: user.id })
       }
+    }
+
+    const result = await withAiLimit(
+      checkAndIncrement,
+      aiCallFn,
+      {
+        isSupporter: profile?.is_supporter || false,
+        onLimitReached: () => {
+          setLimitReachedOpen(true)
+          setMessages((prev) => prev.slice(0, -1))
+          setInput(text)
+        }
+      }
+    )
+
+    if (result === null) {
+      setLoading(false)
+      return
+    }
+
+    try {
+      await result
     } catch (err) {
       if (import.meta.env.DEV) console.error('AI companion request failed:', err)
-      const userMessage = 'Something went wrong. Please try again in a moment.'
-      setError(userMessage)
+      const errorMessage = 'Something went wrong. Please try again in a moment.'
+      setError(errorMessage)
       setMessages((prev) => [
         ...prev,
         {
           id: `${Date.now()}-assistant-error`,
           role: 'assistant',
-          content: userMessage,
+          content: errorMessage,
         },
       ])
     } finally {
@@ -184,6 +211,70 @@ export default function AICompanion() {
           </button>
         </div>
       </div>
+
+      {limitReachedOpen && (
+        <div
+          className="fixed inset-0 z-[10050] flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.7)' }}
+          onClick={() => setLimitReachedOpen(false)}
+        >
+          <div
+            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl"
+            style={{
+              background: 'var(--modal-bg)',
+              border: '1px solid var(--glass-border)',
+              padding: '24px',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ color: '#D4A843', fontSize: '20px', fontWeight: 700, marginBottom: '12px' }}>
+              Daily Limit Reached
+            </h2>
+            <p style={{ color: 'white', fontSize: '15px', lineHeight: 1.5, marginBottom: '16px' }}>
+              You've reached your daily limit of 5 AI interactions. Upgrade to Supporter for unlimited access to the AI Bible Study Companion.
+            </p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                type="button"
+                onClick={() => setLimitReachedOpen(false)}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  background: 'transparent',
+                  color: 'white',
+                  fontSize: '15px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLimitReachedOpen(false)
+                  navigate('/support')
+                }}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: '#D4A843',
+                  color: '#0a1432',
+                  fontSize: '15px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Upgrade to Supporter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -1176,7 +1176,15 @@
     "signIn": "Sign In",
     "socialProof": "Join thousands growing in faith daily",
     "tagline": "Anchor your soul in God's Word",
-    "whatsNew": "What's new?"
+    "whatsNew": "What's new?",
+    "pillBibleReader": "Bible Reader",
+    "pillBibleReaderDesc": "Read Scripture in 12 languages with study tools",
+    "pillGuidedPrayers": "Guided Prayers",
+    "pillGuidedPrayersDesc": "Pray along with audio-guided devotional prayers",
+    "pillDailyStreak": "Daily Streak",
+    "pillDailyStreakDesc": "Build a habit of seeking God every day",
+    "pillAiCompanion": "AI Companion",
+    "pillAiCompanionDesc": "Ask questions about Scripture and get Spirit-led guidance"
   },
   "devotional": {
     "completed": "Completed",

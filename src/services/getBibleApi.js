@@ -13,6 +13,10 @@ export const UI_LANG_TO_GETBIBLE = {
   // Filipino: "Ang Dating Biblia" (1905) — confirmed working at api.getbible.net/v2/tagalog/
   tl: 'tagalog',
   fil: 'tagalog',
+  // Italian: Giovanni Diodati Bible (1649) — confirmed on getBible v2
+  it: 'giovanni',
+  // Romanian: Cornilescu (1921) — confirmed on getBible v2
+  ro: 'cornilescu',
   // Hindi: no verified v2 slug on getbible; Hindi uses bolls.life HIOV as primary.
 }
 
