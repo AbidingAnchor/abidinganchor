@@ -387,13 +387,6 @@ export default function Auth() {
           overflow: 'hidden',
         }}
       >
-        <div
-          style={{
-            minHeight: '100vh',
-            paddingBottom: '80px',
-            width: '100%',
-          }}
-        >
           <div
             ref={outerFitRef}
             style={{
@@ -897,7 +890,6 @@ export default function Auth() {
               </div>
             </div>
           </div>
-        </div>
         </div>
       </div>
       <style>{`
