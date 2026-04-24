@@ -77,7 +77,8 @@ function BackgroundLayer({ type, isVisible }) {
 export default function BackgroundManager() {
   const currentBgRef = useRef(null);
   const [currentBg, setCurrentBg] = useState(() => {
-    const initial = getBackgroundTypeForTime(new Date());
+    // Force night theme only
+    const initial = "night";
     currentBgRef.current = initial;
     logThemeMutation("BackgroundManager: set data-theme", { reason: "initial-state", theme: initial });
     document.documentElement.setAttribute("data-theme", initial);
@@ -90,7 +91,8 @@ export default function BackgroundManager() {
     let fadeTimeout;
 
     const updateBackground = () => {
-      const nextBg = getBackgroundTypeForTime(new Date());
+      // Force night theme only
+      const nextBg = "night";
       // Dedupe: skip DOM + state when period unchanged (avoids thrash from duplicate events / interval ticks).
       if (nextBg === currentBgRef.current) return;
 
