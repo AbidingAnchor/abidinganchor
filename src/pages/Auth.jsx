@@ -388,19 +388,26 @@ export default function Auth() {
         }}
       >
         <div
-          ref={outerFitRef}
           style={{
-            flex: 1,
-            minHeight: 0,
-            maxHeight: '100%',
+            minHeight: '100vh',
+            paddingBottom: '80px',
             width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            position: 'relative',
           }}
         >
+          <div
+            ref={outerFitRef}
+            style={{
+              flex: 1,
+              minHeight: 0,
+              maxHeight: '100%',
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              position: 'relative',
+            }}
+          >
           <div
             style={{
               width: '100%',
@@ -845,7 +852,7 @@ export default function Auth() {
                   </p>
                 </div>
 
-                {showDesktopUpdates && latestUpdates.length > 0 ? (
+                {latestUpdates.length > 0 ? (
                   <aside
                     style={{
                       width: '100%',
@@ -853,23 +860,23 @@ export default function Auth() {
                       borderRadius: '14px',
                       padding: '12px 14px',
                       marginTop: 'clamp(12px, 3vmin, 20px)',
-                      marginBottom: 'clamp(8px, 2vmin, 16px)',
+                      marginBottom: '40px',
                       background: 'rgba(212,168,67,0.08)',
                       border: '1px solid rgba(212,168,67,0.35)',
                       boxShadow: '0 8px 22px rgba(0,0,0,0.2)',
                     }}
                   >
                     <p style={{ margin: 0, color: '#D4AF37', fontSize: '12px', fontWeight: 700, letterSpacing: '0.04em' }}>
-                      {t('auth.whatsNew')}
+                      {t('auth.whatsNewTitle')}
                     </p>
                     <div style={{ marginTop: '8px', display: 'grid', gap: '8px' }}>
                       {latestUpdates.map((update) => (
                         <div key={update.id} style={{ borderTop: '1px solid rgba(212,168,67,0.22)', paddingTop: '8px' }}>
                           <p style={{ margin: 0, color: 'rgba(255,255,255,0.95)', fontSize: '13px', fontWeight: 700 }}>
-                            v{update.version} - {update.title}
+                            {update.version} - {update.title}
                           </p>
                           <p style={{ margin: '4px 0 0', color: 'rgba(212,168,67,0.92)', fontSize: '12px' }}>
-                            {(update.features || []).slice(0, 3).join(' • ')}
+                            {Array.isArray(update.features) ? update.features.join(' • ') : update.features}
                           </p>
                         </div>
                       ))}
@@ -890,6 +897,7 @@ export default function Auth() {
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
       <style>{`
