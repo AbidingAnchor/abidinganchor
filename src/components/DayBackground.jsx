@@ -6,7 +6,7 @@ import { getViewportCoverSize } from "../utils/viewportCover";
  * Dev-only: lock sky/background to one period for local testing (matches `data-theme` + Home greeting).
  * Valid: 'day' | 'sunset' | 'night' | null
  */
-export const DEV_FORCE_THEME = "night";
+export const DEV_FORCE_THEME = null;
 
 // TODO: REMOVE BEFORE LAUNCH — dev-only hour override in source (Settings `devForceTheme` wins when set)
 export const DEV_FORCE_HOUR = null; // 10 = day, 18 = sunset, 21 = night, null = real time
@@ -66,12 +66,12 @@ export function getBackgroundTypeForTime(date = new Date(), _themePreferenceLega
   }
 
   // Temporary localhost fallback for design work when no explicit override is set.
-  if (typeof window !== "undefined") {
-    const host = window.location.hostname;
-    if (host === "localhost" || host === "127.0.0.1") {
-      return "day";
-    }
-  }
+  // if (typeof window !== "undefined") {
+  //   const host = window.location.hostname;
+  //   if (host === "localhost" || host === "127.0.0.1") {
+  //     return "day";
+  //   }
+  // }
 
   const hours = Number.isFinite(forced) ? forced : date.getHours();
   const minutes = Number.isFinite(forced) ? 0 : date.getMinutes();

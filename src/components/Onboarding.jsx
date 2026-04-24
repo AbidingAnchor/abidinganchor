@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { fetchVerse } from '../utils/bibleTranslation'
 import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
@@ -21,33 +22,33 @@ function isAtLeast13FromDobString(dobYmd) {
 }
 
 const GROWTH_GOALS = [
-  { id: 'prayer', icon: '🙏', label: 'Deeper Prayer Life' },
-  { id: 'bible', icon: '📖', label: 'Understanding the Bible' },
-  { id: 'discipline', icon: '💪', label: 'Spiritual Discipline' },
-  { id: 'identity', icon: '🆔', label: 'My Identity in Christ' },
-  { id: 'warfare', icon: '⚔️', label: 'Spiritual Warfare' },
-  { id: 'discipleship', icon: '🤝', label: 'Discipleship & Leadership' },
+  { id: 'prayer', icon: '🙏', labelKey: 'goalPrayer' },
+  { id: 'bible', icon: '📖', labelKey: 'goalBible' },
+  { id: 'discipline', icon: '💪', labelKey: 'goalDiscipline' },
+  { id: 'identity', icon: '🆔', labelKey: 'goalIdentity' },
+  { id: 'warfare', icon: '⚔️', labelKey: 'goalWarfare' },
+  { id: 'discipleship', icon: '🤝', labelKey: 'goalDiscipleship' },
 ]
 
 const FAITH_DURATIONS = [
-  { id: 'new', icon: '🌱', label: 'New to faith' },
-  { id: 'less_than_2', icon: '📖', label: 'Less than 2 years' },
-  { id: '2_to_10', icon: '✝️', label: '2-10 years' },
-  { id: '10_plus', icon: '👑', label: '10+ years' },
+  { id: 'new', icon: '🌱', labelKey: 'faithNew' },
+  { id: 'less_than_2', icon: '📖', labelKey: 'faithLessThan2' },
+  { id: '2_to_10', icon: '✝️', labelKey: 'faith2to10' },
+  { id: '10_plus', icon: '👑', labelKey: 'faith10plus' },
 ]
 
 const DAILY_COMMITMENTS = [
-  { id: 'quick', label: '5-10 minutes', description: 'Quick devotional' },
-  { id: 'standard', label: '15-20 minutes', description: 'Standard study' },
-  { id: 'deep', label: '30+ minutes', description: 'Deep study' },
+  { id: 'quick', labelKey: 'commitQuick', descriptionKey: 'commitQuickDesc' },
+  { id: 'standard', labelKey: 'commitStandard', descriptionKey: 'commitStandardDesc' },
+  { id: 'deep', labelKey: 'commitDeep', descriptionKey: 'commitDeepDesc' },
 ]
 
 const APP_TOUR_FEATURES = [
-  { icon: '📖', title: 'Bible Reader', description: 'Full KJV, all 66 books' },
-  { icon: '🙏', title: 'Prayer', description: 'Speak prayers by voice, track answered ones' },
-  { icon: '🧭', title: 'Journey', description: 'Trivia, flashcards and faith badges' },
-  { icon: '📓', title: 'Journal', description: 'Daily reflections with mood tags' },
-  { icon: '👥', title: 'Community', description: 'Pray with and for others' },
+  { icon: '📖', titleKey: 'featureBibleTitle', descriptionKey: 'featureBibleDesc' },
+  { icon: '🙏', titleKey: 'featurePrayerTitle', descriptionKey: 'featurePrayerDesc' },
+  { icon: '🧭', titleKey: 'featureJourneyTitle', descriptionKey: 'featureJourneyDesc' },
+  { icon: '📓', titleKey: 'featureJournalTitle', descriptionKey: 'featureJournalDesc' },
+  { icon: '👥', titleKey: 'featureCommunityTitle', descriptionKey: 'featureCommunityDesc' },
 ]
 
 const ONBOARDING_STEP_KEY = 'onboarding-step'
@@ -66,6 +67,7 @@ function readStoredStep(userId) {
 }
 
 export default function Onboarding({ onComplete }) {
+  const { t } = useTranslation()
   const { user, profile, refreshProfile } = useAuth()
   const themeSky = useThemeBackgroundType()
   const [screen, setScreen] = useState(() => readStoredStep(user?.id))
@@ -181,29 +183,29 @@ export default function Onboarding({ onComplete }) {
     // Simple recommendation logic
     if (selectedGoals.includes('prayer') && selectedGoals.includes('bible')) {
       return {
-        path: 'Prayer & Scripture Foundation',
-        readingPlan: 'Psalms & Proverbs',
-        studyDepth: 'Balanced'
+        path: t('onboarding.pathPrayerScripture'),
+        readingPlan: t('onboarding.planPsalms'),
+        studyDepth: t('onboarding.depthBalanced')
       }
     }
     if (selectedGoals.includes('discipline')) {
       return {
-        path: 'Spiritual Disciplines',
-        readingPlan: 'New Testament Letters',
-        studyDepth: 'Deep'
+        path: t('onboarding.pathDisciplines'),
+        readingPlan: t('onboarding.planNTLetters'),
+        studyDepth: t('onboarding.depthDeep')
       }
     }
     if (selectedGoals.includes('identity')) {
       return {
-        path: 'Identity in Christ',
-        readingPlan: 'Romans & Galatians',
-        studyDepth: 'Reflective'
+        path: t('onboarding.pathIdentity'),
+        readingPlan: t('onboarding.planRomans'),
+        studyDepth: t('onboarding.depthReflective')
       }
     }
     return {
-      path: 'Bible Foundations',
-      readingPlan: 'Gospels',
-      studyDepth: 'Standard'
+      path: t('onboarding.pathFoundations'),
+      readingPlan: t('onboarding.planGospels'),
+      studyDepth: t('onboarding.depthStandard')
     }
   }
 
@@ -395,14 +397,14 @@ export default function Onboarding({ onComplete }) {
                 fontWeight: 700,
                 marginBottom: '12px'
               }}>
-                Welcome to AbidingAnchor
+                {t('onboarding.welcomeTitle')}
               </h1>
               <p style={{
                 color: onboardingTheme.subtleText,
                 fontSize: '13px',
                 marginBottom: '8px'
               }}>
-                Your personal Bible study companion
+                {t('onboarding.welcomeSubtitle')}
               </p>
               <p style={{
                 color: onboardingTheme.mode === 'day' ? 'rgba(118,82,34,0.75)' : 'rgba(212,168,67,0.82)',
@@ -430,7 +432,7 @@ export default function Onboarding({ onComplete }) {
                   width: '100%'
                 }}
               >
-                Begin My Journey
+                {t('onboarding.beginJourney')}
               </button>
             </div>
           )}
@@ -446,7 +448,7 @@ export default function Onboarding({ onComplete }) {
                 textTransform: 'uppercase',
                 marginBottom: '8px'
               }}>
-                STEP 1 OF 5
+                {t('onboarding.step1of5')}
               </p>
               <h2 style={{
                 color: onboardingTheme.cardText,
@@ -454,7 +456,7 @@ export default function Onboarding({ onComplete }) {
                 fontWeight: 700,
                 marginBottom: '24px'
               }}>
-                Tell us about you
+                {t('onboarding.tellUsAboutYou')}
               </h2>
               <div style={{
                 display: 'flex',
@@ -464,7 +466,7 @@ export default function Onboarding({ onComplete }) {
                 textAlign: 'left',
               }}>
                 <label style={{ color: onboardingTheme.mutedText, fontSize: '13px', fontWeight: 600 }}>
-                  Display name
+                  {t('onboarding.displayName')}
                   <input
                     type="text"
                     value={displayName}
@@ -472,7 +474,7 @@ export default function Onboarding({ onComplete }) {
                       setDisplayName(e.target.value)
                       if (formError) setFormError('')
                     }}
-                    placeholder="How should we call you?"
+                    placeholder={t('onboarding.displayNamePlaceholder')}
                     style={{
                       marginTop: '6px',
                       width: '100%',
@@ -487,7 +489,7 @@ export default function Onboarding({ onComplete }) {
                   />
                 </label>
                 <label style={{ color: onboardingTheme.mutedText, fontSize: '13px', fontWeight: 600 }}>
-                  Date of birth
+                  {t('onboarding.dateOfBirth')}
                   <input
                     type="date"
                     value={dateOfBirth}
@@ -531,7 +533,7 @@ export default function Onboarding({ onComplete }) {
                     }}
                     style={{ marginTop: '2px', width: '18px', height: '18px', flexShrink: 0 }}
                   />
-                  <span>I confirm I am 13 years of age or older</span>
+                  <span>{t('onboarding.ageConfirm')}</span>
                 </label>
               </div>
               {formError ? (
@@ -542,19 +544,19 @@ export default function Onboarding({ onComplete }) {
                 onClick={() => {
                   const name = displayName.trim()
                   if (!name) {
-                    setFormError('Please enter a display name to continue')
+                    setFormError(t('onboarding.displayNameRequired'))
                     return
                   }
                   if (!dateOfBirth) {
-                    setFormError('Please enter your date of birth to continue')
+                    setFormError(t('onboarding.dateOfBirthRequired'))
                     return
                   }
                   if (!isAtLeast13FromDobString(dateOfBirth)) {
-                    setFormError('You must be 13 or older to use Abiding Anchor.')
+                    setFormError(t('onboarding.ageRequired'))
                     return
                   }
                   if (!ageConfirmed) {
-                    setFormError('Please confirm that you are 13 or older to continue.')
+                    setFormError(t('onboarding.ageConfirmRequired'))
                     return
                   }
                   setFormError('')
@@ -574,7 +576,7 @@ export default function Onboarding({ onComplete }) {
                   width: '100%'
                 }}
               >
-                Continue
+                {t('onboarding.continue')}
               </button>
             </div>
           )}
@@ -590,7 +592,7 @@ export default function Onboarding({ onComplete }) {
                 textTransform: 'uppercase',
                 marginBottom: '8px'
               }}>
-                STEP 2 OF 5
+                {t('onboarding.step2of5')}
               </p>
               <h2 style={{
                 color: onboardingTheme.cardText,
@@ -598,7 +600,7 @@ export default function Onboarding({ onComplete }) {
                 fontWeight: 700,
                 marginBottom: '24px'
               }}>
-                What do you want to grow in?
+                {t('onboarding.whatToGrowIn')}
               </h2>
               <div style={{
                 display: 'flex',
@@ -634,7 +636,7 @@ export default function Onboarding({ onComplete }) {
                       transition: 'all 0.2s ease'
                     }}
                   >
-                    {goal.icon} {goal.label}
+                    {goal.icon} {t(`onboarding.${goal.labelKey}`)}
                   </button>
                   )
                 })}
@@ -656,7 +658,7 @@ export default function Onboarding({ onComplete }) {
                     width: '100%'
                   }}
                 >
-                  Continue
+                  {t('onboarding.continue')}
                 </button>
               )}
             </div>
@@ -673,7 +675,7 @@ export default function Onboarding({ onComplete }) {
                 textTransform: 'uppercase',
                 marginBottom: '8px'
               }}>
-                STEP 3 OF 5
+                {t('onboarding.step3of5')}
               </p>
               <h2 style={{
                 color: onboardingTheme.cardText,
@@ -681,7 +683,7 @@ export default function Onboarding({ onComplete }) {
                 fontWeight: 700,
                 marginBottom: '24px'
               }}>
-                How long have you been a believer?
+                {t('onboarding.howLongBeliever')}
               </h2>
               <div style={{
                 display: 'flex',
@@ -720,7 +722,7 @@ export default function Onboarding({ onComplete }) {
                       textAlign: 'left'
                     }}
                   >
-                    {duration.icon} {duration.label}
+                    {duration.icon} {t(`onboarding.${duration.labelKey}`)}
                   </button>
                   )
                 })}
@@ -742,7 +744,7 @@ export default function Onboarding({ onComplete }) {
                     width: '100%'
                   }}
                 >
-                  Continue
+                  {t('onboarding.continue')}
                 </button>
               )}
             </div>
@@ -759,7 +761,7 @@ export default function Onboarding({ onComplete }) {
                 textTransform: 'uppercase',
                 marginBottom: '8px'
               }}>
-                STEP 4 OF 5
+                {t('onboarding.step4of5')}
               </p>
               <h2 style={{
                 color: onboardingTheme.cardText,
@@ -767,7 +769,7 @@ export default function Onboarding({ onComplete }) {
                 fontWeight: 700,
                 marginBottom: '24px'
               }}>
-                How much time can you commit daily?
+                {t('onboarding.howMuchTime')}
               </h2>
               <div style={{
                 display: 'flex',
@@ -806,14 +808,14 @@ export default function Onboarding({ onComplete }) {
                       textAlign: 'left'
                     }}
                   >
-                    {commitment.label}
+                    {t(`onboarding.${commitment.labelKey}`)}
                     <div style={{
                       fontSize: '13px',
                       fontWeight: 400,
                       color: onboardingTheme.subtleText,
                       marginTop: '4px'
                     }}>
-                      {commitment.description}
+                      {t(`onboarding.${commitment.descriptionKey}`)}
                     </div>
                   </button>
                   )
@@ -836,7 +838,7 @@ export default function Onboarding({ onComplete }) {
                     width: '100%'
                   }}
                 >
-                  Continue
+                  {t('onboarding.continue')}
                 </button>
               )}
             </div>
@@ -853,7 +855,7 @@ export default function Onboarding({ onComplete }) {
                 textTransform: 'uppercase',
                 marginBottom: '8px'
               }}>
-                STEP 5 OF 5
+                {t('onboarding.step5of5')}
               </p>
               <h2 style={{
                 color: onboardingTheme.cardText,
@@ -861,7 +863,7 @@ export default function Onboarding({ onComplete }) {
                 fontWeight: 700,
                 marginBottom: '24px'
               }}>
-                Here's what's waiting for you
+                {t('onboarding.whatsWaiting')}
               </h2>
               <div style={{
                 display: 'flex',
@@ -902,14 +904,14 @@ export default function Onboarding({ onComplete }) {
                         marginBottom: '4px',
                         margin: 0
                       }}>
-                        {feature.title}
+                        {t(`onboarding.${feature.titleKey}`)}
                       </p>
                       <p style={{
                         color: onboardingTheme.subtleText,
                         fontSize: '13px',
                         margin: 0
                       }}>
-                        {feature.description}
+                        {t(`onboarding.${feature.descriptionKey}`)}
                       </p>
                     </div>
                   </div>
@@ -930,7 +932,7 @@ export default function Onboarding({ onComplete }) {
                   width: '100%'
                 }}
               >
-                I'm Ready →
+                {t('onboarding.imReady')}
               </button>
             </div>
           )}
@@ -944,7 +946,7 @@ export default function Onboarding({ onComplete }) {
                 fontWeight: 700,
                 marginBottom: '16px'
               }}>
-                Your path is <span style={{ fontStyle: 'italic' }}>ready</span>!
+                {t('onboarding.pathReady')}
               </h2>
               <p style={{
                 color: onboardingTheme.mutedText,
@@ -952,7 +954,7 @@ export default function Onboarding({ onComplete }) {
                 marginBottom: '32px',
                 lineHeight: '1.6'
               }}>
-                Based on your answers, we've created your personal growth path:
+                {t('onboarding.basedOnAnswers')}
               </p>
 
               <div style={{
@@ -972,7 +974,7 @@ export default function Onboarding({ onComplete }) {
                     textTransform: 'uppercase',
                     marginBottom: '8px'
                   }}>
-                    Recommended Path
+                    {t('onboarding.recommendedPath')}
                   </p>
                   <p style={{
                     color: onboardingTheme.cardText,
@@ -993,7 +995,7 @@ export default function Onboarding({ onComplete }) {
                     textTransform: 'uppercase',
                     marginBottom: '8px'
                   }}>
-                    Daily Reading Plan
+                    {t('onboarding.dailyReadingPlan')}
                   </p>
                   <p style={{
                     color: onboardingTheme.cardText,
@@ -1014,7 +1016,7 @@ export default function Onboarding({ onComplete }) {
                     textTransform: 'uppercase',
                     marginBottom: '8px'
                   }}>
-                    Study Depth
+                    {t('onboarding.studyDepth')}
                   </p>
                   <p style={{
                     color: onboardingTheme.cardText,
@@ -1044,7 +1046,7 @@ export default function Onboarding({ onComplete }) {
                   width: '100%'
                 }}
               >
-                {loading ? 'Setting up your path...' : 'Open Journey'}
+                {loading ? t('onboarding.settingUpPath') : t('onboarding.openJourney')}
               </button>
             </div>
           )}
