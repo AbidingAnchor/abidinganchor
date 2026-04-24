@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import { getAvatarBorderStyle, SUPPORTER_BORDER_KEYFRAMES } from '../utils/supporterBorder'
 
 const CONTENT_MAX = 300
 
@@ -71,7 +72,7 @@ export default function TestimonyWall() {
       if (authorIds.length > 0) {
         const { data: profs, error: e2 } = await supabase
           .from('profiles')
-          .select('id, username, full_name, avatar_url')
+          .select('id, username, full_name, avatar_url, supporter_tier, profile_border, name_color')
           .in('id', authorIds)
         if (e2) throw e2
         profilesById = (profs || []).reduce((acc, row) => {
@@ -407,10 +408,15 @@ export default function TestimonyWall() {
           </article>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <style>{SUPPORTER_BORDER_KEYFRAMES}</style>
             {rows.map((t) => {
               const isAnon = Boolean(t.is_anonymous)
               const name = isAnon ? t('testimony.anonymousBeliever') : displayAuthorName(t.author_profile, t)
               const avatarUrl = isAnon ? null : t.author_profile?.avatar_url
+              const authorTier = t.author_profile?.supporter_tier
+              const authorBorder = t.author_profile?.profile_border
+              const authorColor = t.author_profile?.name_color
+              const avatarBorderStyle = isAnon ? {} : getAvatarBorderStyle(authorTier, authorBorder)
               const counts = countsByTestimony[t.id] || { amen: 0, love: 0, fire: 0, cross: 0 }
               const my = myReactionByTestimony[t.id]
               const isOwnPost = t.user_id === user?.id
@@ -470,7 +476,7 @@ export default function TestimonyWall() {
                   )}
                   <div className="flex items-start gap-3" style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                     {avatarUrl ? (
-                      <img src={avatarUrl} alt="" style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover' }} />
+                      <img src={avatarUrl} alt="" style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0, ...avatarBorderStyle }} />
                     ) : (
                       <span
                         style={{
@@ -485,6 +491,7 @@ export default function TestimonyWall() {
                           color: '#D4AF37',
                           flexShrink: 0,
                           fontSize: isAnon ? '18px' : undefined,
+                          ...avatarBorderStyle,
                         }}
                         aria-hidden={isAnon}
                       >
@@ -514,11 +521,13 @@ export default function TestimonyWall() {
                             cursor: t.user_id ? 'pointer' : 'default',
                             fontWeight: 700,
                             fontSize: '15px',
-                            color: 'var(--text-primary)',
+                            color: authorColor || 'var(--text-primary)',
                             textAlign: 'left',
                           }}
                         >
                           {name}
+                          {authorTier === 'monthly' && <span style={{ marginLeft: '4px', fontSize: '12px' }}>⭐</span>}
+                          {authorTier === 'lifetime' && <span style={{ marginLeft: '4px', fontSize: '12px' }}>👑</span>}
                         </button>
                       )}
                       <p style={{ margin: '6px 0 0', fontSize: '14px', lineHeight: 1.55, color: 'var(--text-primary)' }}>{t.content}</p>

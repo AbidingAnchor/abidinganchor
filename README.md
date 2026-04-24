@@ -11,6 +11,9 @@ The following environment variables are required for the application to function
 - `VITE_SUPABASE_URL`: Your Supabase project URL
 - `VITE_SUPABASE_ANON_KEY`: Your Supabase anonymous key
 - `VITE_GROQ_API_KEY`: Your Groq API key for AI Bible Study Companion
+- `STRIPE_SECRET_KEY`: Your Stripe secret key for webhook handling
+- `STRIPE_WEBHOOK_SECRET`: Your Stripe webhook secret for verifying webhook events
+- `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role key for server-side operations
 
 ### Required for Local Development:
 
@@ -20,6 +23,9 @@ Create a `.env` file in the root directory with the following variables:
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 VITE_GROQ_API_KEY=your_groq_api_key
+STRIPE_SECRET_KEY=your_stripe_secret_key
+STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 ```
 
 ## Supabase Setup

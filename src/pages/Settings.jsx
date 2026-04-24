@@ -1016,7 +1016,7 @@ export default function Settings() {
           {/* Ministry Supporter */}
           <button
             type="button"
-            onClick={() => window.open('https://abidinganchor.com/support', '_blank', 'noopener,noreferrer')}
+            onClick={() => navigate('/supporter-upgrade')}
             style={{
               minHeight: '52px',
               display: 'flex',
@@ -1045,9 +1045,9 @@ export default function Settings() {
               <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
                 {t('settings.ministrySupporter')}
               </p>
-              {profile?.is_supporter && (
+              {(profile?.supporter_tier === 'monthly' || profile?.supporter_tier === 'lifetime') && (
                 <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
-                  {t('settings.active')}
+                  {profile?.supporter_tier === 'lifetime' ? '👑 Lifetime Member' : '⭐ Active Supporter'}
                 </p>
               )}
             </div>
@@ -1073,6 +1073,42 @@ export default function Settings() {
           backdropFilter: 'blur(12px)',
           marginBottom: '24px',
         }}>
+          {/* Become a Supporter */}
+          <button
+            type="button"
+            onClick={() => navigate('/supporter-upgrade')}
+            style={{
+              minHeight: '52px',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 16px',
+              width: '100%',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: 'rgba(212,168,67,0.15)',
+              color: '#D4A843',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              ⭐
+            </div>
+            <div style={{ marginLeft: '14px', flex: 1 }}>
+              <p style={{ fontSize: '15px', color: '#D4A843', fontWeight: 700, margin: 0 }}>
+                Become a Supporter 👑
+              </p>
+            </div>
+            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+          </button>
           {/* Share App */}
           <button
             type="button"
@@ -1158,7 +1194,6 @@ export default function Settings() {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
             }}
           >
             <div style={{
@@ -1177,44 +1212,6 @@ export default function Settings() {
             <div style={{ marginLeft: '14px', flex: 1 }}>
               <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
                 {t('settings.contactSupport')}
-              </p>
-            </div>
-            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
-          </button>
-          {/* Support the Ministry */}
-          <button
-            type="button"
-            onClick={() => window.open('https://abidinganchor.com/support', '_blank', 'noopener,noreferrer')}
-            style={{
-              minHeight: '52px',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0 16px',
-              width: '100%',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-            }}
-          >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              background: 'rgba(212,168,67,0.1)',
-              color: '#D4A843',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              🙏
-            </div>
-            <div style={{ marginLeft: '14px', flex: 1 }}>
-              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                {t('settings.supportMinistry')}
-              </p>
-              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
-                {t('settings.supportMinistryDesc')}
               </p>
             </div>
             <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>

@@ -107,7 +107,7 @@ export default function AICompanion() {
       checkAndIncrement,
       aiCallFn,
       {
-        isSupporter: profile?.is_supporter || false,
+        supporterTier: profile?.supporter_tier || 'free',
         onLimitReached: () => {
           setLimitReachedOpen(true)
           setMessages((prev) => prev.slice(0, -1))

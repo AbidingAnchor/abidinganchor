@@ -3,7 +3,9 @@
     "allow": [
       "WebFetch(domain:bolls.life)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:api.getbible.net)"
+      "WebFetch(domain:api.getbible.net)",
+      "Bash(python3 *)",
+      "Bash(npm run *)"
     ]
   }
 }

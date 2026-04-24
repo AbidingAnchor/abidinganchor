@@ -23,6 +23,7 @@ export default function BottomNav() {
       { labelKey: 'nav.journey', path: '/faith-journey', icon: '✝' },
       { labelKey: 'nav.community', path: '/testimony-wall', icon: '✎' },
       { labelKey: 'nav.create', path: '/share-card', icon: '♦' },
+      { label: 'Hall of Faith 👑', path: '/hall-of-faith', icon: '👑' },
       { labelKey: 'nav.settings', path: '/settings', icon: '⚙' },
     ],
     [],

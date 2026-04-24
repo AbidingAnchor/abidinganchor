@@ -32,13 +32,16 @@ export default function EditProfile() {
   const [saving, setSaving] = useState(false)
   const [saveNoticeVisible, setSaveNoticeVisible] = useState(false)
   const [profileError, setProfileError] = useState('')
+  const [nameColor, setNameColor] = useState('#FFFFFF')
+  const [profileBorder, setProfileBorder] = useState('none')
+  const [savingAppearance, setSavingAppearance] = useState(false)
 
   useEffect(() => {
     if (!user?.id) return
     const loadProfile = async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('avatar_url, username, username_changes, bio, favorite_verse, is_admin')
+        .select('avatar_url, username, username_changes, bio, favorite_verse, is_admin, name_color, profile_border')
         .eq('id', user.id)
         .maybeSingle()
       if (error || !data) return
@@ -49,6 +52,8 @@ export default function EditProfile() {
       setIsAdminFromDb(Boolean(data.is_admin))
       setBio(data.bio || '')
       setFavoriteVerse(data.favorite_verse || '')
+      setNameColor(data.name_color || '#FFFFFF')
+      setProfileBorder(data.profile_border || 'none')
     }
     loadProfile()
   }, [user?.id])
@@ -205,6 +210,26 @@ export default function EditProfile() {
       console.error('Profile save error:', error)
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleSaveAppearance = async () => {
+    if (!user?.id || savingAppearance) return
+    try {
+      setSavingAppearance(true)
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ name_color: nameColor, profile_border: profileBorder })
+        .eq('id', user.id)
+        .select()
+        .single()
+      if (error) throw error
+      await refreshProfile(data)
+      setSaveNoticeVisible(true)
+    } catch (err) {
+      console.error('Appearance save error:', err)
+    } finally {
+      setSavingAppearance(false)
     }
   }
 
@@ -452,6 +477,142 @@ export default function EditProfile() {
             {saving ? t('profile.savingProfile') : t('profile.saveProfile')}
           </button>
         </div>
+
+        {/* Supporter appearance customization */}
+        {(profile?.supporter_tier === 'monthly' || profile?.supporter_tier === 'lifetime') && (
+          <div className="glass-panel" style={{ borderRadius: '16px', padding: '20px', marginTop: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+              <span style={{ fontSize: '20px' }}>
+                {profile?.supporter_tier === 'lifetime' ? '👑' : '⭐'}
+              </span>
+              <div>
+                <p style={{ margin: 0, fontWeight: 700, color: '#D4A843', fontSize: '15px' }}>Supporter Appearance</p>
+                <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
+                  {profile?.supporter_tier === 'lifetime' ? 'Lifetime Member perks' : 'Monthly Supporter perks'}
+                </p>
+              </div>
+            </div>
+
+            {/* Name color picker */}
+            <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '13px', marginBottom: '8px' }}>
+              Name Color
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+              <input
+                type="color"
+                value={nameColor}
+                onChange={(e) => setNameColor(e.target.value)}
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(212,168,67,0.4)',
+                  cursor: 'pointer',
+                  background: 'none',
+                  padding: '2px',
+                }}
+              />
+              <div style={{ flex: 1 }}>
+                <p style={{
+                  margin: 0,
+                  fontWeight: 700,
+                  fontSize: '16px',
+                  color: profile?.supporter_tier === 'lifetime' ? 'transparent' : nameColor,
+                  background: profile?.supporter_tier === 'lifetime'
+                    ? 'linear-gradient(90deg, #b8860b, #ffd700, #ffec8b, #ffd700, #b8860b)'
+                    : undefined,
+                  backgroundSize: profile?.supporter_tier === 'lifetime' ? '200%' : undefined,
+                  WebkitBackgroundClip: profile?.supporter_tier === 'lifetime' ? 'text' : undefined,
+                  WebkitTextFillColor: profile?.supporter_tier === 'lifetime' ? 'transparent' : undefined,
+                  backgroundClip: profile?.supporter_tier === 'lifetime' ? 'text' : undefined,
+                }}>
+                  {displayName}
+                  {' '}
+                  {profile?.supporter_tier === 'lifetime' ? '👑' : '⭐'}
+                </p>
+                <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Preview</p>
+              </div>
+            </div>
+
+            {/* Preset colors */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px' }}>
+              {['#FFFFFF', '#FFD700', '#93C5FD', '#86EFAC', '#F9A8D4', '#FCA5A5', '#C4B5FD', '#FCD34D'].map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setNameColor(c)}
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    background: c,
+                    border: nameColor === c ? '3px solid #fff' : '2px solid rgba(255,255,255,0.2)',
+                    cursor: 'pointer',
+                    transition: 'transform 0.15s',
+                    transform: nameColor === c ? 'scale(1.15)' : 'scale(1)',
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Profile border picker (lifetime only) */}
+            {profile?.supporter_tier === 'lifetime' && (
+              <>
+                <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '13px', marginBottom: '8px' }}>
+                  Profile Border
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '20px' }}>
+                  {[
+                    { id: 'crown', label: 'Crown ✨', color: '#ffd700' },
+                    { id: 'fire', label: 'Fire 🔥', color: '#ff6420' },
+                    { id: 'rainbow', label: 'Rainbow 🌈', color: 'linear-gradient(90deg,red,orange,yellow,green,blue,violet)' },
+                    { id: 'stars', label: 'Stars 🌟', color: '#c896ff' },
+                    { id: 'none', label: 'None', color: 'rgba(255,255,255,0.2)' },
+                  ].map((b) => (
+                    <button
+                      key={b.id}
+                      type="button"
+                      onClick={() => setProfileBorder(b.id)}
+                      style={{
+                        padding: '10px',
+                        borderRadius: '12px',
+                        border: profileBorder === b.id
+                          ? '2px solid #D4A843'
+                          : '1px solid rgba(255,255,255,0.1)',
+                        background: profileBorder === b.id ? 'rgba(212,168,67,0.15)' : 'rgba(255,255,255,0.05)',
+                        color: '#fff',
+                        fontWeight: 600,
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {b.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+
+            <button
+              type="button"
+              onClick={handleSaveAppearance}
+              disabled={savingAppearance}
+              style={{
+                width: '100%',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '12px 14px',
+                background: '#D4A843',
+                color: '#0a1432',
+                fontWeight: 700,
+                cursor: savingAppearance ? 'not-allowed' : 'pointer',
+                opacity: savingAppearance ? 0.75 : 1,
+              }}
+            >
+              {savingAppearance ? 'Saving...' : 'Save Appearance'}
+            </button>
+          </div>
+        )}
       </section>
 
       <div

@@ -1,7 +1,11 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 
-const FREE_TIER_DAILY_LIMIT = 5;
+const DAILY_LIMITS = {
+  free: 5,
+  monthly: 50,
+  lifetime: Infinity,
+};
 
 export function useAiUsage() {
   const [loading, setLoading] = useState(false);
@@ -9,12 +13,25 @@ export function useAiUsage() {
 
   const getTodayDate = () => new Date().toISOString().split('T')[0];
 
-  const getUsage = useCallback(async () => {
+  const resolveTier = ({ supporterTier, isSupporter } = {}) => {
+    if (supporterTier && DAILY_LIMITS[supporterTier] !== undefined) return supporterTier;
+    if (isSupporter) return 'monthly';
+    return 'free';
+  };
+
+  const getUsage = useCallback(async ({ supporterTier, isSupporter } = {}) => {
     setError(null);
+    const tier = resolveTier({ supporterTier, isSupporter });
+    const limit = DAILY_LIMITS[tier];
+
+    if (limit === Infinity) {
+      return { count: 0, remaining: Infinity };
+    }
+
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       setError('User not authenticated');
-      return { count: 0, remaining: FREE_TIER_DAILY_LIMIT };
+      return { count: 0, remaining: limit };
     }
 
     const today = getTodayDate();
@@ -27,28 +44,29 @@ export function useAiUsage() {
 
     if (fetchError) {
       setError(fetchError.message);
-      return { count: 0, remaining: FREE_TIER_DAILY_LIMIT };
+      return { count: 0, remaining: limit };
     }
 
     const count = data?.count ?? 0;
-    return {
-      count,
-      remaining: Math.max(0, FREE_TIER_DAILY_LIMIT - count),
-    };
+    return { count, remaining: Math.max(0, limit - count) };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const checkAndIncrement = useCallback(async ({ isSupporter = false } = {}) => {
+  const checkAndIncrement = useCallback(async ({ supporterTier, isSupporter = false } = {}) => {
     setLoading(true);
     setError(null);
 
     try {
+      const tier = resolveTier({ supporterTier, isSupporter });
+      const limit = DAILY_LIMITS[tier];
+
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) {
         setError('User not authenticated');
         return { allowed: false, remaining: 0, count: 0 };
       }
 
-      if (isSupporter) {
+      if (limit === Infinity) {
         return { allowed: true, remaining: Infinity, count: 0 };
       }
 
@@ -65,7 +83,7 @@ export function useAiUsage() {
 
       const currentCount = existing?.count ?? 0;
 
-      if (currentCount >= FREE_TIER_DAILY_LIMIT) {
+      if (currentCount >= limit) {
         return { allowed: false, remaining: 0, count: currentCount };
       }
 
@@ -81,7 +99,7 @@ export function useAiUsage() {
 
       return {
         allowed: true,
-        remaining: Math.max(0, FREE_TIER_DAILY_LIMIT - newCount),
+        remaining: Math.max(0, limit - newCount),
         count: newCount,
       };
     } catch (err) {
@@ -90,6 +108,7 @@ export function useAiUsage() {
     } finally {
       setLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return { checkAndIncrement, getUsage, loading, error };

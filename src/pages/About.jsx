@@ -1,10 +1,26 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
+
+const SHIMMER = `
+  @keyframes about-shimmer {
+    0%   { background-position: 200% center; }
+    100% { background-position: -200% center; }
+  }
+`
 
 export default function About() {
   const navigate = useNavigate()
+  const [foundingMembers, setFoundingMembers] = useState([])
+
   useEffect(() => {
     document.title = 'About — AbidingAnchor'
+    supabase
+      .from('profiles')
+      .select('id, display_name, full_name, username, name_color')
+      .eq('is_founding_member', true)
+      .limit(50)
+      .then(({ data }) => setFoundingMembers(data || []))
   }, [])
 
   return (
@@ -194,6 +210,47 @@ export default function About() {
               Free forever. Built as a ministry.
             </p>
           </section>
+
+          {foundingMembers.length > 0 && (
+            <section style={{ marginTop: '24px' }}>
+              <style>{SHIMMER}</style>
+              <h2 style={{ margin: '0 0 14px', color: '#F2D486', fontSize: '20px', fontWeight: 700, textAlign: 'center' }}>
+                Our Founding Members 👑
+              </h2>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
+                {foundingMembers.map((m) => {
+                  const name = m.display_name || m.full_name || m.username || 'Faithful Believer'
+                  return (
+                    <span
+                      key={m.id}
+                      style={{
+                        display: 'inline-block',
+                        padding: '6px 14px',
+                        borderRadius: '999px',
+                        outline: '1px solid rgba(255,215,0,0.35)',
+                        background: 'rgba(255,215,0,0.06)',
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: '15px',
+                          fontWeight: 700,
+                          background: 'linear-gradient(90deg, #b8860b, #ffd700, #ffec8b, #ffd700, #b8860b)',
+                          backgroundSize: '200%',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          backgroundClip: 'text',
+                          animation: 'about-shimmer 2.5s infinite linear',
+                        }}
+                      >
+                        👑 {name}
+                      </span>
+                    </span>
+                  )
+                })}
+              </div>
+            </section>
+          )}
 
           <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center' }}>
             <Link
