@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
+import { useFellowship } from '../context/FellowshipContext'
 import { SHIMMER_KEYFRAMES } from '../hooks/useNameStyle'
 import { supabase } from '../lib/supabase'
-import { userStorageKey } from '../utils/userStorage'
 import { fetchVerse } from '../utils/bibleTranslation'
 
 // Note: 'pray' is used for the prayer counter on prayer request posts
