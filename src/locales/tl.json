@@ -1166,7 +1166,18 @@
     "signIn": "Sign In",
     "socialProof": "Sumali sa libu-libong tao na lumalago sa pananampalataya araw-araw",
     "tagline": "I-angkla ang iyong kaluluwa sa Salita ng Dios",
-    "whatsNew": "Ano ang bago?"
+    "whatsNew": "Ano ang bago?",
+    "pillBibleReader": "Tagabasa ng Biblia",
+    "pillBibleReaderDesc": "Basahin ang Kasulatan sa 12 wika gamit ang mga kagamitan sa pag-aaral",
+    "pillGuidedPrayers": "Mga Gabay na Panalangin",
+    "pillGuidedPrayersDesc": "Manalangin kasama ang audio-guided devotional prayers",
+    "pillDailyStreak": "Araw-araw na Streak",
+    "pillDailyStreakDesc": "Bumuo ng ugali na maghanap ng Dios araw-araw",
+    "pillAiCompanion": "AI Companion",
+    "pillAiCompanionDesc": "Magtanong tungkol sa Kasulatan at makatanggap ng gabay",
+    "whatsNewTitle": "Ano ang bago?",
+    "changelogVersion": "v1.2.0 – Major Update",
+    "changelogFeatures": "Verse Highlighting • Verse Notes • Cross References"
   },
   "legal": {
     "anchoredInWord": "Naka-angkla sa Salita",
