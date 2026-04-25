@@ -112,11 +112,6 @@ export default function HallOfFaith() {
   const scrollRef = useRef(null)
   const animRef = useRef(null)
 
-  const displayName =
-    profile?.display_name ||
-    profile?.full_name ||
-    profile?.username ||
-    'You'
 
   useEffect(() => {
     document.title = 'Hall of Faith — AbidingAnchor'
@@ -127,9 +122,6 @@ export default function HallOfFaith() {
   const loadSupporters = async () => {
     setLoading(true)
     try {
-      console.log('Current user ID:', user?.id)
-      console.log('Current profile supporter_tier:', profile?.supporter_tier)
-
       const { count } = await supabase
         .from('profiles')
         .select('id', { count: 'exact', head: true })
@@ -146,37 +138,23 @@ export default function HallOfFaith() {
         .order('is_founding_member', { ascending: false })
         .limit(50)
 
-      console.log('Supporters fetched:', data?.length, data?.map(p => ({ id: p.id, name: p.display_name, tier: p.supporter_tier })))
+      const mappedSupporters = (data || []).map((p) => ({
+        id: p.id,
+        name: (p.display_name || p.full_name || p.username || 'Faithful Believer').trim().replace(/^'/, ''),
+        color: p.name_color || '#ffffff',
+        tier: p.supporter_tier,
+        border: p.profile_border,
+        isOwn: p.id === user?.id,
+      }))
 
-      setSupporters(
-        (data || []).map((p) => ({
-          id: p.id,
-          name: p.display_name || p.full_name || p.username || 'Faithful Believer',
-          color: p.name_color || '#ffffff',
-          tier: p.supporter_tier,
-          border: p.profile_border,
-          isOwn: p.id === user?.id,
-        })),
-      )
+      setSupporters(mappedSupporters)
     } catch (err) {
       console.error('Error loading supporters:', err)
     }
     setLoading(false)
   }
 
-  const ownIsInList = supporters.some((s) => s.isOwn)
-  const ownEntry = {
-    id: user?.id || 'own',
-    name: displayName,
-    color: profile?.name_color || '#ffffff',
-    tier: profile?.supporter_tier || 'free',
-    border: profile?.profile_border || 'none',
-    isOwn: true,
-  }
-
-  const rows = ownIsInList
-    ? supporters
-    : [ownEntry, ...supporters.filter((s) => !s.isOwn)]
+  const rows = supporters
 
   const scrollDuration = Math.max(30, rows.length * 1.8)
 
@@ -304,14 +282,14 @@ export default function HallOfFaith() {
             }}
           >
             {/* Duplicate for seamless loop */}
-            {[...rows, ...rows].map((row, i) => (
+            {[...rows, ...rows.filter(r => !r.isOwn)].map((row, i) => (
               <NameRow
                 key={`${row.id}-${i}`}
                 name={row.name}
                 color={row.color}
                 tier={row.tier}
                 border={row.border}
-                isOwn={row.isOwn && i === 0}
+                isOwn={row.isOwn}
               />
             ))}
             {/* Spacer equal to screen height so names scroll fully */}
