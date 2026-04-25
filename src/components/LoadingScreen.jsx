@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import CelestialBackground from './CelestialBackground'
 
 /**
  * Full-viewport overlay while auth/session resolves. Background is transparent so
@@ -54,6 +55,9 @@ export default function LoadingScreen() {
         pointerEvents: 'none',
       }}
     >
+      <div style={{ position: 'absolute', inset: 0, zIndex: -1 }}>
+        <CelestialBackground />
+      </div>
       <style>{`
         @keyframes loading-logo-pulse {
           0%, 100% { opacity: 1; }
@@ -64,16 +68,18 @@ export default function LoadingScreen() {
           50% { opacity: 1; }
         }
         .aa-loading-screen {
-          --loading-screen-bg: linear-gradient(180deg, #07112a 0%, #0b1738 58%, #091021 100%);
+          --loading-screen-bg: #050816;
+          background: linear-gradient(to bottom, #050816 0%, #0A0F2C 50%, #050816 100%);
         }
-        html[data-theme="day"] .aa-loading-screen {
-          --loading-screen-bg: linear-gradient(180deg, #8ec7ea 0%, #bfdff2 48%, #f1dfbf 100%);
-        }
-        html[data-theme="sunset"] .aa-loading-screen {
-          --loading-screen-bg: linear-gradient(180deg, #3a2346 0%, #5a2d5f 45%, #e39a5a 100%);
-        }
-        html[data-theme="night"] .aa-loading-screen {
-          --loading-screen-bg: linear-gradient(180deg, #07112a 0%, #0b1738 58%, #091021 100%);
+        .aa-loading-screen::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: radial-gradient(ellipse at center, rgba(14, 30, 70, 0.5) 0%, transparent 70%);
+          pointer-events: none;
         }
       `}</style>
       <div

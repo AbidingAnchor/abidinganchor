@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState, useMemo, useRef, useCallback } from 'react'
+﻿import { useEffect, useLayoutEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { dedupeVersesByNumber, prepareBibleReaderVerseText } from '../utils/kjvVerseText'
@@ -918,9 +918,9 @@ export default function BibleReader({ open, onModeChange }) {
 
   const navBtnStyle = {
     background: 'none',
-    border: '1px solid rgba(212,168,67,0.4)',
+    border: '1px solid rgba(240,192,64,0.4)',
     borderRadius: '16px',
-    color: '#D4A843',
+    color: '#F0C040',
     fontSize: '13px',
     fontWeight: 600,
     cursor: 'pointer',
@@ -942,10 +942,10 @@ export default function BibleReader({ open, onModeChange }) {
           right: 0,
           height: 'auto',
           zIndex: 90,
-          background: 'linear-gradient(145deg, rgba(15, 22, 55, 0.92), rgba(10, 15, 40, 0.97))',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(212, 168, 67, 0.2)',
+          background: 'rgba(6, 15, 38, 0.75)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
           boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'column',
@@ -970,10 +970,10 @@ export default function BibleReader({ open, onModeChange }) {
               }}
               disabled={bookIndex === 0 && chapter === 1}
               style={{
-                background: 'rgba(212, 168, 67, 0.1)',
-                border: '1px solid rgba(212, 168, 67, 0.3)',
+                background: 'rgba(240, 192, 64, 0.1)',
+                border: '1px solid rgba(240, 192, 64, 0.3)',
                 borderRadius: '12px',
-                color: '#D4A843',
+                color: '#F0C040',
                 fontSize: '24px',
                 cursor: (bookIndex === 0 && chapter === 1) ? 'not-allowed' : 'pointer',
                 padding: '6px 12px',
@@ -1010,7 +1010,7 @@ export default function BibleReader({ open, onModeChange }) {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: '#D4A843',
+                  color: '#F0C040',
                   fontSize: '16px',
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -1034,10 +1034,10 @@ export default function BibleReader({ open, onModeChange }) {
               }}
               disabled={bookIndex === BOOKS.length - 1 && chapter === maxChapter}
               style={{
-                background: 'rgba(212, 168, 67, 0.1)',
-                border: '1px solid rgba(212, 168, 67, 0.3)',
+                background: 'rgba(240, 192, 64, 0.1)',
+                border: '1px solid rgba(240, 192, 64, 0.3)',
                 borderRadius: '12px',
-                color: '#D4A843',
+                color: '#F0C040',
                 fontSize: '24px',
                 cursor: (bookIndex === BOOKS.length - 1 && chapter === maxChapter) ? 'not-allowed' : 'pointer',
                 padding: '6px 12px',
@@ -1061,8 +1061,8 @@ export default function BibleReader({ open, onModeChange }) {
                   else setShowTranslationPicker((o) => !o)
                 }}
                 style={{
-                  background: 'rgba(212, 168, 67, 0.1)',
-                  border: '1px solid rgba(212, 168, 67, 0.4)',
+                  background: 'rgba(240, 192, 64, 0.1)',
+                  border: '1px solid rgba(240, 192, 64, 0.4)',
                   borderRadius: '50px',
                   color: 'rgba(255, 255, 255, 0.7)',
                   fontSize: '12px',
@@ -1092,8 +1092,8 @@ export default function BibleReader({ open, onModeChange }) {
                 height: '40px',
                 display: 'inline-flex',
                 alignItems: 'center',
-                background: 'rgba(212, 168, 67, 0.1)',
-                border: '1px solid rgba(212, 168, 67, 0.4)',
+                background: 'rgba(240, 192, 64, 0.1)',
+                border: '1px solid rgba(240, 192, 64, 0.4)',
                 borderRadius: '50px',
               }}>
                 {getBibleSlug ? String(getBibleSlug).toUpperCase() : ''}
@@ -1105,7 +1105,7 @@ export default function BibleReader({ open, onModeChange }) {
                 type="button"
                 onClick={() => onModeChange('read')}
                 style={{
-                  background: '#D4A843',
+                  background: '#F0C040',
                   color: '#0a1428',
                   border: 'none',
                   borderRadius: '50px',
@@ -1128,9 +1128,9 @@ export default function BibleReader({ open, onModeChange }) {
                 type="button"
                 onClick={() => onModeChange('listen')}
                 style={{
-                  background: 'rgba(212, 168, 67, 0.1)',
+                  background: 'rgba(240, 192, 64, 0.1)',
                   color: 'rgba(255, 255, 255, 0.7)',
-                  border: '1px solid rgba(212, 168, 67, 0.4)',
+                  border: '1px solid rgba(240, 192, 64, 0.4)',
                   borderRadius: '50px',
                   padding: '0 16px',
                   height: '40px',
@@ -1150,10 +1150,10 @@ export default function BibleReader({ open, onModeChange }) {
               type="button"
               onClick={() => setShowReadingControls(true)}
               style={{
-                background: 'rgba(212, 168, 67, 0.1)',
-                border: '1px solid rgba(212, 168, 67, 0.4)',
+                background: 'rgba(240, 192, 64, 0.1)',
+                border: '1px solid rgba(240, 192, 64, 0.4)',
                 borderRadius: '50px',
-                color: '#D4A843',
+                color: '#F0C040',
                 fontSize: '16px',
                 cursor: 'pointer',
                 width: '40px',
@@ -1184,20 +1184,20 @@ export default function BibleReader({ open, onModeChange }) {
           padding: '24px 20px',
           zIndex: 40,
           boxSizing: 'border-box',
-          background: 'rgba(8, 12, 35, 1)',
+          background: 'transparent',
         }}
       >
         <div style={{ maxWidth: '680px', margin: '0 auto', width: '100%', animation: 'fadeIn 0.6s ease-out' }}>
           {loading ? (
             <div style={{ textAlign: 'center', padding: '80px 24px' }}>
-              <div style={{ fontSize: '48px', marginBottom: '24px', filter: 'drop-shadow(0 0 20px rgba(212, 168, 67, 0.3))' }}>✝</div>
+              <div style={{ fontSize: '48px', marginBottom: '24px', filter: 'drop-shadow(0 0 20px rgba(240, 192, 64, 0.3))' }}>✝</div>
               <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '15px' }}>{t('bible.loading')}</p>
             </div>
           ) : (
             <div
               className="bible-verse-well"
               style={{
-                color: '#ffffff',
+                color: 'var(--bible-verse-text)',
                 fontSize: `${fontSize}px`,
                 lineHeight: '1.8',
                 fontFamily: 'Lora, serif',
@@ -1215,32 +1215,28 @@ export default function BibleReader({ open, onModeChange }) {
                   key={v.verse}
                   onClick={(e) => openVerseMenu(v.verse, e.clientX, e.clientY)}
                   style={{
-                    marginBottom: '2rem',
+                    marginBottom: '10px',
                     textAlign: 'left',
                     cursor: 'pointer',
-                    padding: highlightsByVerse[String(v.verse)] || isJumpHighlight ? '16px 20px' : '16px 20px',
-                    borderRadius: '16px',
-                    background:
-                      highlightsByVerse[String(v.verse)] || isJumpHighlight
-                        ? 'rgba(212, 168, 67, 0.15)'
-                        : 'transparent',
-                    borderLeft:
-                      highlightsByVerse[String(v.verse)] || isJumpHighlight
-                        ? '3px solid #D4A843'
-                        : '3px solid transparent',
-                    boxShadow:
-                      highlightsByVerse[String(v.verse)] || isJumpHighlight
-                        ? '0 8px 32px rgba(212, 168, 67, 0.15)'
-                        : 'none',
+                    padding: '14px 18px',
+                    borderRadius: '12px',
+                    background: highlightsByVerse[String(v.verse)] || isJumpHighlight
+                      ? 'rgba(212, 168, 67, 0.15)'
+                      : 'rgba(10, 20, 50, 0.6)',
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    borderLeft: highlightsByVerse[String(v.verse)] || isJumpHighlight
+                      ? '3px solid rgba(212, 168, 67, 0.6)'
+                      : '3px solid transparent',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
                     transition: 'all 0.2s ease',
                   }}
                 >
                   <sup
                     style={{
-                      color: '#D4A843',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      marginRight: '6px',
+                      color: '#F0C040',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      marginRight: '5px',
                       verticalAlign: 'super',
                     }}
                   >
@@ -1255,12 +1251,12 @@ export default function BibleReader({ open, onModeChange }) {
                         openNoteViewer(v.verse)
                       }}
                       style={{
-                        background: 'rgba(212, 168, 67, 0.15)',
-                        border: '1px solid rgba(212, 168, 67, 0.3)',
+                        background: 'rgba(240, 192, 64, 0.15)',
+                        border: '1px solid rgba(240, 192, 64, 0.3)',
                         cursor: 'pointer',
                         padding: '4px 10px',
                         margin: '0 0 0 8px',
-                        color: '#D4A843',
+                        color: '#F0C040',
                         fontSize: '12px',
                         fontWeight: 600,
                         borderRadius: '99px',
@@ -1301,10 +1297,10 @@ export default function BibleReader({ open, onModeChange }) {
                 left: 0,
                 right: 0,
                 zIndex: 10031,
-                background: 'linear-gradient(180deg, rgba(15, 20, 50, 0.98), rgba(8, 12, 35, 0.99))',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                borderTop: '1px solid rgba(212, 168, 67, 0.3)',
+                background: 'rgba(6, 15, 38, 0.75)',
+                backdropFilter: 'blur(28px)',
+                WebkitBackdropFilter: 'blur(28px)',
+                borderTop: '1px solid rgba(255, 255, 255, 0.09)',
                 borderRadius: '24px 24px 0 0',
                 padding: '24px',
                 animation: 'slideUp 0.3s ease-out',
@@ -1314,7 +1310,7 @@ export default function BibleReader({ open, onModeChange }) {
               aria-label="Verse options"
             >
               <div style={{ maxWidth: '680px', margin: '0 auto' }}>
-                <p style={{ margin: '0 0 20px', fontSize: '11px', fontWeight: 600, letterSpacing: '0.18em', color: '#D4A843', textTransform: 'uppercase', textAlign: 'center' }}>
+                <p style={{ margin: '0 0 20px', fontSize: '11px', fontWeight: 600, letterSpacing: '0.18em', color: '#F0C040', textTransform: 'uppercase', textAlign: 'center' }}>
                   Verse {activeVerse ?? ''}
                 </p>
                 <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -1322,9 +1318,9 @@ export default function BibleReader({ open, onModeChange }) {
                     type="button"
                     onClick={() => saveHighlight(activeVerse)}
                     style={{
-                      background: 'rgba(212, 168, 67, 0.15)',
-                      border: '1px solid rgba(212, 168, 67, 0.3)',
-                      color: '#D4A843',
+                      background: 'rgba(240, 192, 64, 0.15)',
+                      border: '1px solid rgba(240, 192, 64, 0.3)',
+                      color: '#F0C040',
                       borderRadius: '16px',
                       padding: '12px 20px',
                       cursor: 'pointer',
@@ -1339,9 +1335,9 @@ export default function BibleReader({ open, onModeChange }) {
                     type="button"
                     onClick={() => openAddNote(activeVerse)}
                     style={{
-                      background: 'rgba(212, 168, 67, 0.15)',
-                      border: '1px solid rgba(212, 168, 67, 0.3)',
-                      color: '#D4A843',
+                      background: 'rgba(240, 192, 64, 0.15)',
+                      border: '1px solid rgba(240, 192, 64, 0.3)',
+                      color: '#F0C040',
                       borderRadius: '16px',
                       padding: '12px 20px',
                       cursor: 'pointer',
@@ -1356,9 +1352,9 @@ export default function BibleReader({ open, onModeChange }) {
                     type="button"
                     onClick={() => openCrossReferences(activeVerse)}
                     style={{
-                      background: 'rgba(212, 168, 67, 0.15)',
-                      border: '1px solid rgba(212, 168, 67, 0.3)',
-                      color: '#D4A843',
+                      background: 'rgba(240, 192, 64, 0.15)',
+                      border: '1px solid rgba(240, 192, 64, 0.3)',
+                      color: '#F0C040',
                       borderRadius: '16px',
                       padding: '12px 20px',
                       cursor: 'pointer',
@@ -1373,9 +1369,9 @@ export default function BibleReader({ open, onModeChange }) {
                     type="button"
                     onClick={() => openStrongsConcordance(activeVerse)}
                     style={{
-                      background: 'rgba(212, 168, 67, 0.15)',
-                      border: '1px solid rgba(212, 168, 67, 0.3)',
-                      color: '#D4A843',
+                      background: 'rgba(240, 192, 64, 0.15)',
+                      border: '1px solid rgba(240, 192, 64, 0.3)',
+                      color: '#F0C040',
                       borderRadius: '16px',
                       padding: '12px 20px',
                       cursor: 'pointer',
@@ -1408,8 +1404,8 @@ export default function BibleReader({ open, onModeChange }) {
                   borderRadius: '18px',
                   padding: '16px',
                   border: '1px solid rgba(255,255,255,0.10)',
-                  background: 'var(--card-bg, rgba(15,20,45,0.94))',
-                  backdropFilter: 'blur(12px)',
+                  background: 'rgba(10, 20, 50, 0.6)',
+                  backdropFilter: 'blur(20px)',
                   WebkitBackdropFilter: 'blur(12px)',
                   boxShadow: '0 20px 60px rgba(0,0,0,0.45)',
                   color: 'var(--card-text, var(--text-primary))',
@@ -1505,8 +1501,8 @@ export default function BibleReader({ open, onModeChange }) {
                   borderRadius: '18px',
                   padding: '16px',
                   border: '1px solid rgba(255,255,255,0.10)',
-                  background: 'var(--card-bg, rgba(15,20,45,0.94))',
-                  backdropFilter: 'blur(12px)',
+                  background: 'rgba(10, 20, 50, 0.6)',
+                  backdropFilter: 'blur(20px)',
                   WebkitBackdropFilter: 'blur(12px)',
                   boxShadow: '0 20px 60px rgba(0,0,0,0.45)',
                   color: 'var(--card-text, var(--text-primary))',
@@ -1604,8 +1600,8 @@ export default function BibleReader({ open, onModeChange }) {
                   borderRadius: '18px',
                   padding: '16px',
                   border: '1px solid rgba(255,255,255,0.10)',
-                  background: 'var(--card-bg, rgba(15,20,45,0.94))',
-                  backdropFilter: 'blur(12px)',
+                  background: 'rgba(10, 20, 50, 0.6)',
+                  backdropFilter: 'blur(20px)',
                   WebkitBackdropFilter: 'blur(12px)',
                   boxShadow: '0 20px 60px rgba(0,0,0,0.45)',
                   color: 'var(--card-text, var(--text-primary))',
@@ -1741,8 +1737,8 @@ export default function BibleReader({ open, onModeChange }) {
                   borderRadius: '18px',
                   padding: '16px',
                   border: '1px solid rgba(255,255,255,0.10)',
-                  background: 'var(--card-bg, rgba(15,20,45,0.94))',
-                  backdropFilter: 'blur(12px)',
+                  background: 'rgba(10, 20, 50, 0.6)',
+                  backdropFilter: 'blur(20px)',
                   WebkitBackdropFilter: 'blur(12px)',
                   boxShadow: '0 20px 60px rgba(0,0,0,0.45)',
                   color: 'var(--card-text, var(--text-primary))',
@@ -1884,7 +1880,7 @@ export default function BibleReader({ open, onModeChange }) {
               style={{
                 background: 'none',
                 border: 'none',
-                color: '#D4A843',
+                color: '#F0C040',
                 fontSize: '14px',
                 fontWeight: 700,
                 cursor: fontSize <= BIBLE_FONT_MIN ? 'not-allowed' : 'pointer',
@@ -1956,10 +1952,10 @@ export default function BibleReader({ open, onModeChange }) {
               right: 0,
               zIndex: 201,
               maxHeight: '85vh',
-              background: 'linear-gradient(180deg, rgba(15, 20, 50, 0.98), rgba(8, 12, 35, 0.99))',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              borderTop: '1px solid rgba(212, 168, 67, 0.3)',
+              background: 'rgba(6, 15, 38, 0.75)',
+              backdropFilter: 'blur(28px)',
+              WebkitBackdropFilter: 'blur(28px)',
+              borderTop: '1px solid rgba(255, 255, 255, 0.09)',
               borderRadius: '24px 24px 0 0',
               padding: '24px',
               animation: 'slideUp 0.3s ease-out',
@@ -1971,7 +1967,7 @@ export default function BibleReader({ open, onModeChange }) {
             <div style={{ maxWidth: '680px', margin: '0 auto' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h2 style={{ 
-                  color: '#D4A843', 
+                  color: '#F0C040', 
                   fontSize: '20px', 
                   fontWeight: 600, 
                   margin: 0
@@ -2001,8 +1997,8 @@ export default function BibleReader({ open, onModeChange }) {
                   style={{
                     flex: 1,
                     borderRadius: '99px',
-                    border: testamentFilter === 'old' ? 'none' : '1px solid rgba(212, 168, 67, 0.3)',
-                    background: testamentFilter === 'old' ? 'linear-gradient(135deg, #D4A843 0%, #B8860B 100%)' : 'rgba(10, 15, 40, 0.6)',
+                    border: testamentFilter === 'old' ? 'none' : '1px solid rgba(240, 192, 64, 0.3)',
+                    background: testamentFilter === 'old' ? 'linear-gradient(135deg, #F0C040 0%, #C08010 100%)' : 'rgba(10, 15, 40, 0.6)',
                     color: testamentFilter === 'old' ? '#0a0f28' : 'rgba(255, 255, 255, 0.7)',
                     fontWeight: 600,
                     padding: '10px 16px',
@@ -2019,8 +2015,8 @@ export default function BibleReader({ open, onModeChange }) {
                   style={{
                     flex: 1,
                     borderRadius: '99px',
-                    border: testamentFilter === 'new' ? 'none' : '1px solid rgba(212, 168, 67, 0.3)',
-                    background: testamentFilter === 'new' ? 'linear-gradient(135deg, #D4A843 0%, #B8860B 100%)' : 'rgba(10, 15, 40, 0.6)',
+                    border: testamentFilter === 'new' ? 'none' : '1px solid rgba(240, 192, 64, 0.3)',
+                    background: testamentFilter === 'new' ? 'linear-gradient(135deg, #F0C040 0%, #C08010 100%)' : 'rgba(10, 15, 40, 0.6)',
                     color: testamentFilter === 'new' ? '#0a0f28' : 'rgba(255, 255, 255, 0.7)',
                     fontWeight: 600,
                     padding: '10px 16px',
@@ -2047,9 +2043,9 @@ export default function BibleReader({ open, onModeChange }) {
                     type="button"
                     onClick={() => handleBookSelect(index)}
                     style={{
-                      background: index === bookIndex ? 'rgba(212, 168, 67, 0.15)' : 'rgba(255, 255, 255, 0.04)',
-                      border: index === bookIndex ? '1px solid rgba(212, 168, 67, 0.4)' : '1px solid rgba(255, 255, 255, 0.1)',
-                      color: index === bookIndex ? '#D4A843' : 'rgba(255, 255, 255, 0.85)',
+                      background: index === bookIndex ? 'rgba(240, 192, 64, 0.15)' : 'rgba(255, 255, 255, 0.04)',
+                      border: index === bookIndex ? '1px solid rgba(240, 192, 64, 0.4)' : '1px solid rgba(255, 255, 255, 0.1)',
+                      color: index === bookIndex ? '#F0C040' : 'rgba(255, 255, 255, 0.85)',
                       fontSize: '14px',
                       fontWeight: index === bookIndex ? 600 : 500,
                       cursor: 'pointer',
@@ -2178,7 +2174,7 @@ export default function BibleReader({ open, onModeChange }) {
                             style={{
                               fontSize: '14px',
                               fontWeight: 700,
-                              color: active ? '#D4A843' : 'var(--text-primary)',
+                              color: active ? '#F0C040' : 'var(--text-primary)',
                               display: 'block',
                             }}
                           >
@@ -2228,7 +2224,7 @@ export default function BibleReader({ open, onModeChange }) {
       {/* Chapter Picker Modal */}
       {showChapterPicker && typeof document !== 'undefined' ? createPortal(
         <>
-          <div 
+          <div
             onClick={() => setShowChapterPicker(false)}
             style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0, 0, 0, 0.5)' }}
             aria-hidden
@@ -2241,10 +2237,10 @@ export default function BibleReader({ open, onModeChange }) {
               right: 0,
               zIndex: 201,
               maxHeight: '85vh',
-              background: 'linear-gradient(180deg, rgba(15, 20, 50, 0.98), rgba(8, 12, 35, 0.99))',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              borderTop: '1px solid rgba(212, 168, 67, 0.3)',
+              background: 'rgba(6, 15, 38, 0.75)',
+              backdropFilter: 'blur(28px)',
+              WebkitBackdropFilter: 'blur(28px)',
+              borderTop: '1px solid rgba(255, 255, 255, 0.09)',
               borderRadius: '24px 24px 0 0',
               padding: '24px',
               animation: 'slideUp 0.3s ease-out',
@@ -2256,7 +2252,7 @@ export default function BibleReader({ open, onModeChange }) {
             <div style={{ maxWidth: '680px', margin: '0 auto' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h2 style={{ 
-                  color: '#D4A843', 
+                  color: '#F0C040', 
                   fontSize: '20px', 
                   fontWeight: 600, 
                   margin: 0
@@ -2292,12 +2288,12 @@ export default function BibleReader({ open, onModeChange }) {
                     type="button"
                     onClick={() => handleChapterSelect(chapterNum)}
                     style={{
-                      background: chapterNum === chapter ? 'rgba(212, 168, 67, 0.15)' : 'rgba(255, 255, 255, 0.04)',
-                      color: chapterNum === chapter ? '#D4A843' : 'rgba(255, 255, 255, 0.85)',
+                      background: chapterNum === chapter ? 'rgba(240, 192, 64, 0.15)' : 'rgba(255, 255, 255, 0.04)',
+                      color: chapterNum === chapter ? '#F0C040' : 'rgba(255, 255, 255, 0.85)',
                       borderRadius: '12px',
                       width: '48px',
                       height: '48px',
-                      border: chapterNum === chapter ? '1px solid rgba(212, 168, 67, 0.4)' : '1px solid rgba(255, 255, 255, 0.1)',
+                      border: chapterNum === chapter ? '1px solid rgba(240, 192, 64, 0.4)' : '1px solid rgba(255, 255, 255, 0.1)',
                       cursor: 'pointer',
                       fontSize: '15px',
                       fontWeight: chapterNum === chapter ? 600 : 500,
@@ -2333,10 +2329,10 @@ export default function BibleReader({ open, onModeChange }) {
               right: 0,
               zIndex: 201,
               maxHeight: '85vh',
-              background: 'linear-gradient(180deg, rgba(15, 20, 50, 0.98), rgba(8, 12, 35, 0.99))',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              borderTop: '1px solid rgba(212, 168, 67, 0.3)',
+              background: 'rgba(6, 15, 38, 0.75)',
+              backdropFilter: 'blur(28px)',
+              WebkitBackdropFilter: 'blur(28px)',
+              borderTop: '1px solid rgba(255, 255, 255, 0.09)',
               borderRadius: '24px 24px 0 0',
               padding: '24px',
               animation: 'slideUp 0.3s ease-out',
@@ -2348,7 +2344,7 @@ export default function BibleReader({ open, onModeChange }) {
             <div style={{ maxWidth: '680px', margin: '0 auto' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                 <h2 style={{ 
-                  color: '#D4A843', 
+                  color: '#F0C040', 
                   fontSize: '20px', 
                   fontWeight: 600, 
                   margin: 0
@@ -2388,10 +2384,10 @@ export default function BibleReader({ open, onModeChange }) {
                     onClick={() => setFontSize(Math.max(BIBLE_FONT_MIN, fontSize - BIBLE_FONT_STEP))}
                     disabled={fontSize <= BIBLE_FONT_MIN}
                     style={{
-                      background: 'rgba(212, 168, 67, 0.15)',
-                      border: '1px solid rgba(212, 168, 67, 0.3)',
+                      background: 'rgba(240, 192, 64, 0.15)',
+                      border: '1px solid rgba(240, 192, 64, 0.3)',
                       borderRadius: '12px',
-                      color: '#D4A843',
+                      color: '#F0C040',
                       fontSize: '20px',
                       cursor: fontSize <= BIBLE_FONT_MIN ? 'not-allowed' : 'pointer',
                       padding: '12px 16px',
@@ -2402,13 +2398,13 @@ export default function BibleReader({ open, onModeChange }) {
                     −
                   </button>
                   <div style={{
-                    background: 'rgba(212, 168, 67, 0.1)',
-                    border: '1px solid rgba(212, 168, 67, 0.3)',
+                    background: 'rgba(240, 192, 64, 0.1)',
+                    border: '1px solid rgba(240, 192, 64, 0.3)',
                     borderRadius: '12px',
                     padding: '12px 24px',
                     minWidth: '80px',
                     textAlign: 'center',
-                    color: '#D4A843',
+                    color: '#F0C040',
                     fontSize: '16px',
                     fontWeight: 600,
                   }}>
@@ -2419,10 +2415,10 @@ export default function BibleReader({ open, onModeChange }) {
                     onClick={() => setFontSize(Math.min(BIBLE_FONT_MAX, fontSize + BIBLE_FONT_STEP))}
                     disabled={fontSize >= BIBLE_FONT_MAX}
                     style={{
-                      background: 'rgba(212, 168, 67, 0.15)',
-                      border: '1px solid rgba(212, 168, 67, 0.3)',
+                      background: 'rgba(240, 192, 64, 0.15)',
+                      border: '1px solid rgba(240, 192, 64, 0.3)',
                       borderRadius: '12px',
-                      color: '#D4A843',
+                      color: '#F0C040',
                       fontSize: '20px',
                       cursor: fontSize >= BIBLE_FONT_MAX ? 'not-allowed' : 'pointer',
                       padding: '12px 16px',
@@ -2441,8 +2437,8 @@ export default function BibleReader({ open, onModeChange }) {
                   onClick={() => setFontSize(BIBLE_FONT_MIN)}
                   style={{
                     flex: 1,
-                    background: 'rgba(212, 168, 67, 0.1)',
-                    border: '1px solid rgba(212, 168, 67, 0.3)',
+                    background: 'rgba(240, 192, 64, 0.1)',
+                    border: '1px solid rgba(240, 192, 64, 0.3)',
                     borderRadius: '12px',
                     color: 'rgba(255, 255, 255, 0.7)',
                     fontSize: '14px',
@@ -2459,10 +2455,10 @@ export default function BibleReader({ open, onModeChange }) {
                   onClick={() => setFontSize(BIBLE_FONT_DEFAULT)}
                   style={{
                     flex: 1,
-                    background: 'rgba(212, 168, 67, 0.15)',
-                    border: '1px solid rgba(212, 168, 67, 0.4)',
+                    background: 'rgba(240, 192, 64, 0.15)',
+                    border: '1px solid rgba(240, 192, 64, 0.4)',
                     borderRadius: '12px',
-                    color: '#D4A843',
+                    color: '#F0C040',
                     fontSize: '14px',
                     fontWeight: 600,
                     cursor: 'pointer',
@@ -2477,8 +2473,8 @@ export default function BibleReader({ open, onModeChange }) {
                   onClick={() => setFontSize(BIBLE_FONT_MAX)}
                   style={{
                     flex: 1,
-                    background: 'rgba(212, 168, 67, 0.1)',
-                    border: '1px solid rgba(212, 168, 67, 0.3)',
+                    background: 'rgba(240, 192, 64, 0.1)',
+                    border: '1px solid rgba(240, 192, 64, 0.3)',
                     borderRadius: '12px',
                     color: 'rgba(255, 255, 255, 0.7)',
                     fontSize: '14px',

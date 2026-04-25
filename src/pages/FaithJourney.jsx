@@ -10,12 +10,13 @@ import { supabase } from '../lib/supabase'
 import { userStorageKey } from '../utils/userStorage'
 
 const JOURNEY_NIGHT_CARD_STYLE = {
-  background: 'rgba(8, 20, 50, 0.75)',
-  border: '1px solid #D4A843',
+  background: 'rgba(255, 255, 255, 0.06)',
+  border: '1px solid rgba(255, 255, 255, 0.09)',
   borderRadius: '12px',
-  color: 'white',
-  backdropFilter: 'blur(10px)',
-  WebkitBackdropFilter: 'blur(10px)',
+  color: 'rgba(255, 255, 255, 0.92)',
+  backdropFilter: 'blur(20px)',
+  WebkitBackdropFilter: 'blur(20px)',
+  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
 }
 
 function readJson(key, fallback) {

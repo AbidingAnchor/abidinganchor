@@ -56,11 +56,12 @@
   --modal-bg: var(--nav-bg);
   --more-menu-item-bg: var(--card-parchment);
   --more-menu-item-hover: var(--card-parchment-hover);
-  --bible-chrome-bg: rgba(15, 20, 45, 0.95);
-  --bible-nav-bar-bg: rgba(15, 20, 45, 0.95);
-  --bible-verse-well-bg: transparent;
-  --bible-verse-well-border: transparent;
+  --bible-chrome-bg: var(--nav-bg);
+  --bible-nav-bar-bg: var(--nav-bg);
+  --bible-verse-well-bg: rgba(255, 255, 255, 0.04);
+  --bible-verse-well-border: rgba(255, 255, 255, 0.08);
   --verse-number-color: var(--gold);
+  --bible-verse-text: rgba(255, 255, 255, 0.95);
 
   /* Guided Prayers — glass list cards + player (night / celestial) */
   --guided-prayer-card-bg: rgba(8, 20, 50, 0.75);
@@ -144,104 +145,7 @@
   --guided-prayer-pill-active-text: var(--text-primary);
 }
 
-/* Body-driven day tokens (morning + afternoon): override html[data-theme=day] navy card/chrome vars */
-body.theme-day,
-body.theme-morning,
-body.theme-afternoon {
-  --card-bg: rgba(245, 237, 214, 0.82);
-  --card-border: rgba(212, 168, 67, 0.4);
-  --card-text: #2a1f0e;
-  --card-text-muted: rgba(42, 31, 14, 0.6);
-  --modal-bg: rgba(245, 237, 214, 0.95);
-  --more-menu-item-bg: rgba(235, 225, 200, 0.85);
-  --more-menu-item-hover: rgba(225, 215, 192, 0.95);
-  --card-parchment: var(--card-bg);
-  --card-parchment-hover: var(--more-menu-item-hover);
-  --card-parchment-ink: var(--card-text);
-  --card-parchment-ink-muted: var(--card-text-muted);
-  /* Match header + bottom tab bar to glass cards (was --modal-bg, slightly more opaque) */
-  --nav-bg: var(--card-bg);
-  --text-primary: var(--card-text);
-  --text-secondary: var(--card-text-muted);
-  --text-muted: rgba(42, 31, 14, 0.45);
-  --bible-chrome-bg: rgba(245, 237, 214, 0.92);
-  --bible-nav-bar-bg: rgba(245, 237, 214, 0.92);
-  --bible-verse-well-bg: rgba(245, 237, 214, 0.78);
-  --bible-verse-well-border: rgba(212, 168, 67, 0.3);
-  --verse-number-color: #d4a843;
-  --glass-border: rgba(212, 168, 67, 0.35);
-  --gold-border: rgba(212, 168, 67, 0.45);
 
-  --guided-prayer-card-bg: rgba(255, 255, 255, 0.3);
-  --guided-prayer-card-text: var(--card-text);
-  --guided-prayer-card-muted: var(--card-text-muted);
-  --guided-prayer-card-border: var(--verse-number-color);
-  --guided-prayer-player-surface: rgba(255, 252, 248, 0.94);
-  --guided-prayer-pill-active-text: var(--card-text);
-}
-
-[data-theme="sunset"] {
-  --sat: env(safe-area-inset-top, 0px);
-  --sab: env(safe-area-inset-bottom, 0px);
-  --glass-bg: rgba(40, 18, 50, 0.42);
-  --glass-bg-hover: rgba(50, 22, 62, 0.58);
-  --glass-border: rgba(255, 190, 130, 0.16);
-  --glass-border-hover: rgba(255, 190, 130, 0.30);
-  --glass-shadow: 0 8px 32px rgba(180, 70, 50, 0.22);
-  --text-primary: rgba(255, 245, 230, 0.95);
-  --text-secondary: rgba(255, 225, 195, 0.72);
-  --text-muted: rgba(255, 210, 175, 0.48);
-  --gold: #F4C060;
-  --gold-glow: rgba(244, 192, 96, 0.28);
-  --gold-border: rgba(244, 192, 96, 0.42);
-  --chip-bg: rgba(255, 190, 130, 0.10);
-  --chip-border: rgba(255, 190, 130, 0.20);
-  --chip-text: rgba(255, 230, 200, 0.82);
-  --nav-bg: rgba(28, 12, 38, 0.88);
-  --nav-border: rgba(255, 170, 110, 0.14);
-  --nav-icon: rgba(255,220,180,0.65);
-  --nav-icon-active: #F4C060;
-  --nav-text: rgba(255,220,180,0.60);
-  --nav-text-active: #F4C060;
-  --btn-primary-bg: rgba(244, 192, 96, 0.90);
-  --btn-primary-text: #1a0a00;
-  --btn-secondary-bg: rgba(255, 190, 130, 0.14);
-  --btn-secondary-text: rgba(255, 240, 220, 0.92);
-  --input-bg: rgba(255, 190, 130, 0.08);
-  --input-border: rgba(255, 170, 110, 0.20);
-  --glass-nav-blur: 20px;
-  --glass-scrim: rgba(40, 18, 50, 0.45);
-  --streak-text: rgba(255,240,220,0.92);
-  --verse-text: rgba(255,240,220,0.92);
-  --heading-text: rgba(255,245,230,0.95);
-  --label-text: rgba(255,225,195,0.75);
-  --section-title: #F4C060;
-
-  --card-parchment: rgba(15, 20, 45, 0.9);
-  --card-parchment-hover: rgba(22, 28, 58, 0.95);
-  --card-parchment-ink: rgba(255, 255, 255, 0.95);
-  --card-parchment-ink-muted: rgba(255, 255, 255, 0.72);
-
-  --modal-bg: var(--nav-bg);
-  --more-menu-item-bg: var(--card-parchment);
-  --more-menu-item-hover: var(--card-parchment-hover);
-  --bible-chrome-bg: rgba(15, 20, 45, 0.95);
-  --bible-nav-bar-bg: rgba(15, 20, 45, 0.95);
-  --bible-verse-well-bg: transparent;
-  --bible-verse-well-border: transparent;
-  --verse-number-color: var(--gold);
-  --card-bg: var(--card-parchment);
-  --card-border: var(--glass-border);
-  --card-text: var(--text-primary);
-  --card-text-muted: var(--text-secondary);
-
-  --guided-prayer-card-bg: rgba(80, 40, 20, 0.4);
-  --guided-prayer-card-text: rgba(255, 255, 255, 0.95);
-  --guided-prayer-card-muted: var(--text-secondary);
-  --guided-prayer-card-border: var(--gold);
-  --guided-prayer-player-surface: rgba(36, 16, 28, 0.92);
-  --guided-prayer-pill-active-text: #1a0a00;
-}
 
 * {
   box-sizing: border-box;

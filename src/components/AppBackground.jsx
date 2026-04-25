@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 
 // Generate stars once at module level
 const NIGHT_STARS = Array.from({ length: 50 }).map(() => ({

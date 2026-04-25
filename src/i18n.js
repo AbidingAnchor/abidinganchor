@@ -41,7 +41,7 @@ function migrateLanguageStorage() {
 migrateLanguageStorage()
 
 const esMerged = deepMerge(es, { journeyMap: { stops: journeyStopsEs } })
-const enMerged = deepMerge(en, { journeyMap: { stops: journeyStopsEs } })
+const enMerged = en
 const ptMerged = deepMerge(enMerged, deepMerge(pt, { journeyMap: { stops: journeyStopsPt } }))
 const frMerged = deepMerge(enMerged, deepMerge(fr, { journeyMap: { stops: journeyStopsFr } }))
 const deMerged = deepMerge(enMerged, deepMerge(de, { journeyMap: { stops: journeyStopsDe } }))

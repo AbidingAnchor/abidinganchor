@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+﻿import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
@@ -38,7 +38,7 @@ function GuestSignupModal({ open, onClose, onSignUp, onMaybeLater }) {
           maxWidth: '400px',
           padding: '28px 22px 24px',
           borderRadius: '20px',
-          border: '1px solid rgba(212, 168, 67, 0.45)',
+          border: '1px solid rgba(240, 192, 64, 0.45)',
           boxShadow: '0 16px 48px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)',
           background: 'linear-gradient(165deg, rgba(22,36,72,0.96) 0%, rgba(10,20,50,0.98) 100%)',
         }}
@@ -72,10 +72,10 @@ function GuestSignupModal({ open, onClose, onSignUp, onMaybeLater }) {
             onClick={onSignUp}
             className="w-full rounded-xl px-4 py-3 text-sm font-bold"
             style={{
-              background: 'linear-gradient(180deg, #e4c56a 0%, #D4A843 45%, #b8922f 100%)',
+              background: 'linear-gradient(180deg, #e4c56a 0%, #F0C040 45%, #b8922f 100%)',
               color: '#1a1520',
               border: '1px solid rgba(255,230,180,0.35)',
-              boxShadow: '0 4px 14px rgba(212,168,67,0.35)',
+              boxShadow: '0 4px 14px rgba(240,192,64,0.35)',
             }}
           >
             {t('guest.signUpFree')}
@@ -87,7 +87,7 @@ function GuestSignupModal({ open, onClose, onSignUp, onMaybeLater }) {
             style={{
               background: 'transparent',
               color: 'rgba(255,255,255,0.9)',
-              border: '1px solid rgba(212, 168, 67, 0.55)',
+              border: '1px solid rgba(240, 192, 64, 0.55)',
             }}
           >
             {t('guest.maybeLater')}

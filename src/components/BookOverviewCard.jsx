@@ -1,4 +1,4 @@
-export default function BookOverviewCard({ book, onClose, onStart }) {
+﻿export default function BookOverviewCard({ book, onClose, onStart }) {
   if (!book) return null
 
   return (
@@ -30,7 +30,7 @@ export default function BookOverviewCard({ book, onClose, onStart }) {
         onClick={(event) => event.stopPropagation()}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ margin: 0, color: '#D4A843', fontSize: '24px', fontWeight: 700 }}>{book.name}</h2>
+          <h2 style={{ margin: 0, color: '#F0C040', fontSize: '24px', fontWeight: 700 }}>{book.name}</h2>
           <button type="button" onClick={onClose} style={{ color: 'rgba(255,255,255,0.75)', background: 'none', border: 'none', fontSize: '13px' }}>
             Skip
           </button>
@@ -40,7 +40,7 @@ export default function BookOverviewCard({ book, onClose, onStart }) {
           <span className="app-card" style={{ padding: '6px 10px' }}>Author: {book.author}</span>
           <span className="app-card" style={{ padding: '6px 10px' }}>Date: {book.dateWritten}</span>
           <span className="app-card" style={{ padding: '6px 10px' }}>Chapters: {book.chapters}</span>
-          <span className="app-card" style={{ padding: '6px 10px', color: '#D4A843' }}>{book.testament} Testament</span>
+          <span className="app-card" style={{ padding: '6px 10px', color: '#F0C040' }}>{book.testament} Testament</span>
         </div>
 
         <p style={{ marginTop: '12px', fontStyle: 'italic', color: 'rgba(255,255,255,0.92)' }}>{book.theme}</p>

@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next'
+﻿import { useTranslation } from 'react-i18next'
 import { useMemo, useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { userStorageKey } from '../utils/userStorage'
@@ -301,7 +301,7 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
       </style>
 
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: '#D4A843' }}>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: '#F0C040' }}>
           {t('trivia.title')}
         </p>
         <button type="button" onClick={onExit} className="text-xs text-white/70">
@@ -318,7 +318,7 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
             <span>{t('trivia.scoreLabel')}: {score}</span>
           </div>
           <div className="mb-3 h-2 overflow-hidden rounded-full bg-white/20">
-            <div className="h-full rounded-full" style={{ width: `${progress}%`, background: '#D4A843' }} />
+            <div className="h-full rounded-full" style={{ width: `${progress}%`, background: '#F0C040' }} />
           </div>
 
           <div className="glass-panel rounded-2xl p-4">
@@ -357,7 +357,7 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
           </div>
         </>
       ) : (
-        <div className="relative overflow-hidden glass-panel rounded-2xl border border-[#D4A843]/50 p-4 text-center">
+        <div className="relative overflow-hidden glass-panel rounded-2xl border border-[#F0C040]/50 p-4 text-center">
           {confetti
             ? Array.from({ length: 22 }, (_, i) => (
                 <span
@@ -369,14 +369,14 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
                     width: '6px',
                     height: '10px',
                     borderRadius: '2px',
-                    background: i % 2 === 0 ? '#D4A843' : '#facc15',
+                    background: i % 2 === 0 ? '#F0C040' : '#facc15',
                     animation: `trivia-confetti ${1100 + (i % 5) * 130}ms ease-out forwards`,
                     pointerEvents: 'none',
                   }}
                 />
               ))
             : null}
-          <p className="text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: '#D4A843' }}>
+          <p className="text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: '#F0C040' }}>
             {t('trivia.roundComplete')}
           </p>
           <p className="mt-2 text-3xl font-bold text-white">
@@ -386,10 +386,10 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
             {triviaVerseLoading ? `"${t('trivia.fallbackVerse')}" — Colossians 3:16` : `"${triviaVerseText}…" — Colossians 3:16`}
           </p>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
-            <button type="button" onClick={restart} className="rounded-xl px-4 py-2 text-sm font-semibold text-[#1a1a1a]" style={{ background: '#D4A843' }}>
+            <button type="button" onClick={restart} className="rounded-xl px-4 py-2 text-sm font-semibold text-[#1a1a1a]" style={{ background: '#F0C040' }}>
               {t('trivia.playAgain')}
             </button>
-            <button type="button" onClick={shareScore} className="rounded-xl border border-[#D4A843] px-4 py-2 text-sm font-semibold text-[#D4A843]">
+            <button type="button" onClick={shareScore} className="rounded-xl border border-[#F0C040] px-4 py-2 text-sm font-semibold text-[#F0C040]">
               {t('trivia.shareScore')}
             </button>
           </div>

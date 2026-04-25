@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next'
+﻿import { useTranslation } from 'react-i18next'
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { JOURNEY_MAP_GEOMETRY } from '../data/journeyMapGeometry'
@@ -177,7 +177,7 @@ export default function Achievements({ onExit, fillVertical = false }) {
       </style>
 
       <div className="mb-3 flex shrink-0 items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: '#D4A843' }}>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: '#F0C040' }}>
           🏆 {t('achievements.title')}
         </p>
         <button type="button" onClick={onExit} className="text-xs text-white/70">
@@ -199,7 +199,7 @@ export default function Achievements({ onExit, fillVertical = false }) {
               style={{
                 filter: unlocked ? 'none' : 'grayscale(1)',
                 opacity: unlocked ? 1 : 0.55,
-                boxShadow: unlocked ? '0 0 0 1px rgba(212,168,67,0.6), 0 0 20px rgba(212,168,67,0.18)' : 'none',
+                boxShadow: unlocked ? '0 0 0 1px rgba(240,192,64,0.6), 0 0 20px rgba(240,192,64,0.18)' : 'none',
                 animation: unlocked ? 'badge-unlock 520ms ease' : 'none',
               }}
             >
@@ -218,7 +218,7 @@ export default function Achievements({ onExit, fillVertical = false }) {
                 </div>
               ) : null}
               <p className="text-2xl">{b.icon}</p>
-              <p className="mt-1 text-sm font-semibold" style={{ color: unlocked ? '#D4A843' : 'rgba(255,255,255,0.85)' }}>
+              <p className="mt-1 text-sm font-semibold" style={{ color: unlocked ? '#F0C040' : 'rgba(255,255,255,0.85)' }}>
                 {b.name}
               </p>
               <p className="mt-1 text-xs text-white/75">{b.desc}</p>

@@ -16,6 +16,19 @@ export function FellowshipProvider({ children }) {
   const [shouldRefetch, setShouldRefetch] = useState(false)
   const deletedFellowshipIdsRef = useRef(new Set())
 
+  // Load deleted fellowship IDs from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('deletedFellowshipIds')
+      if (stored) {
+        const ids = JSON.parse(stored)
+        deletedFellowshipIdsRef.current = new Set(ids)
+      }
+    } catch (err) {
+      console.error('Error loading deleted fellowship IDs:', err)
+    }
+  }, [])
+
   const fetchUserFellowship = useCallback(async () => {
     if (!user?.id) {
       setLoading(false)
@@ -72,6 +85,8 @@ export function FellowshipProvider({ children }) {
 
       if (fellowshipError) throw fellowshipError
 
+      console.log('Fetched fellowship data:', fellowshipData?.id, fellowshipData?.name)
+
       if (!fellowshipData) {
         setView('none')
         setFellowship(null)
@@ -79,7 +94,7 @@ export function FellowshipProvider({ children }) {
         setPosts([])
         return
       }
-      
+
       setFellowship(fellowshipData)
       setView('inside')
       
@@ -223,6 +238,12 @@ export function FellowshipProvider({ children }) {
 
   const addDeletedFellowshipId = useCallback((id) => {
     deletedFellowshipIdsRef.current.add(id)
+    // Persist to localStorage
+    try {
+      localStorage.setItem('deletedFellowshipIds', JSON.stringify([...deletedFellowshipIdsRef.current]))
+    } catch (err) {
+      console.error('Error saving deleted fellowship IDs:', err)
+    }
   }, [])
 
   const value = {

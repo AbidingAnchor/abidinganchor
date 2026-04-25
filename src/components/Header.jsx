@@ -164,7 +164,7 @@ export default function Header() {
           color: '#D4A843',
           fontWeight: 500,
           margin: 0,
-          textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+          textShadow: '0 0 20px rgba(212, 168, 67, 0.45), 0 0 40px rgba(212, 168, 67, 0.15)',
         }}
       >
         {currentTitle}

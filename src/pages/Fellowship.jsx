@@ -107,11 +107,17 @@ export default function Fellowship() {
   
   const handleCreateFellowship = async () => {
     if (!fellowshipName.trim() || !user?.id) return
-    
+    if (creating) {
+      console.log('handleCreateFellowship called while already creating, ignoring')
+      return
+    }
+
+    console.log('Creating fellowship:', fellowshipName.trim())
+
     try {
       setCreating(true)
       setCreateError('')
-      
+
       // Create fellowship
       const { data: newFellowship, error: fellowshipError } = await supabase
         .from('fellowships')
@@ -122,9 +128,11 @@ export default function Fellowship() {
         })
         .select()
         .maybeSingle()
-      
+
       if (fellowshipError) throw fellowshipError
-      
+
+      console.log('Fellowship created successfully:', newFellowship.id, newFellowship.name)
+
       // Add creator as member
       const { error: memberError } = await supabase
         .from('fellowship_members')
@@ -133,9 +141,9 @@ export default function Fellowship() {
           user_id: user.id,
           role: 'admin',
         })
-      
+
       if (memberError) throw memberError
-      
+
       // Generate invite code
       const code = Math.random().toString(36).substring(2, 8).toUpperCase()
       await supabase
@@ -145,12 +153,12 @@ export default function Fellowship() {
           invite_code: code,
           created_by: user.id,
         })
-      
+
       setFellowshipName('')
       setFellowshipDescription('')
       setView('inside')
       triggerRefetch()
-      
+
     } catch (error) {
       console.error('Error creating fellowship:', error)
       setCreateError(t('fellowship.createError'))
@@ -367,8 +375,8 @@ export default function Fellowship() {
     if (!fellowship?.id) return
     try {
       setDeletingGroup(true)
-      
-      console.log('Starting delete for fellowship:', fellowship.id)
+
+      console.log('Starting delete for fellowship:', fellowship.id, 'name:', fellowship.name)
       
       // Delete all posts
       const { error: postsError } = await supabase

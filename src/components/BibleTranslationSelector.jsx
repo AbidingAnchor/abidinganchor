@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { POPULAR_BIBLES, saveBibleId } from '../services/bibleApi'
 
 export default function BibleTranslationSelector({ isOpen, onClose, currentBibleId, onSelect, bibles }) {
@@ -61,7 +61,7 @@ export default function BibleTranslationSelector({ isOpen, onClose, currentBible
           }} />
 
           <h2 style={{ 
-            color: '#D4A843', 
+            color: '#F0C040', 
             fontSize: '20px', 
             fontWeight: 700, 
             marginBottom: '20px',
@@ -78,7 +78,7 @@ export default function BibleTranslationSelector({ isOpen, onClose, currentBible
             placeholder="Search translations..."
             style={{
               background: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(212,168,67,0.3)',
+              border: '1px solid rgba(240,192,64,0.3)',
               borderRadius: '12px',
               color: 'white',
               padding: '12px 16px',
@@ -115,8 +115,8 @@ export default function BibleTranslationSelector({ isOpen, onClose, currentBible
                     transition: 'background 0.2s ease'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(212,168,67,0.1)'
-                    e.currentTarget.style.color = '#D4A843'
+                    e.currentTarget.style.background = 'rgba(240,192,64,0.1)'
+                    e.currentTarget.style.color = '#F0C040'
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = 'none'
@@ -129,7 +129,7 @@ export default function BibleTranslationSelector({ isOpen, onClose, currentBible
                       {bible.abbr}
                     </span>
                     {currentBibleId === bible.id && (
-                      <span style={{ color: '#D4A843', fontSize: '18px' }}>✓</span>
+                      <span style={{ color: '#F0C040', fontSize: '18px' }}>✓</span>
                     )}
                   </div>
                 </button>
@@ -145,7 +145,7 @@ export default function BibleTranslationSelector({ isOpen, onClose, currentBible
             Object.entries(groupedBibles).map(([language, bibles]) => (
               <div key={language}>
                 <h3 style={{
-                  color: '#D4A843',
+                  color: '#F0C040',
                   fontSize: '12px',
                   fontWeight: 700,
                   letterSpacing: '0.08em',
@@ -178,8 +178,8 @@ export default function BibleTranslationSelector({ isOpen, onClose, currentBible
                       transition: 'background 0.2s ease'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(212,168,67,0.1)'
-                      e.currentTarget.style.color = '#D4A843'
+                      e.currentTarget.style.background = 'rgba(240,192,64,0.1)'
+                      e.currentTarget.style.color = '#F0C040'
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.background = 'none'
@@ -192,7 +192,7 @@ export default function BibleTranslationSelector({ isOpen, onClose, currentBible
                         {bible.abbr}
                       </span>
                       {currentBibleId === bible.id && (
-                        <span style={{ color: '#D4A843', fontSize: '18px' }}>✓</span>
+                        <span style={{ color: '#F0C040', fontSize: '18px' }}>✓</span>
                       )}
                     </div>
                   </button>

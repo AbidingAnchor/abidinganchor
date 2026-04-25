@@ -161,8 +161,8 @@ export default function Onboarding({ onComplete }) {
     }
     return {
       mode: 'night',
-      cardBg: 'rgba(15,20,45,0.75)',
-      cardBorder: '1px solid rgba(255,255,255,0.14)',
+      cardBg: 'rgba(255,255,255,0.07)',
+      cardBorder: '1px solid rgba(255,255,255,0.10)',
       cardText: '#FFFFFF',
       mutedText: 'rgba(255,255,255,0.82)',
       subtleText: 'rgba(255,255,255,0.62)',

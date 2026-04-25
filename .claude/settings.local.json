@@ -5,7 +5,17 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:api.getbible.net)",
       "Bash(python3 *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(npx vite *)",
+      "Bash(node --max-old-space-size=4096 node_modules/.bin/vite build)",
+      "PowerShell($env:NODE_OPTIONS=\"--max-old-space-size=4096\"; node node_modules/vite/bin/vite.js build 2>&1 | Select-Object -First 20)",
+      "PowerShell($env:NODE_OPTIONS=\"--max-old-space-size=4096\"; node node_modules/vite/bin/vite.js build 2>&1 | Select-Object -Last 12)",
+      "PowerShell($env:NODE_OPTIONS=\"--max-old-space-size=4096\"; node node_modules/vite/bin/vite.js build 2>&1 | Select-Object -Last 5)",
+      "PowerShell($env:NODE_OPTIONS=\"--max-old-space-size=4096\"; node node_modules/vite/bin/vite.js build 2>&1 | Select-String \"built in|error during|FATAL\")",
+      "PowerShell($env:NODE_OPTIONS=\"--max-old-space-size=4096\"; node node_modules/vite/bin/vite.js build 2>&1 | Where-Object { $_ -match \"built in|error during|FATAL|transformed|failed\" } | Select-Object -Last 3)",
+      "PowerShell($env:NODE_OPTIONS=\"--max-old-space-size=4096\"; node node_modules/vite/bin/vite.js build 2>&1 | Where-Object { $_ -match \"built in|error during|FATAL|failed\" })",
+      "Bash(git checkout *)",
+      "Bash(grep -rn \"background: 'rgba\\(1, 4, 9, 0\\\\.[89]\\\\|background: 'rgba\\(5, 4, 10, 0\\\\.[89]\\\\|background: '#[0-9a-fA-F]\\\\{6\\\\}'\" D:/AbidingAnchor/src/pages/ D:/AbidingAnchor/src/components/)"
     ]
   }
 }

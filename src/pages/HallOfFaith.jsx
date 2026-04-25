@@ -127,6 +127,9 @@ export default function HallOfFaith() {
   const loadSupporters = async () => {
     setLoading(true)
     try {
+      console.log('Current user ID:', user?.id)
+      console.log('Current profile supporter_tier:', profile?.supporter_tier)
+
       const { count } = await supabase
         .from('profiles')
         .select('id', { count: 'exact', head: true })
@@ -143,6 +146,8 @@ export default function HallOfFaith() {
         .order('is_founding_member', { ascending: false })
         .limit(50)
 
+      console.log('Supporters fetched:', data?.length, data?.map(p => ({ id: p.id, name: p.display_name, tier: p.supporter_tier })))
+
       setSupporters(
         (data || []).map((p) => ({
           id: p.id,
@@ -153,8 +158,8 @@ export default function HallOfFaith() {
           isOwn: p.id === user?.id,
         })),
       )
-    } catch {
-      // noop
+    } catch (err) {
+      console.error('Error loading supporters:', err)
     }
     setLoading(false)
   }
@@ -179,7 +184,7 @@ export default function HallOfFaith() {
     <div style={{
       position: 'fixed',
       inset: 0,
-      background: 'linear-gradient(180deg, #020810 0%, #050d1f 50%, #020810 100%)',
+      background: 'transparent',
       color: '#fff',
       overflow: 'hidden',
       display: 'flex',
@@ -224,7 +229,7 @@ export default function HallOfFaith() {
         textAlign: 'center',
         paddingTop: '72px',
         paddingBottom: '20px',
-        background: 'linear-gradient(180deg, #020810 60%, transparent 100%)',
+        background: 'linear-gradient(180deg, #010409 60%, transparent 100%)',
       }}>
         <h1 style={{
           margin: '0 0 4px',
@@ -259,7 +264,7 @@ export default function HallOfFaith() {
           <div style={{ marginTop: '40vh', color: 'rgba(255,255,255,0.5)', fontSize: '16px' }}>
             Loading...
           </div>
-        ) : rows.length <= 1 ? (
+        ) : rows.length === 0 ? (
           <div style={{
             marginTop: '40vh',
             textAlign: 'center',

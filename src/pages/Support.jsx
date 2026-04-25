@@ -305,7 +305,7 @@ export default function Support() {
             marginBottom: '16px',
             marginTop: '4px',
             border: '1px solid rgba(212, 175, 55, 0.28)',
-            background: 'var(--card-bg, rgba(15, 20, 45, 0.88))',
+            background: 'var(--card-bg, rgba(255, 255, 255, 0.06))',
           }}
         >
           <h2
@@ -439,7 +439,7 @@ export default function Support() {
             padding: '18px 16px',
             marginBottom: '16px',
             border: '1px solid rgba(212, 175, 55, 0.28)',
-            background: 'var(--card-bg, rgba(15, 20, 45, 0.88))',
+            background: 'var(--card-bg, rgba(255, 255, 255, 0.06))',
           }}
         >
           <h2

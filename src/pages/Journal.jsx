@@ -484,7 +484,7 @@ function Journal() {
   const visibleEntries = entriesExpanded ? filteredEntries : filteredEntries.slice(0, 5)
 
   return (
-    <div style={{ background: 'rgba(8, 12, 35, 1)', minHeight: '100vh', animation: 'fadeIn 0.6s ease-out' }}>
+    <div style={{ background: 'transparent', minHeight: '100vh', animation: 'fadeIn 0.6s ease-out' }}>
       <div className="content-scroll" style={{ padding: '60px 16px 100px', maxWidth: '680px', margin: '0 auto' }}>
         <GuestPreviewBanner />
         
@@ -877,7 +877,7 @@ function Journal() {
               left: 0,
               right: 0,
               bottom: 0,
-              background: 'linear-gradient(180deg, rgba(15, 20, 50, 0.98), rgba(8, 12, 35, 0.99))',
+              background: 'rgba(1, 4, 9, 0.97)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
               zIndex: 10051,
@@ -993,7 +993,7 @@ function Journal() {
               margin: '0 auto',
               maxHeight: '85vh',
               overflowY: 'auto',
-              background: 'linear-gradient(180deg, rgba(15, 20, 50, 0.98), rgba(8, 12, 35, 0.99))',
+              background: 'rgba(1, 4, 9, 0.97)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
               border: '1px solid rgba(212, 168, 67, 0.25)',
