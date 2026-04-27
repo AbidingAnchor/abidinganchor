@@ -5,70 +5,22 @@ import {
   SUPPORT_BMAC_LINK,
   SUPPORT_PAGE_GOLD,
   SUPPORT_ROADMAP_ITEMS,
-  WALL_OF_HONOR_EMPTY,
-  WALL_OF_HONOR_SUBTITLE,
-  WALL_OF_HONOR_TITLE,
 } from '../data/supportPageConstants'
-import { fetchWallOfHonorSupporters, formatSupporterSince, supporterDisplayName } from '../data/supportWallOfHonor'
 import { supabase } from '../lib/supabase'
 import { parseMinistryTransparencyStats } from '../utils/parseMinistryTransparencyStats'
 import { userStorageKey } from '../utils/userStorage'
 
-function WallOfHonorAvatar({ avatarUrl, gold }) {
-  const [imgError, setImgError] = useState(false)
-  const showFallback = !avatarUrl || imgError
-  return (
-    <div
-      style={{
-        width: '44px',
-        height: '44px',
-        borderRadius: '50%',
-        overflow: 'hidden',
-        flexShrink: 0,
-        border: `1px solid rgba(212, 175, 55, 0.35)`,
-        background: 'rgba(0, 0, 0, 0.2)',
-      }}
-    >
-      {showFallback ? (
-        <div
-          aria-hidden
-          style={{
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: gold,
-            fontSize: '22px',
-            lineHeight: 1,
-          }}
-        >
-          ⚓
-        </div>
-      ) : (
-        <img
-          src={avatarUrl}
-          alt=""
-          width={44}
-          height={44}
-          referrerPolicy="no-referrer"
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-          onError={() => setImgError(true)}
-        />
-      )}
-    </div>
-  )
-}
+const STRIPE_MONTHLY = 'https://buy.stripe.com/cNifZibWh3FF2I35PfdAk01'
+const STRIPE_LIFETIME = 'https://buy.stripe.com/9B6bJ2gcx2BB3M76TjdAk02'
 
 export default function Support() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
+  const currentTier = profile?.supporter_tier || 'free'
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
   const [aiPrayersCount, setAiPrayersCount] = useState(null)
   const [usersReachedCount, setUsersReachedCount] = useState(null)
   const [transparencyLoading, setTransparencyLoading] = useState(true)
-  const [honorSupporters, setHonorSupporters] = useState([])
-  const [honorLoading, setHonorLoading] = useState(true)
 
   useEffect(() => {
     setNotificationsEnabled(
@@ -103,21 +55,6 @@ export default function Support() {
     }
 
     void loadTransparencyStats()
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      setHonorLoading(true)
-      const { supporters } = await fetchWallOfHonorSupporters()
-      if (!cancelled) {
-        setHonorSupporters(supporters)
-        setHonorLoading(false)
-      }
-    })()
     return () => {
       cancelled = true
     }
@@ -246,56 +183,237 @@ export default function Support() {
           </article>
         </section>
 
-        {[
-          { amount:'$3', label:'A Small Blessing',
-            desc:'Covers one day of server costs' },
-          { amount:'$10', label:'A Faithful Gift',
-            desc:'Helps keep the app running for a week' },
-          { amount:'$25', label:'A Ministry Partner',
-            desc:'Funds new features & spreading the Word' },
-        ].map(tier => (
-          <a
-            key={tier.amount}
-            href={SUPPORT_BMAC_LINK}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="glass-panel"
-            style={{
-              borderRadius: '16px',
-              padding: '14px 18px',
-              marginBottom: '10px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '14px',
-              textDecoration: 'none',
-            }}
-          >
-            <div
+        {/* FREE */}
+        <div
+          style={{
+            background: '#F0E8D4',
+            borderRadius: 20,
+            border: '1px solid rgba(212,168,67,0.2)',
+            padding: '20px',
+            marginBottom: 12,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span
               style={{
-                background: '#D4A843',
-                border: '1px solid rgba(212, 168, 67, 0.95)',
-                borderRadius: '12px',
-                padding: '8px 14px',
-                minWidth: '52px',
-                textAlign: 'center',
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: '0.15em',
+                color: '#8B6200',
               }}
             >
-              <div style={{ color: '#141824', fontSize: '18px', fontWeight: 'bold' }}>{tier.amount}</div>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div className="support-tier-label" style={{ color: 'rgba(255, 255, 255, 0.95)', fontSize: '14px', fontWeight: 600 }}>
-                {tier.label}
-              </div>
-              <div className="support-tier-desc" style={{ color: 'rgba(255, 255, 255, 0.62)', fontSize: '12px', marginTop: '2px' }}>
-                {tier.desc}
-              </div>
-            </div>
-            <div style={{ color: 'rgba(212, 168, 67, 0.85)', fontSize: '20px', lineHeight: 1 }} aria-hidden>
-              ›
-            </div>
-          </a>
-        ))}
+              FREE
+            </span>
+            {currentTier === 'free' ? (
+              <span
+                style={{
+                  background: '#E8D9B8',
+                  color: '#8B6200',
+                  borderRadius: 50,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  padding: '3px 10px',
+                }}
+              >
+                Your Plan
+              </span>
+            ) : null}
+          </div>
+          <p style={{ fontSize: 20, fontWeight: 700, color: '#1A1A1A', margin: '0 0 12px' }}>Always Free</p>
+          <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+            {['All app features', 'Bible in 12 languages', 'BibleProject videos', '5 AI messages/day'].map((line) => (
+              <li key={line} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
+                <span style={{ color: '#8B6200', flexShrink: 0 }}>✓</span>
+                <span style={{ fontSize: 14, color: '#1A1A1A', lineHeight: 1.45 }}>{line}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* SUPPORTER */}
+        <div
+          style={{
+            background: '#FFFFFF',
+            borderRadius: 20,
+            border: '2px solid rgba(212,168,67,0.5)',
+            padding: '20px',
+            marginBottom: 12,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: '0.15em',
+                color: '#8B6200',
+              }}
+            >
+              SUPPORTER
+            </span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1A' }}>⭐ $4.99/mo</span>
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            <span style={{ fontSize: 28, fontWeight: 800, color: '#1A1A1A' }}>$4.99</span>
+            <span style={{ fontSize: 14, color: '#6B6B6B' }}> /month</span>
+          </div>
+          <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+            {[
+              '50 AI messages/day',
+              'Full name color picker',
+              'Animated silver/blue profile border',
+              '⭐ Supporter badge',
+              'Name in Hall of Faith',
+              'Name on Ministry prayer list',
+            ].map((line) => (
+              <li key={line} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
+                <span style={{ color: '#D4A843', flexShrink: 0 }}>✓</span>
+                <span style={{ fontSize: 14, color: '#1A1A1A', lineHeight: 1.45 }}>{line}</span>
+              </li>
+            ))}
+          </ul>
+          {currentTier === 'monthly' ? (
+            <button
+              type="button"
+              disabled
+              style={{
+                marginTop: 16,
+                width: '100%',
+                padding: '14px',
+                borderRadius: 50,
+                border: 'none',
+                fontWeight: 700,
+                fontSize: 15,
+                background: '#0A1628',
+                color: '#D4A843',
+                cursor: 'default',
+              }}
+            >
+              Current Plan ✓
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => window.open(STRIPE_MONTHLY, '_blank')}
+              style={{
+                marginTop: 16,
+                width: '100%',
+                padding: '14px',
+                borderRadius: 50,
+                border: 'none',
+                fontWeight: 700,
+                fontSize: 15,
+                background: '#D4A843',
+                color: '#1A1A1A',
+                cursor: 'pointer',
+              }}
+            >
+              Support Monthly ⭐
+            </button>
+          )}
+        </div>
+
+        {/* LIFETIME */}
+        <div
+          style={{
+            background: 'linear-gradient(145deg, #F4E8C1 0%, #E8C55A 30%, #D4A843 60%, #C9922A 100%)',
+            borderRadius: 20,
+            border: '2px solid #C9922A',
+            padding: '20px',
+            marginBottom: 12,
+            position: 'relative',
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              top: 12,
+              right: 12,
+              background: '#0A1628',
+              color: '#D4A843',
+              fontSize: 10,
+              fontWeight: 700,
+              borderRadius: 50,
+              padding: '4px 12px',
+            }}
+          >
+            MOST POPULAR
+          </div>
+          <p
+            style={{
+              margin: '0 0 8px',
+              paddingRight: 100,
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: '0.15em',
+              color: '#5C3A00',
+            }}
+          >
+            LIFETIME
+          </p>
+          <div style={{ marginBottom: 12 }}>
+            <span style={{ fontSize: 28, fontWeight: 800, color: '#1A1A1A' }}>$49.99</span>
+            <div style={{ fontSize: 14, color: '#5C3A00', marginTop: 2 }}>one time</div>
+          </div>
+          <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+            {[
+              'Unlimited AI messages/day ∞',
+              'Full name color picker',
+              'Shimmering gold name effect',
+              'Exclusive animated borders',
+              '👑 Gold crown badge',
+              '"Founding Member" status',
+              'Name in Hall of Faith (shown first)',
+              'Ministry prayer list',
+              'Personal prayer by name',
+              'Name in About page',
+            ].map((line) => (
+              <li key={line} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
+                <span style={{ color: '#8B6200', flexShrink: 0 }}>✓</span>
+                <span style={{ fontSize: 14, color: '#1A1A1A', lineHeight: 1.45 }}>{line}</span>
+              </li>
+            ))}
+          </ul>
+          {currentTier === 'lifetime' ? (
+            <button
+              type="button"
+              disabled
+              style={{
+                marginTop: 16,
+                width: '100%',
+                padding: '14px',
+                borderRadius: 50,
+                border: 'none',
+                fontWeight: 700,
+                fontSize: 15,
+                background: '#0A1628',
+                color: '#D4A843',
+                cursor: 'default',
+              }}
+            >
+              Current Plan ✓
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => window.open(STRIPE_LIFETIME, '_blank')}
+              style={{
+                marginTop: 16,
+                width: '100%',
+                padding: '14px',
+                borderRadius: 50,
+                border: 'none',
+                fontWeight: 700,
+                fontSize: 15,
+                background: '#0A1628',
+                color: '#D4A843',
+                cursor: 'pointer',
+              }}
+            >
+              Get Lifetime Access 👑
+            </button>
+          )}
+        </div>
 
         <section
           className="glass-panel"
@@ -430,136 +548,6 @@ export default function Support() {
               </li>
             ))}
           </ul>
-        </section>
-
-        <section
-          className="glass-panel"
-          style={{
-            borderRadius: '20px',
-            padding: '18px 16px',
-            marginBottom: '16px',
-            border: '1px solid rgba(212, 175, 55, 0.28)',
-            background: 'var(--card-bg, rgba(255, 255, 255, 0.06))',
-          }}
-        >
-          <h2
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              flexWrap: 'wrap',
-              color: 'var(--text-primary, #f5f5f5)',
-              fontSize: '16px',
-              fontWeight: 700,
-              margin: '0 0 6px',
-              fontFamily: 'Georgia, serif',
-              letterSpacing: '0.02em',
-            }}
-          >
-            <span style={{ fontSize: '18px', lineHeight: 1, filter: 'none' }} aria-hidden>
-              🏆
-            </span>
-            {WALL_OF_HONOR_TITLE}
-          </h2>
-          <p
-            style={{
-              margin: '0 0 16px',
-              fontSize: '12px',
-              lineHeight: 1.5,
-              color: 'var(--text-secondary, rgba(255,255,255,0.65))',
-            }}
-          >
-            {WALL_OF_HONOR_SUBTITLE}
-          </p>
-
-          {honorLoading ? (
-            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary, rgba(255,255,255,0.55))' }}>
-              Loading…
-            </p>
-          ) : honorSupporters.length === 0 ? (
-            <p
-              style={{
-                margin: 0,
-                fontSize: '13px',
-                fontStyle: 'italic',
-                color: 'var(--text-secondary, rgba(255,255,255,0.5))',
-                textAlign: 'center',
-                padding: '12px 8px',
-              }}
-            >
-              {WALL_OF_HONOR_EMPTY}
-            </p>
-          ) : (
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                gap: '10px',
-              }}
-            >
-              {honorSupporters.map((row) => {
-                const name = supporterDisplayName(row)
-                const sinceLabel = formatSupporterSince(row.supporter_since)
-                return (
-                  <article
-                    key={row.id}
-                    style={{
-                      borderRadius: '14px',
-                      padding: '12px 10px',
-                      background: 'rgba(0, 0, 0, 0.22)',
-                      border: '1px solid rgba(212, 175, 55, 0.22)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      textAlign: 'center',
-                      gap: '8px',
-                      minWidth: 0,
-                    }}
-                  >
-                    <WallOfHonorAvatar avatarUrl={row.avatar_url} gold={gold} />
-                    <div
-                      style={{
-                        fontSize: '13px',
-                        fontWeight: 700,
-                        color: 'var(--text-primary, rgba(255,255,255,0.95))',
-                        lineHeight: 1.3,
-                        wordBreak: 'break-word',
-                      }}
-                    >
-                      {name}
-                    </div>
-                    <span
-                      style={{
-                        display: 'inline-block',
-                        fontSize: '9px',
-                        fontWeight: 700,
-                        letterSpacing: '0.06em',
-                        textTransform: 'uppercase',
-                        color: gold,
-                        border: `1px solid rgba(212, 175, 55, 0.45)`,
-                        borderRadius: '999px',
-                        padding: '3px 8px',
-                        background: 'rgba(212, 175, 55, 0.08)',
-                      }}
-                    >
-                      Ministry Supporter
-                    </span>
-                    {sinceLabel ? (
-                      <span
-                        style={{
-                          fontSize: '11px',
-                          color: 'var(--text-secondary, rgba(255,255,255,0.55))',
-                          lineHeight: 1.35,
-                        }}
-                      >
-                        {sinceLabel}
-                      </span>
-                    ) : null}
-                  </article>
-                )
-              })}
-            </div>
-          )}
         </section>
 
         <a href={SUPPORT_BMAC_LINK}

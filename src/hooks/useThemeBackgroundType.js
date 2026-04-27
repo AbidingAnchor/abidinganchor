@@ -6,7 +6,7 @@ import {
 } from '../utils/themePreferenceStorage'
 
 /**
- * Reactive sky period for UI that should match BackgroundManager (localStorage + clock).
+ * Reactive sky period for UI that should match BackgroundManager (local time, same bands).
  */
 function safeBackgroundType() {
   if (typeof window === 'undefined') return 'night'

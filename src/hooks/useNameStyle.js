@@ -9,22 +9,27 @@ const SHIMMER_KEYFRAMES = `
 
 export function useNameStyle(supporterTier) {
   return useMemo(() => {
+    const isDayTheme = document.documentElement.getAttribute('data-theme') === 'day' ||
+                       document.body.classList.contains('theme-day') ||
+                       document.body.classList.contains('theme-morning') ||
+                       document.body.classList.contains('theme-afternoon');
+
     if (supporterTier === 'lifetime') {
       return {
-        background: 'linear-gradient(90deg, #b8860b, #ffd700, #ffec8b, #ffd700, #b8860b)',
-        backgroundSize: '200%',
+        background: 'linear-gradient(90deg, #8B6200, #D4A843, #FFE08A, #D4A843, #8B6200)',
+        backgroundSize: '200% auto',
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
         backgroundClip: 'text',
-        animation: 'shimmer-gold 2s infinite linear',
+        animation: 'shimmer-gold 1.5s linear infinite',
       }
     } else if (supporterTier === 'monthly') {
       return {
-        color: '#93c5fd',
+        color: isDayTheme ? '#4A4A6A' : '#93c5fd',
       }
     } else {
       return {
-        color: 'rgba(255,255,255,0.9)',
+        color: isDayTheme ? '#B8860B' : 'rgba(255,255,255,0.9)',
       }
     }
   }, [supporterTier])

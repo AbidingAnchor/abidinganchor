@@ -48,7 +48,7 @@
   --card-parchment-ink: rgba(255, 255, 255, 0.95);
   --card-parchment-ink-muted: rgba(255, 255, 255, 0.72);
 
-  /* Semantic aliases (night/sunset — body.theme-day* overrides for creamy day) */
+  /* Semantic aliases (night/sunset — .theme-day* overrides for creamy day) */
   --card-bg: var(--card-parchment);
   --card-border: var(--gold-border);
   --card-text: var(--card-parchment-ink);
@@ -72,63 +72,86 @@
   --guided-prayer-pill-active-text: #0f172a;
 }
 
+/* Sunset sky (evening): deep purple glossy surfaces — scoped to this theme only */
+[data-theme="sunset"] {
+  --section-title: rgba(200, 150, 255, 0.8);
+  --label-text: rgba(255, 255, 255, 0.75);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.75);
+  --verse-text: rgba(255, 255, 255, 0.92);
+  --heading-text: #ffffff;
+  --streak-text: #ffffff;
+  --card-parchment: rgba(60, 20, 90, 0.65);
+  --card-parchment-hover: rgba(72, 28, 105, 0.78);
+  --card-parchment-ink: #ffffff;
+  --card-parchment-ink-muted: rgba(255, 255, 255, 0.75);
+  --card-text: rgba(255, 255, 255, 0.75);
+  --card-text-muted: rgba(255, 255, 255, 0.65);
+  --card-bg: rgba(60, 20, 90, 0.65);
+  --glass-border: rgba(160, 80, 220, 0.25);
+  --glass-bg: rgba(60, 20, 90, 0.65);
+  --glass-bg-hover: rgba(72, 28, 105, 0.78);
+}
+
 [data-theme="day"] {
   --sat: env(safe-area-inset-top, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
-  --glass-bg: rgba(255, 255, 255, 0.55);
-  --glass-bg-hover: rgba(255, 255, 255, 0.65);
-  --glass-border: rgba(212, 168, 67, 0.25);
+  --day-bg-gradient: linear-gradient(180deg, #F5A623 0%, #F9D27D 25%, #FDF6E3 60%, #F5ECD4 100%);
+  --day-bg-glow: radial-gradient(ellipse at top, rgba(255, 238, 188, 0.75) 0%, rgba(255, 238, 188, 0.28) 30%, rgba(255, 238, 188, 0) 62%);
+  --glass-bg: rgba(253, 246, 227, 0.95);
+  --glass-bg-hover: rgba(255, 250, 238, 0.96);
+  --glass-border: rgba(212, 168, 67, 0.30);
   --glass-border-hover: rgba(212, 168, 67, 0.45);
-  --glass-shadow: 0 8px 40px rgba(180, 130, 40, 0.18),
-                  0 2px 8px rgba(255, 200, 80, 0.12);
+  --glass-shadow: 0 4px 24px rgba(212, 168, 67, 0.12);
 
-  --text-primary: #0f1e3d;
-  --text-secondary: #2a3f6f;
-  --text-muted: #4a5f8a;
+  --text-primary: #1A1A1A;
+  --text-secondary: #4A4A4A;
+  --text-muted: #6B6B6B;
+  --gold: #D4A843;
+  --gold-glow: rgba(212, 168, 67, 0.2);
+  --gold-border: rgba(212, 168, 67, 0.30);
+  --chip-bg: rgba(10, 26, 62, 0.06);
+  --chip-border: rgba(10, 26, 62, 0.20);
+  --chip-text: #0a1a3e;
 
-  --gold: #8B6200;
-  --gold-glow: rgba(139, 98, 0, 0.18);
-  --gold-border: rgba(139, 98, 0, 0.40);
+  --nav-bg: rgba(245, 236, 212, 0.97);
+  --nav-border: rgba(212, 168, 67, 0.30);
+  --nav-icon: #0a1a3e;
+  --nav-icon-active: #D4A843;
+  --nav-text: #0a1a3e;
+  --nav-text-active: #D4A843;
 
-  --chip-bg: rgba(15, 30, 61, 0.08);
-  --chip-border: rgba(15, 30, 61, 0.16);
-  --chip-text: #0f1e3d;
+  --header-bg: rgba(253, 246, 227, 0.98);
+  --header-border: rgba(212, 168, 67, 0.2);
+  --header-text: #0a1a3e;
 
-  --nav-bg: rgba(255, 248, 225, 0.92);
-  --nav-border: rgba(212, 168, 67, 0.20);
-  --nav-icon: #4a5f8a;
-  --nav-icon-active: #8B6200;
-  --nav-text: #4a5f8a;
-  --nav-text-active: #8B6200;
+  --btn-primary-bg: #D4A843;
+  --btn-primary-text: #0a1a3e;
+  --btn-primary-active-text: #ffffff;
+  --btn-secondary-bg: transparent;
+  --btn-secondary-border: #0a1a3e;
+  --btn-secondary-text: #0a1a3e;
 
-  --btn-primary-bg: #8B6200;
-  --btn-primary-text: #ffffff;
-  --btn-secondary-bg: rgba(255, 255, 255, 0.80);
-  --btn-secondary-text: #0f1e3d;
+  --input-bg: rgba(255, 250, 238, 0.95);
+  --input-border: rgba(212, 168, 67, 0.30);
+  --input-placeholder: rgba(26, 42, 78, 0.55);
 
-  --input-bg: rgba(255, 255, 255, 0.80);
-  --input-border: rgba(180, 210, 240, 0.50);
-  --input-placeholder: #6a7fa8;
+  --label-text: #1a2a4e;
+  --section-title: #D4A843;
 
-  --streak-text: #0f1e3d;
-  --verse-text: #0f1e3d;
-  --heading-text: #0f1e3d;
-  --label-text: #2a3f6f;
-  --section-title: #8B6200;
-
-  --card-parchment: rgba(15, 20, 45, 0.9);
-  --card-parchment-hover: rgba(22, 28, 58, 0.95);
-  --card-parchment-ink: rgba(255, 255, 255, 0.95);
-  --card-parchment-ink-muted: rgba(255, 255, 255, 0.72);
+  --card-parchment: #F0E8D4;
+  --card-parchment-hover: #F0E8D4;
+  --card-parchment-ink: #1A1A1A;
+  --card-parchment-ink-muted: #4A4A4A;
 
   --glass-nav-blur: 20px;
-  --glass-scrim: rgba(200, 220, 240, 0.45);
+  --glass-scrim: rgba(89, 65, 24, 0.22);
 
-  --modal-bg: var(--nav-bg);
+  --modal-bg: rgba(253, 246, 227, 0.95);
   --more-menu-item-bg: var(--card-parchment);
   --more-menu-item-hover: var(--card-parchment-hover);
-  --bible-chrome-bg: rgba(15, 20, 45, 0.95);
-  --bible-nav-bar-bg: rgba(15, 20, 45, 0.95);
+  --bible-chrome-bg: rgba(253, 246, 227, 0.98);
+  --bible-nav-bar-bg: rgba(253, 246, 227, 0.98);
   --bible-verse-well-bg: transparent;
   --bible-verse-well-border: transparent;
   --verse-number-color: var(--gold);
@@ -137,11 +160,11 @@
   --card-text: var(--text-primary);
   --card-text-muted: var(--text-secondary);
 
-  --guided-prayer-card-bg: rgba(255, 255, 255, 0.3);
+  --guided-prayer-card-bg: rgba(253, 246, 227, 0.95);
   --guided-prayer-card-text: var(--text-primary);
-  --guided-prayer-card-muted: var(--text-muted);
+  --guided-prayer-card-muted: var(--text-secondary);
   --guided-prayer-card-border: var(--gold);
-  --guided-prayer-player-surface: rgba(255, 252, 248, 0.94);
+  --guided-prayer-player-surface: rgba(253, 246, 227, 0.98);
   --guided-prayer-pill-active-text: var(--text-primary);
 }
 
@@ -237,6 +260,22 @@ body {
   --streak-text: var(--card-parchment-ink);
 }
 
+/* Day theme: warm white glass panels */
+.theme-day .home-gold-glass,
+.theme-morning .home-gold-glass,
+.theme-afternoon .home-gold-glass {
+  background: rgba(237, 224, 196, 0.95);
+  color: #1A1A2E;
+  --text-primary: #1A1A2E;
+  --text-secondary: #4A4A6A;
+  --verse-text: #1A1A2E;
+  --heading-text: #1A1A2E;
+  --label-text: #4A4A6A;
+  --streak-text: #1A1A2E;
+  --card-parchment-ink: #1A1A2E;
+  --card-parchment-ink-muted: #4A4A6A;
+}
+
 .home-gold-glass--streak-hot {
   box-shadow:
     0 4px 22px rgba(0, 0, 0, 0.35),
@@ -245,37 +284,106 @@ body {
 }
 
 /* Home Daily Encounter — premium navy glass (overrides theme parchment/plum on .home-gold-glass) */
-.home-gold-glass.daily-encounter-card-premium {
-  background: linear-gradient(145deg, rgba(20, 28, 65, 0.95), rgba(10, 15, 40, 0.98)) !important;
-  border: 1px solid rgba(212, 168, 67, 0.25) !important;
+.theme-day .home-gold-glass.daily-encounter-card-premium,
+.theme-morning .home-gold-glass.daily-encounter-card-premium,
+.theme-afternoon .home-gold-glass.daily-encounter-card-premium {
+  background: rgba(237, 224, 196, 0.95) !important;
+  border: 1px solid rgba(180, 130, 50, 0.25) !important;
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    0 2px 8px rgba(212, 168, 67, 0.1),
-    inset 0 1px 0 rgba(212, 168, 67, 0.15) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  color: rgba(255, 255, 255, 0.92) !important;
-  --text-primary: rgba(255, 255, 255, 0.92);
-  --text-secondary: rgba(255, 255, 255, 0.68);
-  --verse-text: rgba(255, 255, 255, 0.96);
-  --heading-text: rgba(255, 255, 255, 0.95);
-  --label-text: rgba(255, 255, 255, 0.62);
-  --streak-text: rgba(255, 255, 255, 0.88);
-  --card-parchment-ink: rgba(255, 255, 255, 0.92);
-  --card-parchment-ink-muted: rgba(255, 255, 255, 0.65);
+    0 8px 32px rgba(180, 130, 40, 0.18),
+    0 2px 8px rgba(255, 200, 80, 0.12),
+    inset 0 1px 0 rgba(180, 130, 50, 0.15) !important;
+  color: #1A1A2E !important;
+  --text-primary: #1A1A2E;
+  --text-secondary: #4A4A6A;
+  --verse-text: #1A1A2E;
+  --heading-text: #1A1A2E;
+  --label-text: #4A4A6A;
+  --streak-text: #1A1A2E;
+  --card-parchment-ink: #1A1A2E;
+  --card-parchment-ink-muted: #4A4A6A;
 }
 
-body.theme-day .home-gold-glass.daily-encounter-card-premium:hover,
-body.theme-morning .home-gold-glass.daily-encounter-card-premium:hover,
-body.theme-afternoon .home-gold-glass.daily-encounter-card-premium:hover,
-body.theme-evening .home-gold-glass.daily-encounter-card-premium:hover,
-body.theme-night .home-page .home-gold-glass.daily-encounter-card-premium:hover {
-  background: linear-gradient(145deg, rgba(26, 34, 78, 0.97), rgba(14, 20, 52, 0.99)) !important;
-  border-color: rgba(212, 168, 67, 0.35) !important;
-  box-shadow:
-    0 10px 38px rgba(0, 0, 0, 0.45),
-    0 2px 10px rgba(212, 168, 67, 0.14),
-    inset 0 1px 0 rgba(212, 168, 67, 0.2) !important;
+/* Day theme: Force all Daily Encounter card text to dark colors */
+.theme-day .daily-encounter-card-premium,
+.theme-morning .daily-encounter-card-premium,
+.theme-afternoon .daily-encounter-card-premium {
+  color: #1A1A2E !important;
+}
+
+.theme-day .daily-encounter-card-premium *,
+.theme-morning .daily-encounter-card-premium *,
+.theme-afternoon .daily-encounter-card-premium * {
+  color: #1A1A2E !important;
+}
+
+.theme-day .daily-encounter-card-premium .daily-encounter-verse,
+.theme-morning .daily-encounter-card-premium .daily-encounter-verse,
+.theme-afternoon .daily-encounter-card-premium .daily-encounter-verse {
+  color: #1A1A1A !important;
+}
+
+.theme-day .daily-encounter-card-premium .daily-encounter-reflection,
+.theme-morning .daily-encounter-card-premium .daily-encounter-reflection,
+.theme-afternoon .daily-encounter-card-premium .daily-encounter-reflection {
+  color: #1A1A2E !important;
+}
+
+.theme-day .daily-encounter-card-premium p,
+.theme-morning .daily-encounter-card-premium p,
+.theme-afternoon .daily-encounter-card-premium p {
+  color: #1A1A2E !important;
+}
+
+.theme-day .daily-encounter-card-premium button span,
+.theme-morning .daily-encounter-card-premium button span,
+.theme-afternoon .daily-encounter-card-premium button span {
+  color: #1A1A2E !important;
+}
+
+.theme-day .daily-encounter-card-premium .text-white,
+.theme-morning .daily-encounter-card-premium .text-white,
+.theme-afternoon .daily-encounter-card-premium .text-white {
+  color: #1A1A2E !important;
+}
+
+.theme-day .daily-encounter-card-premium .text-white\/75,
+.theme-morning .daily-encounter-card-premium .text-white\/75,
+.theme-afternoon .daily-encounter-card-premium .text-white\/75 {
+  color: #4A4A6A !important;
+}
+
+.theme-day .daily-encounter-card-premium .text-white\/55,
+.theme-morning .daily-encounter-card-premium .text-white\/55,
+.theme-afternoon .daily-encounter-card-premium .text-white\/55 {
+  color: #6A6A8A !important;
+}
+
+/* Day theme: Override inline styles for specific elements */
+.theme-day .daily-encounter-card-premium [style*="color"],
+.theme-morning .daily-encounter-card-premium [style*="color"],
+.theme-afternoon .daily-encounter-card-premium [style*="color"] {
+  color: #1A1A2E !important;
+}
+
+/* Day theme: Override specific inline color values */
+.theme-day .daily-encounter-card-premium [style*="rgba(255, 255, 255"],
+.theme-morning .daily-encounter-card-premium [style*="rgba(255, 255, 255"],
+.theme-afternoon .daily-encounter-card-premium [style*="rgba(255, 255, 255"] {
+  color: #1A1A2E !important;
+}
+
+.theme-day .daily-encounter-card-premium [style*="#ffffff"],
+.theme-morning .daily-encounter-card-premium [style*="#ffffff"],
+.theme-afternoon .daily-encounter-card-premium [style*="#ffffff"] {
+  color: #1A1A2E !important;
+}
+
+.theme-day .home-gold-glass.daily-encounter-card-premium:hover,
+.theme-morning .home-gold-glass.daily-encounter-card-premium:hover,
+.theme-afternoon .home-gold-glass.daily-encounter-card-premium:hover {
+  background: rgba(230, 215, 185, 0.98) !important;
+  border-color: rgba(212, 168, 67, 0.45) !important;
 }
 
 @keyframes goldPulse {
@@ -1039,10 +1147,10 @@ body.theme-night .home-page .home-gold-glass.daily-encounter-card-premium:hover 
   transition: background 0.2s ease, transform 0.15s ease;
 }
 
-body.theme-day .guided-prayer-nav-btn,
-body.theme-morning .guided-prayer-nav-btn,
-body.theme-afternoon .guided-prayer-nav-btn {
-  background: rgba(255, 255, 255, 0.45);
+.theme-day .guided-prayer-nav-btn,
+.theme-morning .guided-prayer-nav-btn,
+.theme-afternoon .guided-prayer-nav-btn {
+  background: rgba(237, 224, 196, 0.95);
 }
 
 .guided-prayer-nav-btn:active {
@@ -1054,7 +1162,7 @@ body.theme-afternoon .guided-prayer-nav-btn {
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-/* Settings: Bible translation — dark surface for sunset/night; day sky uses body.theme-day* below */
+/* Settings: Bible translation — dark surface for sunset/night; day sky uses .theme-day* below */
 .settings-bible-translation-select {
   color-scheme: dark;
   background-color: rgba(18, 22, 42, 0.98) !important;
@@ -1120,85 +1228,92 @@ body.theme-afternoon .guided-prayer-nav-btn {
   color: rgba(255, 255, 255, 0.5);
 }
 
-/* EVENING — plum glass hub rows (matches global evening cards; explicit copy for title/subtitle) */
-body.theme-evening .fj-hub-card {
-  background: rgba(60, 20, 80, 0.72) !important;
-  border: 1px solid rgba(212, 168, 67, 0.45) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
-  box-shadow: 0 4px 24px rgba(180, 80, 20, 0.2) !important;
+/* EVENING — hub rows match deep purple glossy cards */
+body.theme-evening .fj-hub-card,
+[data-theme="sunset"] .fj-hub-card {
+  background: rgba(60, 20, 90, 0.65) !important;
+  border: 1px solid rgba(160, 80, 220, 0.25) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow: 0 4px 28px rgba(40, 10, 70, 0.35) !important;
 }
 body.theme-evening .fj-hub-card--featured:hover,
-body.theme-evening .fj-hub-card:not(.fj-hub-card--featured):hover {
-  background: rgba(72, 28, 95, 0.78) !important;
-  border-color: rgba(212, 168, 67, 0.55) !important;
-  box-shadow: 0 6px 28px rgba(200, 85, 35, 0.28) !important;
+body.theme-evening .fj-hub-card:not(.fj-hub-card--featured):hover,
+[data-theme="sunset"] .fj-hub-card--featured:hover,
+[data-theme="sunset"] .fj-hub-card:not(.fj-hub-card--featured):hover {
+  background: rgba(72, 28, 105, 0.78) !important;
+  border-color: rgba(180, 100, 235, 0.35) !important;
+  box-shadow: 0 6px 32px rgba(50, 15, 90, 0.4) !important;
 }
-body.theme-evening .fj-hub-title {
-  color: #f0eeea !important;
+body.theme-evening .fj-hub-title,
+[data-theme="sunset"] .fj-hub-title {
+  color: #ffffff !important;
 }
-body.theme-evening .fj-hub-subtitle {
-  color: rgba(240, 238, 234, 0.6) !important;
+body.theme-evening .fj-hub-subtitle,
+[data-theme="sunset"] .fj-hub-subtitle {
+  color: rgba(255, 255, 255, 0.75) !important;
 }
-body.theme-evening .fj-hub-badge:not(.fj-hub-badge--featured) {
+body.theme-evening .fj-hub-badge:not(.fj-hub-badge--featured),
+[data-theme="sunset"] .fj-hub-badge:not(.fj-hub-badge--featured) {
   background: rgba(212, 168, 67, 0.28) !important;
   color: #f0eeea !important;
 }
-body.theme-evening .fj-hub-badge--featured {
+body.theme-evening .fj-hub-badge--featured,
+[data-theme="sunset"] .fj-hub-badge--featured {
   background: #d4a843 !important;
   color: #ffffff !important;
 }
 
 /* DAY sky — Journey hub list cards + streak + answered prayers row */
-body.theme-day .fj-hub-card,
-body.theme-morning .fj-hub-card,
-body.theme-afternoon .fj-hub-card {
+.theme-day .fj-hub-card,
+.theme-morning .fj-hub-card,
+.theme-afternoon .fj-hub-card {
   background: rgba(245, 237, 214, 0.82) !important;
   border: 1px solid rgba(212, 168, 67, 0.35) !important;
 }
-body.theme-day .fj-hub-card--featured:hover,
-body.theme-morning .fj-hub-card--featured:hover,
-body.theme-afternoon .fj-hub-card--featured:hover,
-body.theme-day .fj-hub-card:not(.fj-hub-card--featured):hover,
-body.theme-morning .fj-hub-card:not(.fj-hub-card--featured):hover,
-body.theme-afternoon .fj-hub-card:not(.fj-hub-card--featured):hover {
+.theme-day .fj-hub-card--featured:hover,
+.theme-morning .fj-hub-card--featured:hover,
+.theme-afternoon .fj-hub-card--featured:hover,
+.theme-day .fj-hub-card:not(.fj-hub-card--featured):hover,
+.theme-morning .fj-hub-card:not(.fj-hub-card--featured):hover,
+.theme-afternoon .fj-hub-card:not(.fj-hub-card--featured):hover {
   background: rgba(245, 232, 200, 0.92) !important;
   border-color: rgba(212, 168, 67, 0.45) !important;
 }
-body.theme-day .fj-hub-title,
-body.theme-morning .fj-hub-title,
-body.theme-afternoon .fj-hub-title,
-body.theme-day .fj-hub-subtitle,
-body.theme-morning .fj-hub-subtitle,
-body.theme-afternoon .fj-hub-subtitle {
+.theme-day .fj-hub-title,
+.theme-morning .fj-hub-title,
+.theme-afternoon .fj-hub-title,
+.theme-day .fj-hub-subtitle,
+.theme-morning .fj-hub-subtitle,
+.theme-afternoon .fj-hub-subtitle {
   color: #2a1f0e !important;
 }
-body.theme-day .fj-hub-subtitle,
-body.theme-morning .fj-hub-subtitle,
-body.theme-afternoon .fj-hub-subtitle {
+.theme-day .fj-hub-subtitle,
+.theme-morning .fj-hub-subtitle,
+.theme-afternoon .fj-hub-subtitle {
   color: rgba(42, 31, 14, 0.55) !important;
 }
-body.theme-day .fj-hub-badge,
-body.theme-morning .fj-hub-badge,
-body.theme-afternoon .fj-hub-badge {
+.theme-day .fj-hub-badge,
+.theme-morning .fj-hub-badge,
+.theme-afternoon .fj-hub-badge {
   background: #d4a843 !important;
   color: #ffffff !important;
 }
 
-body.theme-day .fj-hub-streak,
-body.theme-morning .fj-hub-streak,
-body.theme-afternoon .fj-hub-streak {
+.theme-day .fj-hub-streak,
+.theme-morning .fj-hub-streak,
+.theme-afternoon .fj-hub-streak {
   background: rgba(245, 237, 214, 0.82) !important;
   border: 1px solid rgba(212, 168, 67, 0.35) !important;
 }
-body.theme-day .fj-hub-streak__line,
-body.theme-morning .fj-hub-streak__line,
-body.theme-afternoon .fj-hub-streak__line {
+.theme-day .fj-hub-streak__line,
+.theme-morning .fj-hub-streak__line,
+.theme-afternoon .fj-hub-streak__line {
   color: #2a1f0e !important;
 }
-body.theme-day .fj-hub-streak__sub,
-body.theme-morning .fj-hub-streak__sub,
-body.theme-afternoon .fj-hub-streak__sub {
+.theme-day .fj-hub-streak__sub,
+.theme-morning .fj-hub-streak__sub,
+.theme-afternoon .fj-hub-streak__sub {
   color: rgba(42, 31, 14, 0.55) !important;
 }
 
@@ -1229,61 +1344,61 @@ body.theme-afternoon .fj-hub-streak__sub {
   color: rgba(255, 255, 255, 0.3);
 }
 
-body.theme-day .fj-hub-streak-dot--loading,
-body.theme-morning .fj-hub-streak-dot--loading,
-body.theme-afternoon .fj-hub-streak-dot--loading {
+.theme-day .fj-hub-streak-dot--loading,
+.theme-morning .fj-hub-streak-dot--loading,
+.theme-afternoon .fj-hub-streak-dot--loading {
   background: rgba(42, 31, 14, 0.08) !important;
   color: rgba(42, 31, 14, 0.35) !important;
 }
-body.theme-day .fj-hub-streak-dot--today,
-body.theme-morning .fj-hub-streak-dot--today,
-body.theme-afternoon .fj-hub-streak-dot--today {
+.theme-day .fj-hub-streak-dot--today,
+.theme-morning .fj-hub-streak-dot--today,
+.theme-afternoon .fj-hub-streak-dot--today {
   background: #d4a843 !important;
   color: #ffffff !important;
 }
-body.theme-day .fj-hub-streak-dot--done,
-body.theme-morning .fj-hub-streak-dot--done,
-body.theme-afternoon .fj-hub-streak-dot--done {
+.theme-day .fj-hub-streak-dot--done,
+.theme-morning .fj-hub-streak-dot--done,
+.theme-afternoon .fj-hub-streak-dot--done {
   background: rgba(212, 168, 67, 0.28) !important;
   color: #8b6200 !important;
 }
-body.theme-day .fj-hub-streak-dot--idle,
-body.theme-morning .fj-hub-streak-dot--idle,
-body.theme-afternoon .fj-hub-streak-dot--idle {
+.theme-day .fj-hub-streak-dot--idle,
+.theme-morning .fj-hub-streak-dot--idle,
+.theme-afternoon .fj-hub-streak-dot--idle {
   background: rgba(42, 31, 14, 0.06) !important;
   color: rgba(42, 31, 14, 0.35) !important;
 }
 
-body.theme-day .fj-hub-prayers,
-body.theme-morning .fj-hub-prayers,
-body.theme-afternoon .fj-hub-prayers {
+.theme-day .fj-hub-prayers,
+.theme-morning .fj-hub-prayers,
+.theme-afternoon .fj-hub-prayers {
   background: rgba(245, 237, 214, 0.82) !important;
   border: 1px solid rgba(212, 168, 67, 0.35) !important;
   box-shadow: none !important;
 }
-body.theme-day .fj-hub-prayers p,
-body.theme-morning .fj-hub-prayers p,
-body.theme-afternoon .fj-hub-prayers p {
+.theme-day .fj-hub-prayers p,
+.theme-morning .fj-hub-prayers p,
+.theme-afternoon .fj-hub-prayers p {
   color: #2a1f0e !important;
 }
-body.theme-day .fj-hub-prayers p:last-of-type,
-body.theme-morning .fj-hub-prayers p:last-of-type,
-body.theme-afternoon .fj-hub-prayers p:last-of-type {
+.theme-day .fj-hub-prayers p:last-of-type,
+.theme-morning .fj-hub-prayers p:last-of-type,
+.theme-afternoon .fj-hub-prayers p:last-of-type {
   color: rgba(42, 31, 14, 0.55) !important;
 }
-body.theme-day .fj-hub-prayers__arrow,
-body.theme-morning .fj-hub-prayers__arrow,
-body.theme-afternoon .fj-hub-prayers__arrow {
+.theme-day .fj-hub-prayers__arrow,
+.theme-morning .fj-hub-prayers__arrow,
+.theme-afternoon .fj-hub-prayers__arrow {
   color: rgba(42, 31, 14, 0.45) !important;
 }
 
-body.theme-day .fj-hub-stat-card,
-body.theme-morning .fj-hub-stat-card,
-body.theme-afternoon .fj-hub-stat-card,
-body.theme-day .fj-hub-vod-card,
-body.theme-morning .fj-hub-vod-card,
-body.theme-afternoon .fj-hub-vod-card {
-  background: rgba(255, 255, 255, 0.3) !important;
+.theme-day .fj-hub-stat-card,
+.theme-morning .fj-hub-stat-card,
+.theme-afternoon .fj-hub-stat-card,
+.theme-day .fj-hub-vod-card,
+.theme-morning .fj-hub-vod-card,
+.theme-afternoon .fj-hub-vod-card {
+  background: rgba(237, 224, 196, 0.95) !important;
   border: 1px solid #d4a843 !important;
   border-radius: 12px !important;
   color: #1a1a2e !important;
@@ -1291,45 +1406,59 @@ body.theme-afternoon .fj-hub-vod-card {
   -webkit-backdrop-filter: blur(10px) !important;
 }
 
-/* Evening: streak + prayers CTA match plum hub */
+/* Evening: streak + prayers CTA */
 body.theme-evening .fj-hub-streak,
-body.theme-evening .fj-hub-prayers {
-  background: rgba(60, 20, 80, 0.72) !important;
-  border: 1px solid rgba(212, 168, 67, 0.45) !important;
-  box-shadow: 0 4px 24px rgba(180, 80, 20, 0.2) !important;
+body.theme-evening .fj-hub-prayers,
+[data-theme="sunset"] .fj-hub-streak,
+[data-theme="sunset"] .fj-hub-prayers {
+  background: rgba(60, 20, 90, 0.65) !important;
+  border: 1px solid rgba(160, 80, 220, 0.25) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow: 0 4px 28px rgba(40, 10, 70, 0.35) !important;
 }
-body.theme-evening .fj-hub-streak__line {
-  color: #f0eeea !important;
+body.theme-evening .fj-hub-streak__line,
+[data-theme="sunset"] .fj-hub-streak__line {
+  color: #ffffff !important;
 }
-body.theme-evening .fj-hub-streak__sub {
-  color: rgba(240, 238, 234, 0.6) !important;
+body.theme-evening .fj-hub-streak__sub,
+[data-theme="sunset"] .fj-hub-streak__sub {
+  color: rgba(255, 255, 255, 0.75) !important;
 }
-body.theme-evening .fj-hub-prayers p {
-  color: #f0eeea !important;
+body.theme-evening .fj-hub-prayers p,
+[data-theme="sunset"] .fj-hub-prayers p {
+  color: #ffffff !important;
 }
-body.theme-evening .fj-hub-prayers p:first-of-type {
-  color: #d4a843 !important;
+body.theme-evening .fj-hub-prayers p:first-of-type,
+[data-theme="sunset"] .fj-hub-prayers p:first-of-type {
+  color: rgba(200, 150, 255, 0.9) !important;
 }
-body.theme-evening .fj-hub-prayers p:last-of-type {
-  color: rgba(240, 238, 234, 0.65) !important;
+body.theme-evening .fj-hub-prayers p:last-of-type,
+[data-theme="sunset"] .fj-hub-prayers p:last-of-type {
+  color: rgba(255, 255, 255, 0.75) !important;
 }
-body.theme-evening .fj-hub-prayers__arrow {
-  color: rgba(212, 168, 67, 0.85) !important;
+body.theme-evening .fj-hub-prayers__arrow,
+[data-theme="sunset"] .fj-hub-prayers__arrow {
+  color: rgba(200, 150, 255, 0.75) !important;
 }
 
-body.theme-evening .fj-hub-streak-dot--loading {
+body.theme-evening .fj-hub-streak-dot--loading,
+[data-theme="sunset"] .fj-hub-streak-dot--loading {
   background: rgba(240, 238, 234, 0.1) !important;
   color: rgba(240, 238, 234, 0.4) !important;
 }
-body.theme-evening .fj-hub-streak-dot--today {
+body.theme-evening .fj-hub-streak-dot--today,
+[data-theme="sunset"] .fj-hub-streak-dot--today {
   background: #d4a843 !important;
   color: #ffffff !important;
 }
-body.theme-evening .fj-hub-streak-dot--done {
+body.theme-evening .fj-hub-streak-dot--done,
+[data-theme="sunset"] .fj-hub-streak-dot--done {
   background: rgba(212, 168, 67, 0.35) !important;
   color: #f0eeea !important;
 }
-body.theme-evening .fj-hub-streak-dot--idle {
+body.theme-evening .fj-hub-streak-dot--idle,
+[data-theme="sunset"] .fj-hub-streak-dot--idle {
   background: rgba(240, 238, 234, 0.08) !important;
   color: rgba(240, 238, 234, 0.35) !important;
 }
@@ -1367,28 +1496,28 @@ body.theme-evening .fj-hub-streak-dot--idle {
   box-shadow: 0 0 20px rgba(212, 168, 67, 0.12);
 }
 
-body.theme-day .prayer-page-main-tabs,
-body.theme-morning .prayer-page-main-tabs,
-body.theme-afternoon .prayer-page-main-tabs {
+.theme-day .prayer-page-main-tabs,
+.theme-morning .prayer-page-main-tabs,
+.theme-afternoon .prayer-page-main-tabs {
   background: rgba(235, 225, 200, 0.85) !important;
   border: 1px solid rgba(212, 168, 67, 0.35) !important;
 }
-body.theme-day .prayer-page-main-tab,
-body.theme-morning .prayer-page-main-tab,
-body.theme-afternoon .prayer-page-main-tab {
+.theme-day .prayer-page-main-tab,
+.theme-morning .prayer-page-main-tab,
+.theme-afternoon .prayer-page-main-tab {
   color: rgba(42, 31, 14, 0.6) !important;
   background: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
 }
-body.theme-day .prayer-page-main-tab:hover:not(.prayer-page-main-tab--active),
-body.theme-morning .prayer-page-main-tab:hover:not(.prayer-page-main-tab--active),
-body.theme-afternoon .prayer-page-main-tab:hover:not(.prayer-page-main-tab--active) {
+.theme-day .prayer-page-main-tab:hover:not(.prayer-page-main-tab--active),
+.theme-morning .prayer-page-main-tab:hover:not(.prayer-page-main-tab--active),
+.theme-afternoon .prayer-page-main-tab:hover:not(.prayer-page-main-tab--active) {
   color: rgba(42, 31, 14, 0.75) !important;
 }
-body.theme-day .prayer-page-main-tab--active,
-body.theme-morning .prayer-page-main-tab--active,
-body.theme-afternoon .prayer-page-main-tab--active {
+.theme-day .prayer-page-main-tab--active,
+.theme-morning .prayer-page-main-tab--active,
+.theme-afternoon .prayer-page-main-tab--active {
   background: #d4a843 !important;
   color: #ffffff !important;
   border-color: transparent !important;
@@ -1396,9 +1525,9 @@ body.theme-afternoon .prayer-page-main-tab--active {
 }
 
 /* Settings — Bible translation select: cream on day sky only */
-body.theme-day .settings-bible-translation-select,
-body.theme-morning .settings-bible-translation-select,
-body.theme-afternoon .settings-bible-translation-select {
+.theme-day .settings-bible-translation-select,
+.theme-morning .settings-bible-translation-select,
+.theme-afternoon .settings-bible-translation-select {
   color-scheme: light !important;
   background: rgba(245, 237, 214, 0.9) !important;
   border: 1px solid rgba(212, 168, 67, 0.45) !important;
@@ -1406,18 +1535,18 @@ body.theme-afternoon .settings-bible-translation-select {
   padding: 10px 14px !important;
   color: #2a1f0e !important;
 }
-body.theme-day .settings-bible-translation-select option,
-body.theme-morning .settings-bible-translation-select option,
-body.theme-afternoon .settings-bible-translation-select option {
+.theme-day .settings-bible-translation-select option,
+.theme-morning .settings-bible-translation-select option,
+.theme-afternoon .settings-bible-translation-select option {
   background-color: rgba(245, 237, 214, 0.98) !important;
   color: #2a1f0e !important;
 }
-body.theme-day .settings-bible-translation-select option:checked,
-body.theme-day .settings-bible-translation-select option:hover,
-body.theme-morning .settings-bible-translation-select option:checked,
-body.theme-morning .settings-bible-translation-select option:hover,
-body.theme-afternoon .settings-bible-translation-select option:checked,
-body.theme-afternoon .settings-bible-translation-select option:hover {
+.theme-day .settings-bible-translation-select option:checked,
+.theme-day .settings-bible-translation-select option:hover,
+.theme-morning .settings-bible-translation-select option:checked,
+.theme-morning .settings-bible-translation-select option:hover,
+.theme-afternoon .settings-bible-translation-select option:checked,
+.theme-afternoon .settings-bible-translation-select option:hover {
   background-color: rgba(212, 168, 67, 0.25) !important;
 }
 
@@ -1905,39 +2034,39 @@ body {
 }
 
 /* ── DAY SKY (morning / afternoon): parchment glass cards only — night & sunset unchanged ── */
-body.theme-day .glass-panel,
-body.theme-morning .glass-panel,
-body.theme-afternoon .glass-panel,
-body.theme-day .glass-card,
-body.theme-morning .glass-card,
-body.theme-afternoon .glass-card,
-body.theme-day .glass:not(.glass-nav-bar):not(.glass-scrim),
-body.theme-morning .glass:not(.glass-nav-bar):not(.glass-scrim),
-body.theme-afternoon .glass:not(.glass-nav-bar):not(.glass-scrim),
-body.theme-day .app-card,
-body.theme-morning .app-card,
-body.theme-afternoon .app-card,
-body.theme-day .home-gold-glass,
-body.theme-morning .home-gold-glass,
-body.theme-afternoon .home-gold-glass,
-body.theme-day .glass-strong,
-body.theme-morning .glass-strong,
-body.theme-afternoon .glass-strong,
-body.theme-day .stat-card,
-body.theme-morning .stat-card,
-body.theme-afternoon .stat-card,
-body.theme-day .tool-card,
-body.theme-morning .tool-card,
-body.theme-afternoon .tool-card,
-body.theme-day .home-hero,
-body.theme-morning .home-hero,
-body.theme-afternoon .home-hero,
-body.theme-day .streak-card,
-body.theme-morning .streak-card,
-body.theme-afternoon .streak-card,
-body.theme-day .home-tool-tile,
-body.theme-morning .home-tool-tile,
-body.theme-afternoon .home-tool-tile {
+.theme-day .glass-panel,
+.theme-morning .glass-panel,
+.theme-afternoon .glass-panel,
+.theme-day .glass-card,
+.theme-morning .glass-card,
+.theme-afternoon .glass-card,
+.theme-day .glass:not(.glass-nav-bar):not(.glass-scrim),
+.theme-morning .glass:not(.glass-nav-bar):not(.glass-scrim),
+.theme-afternoon .glass:not(.glass-nav-bar):not(.glass-scrim),
+.theme-day .app-card,
+.theme-morning .app-card,
+.theme-afternoon .app-card,
+.theme-day .home-gold-glass,
+.theme-morning .home-gold-glass,
+.theme-afternoon .home-gold-glass,
+.theme-day .glass-strong,
+.theme-morning .glass-strong,
+.theme-afternoon .glass-strong,
+.theme-day .stat-card,
+.theme-morning .stat-card,
+.theme-afternoon .stat-card,
+.theme-day .tool-card,
+.theme-morning .tool-card,
+.theme-afternoon .tool-card,
+.theme-day .home-hero,
+.theme-morning .home-hero,
+.theme-afternoon .home-hero,
+.theme-day .streak-card,
+.theme-morning .streak-card,
+.theme-afternoon .streak-card,
+.theme-day .home-tool-tile,
+.theme-morning .home-tool-tile,
+.theme-afternoon .home-tool-tile {
   background: rgba(245, 237, 214, 0.82) !important;
   border: 1px solid rgba(212, 168, 67, 0.45) !important;
   backdrop-filter: blur(12px) !important;
@@ -1954,74 +2083,77 @@ body.theme-afternoon .home-tool-tile {
   --card-parchment-ink-muted: rgba(42, 31, 14, 0.65);
 }
 
-body.theme-day .glass-panel:hover,
-body.theme-morning .glass-panel:hover,
-body.theme-afternoon .glass-panel:hover,
-body.theme-day .glass-card:hover,
-body.theme-morning .glass-card:hover,
-body.theme-afternoon .glass-card:hover,
-body.theme-day .glass-strong:hover,
-body.theme-morning .glass-strong:hover,
-body.theme-afternoon .glass-strong:hover,
-body.theme-day .app-card:hover,
-body.theme-morning .app-card:hover,
-body.theme-afternoon .app-card:hover,
-body.theme-day .home-gold-glass:hover,
-body.theme-morning .home-gold-glass:hover,
-body.theme-afternoon .home-gold-glass:hover,
-body.theme-day .home-tool-tile:hover,
-body.theme-morning .home-tool-tile:hover,
-body.theme-afternoon .home-tool-tile:hover {
+.theme-day .glass-panel:hover,
+.theme-morning .glass-panel:hover,
+.theme-afternoon .glass-panel:hover,
+.theme-day .glass-card:hover,
+.theme-morning .glass-card:hover,
+.theme-afternoon .glass-card:hover,
+.theme-day .glass-strong:hover,
+.theme-morning .glass-strong:hover,
+.theme-afternoon .glass-strong:hover,
+.theme-day .app-card:hover,
+.theme-morning .app-card:hover,
+.theme-afternoon .app-card:hover,
+.theme-day .home-gold-glass:hover,
+.theme-morning .home-gold-glass:hover,
+.theme-afternoon .home-gold-glass:hover,
+.theme-day .home-tool-tile:hover,
+.theme-morning .home-tool-tile:hover,
+.theme-afternoon .home-tool-tile:hover {
   background: rgba(245, 232, 200, 0.9) !important;
   border-color: rgba(212, 168, 67, 0.55) !important;
 }
 
-body.theme-day .glass-panel *,
-body.theme-morning .glass-panel *,
-body.theme-afternoon .glass-panel *,
-body.theme-day .glass-card *,
-body.theme-morning .glass-card *,
-body.theme-afternoon .glass-card *,
-body.theme-day .glass:not(.glass-nav-bar):not(.glass-scrim) *,
-body.theme-morning .glass:not(.glass-nav-bar):not(.glass-scrim) *,
-body.theme-afternoon .glass:not(.glass-nav-bar):not(.glass-scrim) *,
-body.theme-day .app-card *,
-body.theme-morning .app-card *,
-body.theme-afternoon .app-card *,
-body.theme-day .home-gold-glass *,
-body.theme-morning .home-gold-glass *,
-body.theme-afternoon .home-gold-glass *,
-body.theme-day .home-tool-tile *,
-body.theme-morning .home-tool-tile *,
-body.theme-afternoon .home-tool-tile * {
+.theme-day .glass-panel *,
+.theme-morning .glass-panel *,
+.theme-afternoon .glass-panel *,
+.theme-day .glass-card *,
+.theme-morning .glass-card *,
+.theme-afternoon .glass-card *,
+.theme-day .glass:not(.glass-nav-bar):not(.glass-scrim) *,
+.theme-morning .glass:not(.glass-nav-bar):not(.glass-scrim) *,
+.theme-afternoon .glass:not(.glass-nav-bar):not(.glass-scrim) *,
+.theme-day .app-card *,
+.theme-morning .app-card *,
+.theme-afternoon .app-card *,
+.theme-day .home-gold-glass *,
+.theme-morning .home-gold-glass *,
+.theme-afternoon .home-gold-glass *,
+.theme-day .home-tool-tile *,
+.theme-morning .home-tool-tile *,
+.theme-afternoon .home-tool-tile * {
   --text-primary: #2a1f0e;
   --text-secondary: rgba(42, 31, 14, 0.65);
 }
 
-body.theme-day .home-gold-glass.daily-encounter-card-premium *,
-body.theme-morning .home-gold-glass.daily-encounter-card-premium *,
-body.theme-afternoon .home-gold-glass.daily-encounter-card-premium * {
-  --text-primary: rgba(255, 255, 255, 0.92);
-  --text-secondary: rgba(255, 255, 255, 0.68);
+.theme-day .home-gold-glass.daily-encounter-card-premium *,
+.theme-morning .home-gold-glass.daily-encounter-card-premium *,
+.theme-afternoon .home-gold-glass.daily-encounter-card-premium * {
+  --text-primary: #1A1A2E;
+  --text-secondary: #4A4A6A;
 }
 
-/* ── EVENING / SUNSET: plum glass + warm amber glow (distinct from night navy; day & night rules unchanged above) ── */
+/* ── EVENING / SUNSET: deep purple glossy cards (body.theme-evening + data-theme=sunset) ── */
 body.theme-evening {
-  --card-text: #f0eeea;
-  --card-text-muted: rgba(240, 238, 234, 0.65);
-  --section-title: #d4a843;
-  --card-parchment: rgba(60, 20, 80, 0.72);
-  --card-parchment-hover: rgba(78, 32, 100, 0.82);
-  --card-parchment-ink: #f0eeea;
-  --card-parchment-ink-muted: rgba(240, 238, 234, 0.65);
-  --text-primary: #f0eeea;
-  --text-secondary: rgba(240, 238, 234, 0.65);
-  --verse-text: #f0eeea;
-  --label-text: rgba(240, 238, 234, 0.65);
-  --streak-text: #f0eeea;
-  --heading-text: #f0eeea;
+  --card-text: rgba(255, 255, 255, 0.75);
+  --card-text-muted: rgba(255, 255, 255, 0.65);
+  --section-title: rgba(200, 150, 255, 0.8);
+  --card-parchment: rgba(60, 20, 90, 0.65);
+  --card-parchment-hover: rgba(72, 28, 105, 0.78);
+  --card-parchment-ink: #ffffff;
+  --card-parchment-ink-muted: rgba(255, 255, 255, 0.75);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.75);
+  --verse-text: rgba(255, 255, 255, 0.92);
+  --label-text: rgba(255, 255, 255, 0.75);
+  --streak-text: #ffffff;
+  --heading-text: #ffffff;
+  --card-bg: rgba(60, 20, 90, 0.65);
+  --glass-border: rgba(160, 80, 220, 0.25);
 }
 
+/* Shared list: surfaces that should read as “evening cards” app-wide */
 body.theme-evening .glass-card,
 body.theme-evening .stat-card,
 body.theme-evening .tool-card,
@@ -2031,22 +2163,61 @@ body.theme-evening .glass-panel,
 body.theme-evening .home-gold-glass,
 body.theme-evening .home-tool-tile,
 body.theme-evening .app-card,
-body.theme-evening [class*="-card"],
-body.theme-evening [class*="card-"] {
-  background: rgba(60, 20, 80, 0.72) !important;
-  border: 1px solid rgba(212, 168, 67, 0.45) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
-  box-shadow: 0 4px 24px rgba(180, 80, 20, 0.2) !important;
-  color: #f0eeea !important;
-  --text-primary: #f0eeea;
-  --text-secondary: rgba(240, 238, 234, 0.65);
-  --verse-text: #f0eeea;
-  --heading-text: #f0eeea;
-  --label-text: rgba(240, 238, 234, 0.65);
-  --streak-text: #f0eeea;
-  --card-parchment-ink: #f0eeea;
-  --card-parchment-ink-muted: rgba(240, 238, 234, 0.65);
+body.theme-evening [class*="-card"]:not([class*="rounded-full"]),
+body.theme-evening [class*="card-"],
+body.theme-evening .glass:not(.glass-nav-bar):not(.glass-scrim):not([class*="rounded-full"]),
+body.theme-evening .glass-strong,
+body.theme-evening .settings-theme-panel,
+body.theme-evening .fellowship-landing-card,
+body.theme-evening .home-tools-grid > a,
+body.theme-evening .search-book-card,
+body.theme-evening .search-ask-ai-card,
+body.theme-evening .search-keyword-shell,
+body.theme-evening .prayer-empty-card,
+body.theme-evening .prayer-for-today-card,
+body.theme-evening .prayer-list-card,
+body.theme-evening .testimony-input-section,
+body.theme-evening .testimony-empty-card,
+body.theme-evening .testimony-list-stack,
+[data-theme="sunset"] .glass-card,
+[data-theme="sunset"] .stat-card,
+[data-theme="sunset"] .tool-card,
+[data-theme="sunset"] .home-hero,
+[data-theme="sunset"] .streak-card,
+[data-theme="sunset"] .glass-panel,
+[data-theme="sunset"] .home-gold-glass,
+[data-theme="sunset"] .home-tool-tile,
+[data-theme="sunset"] .app-card,
+[data-theme="sunset"] [class*="-card"]:not([class*="rounded-full"]),
+[data-theme="sunset"] [class*="card-"],
+[data-theme="sunset"] .glass:not(.glass-nav-bar):not(.glass-scrim):not([class*="rounded-full"]),
+[data-theme="sunset"] .glass-strong,
+[data-theme="sunset"] .settings-theme-panel,
+[data-theme="sunset"] .fellowship-landing-card,
+[data-theme="sunset"] .home-tools-grid > a,
+[data-theme="sunset"] .search-book-card,
+[data-theme="sunset"] .search-ask-ai-card,
+[data-theme="sunset"] .search-keyword-shell,
+[data-theme="sunset"] .prayer-empty-card,
+[data-theme="sunset"] .prayer-for-today-card,
+[data-theme="sunset"] .prayer-list-card,
+[data-theme="sunset"] .testimony-input-section,
+[data-theme="sunset"] .testimony-empty-card,
+[data-theme="sunset"] .testimony-list-stack {
+  background: rgba(60, 20, 90, 0.65) !important;
+  border: 1px solid rgba(160, 80, 220, 0.25) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow: 0 4px 28px rgba(40, 10, 70, 0.35) !important;
+  color: rgba(255, 255, 255, 0.75) !important;
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.75);
+  --verse-text: rgba(255, 255, 255, 0.92);
+  --heading-text: #ffffff;
+  --label-text: rgba(255, 255, 255, 0.75);
+  --streak-text: #ffffff;
+  --card-parchment-ink: #ffffff;
+  --card-parchment-ink-muted: rgba(255, 255, 255, 0.75);
 }
 
 body.theme-evening .glass-card:hover,
@@ -2058,15 +2229,540 @@ body.theme-evening .glass-panel:hover,
 body.theme-evening .home-gold-glass:hover,
 body.theme-evening .home-tool-tile:hover,
 body.theme-evening .app-card:hover,
-body.theme-evening [class*="-card"]:hover,
-body.theme-evening [class*="card-"]:hover {
-  background: rgba(72, 28, 95, 0.78) !important;
-  border-color: rgba(212, 168, 67, 0.55) !important;
-  box-shadow: 0 6px 28px rgba(200, 85, 35, 0.28) !important;
+body.theme-evening [class*="-card"]:not([class*="rounded-full"]):hover,
+body.theme-evening [class*="card-"]:hover,
+body.theme-evening .glass:not(.glass-nav-bar):not(.glass-scrim):not([class*="rounded-full"]):hover,
+body.theme-evening .glass-strong:hover,
+body.theme-evening .settings-theme-panel:hover,
+body.theme-evening .fellowship-landing-card:hover,
+body.theme-evening .home-tools-grid > a:hover,
+body.theme-evening .search-book-card:hover,
+body.theme-evening .search-ask-ai-card:hover,
+body.theme-evening .search-keyword-shell:hover,
+body.theme-evening .prayer-empty-card:hover,
+body.theme-evening .prayer-for-today-card:hover,
+body.theme-evening .prayer-list-card:hover,
+body.theme-evening .testimony-input-section:hover,
+body.theme-evening .testimony-empty-card:hover,
+[data-theme="sunset"] .glass-card:hover,
+[data-theme="sunset"] .stat-card:hover,
+[data-theme="sunset"] .tool-card:hover,
+[data-theme="sunset"] .home-hero:hover,
+[data-theme="sunset"] .streak-card:hover,
+[data-theme="sunset"] .glass-panel:hover,
+[data-theme="sunset"] .home-gold-glass:hover,
+[data-theme="sunset"] .home-tool-tile:hover,
+[data-theme="sunset"] .app-card:hover,
+[data-theme="sunset"] [class*="-card"]:not([class*="rounded-full"]):hover,
+[data-theme="sunset"] [class*="card-"]:hover,
+[data-theme="sunset"] .glass:not(.glass-nav-bar):not(.glass-scrim):not([class*="rounded-full"]):hover,
+[data-theme="sunset"] .glass-strong:hover,
+[data-theme="sunset"] .settings-theme-panel:hover,
+[data-theme="sunset"] .fellowship-landing-card:hover,
+[data-theme="sunset"] .home-tools-grid > a:hover,
+[data-theme="sunset"] .search-book-card:hover,
+[data-theme="sunset"] .search-ask-ai-card:hover,
+[data-theme="sunset"] .search-keyword-shell:hover,
+[data-theme="sunset"] .prayer-empty-card:hover,
+[data-theme="sunset"] .prayer-for-today-card:hover,
+[data-theme="sunset"] .prayer-list-card:hover,
+[data-theme="sunset"] .testimony-input-section:hover,
+[data-theme="sunset"] .testimony-empty-card:hover {
+  background: rgba(72, 28, 105, 0.78) !important;
+  border-color: rgba(180, 100, 235, 0.35) !important;
+  box-shadow: 0 6px 32px rgba(50, 15, 90, 0.4) !important;
+}
+
+/* Headings on evening cards */
+body.theme-evening .glass-card :where(h1, h2, h3, h4),
+body.theme-evening .glass-panel :where(h1, h2, h3, h4),
+body.theme-evening .home-gold-glass :where(h1, h2, h3, h4),
+body.theme-evening .app-card :where(h1, h2, h3, h4),
+body.theme-evening .settings-theme-panel :where(h1, h2, h3, h4),
+body.theme-evening .fellowship-landing-card :where(h1, h2, h3, h4),
+body.theme-evening .search-book-card :where(h1, h2, h3, h4),
+body.theme-evening .prayer-empty-card :where(h1, h2, h3, h4),
+body.theme-evening .prayer-for-today-card :where(h1, h2, h3, h4),
+body.theme-evening .testimony-input-section :where(h1, h2, h3, h4),
+body.theme-evening .testimony-empty-card :where(h1, h2, h3, h4),
+[data-theme="sunset"] .glass-card :where(h1, h2, h3, h4),
+[data-theme="sunset"] .glass-panel :where(h1, h2, h3, h4),
+[data-theme="sunset"] .home-gold-glass :where(h1, h2, h3, h4),
+[data-theme="sunset"] .app-card :where(h1, h2, h3, h4),
+[data-theme="sunset"] .settings-theme-panel :where(h1, h2, h3, h4),
+[data-theme="sunset"] .fellowship-landing-card :where(h1, h2, h3, h4),
+[data-theme="sunset"] .search-book-card :where(h1, h2, h3, h4),
+[data-theme="sunset"] .prayer-empty-card :where(h1, h2, h3, h4),
+[data-theme="sunset"] .prayer-for-today-card :where(h1, h2, h3, h4),
+[data-theme="sunset"] .testimony-input-section :where(h1, h2, h3, h4),
+[data-theme="sunset"] .testimony-empty-card :where(h1, h2, h3, h4) {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Section-style labels (uppercase rails) */
+body.theme-evening .text-section-header,
+[data-theme="sunset"] .text-section-header,
+body.theme-evening .settings-section-label,
+[data-theme="sunset"] .settings-section-label {
+  color: rgba(200, 150, 255, 0.8) !important;
+  -webkit-text-fill-color: rgba(200, 150, 255, 0.8) !important;
+}
+
+/* ── NIGHT: deep dark glassy cards (data-theme=night + body.theme-night only — not sunset, not day) */
+html[data-theme="night"] {
+  --section-title: rgba(150, 170, 255, 0.8);
+  --label-text: rgba(255, 255, 255, 0.9);
+  --text-section-rail: rgba(150, 170, 255, 0.8);
+}
+
+html[data-theme="night"] .text-section-header,
+html[data-theme="night"] .settings-section-label,
+body.theme-night .text-section-header,
+body.theme-night .settings-section-label,
+html[data-theme="night"] .prayer-section-rail,
+html[data-theme="night"] .testimony-section-h2,
+body.theme-night .prayer-section-rail,
+body.theme-night .testimony-section-h2 {
+  color: rgba(150, 170, 255, 0.8) !important;
+  -webkit-text-fill-color: rgba(150, 170, 255, 0.8) !important;
+}
+
+/* Shared “night card” treatment (mirrors evening coverage; different chrome) */
+html[data-theme="night"] .glass-card,
+html[data-theme="night"] .stat-card,
+html[data-theme="night"] .tool-card,
+html[data-theme="night"] .home-hero,
+html[data-theme="night"] .streak-card,
+html[data-theme="night"] .glass-panel,
+html[data-theme="night"] .home-gold-glass,
+html[data-theme="night"] .home-tool-tile,
+html[data-theme="night"] .app-card,
+html[data-theme="night"] [class*="-card"]:not([class*="rounded-full"]),
+html[data-theme="night"] [class*="card-"],
+html[data-theme="night"] .glass:not(.glass-nav-bar):not(.glass-scrim):not([class*="rounded-full"]),
+html[data-theme="night"] .glass-strong,
+html[data-theme="night"] .settings-theme-panel,
+html[data-theme="night"] .fellowship-landing-card,
+html[data-theme="night"] .home-tools-grid > a,
+html[data-theme="night"] .search-book-card,
+html[data-theme="night"] .search-ask-ai-card,
+html[data-theme="night"] .search-keyword-shell,
+html[data-theme="night"] .prayer-empty-card,
+html[data-theme="night"] .prayer-for-today-card,
+html[data-theme="night"] .prayer-list-card,
+html[data-theme="night"] .testimony-input-section,
+html[data-theme="night"] .testimony-empty-card,
+body.theme-night .glass-card,
+body.theme-night .stat-card,
+body.theme-night .tool-card,
+body.theme-night .home-hero,
+body.theme-night .streak-card,
+body.theme-night .glass-panel,
+body.theme-night .home-gold-glass,
+body.theme-night .home-tool-tile,
+body.theme-night .app-card,
+body.theme-night [class*="-card"]:not([class*="rounded-full"]),
+body.theme-night [class*="card-"],
+body.theme-night .glass:not(.glass-nav-bar):not(.glass-scrim):not([class*="rounded-full"]),
+body.theme-night .glass-strong,
+body.theme-night .settings-theme-panel,
+body.theme-night .fellowship-landing-card,
+body.theme-night .home-tools-grid > a,
+body.theme-night .search-book-card,
+body.theme-night .search-ask-ai-card,
+body.theme-night .search-keyword-shell,
+body.theme-night .prayer-empty-card,
+body.theme-night .prayer-for-today-card,
+body.theme-night .prayer-list-card,
+body.theme-night .testimony-input-section,
+body.theme-night .testimony-empty-card {
+  background: rgba(10, 15, 40, 0.7) !important;
+  border: 1px solid rgba(100, 120, 255, 0.15) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow: 0 4px 24px rgba(0, 4, 30, 0.45) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+html[data-theme="night"] .glass-card:hover,
+html[data-theme="night"] .stat-card:hover,
+html[data-theme="night"] .tool-card:hover,
+html[data-theme="night"] .home-hero:hover,
+html[data-theme="night"] .streak-card:hover,
+html[data-theme="night"] .glass-panel:hover,
+html[data-theme="night"] .home-gold-glass:hover,
+html[data-theme="night"] .home-tool-tile:hover,
+html[data-theme="night"] .app-card:hover,
+html[data-theme="night"] [class*="-card"]:not([class*="rounded-full"]):hover,
+html[data-theme="night"] [class*="card-"]:hover,
+html[data-theme="night"] .glass:not(.glass-nav-bar):not(.glass-scrim):not([class*="rounded-full"]):hover,
+html[data-theme="night"] .glass-strong:hover,
+html[data-theme="night"] .settings-theme-panel:hover,
+html[data-theme="night"] .fellowship-landing-card:hover,
+html[data-theme="night"] .home-tools-grid > a:hover,
+html[data-theme="night"] .search-book-card:hover,
+html[data-theme="night"] .search-ask-ai-card:hover,
+html[data-theme="night"] .search-keyword-shell:hover,
+html[data-theme="night"] .prayer-empty-card:hover,
+html[data-theme="night"] .prayer-for-today-card:hover,
+html[data-theme="night"] .prayer-list-card:hover,
+html[data-theme="night"] .testimony-input-section:hover,
+html[data-theme="night"] .testimony-empty-card:hover,
+body.theme-night .glass-card:hover,
+body.theme-night .stat-card:hover,
+body.theme-night .tool-card:hover,
+body.theme-night .home-hero:hover,
+body.theme-night .streak-card:hover,
+body.theme-night .glass-panel:hover,
+body.theme-night .home-gold-glass:hover,
+body.theme-night .home-tool-tile:hover,
+body.theme-night .app-card:hover,
+body.theme-night [class*="-card"]:not([class*="rounded-full"]):hover,
+body.theme-night [class*="card-"]:hover,
+body.theme-night .glass:not(.glass-nav-bar):not(.glass-scrim):not([class*="rounded-full"]):hover,
+body.theme-night .glass-strong:hover,
+body.theme-night .settings-theme-panel:hover,
+body.theme-night .fellowship-landing-card:hover,
+body.theme-night .home-tools-grid > a:hover,
+body.theme-night .search-book-card:hover,
+body.theme-night .search-ask-ai-card:hover,
+body.theme-night .search-keyword-shell:hover,
+body.theme-night .prayer-empty-card:hover,
+body.theme-night .prayer-for-today-card:hover,
+body.theme-night .prayer-list-card:hover,
+body.theme-night .testimony-input-section:hover,
+body.theme-night .testimony-empty-card:hover {
+  background: rgba(16, 22, 55, 0.82) !important;
+  border-color: rgba(120, 140, 255, 0.28) !important;
+  box-shadow: 0 6px 32px rgba(0, 8, 40, 0.55) !important;
+}
+
+/* Night: Home — tools copy + supporter card (override evening-only gold) */
+html[data-theme="night"] .home-page .home-tools-grid > a p,
+body.theme-night .home-page .home-tools-grid > a p {
+  color: rgba(255, 255, 255, 0.78) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.78) !important;
+}
+html[data-theme="night"] .home-page .home-tools-grid > a p:first-of-type,
+body.theme-night .home-page .home-tools-grid > a p:first-of-type {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html[data-theme="night"] .home-tool-supporter-card .home-tool-supporter-title,
+html[data-theme="night"] .home-tool-supporter-card .home-tool-supporter-sub,
+body.theme-night .home-tool-supporter-card .home-tool-supporter-title,
+body.theme-night .home-tool-supporter-card .home-tool-supporter-sub {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html[data-theme="night"] .home-tool-supporter-card .home-tool-supporter-sub,
+body.theme-night .home-tool-supporter-card .home-tool-supporter-sub {
+  color: rgba(255, 255, 255, 0.72) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.72) !important;
+}
+
+/* Night: Verse of the Week (home-gold-glass) — light text on dark glass */
+html[data-theme="night"] .verse-of-week-verse,
+body.theme-night .verse-of-week-verse {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html[data-theme="night"] .verse-of-week-ref,
+body.theme-night .verse-of-week-ref {
+  color: #d4a843 !important;
+  -webkit-text-fill-color: #d4a843 !important;
+}
+
+/* Night: Prayer for Today — white copy */
+html[data-theme="night"] .prayer-for-today-card p,
+body.theme-night .prayer-for-today-card p {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Night: Fellowship — landing main card copy + “Join with Code” */
+html[data-theme="night"] .fellowship-landing-card h1,
+html[data-theme="night"] .fellowship-landing-card > p,
+body.theme-night .fellowship-landing-card h1,
+body.theme-night .fellowship-landing-card > p {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html[data-theme="night"] .fellowship-join-with-code,
+body.theme-night .fellowship-join-with-code {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: rgba(20, 28, 60, 0.6) !important;
+  border: 1px solid rgba(100, 120, 255, 0.25) !important;
+}
+html[data-theme="night"] .fellowship-join-with-code:hover,
+body.theme-night .fellowship-join-with-code:hover {
+  background: rgba(28, 36, 72, 0.75) !important;
+}
+
+/* Night: Testimony — page shell, input + list (cards use shared night treatment) */
+html[data-theme="night"] .testimony-wall-shell,
+body.theme-night .testimony-wall-shell {
+  background: rgba(10, 15, 40, 0.5) !important;
+  border: 1px solid rgba(100, 120, 255, 0.15) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  color: #ffffff !important;
+}
+html[data-theme="night"] .testimony-wall-shell header h1,
+body.theme-night .testimony-wall-shell header h1 {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html[data-theme="night"] .testimony-wall-shell header p,
+body.theme-night .testimony-wall-shell header p {
+  color: rgba(255, 255, 255, 0.8) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.8) !important;
+}
+html[data-theme="night"] .testimony-input-section label,
+html[data-theme="night"] .testimony-input-section .testimony-textarea-day,
+body.theme-night .testimony-input-section label,
+body.theme-night .testimony-input-section .testimony-textarea-day {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html[data-theme="night"] .testimony-input-section .testimony-textarea-day,
+body.theme-night .testimony-input-section .testimony-textarea-day {
+  background: rgba(5, 10, 32, 0.55) !important;
+  border: 1px solid rgba(100, 120, 255, 0.2) !important;
+}
+html[data-theme="night"] .testimony-wall-shell .app-card p,
+html[data-theme="night"] .testimony-wall-shell .app-card span,
+html[data-theme="night"] .testimony-empty-card p,
+html[data-theme="night"] .testimony-empty-card,
+body.theme-night .testimony-wall-shell .app-card p,
+body.theme-night .testimony-wall-shell .app-card span,
+body.theme-night .testimony-empty-card p,
+body.theme-night .testimony-empty-card {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Night: Search — Ask AI, book cards, result rows, topic + keyword chips */
+html[data-theme="night"] .search-ask-ai-card p,
+html[data-theme="night"] .search-ask-ai-card a,
+html[data-theme="night"] .search-ask-ai-card h2,
+html[data-theme="night"] .search-ask-ai-card h3,
+body.theme-night .search-ask-ai-card p,
+body.theme-night .search-ask-ai-card a,
+body.theme-night .search-ask-ai-card h2,
+body.theme-night .search-ask-ai-card h3,
+html[data-theme="night"] .search-book-card p,
+body.theme-night .search-book-card p {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html[data-theme="night"] .search-page .search-result-card p,
+html[data-theme="night"] .search-page .search-result-card .text-scripture,
+html[data-theme="night"] .search-page .search-result-card button,
+body.theme-night .search-page .search-result-card p,
+body.theme-night .search-page .search-result-card .text-scripture,
+body.theme-night .search-page .search-result-card button {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html[data-theme="night"] .search-page .search-topic-pill:not(.search-topic-pill--selected),
+html[data-theme="night"] .search-page button.search-topic-pill:not(.search-topic-pill--selected),
+body.theme-night .search-page .search-topic-pill:not(.search-topic-pill--selected),
+body.theme-night .search-page button.search-topic-pill:not(.search-topic-pill--selected) {
+  background: rgba(20, 25, 60, 0.7) !important;
+  border: 1px solid rgba(100, 120, 255, 0.2) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html[data-theme="night"] .search-page .search-keyword-chip,
+html[data-theme="night"] .search-page button.search-keyword-chip,
+html[data-theme="night"] .search-keyword-chip,
+body.theme-night .search-page .search-keyword-chip,
+body.theme-night .search-page button.search-keyword-chip,
+body.theme-night .search-keyword-chip {
+  background: rgba(20, 25, 60, 0.7) !important;
+  border: 1px solid rgba(100, 120, 255, 0.2) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html[data-theme="night"] .search-page .search-topic-pill--selected,
+html[data-theme="night"] .search-page button.search-topic-pill--selected,
+body.theme-night .search-page .search-topic-pill--selected,
+body.theme-night .search-page button.search-topic-pill--selected {
+  background: #d4a843 !important;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  border: 1px solid rgba(180, 150, 80, 0.5) !important;
+}
+html[data-theme="night"] .search-page header h1,
+html[data-theme="night"] .search-page header p,
+html[data-theme="night"] .search-curated-heading,
+body.theme-night .search-page header h1,
+body.theme-night .search-page header p,
+body.theme-night .search-curated-heading {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Night: Verse Flashcards — progress strip + filter control (inner row used cream) */
+html[data-theme="night"] .verse-flashcard-progress-bar,
+body.theme-night .verse-flashcard-progress-bar {
+  background: rgba(10, 15, 40, 0.7) !important;
+  border: 1px solid rgba(100, 120, 255, 0.15) !important;
+  border-radius: 8px !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow: 0 4px 20px rgba(0, 4, 30, 0.45) !important;
+}
+html[data-theme="night"] .verse-flashcard-progress-bar p,
+html[data-theme="night"] .verse-flashcard-progress-bar button,
+body.theme-night .verse-flashcard-progress-bar p,
+body.theme-night .verse-flashcard-progress-bar button {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html[data-theme="night"] .verse-flashcard-progress-bar svg text,
+body.theme-night .verse-flashcard-progress-bar svg text {
+  fill: #ffffff !important;
+}
+html[data-theme="night"] .verse-flashcard-progress-bar button,
+body.theme-night .verse-flashcard-progress-bar button {
+  background: rgba(20, 25, 60, 0.7) !important;
+  border: 1px solid rgba(100, 120, 255, 0.2) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  box-shadow: none !important;
+}
+html[data-theme="night"] .verse-flashcard-progress-bar circle[stroke="#E8D9B8"],
+body.theme-night .verse-flashcard-progress-bar circle[stroke="#E8D9B8"] {
+  stroke: rgba(100, 120, 255, 0.35) !important;
+}
+
+/* Search browse + Ask AI row titles */
+[data-theme="sunset"] .search-page h2[style*="13px"],
+body.theme-evening .search-page h2[style*="13px"] {
+  color: rgba(200, 150, 255, 0.8) !important;
+  -webkit-text-fill-color: rgba(200, 150, 255, 0.8) !important;
+}
+[data-theme="sunset"] .search-page h1,
+body.theme-evening .search-page h1 {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+[data-theme="sunset"] .search-page h2[style*="18px"],
+body.theme-evening .search-page h2[style*="18px"] {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+[data-theme="sunset"] .search-page header p,
+body.theme-evening .search-page header p {
+  color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Search scripture + result body (override day inline colors) */
+[data-theme="sunset"] .search-page .search-result-card p,
+[data-theme="sunset"] .search-page .search-result-card .text-scripture,
+body.theme-evening .search-page .search-result-card p,
+body.theme-evening .search-page .search-result-card .text-scripture {
+  color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
+}
+[data-theme="sunset"] .search-page .search-result-card p.text-xs,
+body.theme-evening .search-page .search-result-card p.text-xs {
+  color: rgba(200, 150, 255, 0.85) !important;
+  -webkit-text-fill-color: rgba(200, 150, 255, 0.85) !important;
+}
+
+/* Testimony wall header outside input card */
+[data-theme="sunset"] .testimony-wall-shell h1,
+body.theme-evening .testimony-wall-shell h1 {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+[data-theme="sunset"] .testimony-wall-shell header p,
+body.theme-evening .testimony-wall-shell header p {
+  color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Testimony page outer frame (lighter than inner cards) */
+body.theme-evening .testimony-wall-shell,
+[data-theme="sunset"] .testimony-wall-shell {
+  background: rgba(40, 10, 65, 0.45) !important;
+  border-color: rgba(160, 80, 220, 0.25) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+}
+
+body.theme-evening .fellowship-landing-card h1,
+[data-theme="sunset"] .fellowship-landing-card h1 {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+body.theme-evening .fellowship-landing-card p,
+[data-theme="sunset"] .fellowship-landing-card p {
+  color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
+}
+
+body.theme-evening .search-keyword-shell .search-scripture-input,
+[data-theme="sunset"] .search-keyword-shell .search-scripture-input {
+  color: rgba(255, 255, 255, 0.95) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.95) !important;
+}
+body.theme-evening .search-keyword-shell span,
+[data-theme="sunset"] .search-keyword-shell span {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+body.theme-evening .testimony-input-section label,
+[data-theme="sunset"] .testimony-input-section label {
+  color: rgba(200, 150, 255, 0.85) !important;
+}
+body.theme-evening .prayer-for-today-card p:first-of-type,
+[data-theme="sunset"] .prayer-for-today-card p:first-of-type {
+  color: rgba(200, 150, 255, 0.8) !important;
+  -webkit-text-fill-color: rgba(200, 150, 255, 0.8) !important;
+}
+body.theme-evening .prayer-for-today-card p:not(:first-of-type),
+[data-theme="sunset"] .prayer-for-today-card p:not(:first-of-type) {
+  color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
+}
+
+body.theme-evening .search-ask-ai-card p,
+[data-theme="sunset"] .search-ask-ai-card p {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Prayer tab label strip */
+[data-theme="sunset"] .content-scroll p[style*="0.18em"][style*="uppercase"],
+body.theme-evening .content-scroll p[style*="0.18em"][style*="uppercase"] {
+  color: rgba(200, 150, 255, 0.8) !important;
+  -webkit-text-fill-color: rgba(200, 150, 255, 0.8) !important;
+}
+
+/* Preserve gold primary CTAs (fills + legible text) */
+body.theme-evening button[style*="linear-gradient(135deg, #D4A843"],
+body.theme-evening button[style*="linear-gradient(135deg,#D4A843"],
+[data-theme="sunset"] button[style*="linear-gradient(135deg, #D4A843"],
+[data-theme="sunset"] button[style*="linear-gradient(135deg,#D4A843"],
+body.theme-evening a[style*="background: #D4A843"],
+body.theme-evening a[style*="background:#D4A843"],
+[data-theme="sunset"] a[style*="background: #D4A843"],
+[data-theme="sunset"] a[style*="background:#D4A843"] {
+  color: #0a0f28 !important;
+  -webkit-text-fill-color: #0a0f28 !important;
 }
 
 /* Warm white default on card chrome; inline/accent colors on copy stay intact */
-body.theme-evening .home-gold-glass .daily-encounter-action-btn {
+body.theme-evening .home-gold-glass .daily-encounter-action-btn,
+[data-theme="sunset"] .home-gold-glass .daily-encounter-action-btn {
   background: rgba(255, 255, 255, 0.04) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   backdrop-filter: blur(10px) !important;
@@ -2074,22 +2770,471 @@ body.theme-evening .home-gold-glass .daily-encounter-action-btn {
   color: #d4a843 !important;
 }
 
-body.theme-evening .home-gold-glass .daily-encounter-action-btn:hover {
+body.theme-evening .home-gold-glass .daily-encounter-action-btn:hover,
+[data-theme="sunset"] .home-gold-glass .daily-encounter-action-btn:hover {
   background: rgba(212, 168, 67, 0.12) !important;
   border-color: rgba(212, 168, 67, 0.5) !important;
 }
 
-body.theme-evening .daily-encounter-presence-box {
-  background: rgba(80, 30, 100, 0.5) !important;
-  border-color: rgba(212, 168, 67, 0.25) !important;
+body.theme-evening .daily-encounter-presence-box,
+[data-theme="sunset"] .daily-encounter-presence-box {
+  background: rgba(45, 12, 72, 0.55) !important;
+  border-color: rgba(160, 80, 220, 0.25) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
 }
 
-body.theme-evening .daily-encounter-presence-box p.text-sm.font-semibold {
+body.theme-evening .daily-encounter-presence-box p.text-sm.font-semibold,
+[data-theme="sunset"] .daily-encounter-presence-box p.text-sm.font-semibold {
   color: #d4a843 !important;
 }
 
-body.theme-evening .daily-encounter-presence-box p.text-xs {
-  color: rgba(240, 238, 234, 0.75) !important;
+body.theme-evening .daily-encounter-presence-box p.text-xs,
+[data-theme="sunset"] .daily-encounter-presence-box p.text-xs {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Support the Ministry + What's New — evening (sunset) only: purple glass, no hardcoded day sky */
+body.theme-evening .supporter-upgrade-page,
+[data-theme="sunset"] .supporter-upgrade-page {
+  background: transparent !important;
+}
+
+/* Supporter page — evening: gold typography (#D4A017); checklist lines dimmer; CTAs unchanged */
+body.theme-evening .supporter-hero-icon,
+[data-theme="sunset"] .supporter-hero-icon,
+body.theme-evening .supporter-page-content .supporter-page-title,
+[data-theme="sunset"] .supporter-page-content .supporter-page-title,
+body.theme-evening .supporter-page-content .supporter-page-lead,
+[data-theme="sunset"] .supporter-page-content .supporter-page-lead,
+body.theme-evening .supporter-bmac-hint,
+[data-theme="sunset"] .supporter-bmac-hint,
+body.theme-evening .supporter-mission-quote,
+body.theme-evening .supporter-mission-sig,
+body.theme-evening .supporter-verse-body,
+body.theme-evening .supporter-verse-ref,
+[data-theme="sunset"] .supporter-mission-quote,
+[data-theme="sunset"] .supporter-mission-sig,
+[data-theme="sunset"] .supporter-verse-body,
+[data-theme="sunset"] .supporter-verse-ref,
+body.theme-evening .supporter-bottom-note,
+[data-theme="sunset"] .supporter-bottom-note,
+body.theme-evening .supporter-or,
+[data-theme="sunset"] .supporter-or,
+body.theme-evening .supporter-surface-card :where(h2, h3),
+body.theme-evening .supporter-ministry-section :where(h2, h3),
+[data-theme="sunset"] .supporter-surface-card :where(h2, h3),
+[data-theme="sunset"] .supporter-ministry-section :where(h2, h3),
+body.theme-evening .supporter-stat-label,
+body.theme-evening .supporter-stat-value,
+body.theme-evening .supporter-emphasis,
+body.theme-evening .supporter-roadmap-title,
+body.theme-evening .supporter-check,
+body.theme-evening .supporter-tier-label,
+body.theme-evening .supporter-plan-chip,
+body.theme-evening .supporter-popular-badge,
+[data-theme="sunset"] .supporter-stat-label,
+[data-theme="sunset"] .supporter-stat-value,
+[data-theme="sunset"] .supporter-emphasis,
+[data-theme="sunset"] .supporter-roadmap-title,
+[data-theme="sunset"] .supporter-check,
+[data-theme="sunset"] .supporter-tier-label,
+[data-theme="sunset"] .supporter-plan-chip,
+[data-theme="sunset"] .supporter-popular-badge {
+  color: #D4A017 !important;
+  -webkit-text-fill-color: #D4A017 !important;
+}
+
+body.theme-evening .supporter-back,
+[data-theme="sunset"] .supporter-back {
+  color: #D4A017 !important;
+  -webkit-text-fill-color: #D4A017 !important;
+  background: rgba(60, 20, 90, 0.45) !important;
+  border: 1px solid rgba(160, 80, 220, 0.3) !important;
+}
+
+/* Support the Ministry — back arrow: gold in every theme (overrides inline text color) */
+html[data-theme="day"] .supporter-back,
+html[data-theme="night"] .supporter-back,
+html[data-theme="sunset"] .supporter-back,
+body.theme-day .supporter-back,
+body.theme-evening .supporter-back,
+body.theme-night .supporter-back,
+.supporter-upgrade-page .supporter-back {
+  color: #D4A017 !important;
+  -webkit-text-fill-color: #D4A017 !important;
+}
+
+body.theme-evening .supporter-feature-line,
+body.theme-evening .supporter-roadmap-status,
+body.theme-evening .supporter-stat-sub,
+body.theme-evening .supporter-stat-sub span,
+[data-theme="sunset"] .supporter-feature-line,
+[data-theme="sunset"] .supporter-roadmap-status,
+[data-theme="sunset"] .supporter-stat-sub,
+[data-theme="sunset"] .supporter-stat-sub span {
+  color: rgba(212, 160, 23, 0.75) !important;
+  -webkit-text-fill-color: rgba(212, 160, 23, 0.75) !important;
+}
+
+body.theme-evening .supporter-divider-line,
+[data-theme="sunset"] .supporter-divider-line {
+  background: rgba(160, 80, 220, 0.3) !important;
+}
+
+body.theme-evening .supporter-roadmap-row,
+[data-theme="sunset"] .supporter-roadmap-row {
+  color: #d4a017 !important;
+}
+
+body.theme-evening .supporter-surface-card,
+body.theme-evening .supporter-stat-tile,
+body.theme-evening .supporter-roadmap-row,
+[data-theme="sunset"] .supporter-surface-card,
+[data-theme="sunset"] .supporter-stat-tile,
+[data-theme="sunset"] .supporter-roadmap-row {
+  background: rgba(60, 20, 90, 0.65) !important;
+  border: 1px solid rgba(160, 80, 220, 0.25) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow: 0 4px 28px rgba(40, 10, 70, 0.35) !important;
+}
+
+body.theme-evening .supporter-plan-chip,
+[data-theme="sunset"] .supporter-plan-chip {
+  background: rgba(80, 30, 120, 0.55) !important;
+  border: 1px solid rgba(160, 80, 220, 0.3) !important;
+}
+
+body.theme-evening .supporter-popular-badge,
+[data-theme="sunset"] .supporter-popular-badge {
+  background: rgba(40, 10, 65, 0.9) !important;
+  border: 1px solid rgba(160, 80, 220, 0.35) !important;
+}
+
+/* “Current” tier (not the Support Monthly CTA) — keep prior look */
+body.theme-evening .supporter-tier-current--monthly,
+[data-theme="sunset"] .supporter-tier-current--monthly {
+  color: #1a1a1a !important;
+  -webkit-text-fill-color: #1a1a1a !important;
+}
+
+body.theme-evening .supporter-tier-current--lifetime,
+[data-theme="sunset"] .supporter-tier-current--lifetime {
+  background: #0a1628 !important;
+  color: #d4a843 !important;
+  -webkit-text-fill-color: #d4a843 !important;
+}
+
+body.theme-evening .supporter-btn-lifetime,
+[data-theme="sunset"] .supporter-btn-lifetime {
+  background: #0a1628 !important;
+  color: #d4a843 !important;
+  -webkit-text-fill-color: #d4a843 !important;
+}
+
+body.theme-evening .supporter-btn-monthly,
+[data-theme="sunset"] .supporter-btn-monthly {
+  background: rgba(40, 10, 65, 0.9) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border: 1px solid rgba(160, 80, 220, 0.35) !important;
+  box-shadow: 0 4px 20px rgba(20, 5, 50, 0.45) !important;
+}
+
+/* Support the Ministry — night: hero, mission, verse, or/BMAC, ministry + roadmap + note (#fff / 0.75) */
+html[data-theme="night"] .supporter-page-content .supporter-hero-icon,
+html[data-theme="night"] .supporter-page-content .supporter-page-title,
+html[data-theme="night"] .supporter-ministry-section h2,
+body.theme-night .supporter-page-content .supporter-hero-icon,
+body.theme-night .supporter-page-content .supporter-page-title,
+body.theme-night .supporter-ministry-section h2 {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html[data-theme="night"] .supporter-page-content .supporter-page-lead,
+body.theme-night .supporter-page-content .supporter-page-lead {
+  color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
+}
+html[data-theme="night"] .supporter-page-content .supporter-mission-quote,
+html[data-theme="night"] .supporter-page-content .supporter-verse-body,
+body.theme-night .supporter-page-content .supporter-mission-quote,
+body.theme-night .supporter-page-content .supporter-verse-body {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html[data-theme="night"] .supporter-page-content .supporter-mission-sig,
+html[data-theme="night"] .supporter-page-content .supporter-verse-ref,
+body.theme-night .supporter-page-content .supporter-mission-sig,
+body.theme-night .supporter-page-content .supporter-verse-ref {
+  color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
+}
+html[data-theme="night"] .supporter-page-content .supporter-or,
+html[data-theme="night"] .supporter-page-content .supporter-bmac-hint,
+body.theme-night .supporter-page-content .supporter-or,
+body.theme-night .supporter-page-content .supporter-bmac-hint {
+  color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
+}
+html[data-theme="night"] .supporter-ministry-section h3,
+body.theme-night .supporter-ministry-section h3 {
+  color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
+}
+html[data-theme="night"] .supporter-page-content .supporter-stat-tile,
+body.theme-night .supporter-page-content .supporter-stat-tile {
+  background: rgba(10, 15, 40, 0.7) !important;
+  border: 1px solid rgba(100, 120, 255, 0.2) !important;
+}
+html[data-theme="night"] .supporter-page-content .supporter-stat-label,
+html[data-theme="night"] .supporter-page-content .supporter-stat-value,
+html[data-theme="night"] .supporter-page-content .supporter-stat-value *,
+body.theme-night .supporter-page-content .supporter-stat-label,
+body.theme-night .supporter-page-content .supporter-stat-value,
+body.theme-night .supporter-page-content .supporter-stat-value * {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html[data-theme="night"] .supporter-page-content .supporter-stat-sub,
+html[data-theme="night"] .supporter-page-content .supporter-stat-sub span,
+body.theme-night .supporter-page-content .supporter-stat-sub,
+body.theme-night .supporter-page-content .supporter-stat-sub span {
+  color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
+}
+html[data-theme="night"] .supporter-page-content .supporter-roadmap-row,
+body.theme-night .supporter-page-content .supporter-roadmap-row {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html[data-theme="night"] .supporter-page-content .supporter-roadmap-title,
+body.theme-night .supporter-page-content .supporter-roadmap-title {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html[data-theme="night"] .supporter-page-content .supporter-roadmap-status,
+body.theme-night .supporter-page-content .supporter-roadmap-status {
+  color: rgba(255, 255, 255, 0.65) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.65) !important;
+  opacity: 1 !important;
+}
+html[data-theme="night"] .supporter-page-content .supporter-bottom-note,
+body.theme-night .supporter-page-content .supporter-bottom-note {
+  color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Support the Ministry — night: FREE + SUPPORTER dark glass; LIFETIME gold + goldShimmer */
+html[data-theme="night"] .supporter-page-content .supporter-tier-free.supporter-surface-card,
+html[data-theme="night"] .supporter-page-content .supporter-tier-monthly.supporter-surface-card,
+body.theme-night .supporter-page-content .supporter-tier-free.supporter-surface-card,
+body.theme-night .supporter-page-content .supporter-tier-monthly.supporter-surface-card {
+  background: rgba(10, 15, 40, 0.7) !important;
+  border: 1px solid rgba(100, 120, 255, 0.15) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow: 0 4px 24px rgba(0, 4, 30, 0.45) !important;
+}
+html[data-theme="night"] .supporter-page-content .supporter-tier-free :where(p, span, li),
+html[data-theme="night"] .supporter-page-content .supporter-tier-monthly :where(p, span, li),
+body.theme-night .supporter-page-content .supporter-tier-free :where(p, span, li),
+body.theme-night .supporter-page-content .supporter-tier-monthly :where(p, span, li) {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html[data-theme="night"] .supporter-page-content .supporter-tier-free .supporter-tier-label,
+html[data-theme="night"] .supporter-page-content .supporter-tier-monthly .supporter-tier-label,
+body.theme-night .supporter-page-content .supporter-tier-free .supporter-tier-label,
+body.theme-night .supporter-page-content .supporter-tier-monthly .supporter-tier-label {
+  color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
+}
+html[data-theme="night"] .supporter-page-content .supporter-tier-free .supporter-feature-line,
+html[data-theme="night"] .supporter-page-content .supporter-tier-monthly .supporter-feature-line,
+body.theme-night .supporter-page-content .supporter-tier-free .supporter-feature-line,
+body.theme-night .supporter-page-content .supporter-tier-monthly .supporter-feature-line {
+  color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
+}
+html[data-theme="night"] .supporter-page-content .supporter-tier-free .supporter-check,
+html[data-theme="night"] .supporter-page-content .supporter-tier-monthly .supporter-check,
+body.theme-night .supporter-page-content .supporter-tier-free .supporter-check,
+body.theme-night .supporter-page-content .supporter-tier-monthly .supporter-check {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html[data-theme="night"] .supporter-page-content .supporter-tier-free .supporter-plan-chip,
+body.theme-night .supporter-page-content .supporter-tier-free .supporter-plan-chip {
+  background: rgba(15, 22, 50, 0.65) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border: 1px solid rgba(100, 120, 255, 0.2) !important;
+}
+html[data-theme="night"] .supporter-page-content .supporter-tier-monthly .supporter-tier-current--monthly,
+body.theme-night .supporter-page-content .supporter-tier-monthly .supporter-tier-current--monthly {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* LIFETIME: rich gold gradient + goldShimmer; night copy #fff / 0.75 for contrast on night page */
+html[data-theme="night"] .supporter-page-content .supporter-tier-lifetime.supporter-surface-card,
+body.theme-night .supporter-page-content .supporter-tier-lifetime.supporter-surface-card {
+  background: linear-gradient(135deg, #c9922a 0%, #f0c040 22%, #ffe6a0 50%, #f0c040 78%, #c9922a 100%) !important;
+  background-size: 200% 200% !important;
+  animation: goldShimmer 4.5s ease-in-out infinite !important;
+  border: 2px solid rgba(180, 130, 50, 0.9) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 8px 36px rgba(50, 35, 0, 0.45) !important;
+  color: #ffffff !important;
+}
+html[data-theme="night"] .supporter-page-content .supporter-tier-lifetime :where(
+    .supporter-emphasis,
+    .supporter-check
+  ),
+body.theme-night .supporter-page-content .supporter-tier-lifetime :where(
+    .supporter-emphasis,
+    .supporter-check
+  ) {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+html[data-theme="night"] .supporter-page-content .supporter-tier-lifetime :where(
+    .supporter-tier-label,
+    .supporter-feature-line
+  ),
+body.theme-night .supporter-page-content .supporter-tier-lifetime :where(
+    .supporter-tier-label,
+    .supporter-feature-line
+  ) {
+  color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
+}
+html[data-theme="night"] .supporter-page-content .supporter-tier-lifetime .supporter-popular-badge,
+body.theme-night .supporter-page-content .supporter-tier-lifetime .supporter-popular-badge {
+  background: #0a1628 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  animation: none !important;
+}
+html[data-theme="night"] .supporter-page-content .supporter-tier-lifetime.supporter-surface-card:hover,
+body.theme-night .supporter-page-content .supporter-tier-lifetime.supporter-surface-card:hover {
+  background: linear-gradient(135deg, #d4a03a 0%, #f7d65a 22%, #fff2c0 50%, #f7d65a 78%, #d4a03a 100%) !important;
+  background-size: 200% 200% !important;
+  border-color: rgba(200, 150, 60, 0.95) !important;
+  box-shadow: 0 10px 40px rgba(60, 40, 0, 0.5) !important;
+}
+
+/* What's New modal: remove day-sky paint; glass changelog cards */
+body.theme-evening .whats-new-modal__sky-gradient,
+body.theme-evening .whats-new-modal__sky-glow,
+[data-theme="sunset"] .whats-new-modal__sky-gradient,
+[data-theme="sunset"] .whats-new-modal__sky-glow {
+  background: transparent !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+body.theme-evening .whats-new-modal__title,
+[data-theme="sunset"] .whats-new-modal__title {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+body.theme-evening .whats-new-modal__tagline,
+[data-theme="sunset"] .whats-new-modal__tagline {
+  color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
+}
+
+body.theme-evening .whats-new-changelog-card,
+[data-theme="sunset"] .whats-new-changelog-card {
+  background: rgba(60, 20, 90, 0.65) !important;
+  border: 1px solid rgba(160, 80, 220, 0.25) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow: 0 4px 28px rgba(40, 10, 70, 0.35) !important;
+}
+
+body.theme-evening .whats-new-changelog-card :where(p, li, span, div),
+[data-theme="sunset"] .whats-new-changelog-card :where(p, li, span, div) {
+  color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
+}
+
+body.theme-evening .whats-new-item-bullet,
+[data-theme="sunset"] .whats-new-item-bullet {
+  color: rgba(200, 150, 255, 0.95) !important;
+  -webkit-text-fill-color: rgba(200, 150, 255, 0.95) !important;
+}
+
+body.theme-evening .whats-new-version-pill,
+body.theme-evening .whats-new-latest-badge,
+[data-theme="sunset"] .whats-new-version-pill,
+[data-theme="sunset"] .whats-new-latest-badge {
+  background: rgba(80, 30, 120, 0.7) !important;
+  color: rgba(200, 150, 255, 0.95) !important;
+  -webkit-text-fill-color: rgba(200, 150, 255, 0.95) !important;
+  border: 1px solid rgba(160, 80, 220, 0.35) !important;
+}
+
+body.theme-evening .whats-new-changelog-row:not(:last-child),
+[data-theme="sunset"] .whats-new-changelog-row:not(:last-child) {
+  border-bottom: 1px solid rgba(160, 80, 220, 0.2) !important;
+}
+
+/* Settings — Notifications full-screen panel (evening / sunset only) */
+body.theme-evening .notifications-settings-panel,
+[data-theme="sunset"] .notifications-settings-panel {
+  background: transparent !important;
+}
+
+body.theme-evening .notifications-settings-row,
+[data-theme="sunset"] .notifications-settings-row {
+  background: rgba(60, 20, 90, 0.65) !important;
+  border: 1px solid rgba(160, 80, 220, 0.25) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow: 0 4px 28px rgba(40, 10, 70, 0.35) !important;
+}
+
+body.theme-evening .notifications-settings-page-title,
+[data-theme="sunset"] .notifications-settings-page-title {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+body.theme-evening .notifications-settings-hero-subtitle,
+[data-theme="sunset"] .notifications-settings-hero-subtitle {
+  color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
+}
+
+body.theme-evening .notifications-settings-section-label,
+[data-theme="sunset"] .notifications-settings-section-label {
+  color: rgba(200, 150, 255, 0.8) !important;
+  -webkit-text-fill-color: rgba(200, 150, 255, 0.8) !important;
+}
+
+body.theme-evening .notifications-settings-row-title,
+[data-theme="sunset"] .notifications-settings-row-title {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+body.theme-evening .notifications-settings-row-sub,
+[data-theme="sunset"] .notifications-settings-row-sub {
+  color: rgba(255, 255, 255, 0.65) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.65) !important;
+}
+
+body.theme-evening .notifications-settings-row-chevron,
+[data-theme="sunset"] .notifications-settings-row-chevron {
+  color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
 }
 
 /* Force nav text visible in all themes */
@@ -2102,7 +3247,7 @@ body.theme-evening .daily-encounter-presence-box p.text-xs {
   color: var(--nav-text-active) !important;
 }
 
-/* More drawer — --modal-bg is cream when body.theme-day* */
+/* More drawer — --modal-bg is cream when .theme-day* */
 [data-theme="day"] [style*="zIndex: 10001"] {
   background: var(--modal-bg) !important;
 }
@@ -2111,7 +3256,33 @@ body.theme-evening .daily-encounter-presence-box p.text-xs {
   color: var(--card-text, #0f1e3d) !important;
 }
 
-/* Bible reader: verse panel uses theme variables (cream on body.theme-day*) */
+/* ── DAY THEME: Warm cream/parchment for ALL cards, modals, sheets, and drawers ── */
+[data-theme="day"] .card,
+[data-theme="day"] .modal,
+[data-theme="day"] .bottom-sheet,
+[data-theme="day"] .drawer,
+[data-theme="day"] [class*="card"],
+[data-theme="day"] [class*="Card"],
+[data-theme="day"] [class*="modal"],
+[data-theme="day"] [class*="Modal"],
+[data-theme="day"] [class*="sheet"],
+[data-theme="day"] [class*="Sheet"],
+[data-theme="day"] [class*="panel"],
+[data-theme="day"] [class*="Panel"],
+[data-theme="day"] [class*="container"],
+[data-theme="day"] [class*="Container"],
+[data-theme="day"] [class*="box"],
+[data-theme="day"] [class*="Box"],
+[data-theme="day"] [class*="menu"],
+[data-theme="day"] [class*="Menu"] {
+  background: #F0E8D4 !important;
+  color: #1A1A1A !important;
+  border: 1px solid rgba(212, 168, 67, 0.3) !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 0 4px 24px rgba(212, 168, 67, 0.12) !important;
+}
+
+/* Bible reader: verse panel uses theme variables (cream on .theme-day*) */
 .bible-verse-well {
   border-radius: 16px;
   padding: 16px 18px;
@@ -2121,33 +3292,33 @@ body.theme-evening .daily-encounter-presence-box p.text-xs {
 }
 
 /* Community Prayer — day: filter chips (inactive) */
-body.theme-day .community-prayer-filters .community-filter-btn:not(.community-filter-btn--active),
-body.theme-morning .community-prayer-filters .community-filter-btn:not(.community-filter-btn--active),
-body.theme-afternoon .community-prayer-filters .community-filter-btn:not(.community-filter-btn--active) {
+.theme-day .community-prayer-filters .community-filter-btn:not(.community-filter-btn--active),
+.theme-morning .community-prayer-filters .community-filter-btn:not(.community-filter-btn--active),
+.theme-afternoon .community-prayer-filters .community-filter-btn:not(.community-filter-btn--active) {
   background: rgba(245, 237, 214, 0.65) !important;
   color: var(--card-text) !important;
   border: 1px solid rgba(212, 168, 67, 0.35) !important;
 }
 
 /* Support page — donation tier text contrast on daytime sky themes */
-body.theme-day .support-tier-label,
-body.theme-day .support-tier-desc,
-body.theme-morning .support-tier-label,
-body.theme-morning .support-tier-desc,
-body.theme-afternoon .support-tier-label,
-body.theme-afternoon .support-tier-desc {
+.theme-day .support-tier-label,
+.theme-day .support-tier-desc,
+.theme-morning .support-tier-label,
+.theme-morning .support-tier-desc,
+.theme-afternoon .support-tier-label,
+.theme-afternoon .support-tier-desc {
   color: #1a1a1a !important;
 }
 
 /* Search page — placeholder color via CSS (never pass non-DOM props like placeholderStyle on <input>) */
 .search-scripture-input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(0, 0, 0, 0.35);
 }
 
-body.theme-day .search-scripture-input::placeholder,
-body.theme-morning .search-scripture-input::placeholder,
-body.theme-afternoon .search-scripture-input::placeholder {
-  color: rgba(44, 24, 16, 0.5);
+.theme-day .search-scripture-input::placeholder,
+.theme-morning .search-scripture-input::placeholder,
+.theme-afternoon .search-scripture-input::placeholder {
+  color: rgba(0, 0, 0, 0.35);
 }
 
 /* Fellowship modal slide-up animation */
@@ -2183,4 +3354,249 @@ body.theme-afternoon .search-scripture-input::placeholder {
     transform: scale(1.1);
   }
 }
+
+[data-theme="day"] .bible-chapter-nav {
+  color: #D4A843 !important;
+}
+
+[data-theme="day"] .bible-font-btn {
+  color: #D4A843 !important;
+}
+
+.theme-day .daily-encounter-verse,
+.theme-morning .daily-encounter-verse,
+.theme-afternoon .daily-encounter-verse,
+body .theme-day .daily-encounter-verse,
+[class*="theme-day"] .daily-encounter-verse,
+[class*="theme-morning"] .daily-encounter-verse {
+  color: #1A1A1A !important;
+  -webkit-text-fill-color: #1A1A1A !important;
+}
+
+.theme-day .daily-encounter-card-premium p,
+.theme-morning .daily-encounter-card-premium p,
+.theme-afternoon .daily-encounter-card-premium p {
+  color: #1A1A1A !important;
+  -webkit-text-fill-color: #1A1A1A !important;
+}
+
+.theme-day .home-gold-glass p,
+.theme-morning .home-gold-glass p,
+.theme-afternoon .home-gold-glass p {
+  color: #1A1A1A !important;
+  -webkit-text-fill-color: #1A1A1A !important;
+}
+
+/* Exception — keep gold text gold by adding after: */
+.theme-day .daily-encounter-card-premium .text-\[\#D4A843\],
+.theme-morning .daily-encounter-card-premium .text-\[\#D4A843\],
+.theme-afternoon .daily-encounter-card-premium .text-\[\#D4A843\] {
+  color: #D4A843 !important;
+  -webkit-text-fill-color: #D4A843 !important;
+}
+
+@keyframes shimmer {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+.theme-day .search-result-card *,
+.theme-morning .search-result-card *,
+.theme-afternoon .search-result-card * {
+  color: #1A1A1A !important;
+  -webkit-text-fill-color: #1A1A1A !important;
+}
+
+.theme-day .search-keyword-pill,
+.theme-morning .search-keyword-pill,
+.theme-afternoon .search-keyword-pill,
+.theme-day .keyword-pill,
+.theme-morning .keyword-pill,
+.theme-afternoon .keyword-pill {
+  color: #1A1A1A !important;
+  -webkit-text-fill-color: #1A1A1A !important;
+}
+
+@keyframes goldShimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* Evening: verse + home tool link copy (cards use shared block above) */
+body.theme-evening .daily-encounter-verse,
+[data-theme="sunset"] .daily-encounter-verse {
+  color: rgba(255, 255, 255, 0.92) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.92) !important;
+}
+
+body.theme-evening .home-tools-grid > a p,
+[data-theme="sunset"] .home-tools-grid > a p {
+  color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
+}
+
+body.theme-evening .home-tools-grid > a p:first-of-type,
+[data-theme="sunset"] .home-tools-grid > a p:first-of-type {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Evening: Become a Supporter tool card — gold title, dimmer subtitle */
+body.theme-evening .home-tool-supporter-card .home-tool-supporter-title,
+[data-theme="sunset"] .home-tool-supporter-card .home-tool-supporter-title {
+  color: #d4a017 !important;
+  -webkit-text-fill-color: #d4a017 !important;
+}
+
+body.theme-evening .home-tool-supporter-card .home-tool-supporter-sub,
+[data-theme="sunset"] .home-tool-supporter-card .home-tool-supporter-sub {
+  color: rgba(212, 160, 23, 0.75) !important;
+  -webkit-text-fill-color: rgba(212, 160, 23, 0.75) !important;
+}
+
+body.theme-evening .tools-card p,
+body.theme-evening .tools-card span,
+[data-theme="sunset"] .tools-card p,
+[data-theme="sunset"] .tools-card span {
+  color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Evening — Verse Flashcards progress row (Journey), Search Ask AI + topic pills, More tab sheet */
+body.theme-evening .verse-flashcard-progress-bar,
+[data-theme="sunset"] .verse-flashcard-progress-bar {
+  background: rgba(60, 20, 90, 0.65) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(160, 80, 220, 0.25) !important;
+}
+
+body.theme-evening .verse-flashcard-progress-bar p,
+[data-theme="sunset"] .verse-flashcard-progress-bar p {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+body.theme-evening .verse-flashcard-progress-bar svg text,
+[data-theme="sunset"] .verse-flashcard-progress-bar svg text {
+  fill: #ffffff !important;
+}
+
+body.theme-evening .verse-flashcard-progress-bar button,
+[data-theme="sunset"] .verse-flashcard-progress-bar button {
+  background: rgba(70, 25, 100, 0.75) !important;
+  border: 1px solid rgba(160, 80, 220, 0.25) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+body.theme-evening .search-ask-ai-card,
+[data-theme="sunset"] .search-ask-ai-card {
+  background: rgba(60, 20, 90, 0.65) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(160, 80, 220, 0.25) !important;
+  box-shadow: 0 4px 20px rgba(20, 5, 50, 0.35) !important;
+}
+
+body.theme-evening .search-page .search-keyword-chip,
+body.theme-evening .search-page button.search-keyword-chip,
+[data-theme="sunset"] .search-page .search-keyword-chip,
+[data-theme="sunset"] .search-page button.search-keyword-chip,
+body.theme-evening .search-keyword-chip,
+[data-theme="sunset"] .search-keyword-chip,
+body.theme-evening button.search-keyword-chip,
+[data-theme="sunset"] button.search-keyword-chip {
+  background: rgba(80, 25, 110, 0.6) !important;
+  border: 1px solid rgba(160, 80, 220, 0.3) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Browse by Book — book title vs chapter subline (evening) */
+body.theme-evening .search-book-card p:first-of-type,
+[data-theme="sunset"] .search-book-card p:first-of-type {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+body.theme-evening .search-book-card p:last-of-type,
+[data-theme="sunset"] .search-book-card p:last-of-type {
+  color: rgba(255, 255, 255, 0.65) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.65) !important;
+}
+
+body.theme-evening .search-topic-pill,
+[data-theme="sunset"] .search-topic-pill {
+  background: rgba(80, 25, 110, 0.6) !important;
+  border: 1px solid rgba(160, 80, 220, 0.3) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+body.theme-evening .search-topic-pill[style*="D4A843"],
+[data-theme="sunset"] .search-topic-pill[style*="D4A843"] {
+  background: #d4a843 !important;
+  border: 1px solid rgba(160, 80, 220, 0.35) !important;
+  color: #1a1a1a !important;
+  -webkit-text-fill-color: #1a1a1a !important;
+}
+
+body.theme-evening .more-bottom-sheet,
+[data-theme="sunset"] .more-bottom-sheet {
+  background: rgba(40, 10, 65, 0.92) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-top: 1px solid rgba(160, 80, 220, 0.3) !important;
+}
+
+body.theme-evening .more-bottom-sheet__header,
+[data-theme="sunset"] .more-bottom-sheet__header {
+  background: transparent !important;
+}
+
+body.theme-evening .more-bottom-sheet__row,
+[data-theme="sunset"] .more-bottom-sheet__row {
+  background: rgba(60, 20, 90, 0.5) !important;
+  border-bottom-color: rgba(160, 80, 220, 0.22) !important;
+}
+
+body.theme-evening .more-bottom-sheet__row > span:not(.more-bottom-sheet__icon-emoji):not(.more-bottom-sheet__chevron),
+[data-theme="sunset"] .more-bottom-sheet__row > span:not(.more-bottom-sheet__icon-emoji):not(.more-bottom-sheet__chevron) {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+body.theme-evening .more-bottom-sheet__icon-wrap,
+[data-theme="sunset"] .more-bottom-sheet__icon-wrap {
+  background: rgba(120, 70, 160, 0.35) !important;
+  border-color: rgba(200, 150, 255, 0.35) !important;
+}
+
+body.theme-evening .more-bottom-sheet__icon-emoji,
+[data-theme="sunset"] .more-bottom-sheet__icon-emoji {
+  color: rgba(200, 150, 255, 0.95) !important;
+  -webkit-text-fill-color: rgba(200, 150, 255, 0.95) !important;
+}
+
+body.theme-evening .more-bottom-sheet__chevron,
+[data-theme="sunset"] .more-bottom-sheet__chevron {
+  color: rgba(200, 150, 255, 0.85) !important;
+  -webkit-text-fill-color: rgba(200, 150, 255, 0.85) !important;
+}
+
+/* Home — Verse of the Week (evening) */
+body.theme-evening .verse-of-week-card .verse-of-week-label,
+[data-theme="sunset"] .verse-of-week-card .verse-of-week-label {
+  color: rgba(212, 160, 23, 0.8) !important;
+  -webkit-text-fill-color: rgba(212, 160, 23, 0.8) !important;
+}
+
+body.theme-evening .verse-of-week-card .verse-of-week-verse,
+body.theme-evening .verse-of-week-card .verse-of-week-ref,
+[data-theme="sunset"] .verse-of-week-card .verse-of-week-verse,
+[data-theme="sunset"] .verse-of-week-card .verse-of-week-ref {
+  color: #D4A017 !important;
+  -webkit-text-fill-color: #D4A017 !important;
+}
+
 

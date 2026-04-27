@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { useNameStyle, SHIMMER_KEYFRAMES } from '../hooks/useNameStyle'
 import { supabase } from '../lib/supabase'
 import { getAvatarUploadExtension } from '../utils/avatarUrl'
-import { LANGUAGE_STORAGE_KEY, SUPPORTED_LANGS } from '../i18n.js'
+import { LANGUAGE_STORAGE_KEY } from '../i18n.js'
 import {
   cancelUniversalReminder,
   persistReminderToSupabase,
@@ -15,38 +15,6 @@ import {
   scheduleUniversalReminder,
   writeReminderLocal,
 } from '../services/universalNotifications'
-
-const UI_LANG_META = {
-  en: { flagIso: 'us', abbr: 'EN', labelKey: 'langEn', fallbackLabel: 'English' },
-  es: { flagIso: 'es', abbr: 'ES', labelKey: 'langEs', fallbackLabel: 'Spanish' },
-  pt: { flagIso: 'br', abbr: 'PT', labelKey: 'langPt', fallbackLabel: 'Portuguese' },
-  fr: { flagIso: 'fr', abbr: 'FR', labelKey: 'langFr', fallbackLabel: 'French' },
-  de: { flagIso: 'de', abbr: 'DE', labelKey: 'langDe', fallbackLabel: 'German' },
-  tl: { flagIso: 'ph', abbr: 'TL', labelKey: 'langTl', fallbackLabel: 'Filipino' },
-  ko: { flagIso: 'kr', abbr: 'KO', labelKey: 'langKo', fallbackLabel: 'Korean' },
-  hi: { flagIso: 'in', abbr: 'HI', labelKey: 'langHi', fallbackLabel: 'Hindi' },
-  it: { flagIso: 'it', abbr: 'IT', labelKey: 'langIt', fallbackLabel: 'Italian' },
-  ru: { flagIso: 'ru', abbr: 'RU', labelKey: 'langRu', fallbackLabel: 'Russian' },
-  ro: { flagIso: 'ro', abbr: 'RO', labelKey: 'langRo', fallbackLabel: 'Romanian' },
-  zh: { flagIso: 'cn', abbr: 'ZH', labelKey: 'langZh', fallbackLabel: 'Chinese' },
-}
-
-const UI_LANG_OPTIONS = SUPPORTED_LANGS
-  .map((code) => {
-    const meta = UI_LANG_META[code]
-    if (!meta) return null
-    return { code, ...meta }
-  })
-  .filter(Boolean)
-
-const BIBLE_TRANSLATION_OPTIONS = [
-  { value: 'WEB', labelKey: 'bible.web' },
-  { value: 'KJV', labelKey: 'bible.kjv' },
-  { value: 'ASV', labelKey: 'bible.asv' },
-  { value: 'WEBBE', labelKey: 'bible.webbe' },
-  { value: 'BBE', labelKey: 'bible.bbe' },
-  { value: 'Darby', labelKey: 'bible.darby' },
-]
 
 const FEEDBACK_TYPES = [
   { id: 'bug', label: '🐛 Bug Report' },
@@ -72,10 +40,8 @@ export default function Settings() {
   const [localUsername, setLocalUsername] = useState('')
   const [dailyReminderEnabled, setDailyReminderEnabled] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
-  const [languageOpen, setLanguageOpen] = useState(false)
   const [translationOpen, setTranslationOpen] = useState(false)
-  const [fontSizeOpen, setFontSizeOpen] = useState(false)
-  const [publicProfileOpen, setPublicProfileOpen] = useState(false)
+  const [fontSize, setFontSize] = useState(() => localStorage.getItem('bible_font_size') || 'Medium')
   const [shareAppOpen, setShareAppOpen] = useState(false)
   const [rateUsOpen, setRateUsOpen] = useState(false)
   const [whatsNewOpen, setWhatsNewOpen] = useState(false)
@@ -276,7 +242,6 @@ export default function Settings() {
     try {
       await i18nHook.changeLanguage(code)
       localStorage.setItem(LANGUAGE_STORAGE_KEY, code)
-      setLanguageOpen(false)
       // Show toast
       const toast = document.createElement('div')
       toast.textContent = 'Language updated'
@@ -444,6 +409,40 @@ export default function Settings() {
     user?.user_metadata?.full_name ||
     t('common.user')
   const avatarUrl = avatarPreviewUrl || localAvatarUrl || profile?.avatar_url
+  const settingsBackButtonStyle = {
+    width: '36px',
+    height: '36px',
+    background: 'rgba(212,168,67,0.15)',
+    border: '1px solid rgba(212,168,67,0.3)',
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    color: '#1A1A1A',
+    fontSize: '18px',
+  }
+
+  const showComingSoonToast = useCallback((message = 'Coming soon') => {
+    const toast = document.createElement('div')
+    toast.textContent = message
+    toast.style.cssText = `
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(212, 168, 67, 0.95);
+      color: #1A1A1A;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 10060;
+      animation: fadeInUp 0.3s ease;
+    `
+    document.body.appendChild(toast)
+    setTimeout(() => toast.remove(), 2500)
+  }, [])
 
   return (
     <div
@@ -468,6 +467,7 @@ export default function Settings() {
 
         {/* SECTION 1 - PROFILE CARD */}
         <div
+          className="settings-theme-panel"
           style={{
             background: 'rgba(255,255,255,0.06)',
             border: '1px solid rgba(212,168,67,0.2)',
@@ -596,6 +596,7 @@ export default function Settings() {
           </div>
           {pendingAvatarFile && (
             <div
+              className="settings-theme-panel"
               style={{
                 marginTop: '16px',
                 background: 'rgba(255,255,255,0.06)',
@@ -682,23 +683,29 @@ export default function Settings() {
         </div>
 
         {/* SECTION 2 - ACCOUNT */}
-        <p style={{
+        <p
+          className="settings-section-label"
+          style={{
           fontSize: '11px',
           letterSpacing: '1.5px',
           color: 'rgba(212,168,67,0.7)',
           textTransform: 'uppercase',
           marginBottom: '8px',
           fontWeight: 600,
-        }}>
+        }}
+        >
           {t('settings.sectionAccount')}
         </p>
-        <div style={{
+        <div
+          className="settings-theme-panel"
+          style={{
           background: 'rgba(255,255,255,0.06)',
           border: '1px solid rgba(212,168,67,0.2)',
           borderRadius: '16px',
           backdropFilter: 'blur(12px)',
           marginBottom: '24px',
-        }}>
+        }}
+        >
           {/* Edit Profile */}
           <button
             type="button"
@@ -772,18 +779,13 @@ export default function Settings() {
             <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
           </button>
           {/* App Language */}
-          <button
-            type="button"
-            onClick={() => setLanguageOpen(true)}
+          <div
             style={{
               minHeight: '52px',
               display: 'flex',
               alignItems: 'center',
               padding: '0 16px',
               width: '100%',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
             }}
           >
             <div style={{
@@ -803,32 +805,60 @@ export default function Settings() {
               <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
                 {t('settings.uiLanguage')}
               </p>
-              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
-                {(i18nHook.resolvedLanguage || i18nHook.language || 'en').toUpperCase()}
-              </p>
             </div>
-            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
-          </button>
+            <select
+              value={(i18nHook.resolvedLanguage || i18nHook.language || 'en').split('-')[0]}
+              onChange={(e) => handleLanguageChange(e.target.value)}
+              style={{
+                background: '#F0E8D4',
+                color: '#1A1A1A',
+                border: '1px solid rgba(212,168,67,0.3)',
+                borderRadius: '8px',
+                padding: '8px 10px',
+                fontSize: '13px',
+                fontWeight: 600,
+              }}
+            >
+              <option value="en">English</option>
+              <option value="es">Spanish</option>
+              <option value="fr">French</option>
+              <option value="hi">Hindi</option>
+              <option value="pt">Portuguese</option>
+              <option value="ar">Arabic</option>
+              <option value="de">German</option>
+              <option value="zh">Chinese (Simplified)</option>
+              <option value="ko">Korean</option>
+              <option value="ja">Japanese</option>
+              <option value="ru">Russian</option>
+              <option value="it">Italian</option>
+            </select>
+          </div>
         </div>
 
         {/* SECTION 3 - READING */}
-        <p style={{
+        <p
+          className="settings-section-label"
+          style={{
           fontSize: '11px',
           letterSpacing: '1.5px',
           color: 'rgba(212,168,67,0.7)',
           textTransform: 'uppercase',
           marginBottom: '8px',
           fontWeight: 600,
-        }}>
+        }}
+        >
           {t('settings.sectionReading')}
         </p>
-        <div style={{
+        <div
+          className="settings-theme-panel"
+          style={{
           background: 'rgba(255,255,255,0.06)',
           border: '1px solid rgba(212,168,67,0.2)',
           borderRadius: '16px',
           backdropFilter: 'blur(12px)',
           marginBottom: '24px',
-        }}>
+        }}
+        >
           {/* Bible Translation */}
           <button
             type="button"
@@ -869,18 +899,13 @@ export default function Settings() {
             <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
           </button>
           {/* Font Size */}
-          <button
-            type="button"
-            onClick={() => setFontSizeOpen(true)}
+          <div
             style={{
               minHeight: '52px',
               display: 'flex',
               alignItems: 'center',
-              padding: '0 16px',
+              padding: '8px 16px',
               width: '100%',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
               borderBottom: '1px solid rgba(255,255,255,0.06)',
             }}
           >
@@ -901,9 +926,36 @@ export default function Settings() {
               <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
                 {t('settings.fontSize')}
               </p>
+              <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginTop: '8px' }}>
+                {['Small', 'Medium', 'Large', 'X-Large'].map((size) => {
+                  const active = fontSize === size
+                  return (
+                    <button
+                      key={size}
+                      type="button"
+                      onClick={() => {
+                        setFontSize(size)
+                        localStorage.setItem('bible_font_size', size)
+                      }}
+                      style={{
+                        borderRadius: '50px',
+                        border: '1px solid rgba(212,168,67,0.3)',
+                        background: active ? '#D4A843' : '#F0E8D4',
+                        color: '#1A1A1A',
+                        fontWeight: active ? 700 : 500,
+                        fontSize: '12px',
+                        padding: '6px 12px',
+                        whiteSpace: 'nowrap',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {size}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
-            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
-          </button>
+          </div>
           {/* Reading Reminders */}
           <div
             onClick={handleDailyReminderToggle}
@@ -963,27 +1015,33 @@ export default function Settings() {
         </div>
 
         {/* SECTION 4 - COMMUNITY */}
-        <p style={{
+        <p
+          className="settings-section-label"
+          style={{
           fontSize: '11px',
           letterSpacing: '1.5px',
           color: 'rgba(212,168,67,0.7)',
           textTransform: 'uppercase',
           marginBottom: '8px',
           fontWeight: 600,
-        }}>
+        }}
+        >
           {t('settings.sectionCommunity')}
         </p>
-        <div style={{
+        <div
+          className="settings-theme-panel"
+          style={{
           background: 'rgba(255,255,255,0.06)',
           border: '1px solid rgba(212,168,67,0.2)',
           borderRadius: '16px',
           backdropFilter: 'blur(12px)',
           marginBottom: '24px',
-        }}>
+        }}
+        >
           {/* Public Profile */}
           <button
             type="button"
-            onClick={() => setPublicProfileOpen(true)}
+            onClick={() => showComingSoonToast('Coming Soon')}
             style={{
               minHeight: '52px',
               display: 'flex',
@@ -993,7 +1051,6 @@ export default function Settings() {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
             }}
           >
             <div style={{
@@ -1016,102 +1073,32 @@ export default function Settings() {
             </div>
             <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
           </button>
-          {/* Ministry Supporter */}
-          <button
-            type="button"
-            onClick={() => navigate('/supporter-upgrade')}
-            style={{
-              minHeight: '52px',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0 16px',
-              width: '100%',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-            }}
-          >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              background: 'rgba(212,168,67,0.1)',
-              color: '#D4A843',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              ⭐
-            </div>
-            <div style={{ marginLeft: '14px', flex: 1 }}>
-              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                {t('settings.ministrySupporter')}
-              </p>
-              {(profile?.supporter_tier === 'monthly' || profile?.supporter_tier === 'lifetime') && (
-                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
-                  {profile?.supporter_tier === 'lifetime' ? '👑 Lifetime Member' : '⭐ Active Supporter'}
-                </p>
-              )}
-            </div>
-            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
-          </button>
         </div>
 
         {/* SECTION 5 - SUPPORT */}
-        <p style={{
+        <p
+          className="settings-section-label"
+          style={{
           fontSize: '11px',
           letterSpacing: '1.5px',
           color: 'rgba(212,168,67,0.7)',
           textTransform: 'uppercase',
           marginBottom: '8px',
           fontWeight: 600,
-        }}>
+        }}
+        >
           {t('settings.sectionSupport')}
         </p>
-        <div style={{
+        <div
+          className="settings-theme-panel"
+          style={{
           background: 'rgba(255,255,255,0.06)',
           border: '1px solid rgba(212,168,67,0.2)',
           borderRadius: '16px',
           backdropFilter: 'blur(12px)',
           marginBottom: '24px',
-        }}>
-          {/* Become a Supporter */}
-          <button
-            type="button"
-            onClick={() => navigate('/supporter-upgrade')}
-            style={{
-              minHeight: '52px',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0 16px',
-              width: '100%',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
-            }}
-          >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              background: 'rgba(212,168,67,0.15)',
-              color: '#D4A843',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              ⭐
-            </div>
-            <div style={{ marginLeft: '14px', flex: 1 }}>
-              <p style={{ fontSize: '15px', color: '#D4A843', fontWeight: 700, margin: 0 }}>
-                Become a Supporter 👑
-              </p>
-            </div>
-            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
-          </button>
+        }}
+        >
           {/* Share App */}
           <button
             type="button"
@@ -1222,23 +1209,29 @@ export default function Settings() {
         </div>
 
         {/* SECTION 6 - ABOUT */}
-        <p style={{
+        <p
+          className="settings-section-label"
+          style={{
           fontSize: '11px',
           letterSpacing: '1.5px',
           color: 'rgba(212,168,67,0.7)',
           textTransform: 'uppercase',
           marginBottom: '8px',
           fontWeight: 600,
-        }}>
+        }}
+        >
           {t('settings.sectionAbout')}
         </p>
-        <div style={{
+        <div
+          className="settings-theme-panel"
+          style={{
           background: 'rgba(255,255,255,0.06)',
           border: '1px solid rgba(212,168,67,0.2)',
           borderRadius: '16px',
           backdropFilter: 'blur(12px)',
           marginBottom: '24px',
-        }}>
+        }}
+        >
           {/* What's New */}
           <button
             type="button"
@@ -1435,19 +1428,7 @@ export default function Settings() {
               <button
                 type="button"
                 onClick={closeFeedbackModal}
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(212,168,67,0.3)',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  color: '#D4A843',
-                  fontSize: '20px',
-                }}
+                style={settingsBackButtonStyle}
               >
                 ←
               </button>
@@ -1585,19 +1566,7 @@ export default function Settings() {
               <button
                 type="button"
                 onClick={() => setDeleteAccountModalOpen(false)}
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(212,168,67,0.3)',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  color: '#D4A843',
-                  fontSize: '20px',
-                }}
+                style={settingsBackButtonStyle}
               >
                 ←
               </button>
@@ -1648,422 +1617,271 @@ export default function Settings() {
         </div>
       ) : null}
 
-      {/* Notifications Modal */}
+      {/* Notifications — full-screen panel (sky shows through) */}
       {notificationsOpen ? (
         <div
-          className="fixed inset-0 z-[10050] flex items-center justify-center p-4"
-          style={{ background: 'var(--glass-scrim)' }}
+          className="fixed inset-0 z-[10050] overflow-y-auto notifications-settings-panel"
+          style={{ background: 'transparent' }}
           role="dialog"
           aria-modal="true"
+          aria-labelledby="settings-notifications-title"
         >
-          <button
-            type="button"
-            className="absolute inset-0 cursor-default border-0"
-            style={{ background: 'transparent' }}
-            aria-label={t('common.close')}
-            onClick={() => setNotificationsOpen(false)}
-          />
           <div
-            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
             style={{
-              background: 'var(--modal-bg)',
-              border: '1px solid var(--glass-border)',
-              boxShadow: 'var(--glass-shadow)',
+              width: '100%',
+              maxWidth: '680px',
+              margin: '0 auto',
+              padding: '0 16px 100px',
+              paddingTop: '56px',
+              boxSizing: 'border-box',
             }}
-            onClick={(e) => e.stopPropagation()}
           >
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: '20px',
-              paddingTop: '8px',
-            }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                marginBottom: 8,
+              }}
+            >
               <button
                 type="button"
                 onClick={() => setNotificationsOpen(false)}
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(212,168,67,0.3)',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  color: '#D4A843',
-                  fontSize: '20px',
-                }}
+                style={settingsBackButtonStyle}
+                aria-label={t('common.close')}
               >
                 ←
               </button>
-              <div style={{ flex: 1, textAlign: 'center' }}>
-                <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
+              <div style={{ flex: 1, minWidth: 0, textAlign: 'center', padding: '0 8px' }}>
+                <h2
+                  id="settings-notifications-title"
+                  className="notifications-settings-page-title"
+                  style={{
+                    margin: 0,
+                    fontSize: 20,
+                    fontWeight: 700,
+                    color: '#1A1A1A',
+                  }}
+                >
                   Notifications
-                </span>
+                </h2>
+                <p
+                  className="notifications-settings-hero-subtitle"
+                  style={{
+                    margin: '8px 0 24px',
+                    color: '#8B6200',
+                    fontSize: 13,
+                    textAlign: 'center',
+                  }}
+                >
+                  Stay connected to your daily walk
+                </p>
               </div>
-              <div style={{ width: '40px' }} />
+              <div style={{ width: 36, flexShrink: 0 }} aria-hidden />
             </div>
-            <div className="px-5 pb-6">
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                {/* Row 1: Daily Reminder */}
-                <div
-                  onClick={handleDailyReminderToggle}
-                  style={{
-                    minHeight: '52px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '0 16px',
-                    width: '100%',
-                    cursor: 'pointer',
-                    borderBottom: '1px solid rgba(255,255,255,0.06)',
-                  }}
-                >
-                  <div style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '10px',
-                    background: 'rgba(212,168,67,0.1)',
-                    color: '#D4A843',
-                    fontSize: '18px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                    🔔
-                  </div>
-                  <div style={{ marginLeft: '14px', flex: 1 }}>
-                    <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                      Daily Reminder
-                    </p>
-                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
-                      Get reminded to read the Bible
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); handleDailyReminderToggle(); }}
-                    style={{
-                      width: '52px',
-                      height: '28px',
-                      borderRadius: '14px',
-                      background: dailyReminderEnabled ? '#D4A843' : 'rgba(255,255,255,0.15)',
-                      border: 'none',
-                      cursor: 'pointer',
-                      position: 'relative',
-                      transition: 'background 0.2s ease'
-                    }}
-                  >
-                    <div style={{
-                      position: 'absolute',
-                      top: '2px',
-                      left: dailyReminderEnabled ? '26px' : '2px',
-                      width: '24px',
-                      height: '24px',
-                      borderRadius: '50%',
-                      background: '#ffffff',
-                      transition: 'left 0.2s ease'
-                    }} />
-                  </button>
-                </div>
 
-                {/* Row 2: Reminder Time */}
-                <div
-                  style={{
-                    minHeight: '52px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '0 16px',
-                    width: '100%',
-                    cursor: 'pointer',
-                    borderBottom: '1px solid rgba(255,255,255,0.06)',
-                  }}
-                >
-                  <div style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '10px',
-                    background: 'rgba(212,168,67,0.1)',
-                    color: '#D4A843',
-                    fontSize: '18px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                    ⏰
-                  </div>
-                  <div style={{ marginLeft: '14px', flex: 1 }}>
-                    <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                      Reminder Time
-                    </p>
-                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
-                      08:00 AM
-                    </p>
-                  </div>
-                  <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
-                </div>
+            <p
+              className="notifications-settings-section-label"
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: '#8B6200',
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                marginBottom: 8,
+                marginTop: 0,
+              }}
+            >
+              Reminders
+            </p>
 
-                {/* Row 3: Fellowship Notifications */}
-                <div
-                  style={{
-                    minHeight: '52px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '0 16px',
-                    width: '100%',
-                    cursor: 'pointer',
-                    borderBottom: '1px solid rgba(255,255,255,0.06)',
-                  }}
-                >
-                  <div style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '10px',
-                    background: 'rgba(212,168,67,0.1)',
-                    color: '#D4A843',
-                    fontSize: '18px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                    👥
-                  </div>
-                  <div style={{ marginLeft: '14px', flex: 1 }}>
-                    <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                      Fellowship Notifications
-                    </p>
-                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
-                      New posts in your group
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    style={{
-                      width: '52px',
-                      height: '28px',
-                      borderRadius: '14px',
-                      background: 'rgba(255,255,255,0.15)',
-                      border: 'none',
-                      cursor: 'pointer',
-                      position: 'relative',
-                      transition: 'background 0.2s ease'
-                    }}
-                  >
-                    <div style={{
-                      position: 'absolute',
-                      top: '2px',
-                      left: '2px',
-                      width: '24px',
-                      height: '24px',
-                      borderRadius: '50%',
-                      background: '#ffffff',
-                      transition: 'left 0.2s ease'
-                    }} />
-                  </button>
-                </div>
-
-                {/* Row 4: Prayer Notifications */}
-                <div
-                  style={{
-                    minHeight: '52px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '0 16px',
-                    width: '100%',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <div style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '10px',
-                    background: 'rgba(212,168,67,0.1)',
-                    color: '#D4A843',
-                    fontSize: '18px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                    🙏
-                  </div>
-                  <div style={{ marginLeft: '14px', flex: 1 }}>
-                    <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                      Prayer Notifications
-                    </p>
-                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
-                      Updates on your prayers
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    style={{
-                      width: '52px',
-                      height: '28px',
-                      borderRadius: '14px',
-                      background: 'rgba(255,255,255,0.15)',
-                      border: 'none',
-                      cursor: 'pointer',
-                      position: 'relative',
-                      transition: 'background 0.2s ease'
-                    }}
-                  >
-                    <div style={{
-                      position: 'absolute',
-                      top: '2px',
-                      left: '2px',
-                      width: '24px',
-                      height: '24px',
-                      borderRadius: '50%',
-                      background: '#ffffff',
-                      transition: 'left 0.2s ease'
-                    }} />
-                  </button>
+            <div
+              className="notifications-settings-row"
+              style={{
+                background: '#F0E8D4',
+                borderRadius: 16,
+                border: '1px solid rgba(212,168,67,0.2)',
+                padding: '16px',
+                marginBottom: 8,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
+                <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }} aria-hidden>🔔</span>
+                <div style={{ minWidth: 0 }}>
+                  <p className="notifications-settings-row-title" style={{ fontSize: 15, fontWeight: 600, color: '#1A1A1A', margin: 0 }}>Daily Reminder</p>
+                  <p className="notifications-settings-row-sub" style={{ fontSize: 12, color: '#6B6B6B', margin: '4px 0 0' }}>Get reminded to read the Bible</p>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {/* App Language Modal */}
-      {languageOpen ? (
-        <div
-          className="fixed inset-0 z-[10050] flex items-center justify-center p-4"
-          style={{ background: 'var(--glass-scrim)' }}
-          role="dialog"
-          aria-modal="true"
-        >
-          <button
-            type="button"
-            className="absolute inset-0 cursor-default border-0"
-            style={{ background: 'transparent' }}
-            aria-label={t('common.close')}
-            onClick={() => setLanguageOpen(false)}
-          />
-          <div
-            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
-            style={{
-              background: 'var(--modal-bg)',
-              border: '1px solid var(--glass-border)',
-              boxShadow: 'var(--glass-shadow)',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: '20px',
-              paddingTop: '8px',
-            }}>
               <button
                 type="button"
-                onClick={() => setLanguageOpen(false)}
+                className="notifications-settings-toggle"
+                onClick={handleDailyReminderToggle}
+                aria-label={dailyReminderEnabled ? 'Disable daily reminder' : 'Enable daily reminder'}
                 style={{
-                  width: '40px',
-                  height: '40px',
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(212,168,67,0.3)',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  width: 52,
+                  height: 28,
+                  borderRadius: 14,
+                  background: dailyReminderEnabled ? '#D4A843' : 'rgba(26,26,26,0.12)',
+                  border: 'none',
                   cursor: 'pointer',
-                  color: '#D4A843',
-                  fontSize: '20px',
+                  position: 'relative',
+                  flexShrink: 0,
+                  transition: 'background 0.2s ease',
                 }}
               >
-                ←
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 2,
+                    left: dailyReminderEnabled ? 26 : 2,
+                    width: 24,
+                    height: 24,
+                    borderRadius: '50%',
+                    background: '#ffffff',
+                    transition: 'left 0.2s ease',
+                  }}
+                />
               </button>
-              <div style={{ flex: 1, textAlign: 'center' }}>
-                <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
-                  App Language
-                </span>
-              </div>
-              <div style={{ width: '40px' }} />
             </div>
-            <div className="px-5 pb-6">
-              <p className="text-sm leading-relaxed mb-4" style={{ color: 'var(--text-secondary)' }}>
-                Current: {(i18nHook.resolvedLanguage || i18nHook.language || 'en').toUpperCase()}
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                {UI_LANG_OPTIONS.map((lang) => {
-                  const isSelected = (i18nHook.resolvedLanguage || i18nHook.language || 'en') === lang.code
-                  const flagEmojis = {
-                    us: '🇺🇸',
-                    es: '🇪🇸',
-                    br: '🇧🇷',
-                    fr: '🇫🇷',
-                    de: '🇩🇪',
-                    ph: '🇵🇭',
-                    kr: '🇰🇷',
-                    in: '🇮🇳',
-                  }
-                  const nativeNames = {
-                    en: 'English',
-                    es: 'Español',
-                    pt: 'Português',
-                    fr: 'Français',
-                    de: 'Deutsch',
-                    tl: 'Filipino',
-                    ko: '한국어',
-                    hi: 'हिंदी',
-                    it: 'Italiano',
-                    ru: 'Русский',
-                    ro: 'Română',
-                    zh: '中文',
-                  }
-                  const useTextInitials = ['it', 'ru', 'ro', 'zh'].includes(lang.code)
-                  return (
-                    <button
-                      key={lang.code}
-                      type="button"
-                      onClick={() => handleLanguageChange(lang.code)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        padding: '16px',
-                        borderBottom: '1px solid rgba(255,255,255,0.06)',
-                        cursor: 'pointer',
-                        background: 'none',
-                        border: 'none',
-                        width: '100%',
-                        textAlign: 'left',
-                      }}
-                    >
-                      {useTextInitials ? (
-                        <span style={{
-                          fontSize: '14px',
-                          fontWeight: 700,
-                          color: 'white',
-                          width: '32px',
-                          height: '32px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          background: 'rgba(255,255,255,0.08)',
-                          borderRadius: '8px',
-                        }}>
-                          {lang.abbr}
-                        </span>
-                      ) : (
-                        <span style={{ fontSize: '24px' }}>{flagEmojis[lang.flagIso] || '🌐'}</span>
-                      )}
-                      <div style={{ flex: 1 }}>
-                        <p style={{ fontSize: '16px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                          {lang.fallbackLabel}
-                        </p>
-                        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
-                          {nativeNames[lang.code] || lang.fallbackLabel}
-                        </p>
-                      </div>
-                      {isSelected && (
-                        <span style={{ color: '#D4A843', fontSize: '20px', fontWeight: 700 }}>✓</span>
-                      )}
-                    </button>
-                  )
-                })}
+
+            <div
+              className="notifications-settings-row"
+              style={{
+                background: '#F0E8D4',
+                borderRadius: 16,
+                border: '1px solid rgba(212,168,67,0.2)',
+                padding: '16px',
+                marginBottom: 8,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
+                <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }} aria-hidden>⏰</span>
+                <div style={{ minWidth: 0 }}>
+                  <p className="notifications-settings-row-title" style={{ fontSize: 15, fontWeight: 600, color: '#1A1A1A', margin: 0 }}>Reminder Time</p>
+                  <p className="notifications-settings-row-sub" style={{ fontSize: 12, color: '#6B6B6B', margin: '4px 0 0' }}>08:00 AM</p>
+                </div>
               </div>
+              <span className="notifications-settings-row-chevron" style={{ color: '#1A1A1A', fontSize: 18, flexShrink: 0 }} aria-hidden>›</span>
+            </div>
+
+            <p
+              className="notifications-settings-section-label"
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: '#8B6200',
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                marginBottom: 8,
+                marginTop: 16,
+              }}
+            >
+              Community
+            </p>
+
+            <div
+              className="notifications-settings-row"
+              style={{
+                background: '#F0E8D4',
+                borderRadius: 16,
+                border: '1px solid rgba(212,168,67,0.2)',
+                padding: '16px',
+                marginBottom: 8,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
+                <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }} aria-hidden>👥</span>
+                <div style={{ minWidth: 0 }}>
+                  <p className="notifications-settings-row-title" style={{ fontSize: 15, fontWeight: 600, color: '#1A1A1A', margin: 0 }}>Fellowship Notifications</p>
+                  <p className="notifications-settings-row-sub" style={{ fontSize: 12, color: '#6B6B6B', margin: '4px 0 0' }}>New posts in your group</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="notifications-settings-toggle"
+                style={{
+                  width: 52,
+                  height: 28,
+                  borderRadius: 14,
+                  background: 'rgba(26,26,26,0.12)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  flexShrink: 0,
+                }}
+              >
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 2,
+                    left: 2,
+                    width: 24,
+                    height: 24,
+                    borderRadius: '50%',
+                    background: '#ffffff',
+                  }}
+                />
+              </button>
+            </div>
+
+            <div
+              className="notifications-settings-row"
+              style={{
+                background: '#F0E8D4',
+                borderRadius: 16,
+                border: '1px solid rgba(212,168,67,0.2)',
+                padding: '16px',
+                marginBottom: 8,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
+                <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }} aria-hidden>🙏</span>
+                <div style={{ minWidth: 0 }}>
+                  <p className="notifications-settings-row-title" style={{ fontSize: 15, fontWeight: 600, color: '#1A1A1A', margin: 0 }}>Prayer Notifications</p>
+                  <p className="notifications-settings-row-sub" style={{ fontSize: 12, color: '#6B6B6B', margin: '4px 0 0' }}>Updates on your prayers</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="notifications-settings-toggle"
+                style={{
+                  width: 52,
+                  height: 28,
+                  borderRadius: 14,
+                  background: 'rgba(26,26,26,0.12)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  flexShrink: 0,
+                }}
+              >
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 2,
+                    left: 2,
+                    width: 24,
+                    height: 24,
+                    borderRadius: '50%',
+                    background: '#ffffff',
+                  }}
+                />
+              </button>
             </div>
           </div>
         </div>
@@ -2102,19 +1920,7 @@ export default function Settings() {
               <button
                 type="button"
                 onClick={() => setTranslationOpen(false)}
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(212,168,67,0.3)',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  color: '#D4A843',
-                  fontSize: '20px',
-                }}
+                style={settingsBackButtonStyle}
               >
                 ←
               </button>
@@ -2128,158 +1934,6 @@ export default function Settings() {
             <div className="px-5 pb-6">
               <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                 Current: {selectedTranslation}
-              </p>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {/* Font Size Modal */}
-      {fontSizeOpen ? (
-        <div
-          className="fixed inset-0 z-[10050] flex items-center justify-center p-4"
-          style={{ background: 'var(--glass-scrim)' }}
-          role="dialog"
-          aria-modal="true"
-        >
-          <button
-            type="button"
-            className="absolute inset-0 cursor-default border-0"
-            style={{ background: 'transparent' }}
-            aria-label={t('common.close')}
-            onClick={() => setFontSizeOpen(false)}
-          />
-          <div
-            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
-            style={{
-              background: 'var(--modal-bg)',
-              border: '1px solid var(--glass-border)',
-              boxShadow: 'var(--glass-shadow)',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: '20px',
-              paddingTop: '8px',
-            }}>
-              <button
-                type="button"
-                onClick={() => setFontSizeOpen(false)}
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(212,168,67,0.3)',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  color: '#D4A843',
-                  fontSize: '20px',
-                }}
-              >
-                ←
-              </button>
-              <div style={{ flex: 1, textAlign: 'center' }}>
-                <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
-                  Font Size
-                </span>
-              </div>
-              <div style={{ width: '40px' }} />
-            </div>
-            <div className="px-5 pb-6">
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                {['Small', 'Medium', 'Large', 'X-Large', 'XX-Large'].map((size) => (
-                  <button
-                    key={size}
-                    type="button"
-                    onClick={() => {
-                      localStorage.setItem('bible_font_size', size)
-                      setFontSizeOpen(false)
-                    }}
-                    style={{
-                      padding: '10px 20px',
-                      borderRadius: '8px',
-                      background: size === 'Medium' ? '#D4A843' : 'rgba(255,255,255,0.06)',
-                      border: size === 'Medium' ? 'none' : '1px solid #D4A843',
-                      color: size === 'Medium' ? '#0a1428' : '#ffffff',
-                      fontWeight: size === 'Medium' ? 700 : 400,
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {/* Public Profile Modal */}
-      {publicProfileOpen ? (
-        <div
-          className="fixed inset-0 z-[10050] flex items-center justify-center p-4"
-          style={{ background: 'var(--glass-scrim)' }}
-          role="dialog"
-          aria-modal="true"
-        >
-          <button
-            type="button"
-            className="absolute inset-0 cursor-default border-0"
-            style={{ background: 'transparent' }}
-            aria-label={t('common.close')}
-            onClick={() => setPublicProfileOpen(false)}
-          />
-          <div
-            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
-            style={{
-              background: 'var(--modal-bg)',
-              border: '1px solid var(--glass-border)',
-              boxShadow: 'var(--glass-shadow)',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: '20px',
-              paddingTop: '8px',
-            }}>
-              <button
-                type="button"
-                onClick={() => setPublicProfileOpen(false)}
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(212,168,67,0.3)',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  color: '#D4A843',
-                  fontSize: '20px',
-                }}
-              >
-                ←
-              </button>
-              <div style={{ flex: 1, textAlign: 'center' }}>
-                <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
-                  Public Profile
-                </span>
-              </div>
-              <div style={{ width: '40px' }} />
-            </div>
-            <div className="px-5 pb-6">
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                Public profile settings coming soon.
               </p>
             </div>
           </div>
@@ -2319,19 +1973,7 @@ export default function Settings() {
               <button
                 type="button"
                 onClick={() => setShareAppOpen(false)}
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(212,168,67,0.3)',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  color: '#D4A843',
-                  fontSize: '20px',
-                }}
+                style={settingsBackButtonStyle}
               >
                 ←
               </button>
@@ -2437,19 +2079,7 @@ export default function Settings() {
               <button
                 type="button"
                 onClick={() => setRateUsOpen(false)}
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(212,168,67,0.3)',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  color: '#D4A843',
-                  fontSize: '20px',
-                }}
+                style={settingsBackButtonStyle}
               >
                 ←
               </button>
@@ -2485,72 +2115,169 @@ export default function Settings() {
             onClick={() => setWhatsNewOpen(false)}
           />
           <div
-            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
+            className="whats-new-modal relative z-10 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
             style={{
-              background: 'var(--modal-bg)',
+              background: 'transparent',
               border: '1px solid var(--glass-border)',
               boxShadow: 'var(--glass-shadow)',
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{
+            <div
+              className="whats-new-modal__sky-gradient"
+              aria-hidden
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: `
+                  linear-gradient(
+                    to bottom,
+                    #B8D9F0 0%,
+                    #87CEEB 30%,
+                    #D4EEFF 60%,
+                    #FFF5E6 100%
+                  )
+                `,
+              }}
+            />
+            <div
+              className="whats-new-modal__sky-glow"
+              aria-hidden
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'radial-gradient(ellipse at 75% 8%, rgba(255, 240, 150, 0.55) 0%, transparent 45%)',
+              }}
+            />
+            <div
+              className="whats-new-modal__header"
+              style={{
+              position: 'relative',
+              zIndex: 1,
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
-              marginBottom: '20px',
-              paddingTop: '8px',
-            }}>
+              marginBottom: '12px',
+              paddingTop: '18px',
+            }}
+            >
               <button
                 type="button"
                 onClick={() => setWhatsNewOpen(false)}
                 style={{
-                  width: '40px',
-                  height: '40px',
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(212,168,67,0.3)',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  color: '#D4A843',
-                  fontSize: '20px',
+                  ...settingsBackButtonStyle,
+                  position: 'absolute',
+                  left: '12px',
+                  top: '12px',
                 }}
               >
                 ←
               </button>
-              <div style={{ flex: 1, textAlign: 'center' }}>
-                <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
-                  What's New
-                </span>
-              </div>
-              <div style={{ width: '40px' }} />
+              <span style={{ fontSize: '32px', lineHeight: 1, marginBottom: '8px' }}>🎉</span>
+              <span
+                className="whats-new-modal__title"
+                style={{ fontSize: '28px', fontWeight: 700, color: '#1A1A1A', textAlign: 'center' }}
+              >
+                What&apos;s New
+              </span>
+              <span
+                className="whats-new-modal__tagline"
+                style={{ color: '#8B6200', textAlign: 'center', fontSize: '14px', marginTop: '4px' }}
+              >
+                AbidingAnchor keeps getting better 🙏
+              </span>
             </div>
-            <div className="px-5 pb-6">
+            <div className="px-5 pb-6" style={{ position: 'relative', zIndex: 1 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div>
-                  <p style={{ fontSize: '14px', fontWeight: 700, color: '#D4A843', margin: '0 0 8px' }}>
-                    Version 1.3.0
-                  </p>
-                  <ul style={{ margin: 0, paddingLeft: '20px', color: 'rgba(255,255,255,0.85)', fontSize: '13px', lineHeight: 1.7 }}>
-                    <li>Fixed daily streak calculation and display</li>
-                    <li>Added Hindi translations throughout the app</li>
-                    <li>Implemented notification settings with toggles</li>
-                    <li>Added font size options for Bible reading</li>
-                    <li>Implemented native share functionality</li>
-                  </ul>
-                </div>
-                <div>
-                  <p style={{ fontSize: '14px', fontWeight: 700, color: '#D4A843', margin: '0 0 8px' }}>
-                    Version 1.2.0
-                  </p>
-                  <ul style={{ margin: 0, paddingLeft: '20px', color: 'rgba(255,255,255,0.85)', fontSize: '13px', lineHeight: 1.7 }}>
-                    <li>Weekly Spiritual Recap with AI summary</li>
-                    <li>Wall of Honor for supporters</li>
-                    <li>Ministry transparency dashboard</li>
-                    <li>Improved onboarding flow</li>
-                    <li>Bug fixes and performance improvements</li>
-                  </ul>
-                </div>
+                {[
+                  {
+                    version: '1.3.0',
+                    latest: true,
+                    items: [
+                      'Fixed daily streak calculation and display',
+                      'Added Hindi translations throughout the app',
+                      'Implemented notification settings with toggles',
+                      'Added font size options for Bible reading',
+                      'Implemented native share functionality',
+                    ],
+                  },
+                  {
+                    version: '1.2.0',
+                    latest: false,
+                    items: [
+                      'Weekly Spiritual Recap with AI summary',
+                      'Wall of Honor for supporters',
+                      'Ministry transparency dashboard',
+                      'Improved onboarding flow',
+                      'Bug fixes and performance improvements',
+                    ],
+                  },
+                ].map((entry) => (
+                  <div
+                    key={entry.version}
+                    className="whats-new-changelog-card"
+                    style={{
+                      position: 'relative',
+                      background: '#F0E8D4',
+                      borderRadius: '20px',
+                      border: '1.5px solid rgba(212,168,67,0.35)',
+                      padding: '20px',
+                      marginBottom: '16px',
+                    }}
+                  >
+                    {entry.latest ? (
+                      <span
+                        className="whats-new-latest-badge"
+                        style={{
+                          position: 'absolute',
+                          top: '10px',
+                          right: '10px',
+                          background: '#D4A843',
+                          color: '#1A1A1A',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          padding: '3px 10px',
+                          borderRadius: '50px',
+                        }}
+                      >
+                        LATEST
+                      </span>
+                    ) : null}
+                    <span
+                      className="whats-new-version-pill"
+                      style={{
+                        background: '#D4A843',
+                        color: '#1A1A1A',
+                        borderRadius: '50px',
+                        padding: '4px 14px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        display: 'inline-block',
+                        marginBottom: '12px',
+                      }}
+                    >
+                      Version {entry.version}
+                    </span>
+                    <div>
+                      {entry.items.map((item, index) => (
+                        <div
+                          key={item}
+                          className="whats-new-changelog-row"
+                          style={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            gap: '8px',
+                            padding: '6px 0',
+                            borderBottom: index === entry.items.length - 1 ? 'none' : '1px solid rgba(212,168,67,0.15)',
+                          }}
+                        >
+                          <span className="whats-new-item-bullet" style={{ color: '#D4A843', flexShrink: 0 }}>✦</span>
+                          <span style={{ color: '#1A1A1A', fontSize: '14px' }}>{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

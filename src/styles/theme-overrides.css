@@ -18,7 +18,7 @@
 [data-theme="day"] [class*="text-white"],
 [data-theme="day"] [class*="text-slate"],
 [data-theme="day"] [class*="text-gray"] {
-  color: #0f1e3d !important;
+  color: #1A1A1A !important;
 }
 
 /* Nav bar */
@@ -27,22 +27,22 @@
 [data-theme="day"] [class*="Nav"],
 [data-theme="day"] [class*="bottom-bar"],
 [data-theme="day"] [class*="tab-bar"] {
-  background: rgba(255, 255, 255, 0.95) !important;
-  border-top-color: rgba(180, 210, 240, 0.40) !important;
+  background: var(--nav-bg) !important;
+  border-top-color: var(--nav-border) !important;
 }
 
 /* Nav icons and labels */
 [data-theme="day"] nav *,
 [data-theme="day"] [class*="Nav"] * {
-  color: #4a5f8a !important;
-  stroke: #4a5f8a !important;
+  color: var(--nav-icon) !important;
+  stroke: var(--nav-icon) !important;
   fill: currentColor !important;
 }
 
 /* Active nav item */
 [data-theme="day"] nav [class*="active"] *,
 [data-theme="day"] [class*="Nav"] [class*="active"] * {
-  color: #8B6200 !important;
+  color: var(--nav-icon-active) !important;
 }
 
 /* Headings */
@@ -50,13 +50,13 @@
 [data-theme="day"] h2,
 [data-theme="day"] h3,
 [data-theme="day"] h4 {
-  color: #0f1e3d !important;
+  color: #1A1A1A !important;
 }
 
 /* Paragraph and span text */
 [data-theme="day"] p,
 [data-theme="day"] span:not([class*="emoji"]) {
-  color: #0f1e3d !important;
+  color: #4A4A4A !important;
 }
 
 /* Share Your Faith card: day theme forces all p to navy; re-apply chosen colors with higher specificity */
@@ -112,84 +112,92 @@
 [data-theme="day"] small,
 [data-theme="day"] [class*="label"],
 [data-theme="day"] [class*="muted"] {
-  color: #2a3f6f !important;
+  color: #6B6B6B !important;
 }
 
 /* Section titles / gold accents stay gold but darker */
 [data-theme="day"] [class*="section-title"],
 [data-theme="day"] [class*="gold"],
-[data-theme="day"] [style*="#D4A843"],
-[data-theme="day"] [style*="D4A843"] {
-  color: #8B6200 !important;
+[data-theme="day"] [style*="#D4A843"]:not(.reader-chapter-nav-day):not(.reader-font-btn-day),
+[data-theme="day"] [style*="D4A843"]:not(.reader-chapter-nav-day):not(.reader-font-btn-day) {
+  color: #D4A843 !important;
 }
 
 /* Input fields */
 [data-theme="day"] input,
 [data-theme="day"] textarea,
 [data-theme="day"] select {
-  background: rgba(255, 255, 255, 0.85) !important;
-  color: #0f1e3d !important;
-  border-color: rgba(180, 210, 240, 0.50) !important;
+  background: rgba(255, 250, 238, 0.95) !important;
+  color: #1A1A1A !important;
+  border-color: rgba(212, 168, 67, 0.30) !important;
 }
 
 [data-theme="day"] input::placeholder,
 [data-theme="day"] textarea::placeholder {
-  color: #6a7fa8 !important;
+  color: rgba(26, 42, 78, 0.55) !important;
 }
 
 /* Buttons — primary stays gold, secondary gets light bg */
 [data-theme="day"] button[class*="primary"],
 [data-theme="day"] [class*="btn-primary"] {
-  background: #8B6200 !important;
+  background: #D4A843 !important;
+  border: 1px solid #D4A843 !important;
+  color: #0a1a3e !important;
+}
+
+[data-theme="day"] button[class*="primary"][aria-pressed="true"],
+[data-theme="day"] [class*="btn-primary"][aria-pressed="true"],
+[data-theme="day"] button[class*="primary"][aria-current="page"],
+[data-theme="day"] [class*="btn-primary"][aria-current="page"] {
+  background: #D4A843 !important;
   color: #ffffff !important;
 }
 
 [data-theme="day"] button[class*="secondary"],
 [data-theme="day"] [class*="btn-secondary"] {
-  background: rgba(255,255,255,0.80) !important;
-  color: #0f1e3d !important;
+  background: transparent !important;
+  border: 1px solid #0a1a3e !important;
+  color: #0a1a3e !important;
 }
 
 /* Read screen Bible text specifically */
 [data-theme="day"] [class*="verse"],
-[data-theme="day"] [class*="bible"],
-[data-theme="day"] [class*="Bible"],
 [data-theme="day"] [class*="scripture"] {
-  color: #0f1e3d !important;
+  color: #1a2a4e !important;
 }
 
-/* More drawer */
-[data-theme="day"] [class*="drawer"] *,
-[data-theme="day"] [class*="Drawer"] *,
-[data-theme="day"] [class*="more"] *,
-[data-theme="day"] [class*="More"] * {
-  color: #0f1e3d !important;
+/* More drawer text */
+[data-theme="day"] [class*="drawer"] :where(p, span, h1, h2, h3, h4, label, small),
+[data-theme="day"] [class*="Drawer"] :where(p, span, h1, h2, h3, h4, label, small),
+[data-theme="day"] [class*="more"] :where(p, span, h1, h2, h3, h4, label, small),
+[data-theme="day"] [class*="More"] :where(p, span, h1, h2, h3, h4, label, small) {
+  color: #1A1A1A !important;
 }
 
-/* Journey screen */
-[data-theme="day"] [class*="journey"] *,
-[data-theme="day"] [class*="Journey"] * {
-  color: #0f1e3d !important;
+/* Journey screen text */
+[data-theme="day"] [class*="journey"] :where(p, span, h1, h2, h3, h4, label, small),
+[data-theme="day"] [class*="Journey"] :where(p, span, h1, h2, h3, h4, label, small) {
+  color: #1A1A1A !important;
 }
 
-/* Share Your Faith / Create screen */
-[data-theme="day"] [class*="create"] *,
-[data-theme="day"] [class*="Create"] *,
-[data-theme="day"] [class*="faith"] *,
-[data-theme="day"] [class*="Faith"] * {
-  color: #0f1e3d !important;
+/* Share Your Faith / Create screen text */
+[data-theme="day"] [class*="create"] :where(p, span, h1, h2, h3, h4, label, small),
+[data-theme="day"] [class*="Create"] :where(p, span, h1, h2, h3, h4, label, small),
+[data-theme="day"] [class*="faith"] :where(p, span, h1, h2, h3, h4, label, small),
+[data-theme="day"] [class*="Faith"] :where(p, span, h1, h2, h3, h4, label, small) {
+  color: #1A1A1A !important;
 }
 
-/* Settings screen */
-[data-theme="day"] [class*="settings"] *,
-[data-theme="day"] [class*="Settings"] * {
-  color: #0f1e3d !important;
+/* Settings screen text */
+[data-theme="day"] [class*="settings"] :where(p, span, h1, h2, h3, h4, label, small),
+[data-theme="day"] [class*="Settings"] :where(p, span, h1, h2, h3, h4, label, small) {
+  color: #1A1A1A !important;
 }
 
 /* Footer links */
-[data-theme="day"] footer *,
-[data-theme="day"] [class*="footer"] * {
-  color: #2a3f6f !important;
+[data-theme="day"] footer :where(a, span, p, small),
+[data-theme="day"] [class*="footer"] :where(a, span, p, small) {
+  color: #6B6B6B !important;
 }
 
 /* ── PRESERVE: things that should NOT change in day mode ── */
@@ -219,21 +227,197 @@
   color: white !important;
 }
 
-/* ── Homepage tiles: cool navy glass for NIGHT only; sunset uses plum glass in index.css (body.theme-evening) ── */
-body.theme-night .home-page .home-gold-glass,
-body.theme-night .home-page .home-tool-tile {
-  background: rgba(15, 20, 45, 0.9) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
-  border-color: rgba(212, 168, 67, 0.3) !important;
-  color: rgba(255, 255, 255, 0.95) !important;
+/* ── DAY THEME: Warm cream/parchment for ALL cards, modals, sheets, and drawers ── */
+
+/* All cards, modals, bottom sheets, and drawers - warm cream/parchment */
+[data-theme="day"] .daily-encounter-card-premium,
+[data-theme="day"] .daily-streak-card,
+[data-theme="day"] .home-gold-glass:not(.daily-encounter-card-premium),
+[data-theme="day"] .weekly-recap,
+[data-theme="day"] .journal-entry-card,
+[data-theme="day"] [style*="rgba(255, 255, 255, 0.06)"],
+[data-theme="day"] .prayer-card,
+[data-theme="day"] [style*="rgba(15, 22, 55, 0.92)"],
+[data-theme="day"] .verse-card,
+[data-theme="day"] .bg-parchment,
+[data-theme="day"] [class*="modal"],
+[data-theme="day"] [class*="Modal"],
+[data-theme="day"] [class*="sheet"],
+[data-theme="day"] [class*="Sheet"],
+[data-theme="day"] [class*="bottom-sheet"],
+[data-theme="day"] [class*="drawer"],
+[data-theme="day"] [class*="Drawer"],
+[data-theme="day"] dialog,
+[data-theme="day"] [role="dialog"],
+[data-theme="day"] [style*="rgba(1,4,9,0.96)"],
+[data-theme="day"] [style*="rgba(0,0,0,0.96)"],
+[data-theme="day"] [style*="rgba(1, 4, 9, 0.97)"] {
+  background: #F0E8D4 !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(212, 168, 67, 0.3) !important;
+  box-shadow: 0 4px 24px rgba(212, 168, 67, 0.12) !important;
 }
 
-body.theme-night .home-page .home-gold-glass:hover,
-body.theme-night .home-page .home-tool-tile:hover {
-  background: rgba(22, 28, 58, 0.95) !important;
-  border-color: rgba(212, 168, 67, 0.42) !important;
+/* More menu specifically - higher opacity */
+[data-theme="day"] [class*="drawer"],
+[data-theme="day"] [class*="Drawer"] {
+  background: #F0E8D4 !important;
 }
+
+/* Bible Reader verse cards */
+[data-theme="day"] .bible-verse-well p {
+  background: #F0E8D4 !important;
+  color: #0a1a3e !important;
+}
+
+/* Testimony Wall cards */
+[data-theme="day"] .testimonies section article,
+[data-theme="day"] [class*="testimony"] article {
+  background: #F0E8D4 !important;
+}
+
+/* Bible Reader header */
+[data-theme="day"] .bible-reader-header {
+  background: rgba(237, 224, 196, 0.95) !important;
+  border-bottom: 1px solid rgba(200, 175, 130, 0.5) !important;
+}
+
+[data-theme="day"] .bible-reader-header button:not(.bible-chapter-nav):not(.bible-font-btn) {
+  color: #0a1a3e !important;
+}
+
+/* Bible Reader navigation arrows - gold with 2px border and transparent background for day theme */
+[data-theme="day"] .bible-nav-arrow {
+  color: #D4A843 !important;
+  border: 2px solid #D4A843 !important;
+  background: transparent !important;
+}
+
+/* Bible Reader EN/translation button - solid gold pill with dark text for day theme */
+[data-theme="day"] .bible-translation-btn {
+  color: #0a1a3e !important;
+  border: 1px solid #D4A843 !important;
+  background: #D4A843 !important;
+}
+
+/* Bible Reader Listen button - solid gold pill with dark text for day theme */
+[data-theme="day"] .bible-listen-btn {
+  color: #0a1a3e !important;
+  border: 1px solid #D4A843 !important;
+  background: #D4A843 !important;
+}
+
+/* Bible Reader settings button - solid gold pill with dark text for day theme */
+[data-theme="day"] .bible-settings-btn {
+  color: #0a1a3e !important;
+  border: 1px solid #D4A843 !important;
+  background: #D4A843 !important;
+}
+
+/* Bible Reader active Read pill - keep premium gold with white text */
+[data-theme="day"] .bible-read-btn {
+  background: #D4A843 !important;
+  color: #ffffff !important;
+  border: 1px solid #D4A843 !important;
+}
+
+/* Bible Reader Previous/Next chapter links - gold for day theme */
+[data-theme="day"] .bible-chapter-nav {
+  color: #D4A843 !important;
+  border-color: #D4A843 !important;
+}
+
+/* More specific to override .bible-reader-header button rule */
+[data-theme="day"] .bible-reader-header .bible-chapter-nav {
+  color: #D4A843 !important;
+  border-color: #D4A843 !important;
+}
+
+/* Bible Reader A- and A+ font size buttons - gold with 1px border for day theme */
+[data-theme="day"] .bible-font-btn {
+  color: #D4A843 !important;
+  border: 1px solid #D4A843 !important;
+  border-color: #D4A843 !important;
+}
+
+/* More specific to override .bible-reader-header button rule */
+[data-theme="day"] .bible-reader-header .bible-font-btn {
+  color: #D4A843 !important;
+  border: 1px solid #D4A843 !important;
+  border-color: #D4A843 !important;
+}
+
+[data-theme="day"] button.bible-chapter-nav,
+[data-theme="day"] button.bible-font-btn {
+  color: #D4A843 !important;
+  border-color: #D4A843 !important;
+}
+
+[data-theme="day"] .reader-chapter-nav-day {
+  color: #0a1a3e !important;
+  border: none !important;
+  background: #D4A843 !important;
+  border-radius: 16px !important;
+}
+
+[data-theme="day"] .reader-font-btn-day {
+  color: #0a1a3e !important;
+  border: none !important;
+  background: #D4A843 !important;
+  border-radius: 16px !important;
+}
+
+/* All text in cards, modals, sheets, and drawers - navy color */
+[data-theme="day"] .daily-encounter-card-premium *,
+[data-theme="day"] .daily-streak-card *,
+[data-theme="day"] .home-gold-glass:not(.daily-encounter-card-premium) *,
+[data-theme="day"] .weekly-recap *,
+[data-theme="day"] .journal-entry-card *,
+[data-theme="day"] .prayer-card *,
+[data-theme="day"] .verse-card *,
+[data-theme="day"] .bg-parchment *,
+[data-theme="day"] [class*="modal"] *,
+[data-theme="day"] [class*="Modal"] *,
+[data-theme="day"] [class*="sheet"] *,
+[data-theme="day"] [class*="Sheet"] *,
+[data-theme="day"] [class*="bottom-sheet"] *,
+[data-theme="day"] [class*="Drawer"] *:not(.bible-chapter-nav):not(.bible-font-btn):not(.reader-chapter-nav-day):not(.reader-font-btn-day),
+[data-theme="day"] dialog *:not(.bible-chapter-nav):not(.bible-font-btn):not(.reader-chapter-nav-day):not(.reader-font-btn-day),
+[data-theme="day"] [role="dialog"] *:not(.bible-chapter-nav):not(.bible-font-btn):not(.reader-chapter-nav-day):not(.reader-font-btn-day) {
+  color: #0a1a3e !important;
+}
+
+/* Bible Reader bottom controls: lock Previous/Next/A-/A+ to gold outline in day theme */
+[data-theme="day"] .bible-reader-bottom-controls button.reader-chapter-nav-day,
+[data-theme="day"] .bible-reader-bottom-controls button.reader-font-btn-day {
+  color: #0a1a3e !important;
+  border: none !important;
+  background: #D4A843 !important;
+  border-radius: 16px !important;
+  -webkit-text-fill-color: #0a1a3e !important;
+}
+
+/* Fellowship header - match sky background instead of solid navy */
+[data-theme="day"] .fellowship-header,
+[data-theme="day"] [class*="fellowship"] header {
+  background: transparent !important;
+}
+
+/* Fellowship header specific - cream background for day theme */
+[data-theme="day"] [class*="fellowship"] .bg-white,
+[data-theme="day"] [class*="fellowship"] .bg-gray-800 {
+  background: rgba(237, 224, 196, 0.95) !important;
+}
+
+[data-theme="day"] [class*="fellowship"] .text-gray-800,
+[data-theme="day"] [class*="fellowship"] .text-gray-600,
+[data-theme="day"] [class*="fellowship"] .text-gray-700 {
+  color: #0a1a3e !important;
+}
+
+/* ── Night homepage tiles: chrome is centralized in index.css (html[data-theme="night"] .home-gold-glass, .home-tools-grid > a) */
 
 body.theme-night .home-page .home-gold-glass .daily-encounter-action-btn {
   background: rgba(255, 255, 255, 0.04) !important;
@@ -379,4 +563,16 @@ body.theme-day .glass-panel small,
 body.theme-morning .glass-panel small,
 body.theme-afternoon .glass-panel small {
   color: rgba(42, 31, 14, 0.65) !important;
+}
+
+[data-theme="day"] .daily-encounter-verse {
+  color: #1A1A1A !important;
+}
+
+[data-theme="day"] .home-gold-glass p {
+  color: #1A1A1A !important;
+}
+
+[data-theme="day"] .daily-encounter-card-premium p {
+  color: #1A1A1A !important;
 }

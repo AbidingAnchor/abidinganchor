@@ -203,7 +203,7 @@ export default function Prayer() {
 
   return (
     <div style={{ background: 'transparent', minHeight: '100vh', animation: 'fadeIn 0.6s ease-out' }}>
-      <div className="content-scroll" style={{ padding: '60px 16px 100px', maxWidth: '680px', margin: '0 auto' }}>
+      <div className="content-scroll prayer-page" style={{ padding: '60px 16px 100px', maxWidth: '680px', margin: '0 auto' }}>
         <GuestPreviewBanner />
         
         {/* Header */}
@@ -241,15 +241,11 @@ export default function Prayer() {
               padding: '12px 20px',
               borderRadius: '50px',
               height: '44px',
-              border: mainTab === 'mine'
-                ? 'none'
-                : '1px solid rgba(212, 168, 67, 0.2)',
+              border: '1px solid rgba(212,168,67,0.3)',
               background: mainTab === 'mine'
                 ? '#D4A843'
-                : 'rgba(255, 255, 255, 0.06)',
-              color: mainTab === 'mine'
-                ? '#0a1428'
-                : 'rgba(255, 255, 255, 0.6)',
+                : '#F0E8D4',
+              color: '#1A1A1A',
               fontSize: '15px',
               fontWeight: mainTab === 'mine' ? 700 : 500,
               cursor: 'pointer',
@@ -266,15 +262,11 @@ export default function Prayer() {
               padding: '12px 20px',
               borderRadius: '50px',
               height: '44px',
-              border: mainTab === 'wall'
-                ? 'none'
-                : '1px solid rgba(212, 168, 67, 0.2)',
+              border: '1px solid rgba(212,168,67,0.3)',
               background: mainTab === 'wall'
                 ? '#D4A843'
-                : 'rgba(255, 255, 255, 0.06)',
-              color: mainTab === 'wall'
-                ? '#0a1428'
-                : 'rgba(255, 255, 255, 0.6)',
+                : '#F0E8D4',
+              color: '#1A1A1A',
               fontSize: '15px',
               fontWeight: mainTab === 'wall' ? 700 : 500,
               cursor: 'pointer',
@@ -292,14 +284,17 @@ export default function Prayer() {
               marginBottom: '24px',
               animation: 'fadeIn 0.6s ease-out 0.2s both',
             }}>
-              <p style={{
+              <p
+                className="prayer-section-rail"
+                style={{
                 color: '#D4A843',
                 fontSize: '11px',
                 fontWeight: 600,
                 textTransform: 'uppercase',
                 letterSpacing: '0.18em',
                 marginBottom: '16px',
-              }}>
+              }}
+              >
                 {t('prayer.tabMyPrayers')}
               </p>
             </div>
@@ -314,7 +309,7 @@ export default function Prayer() {
               </div>
             ) : items.length === 0 ? (
               <>
-                <div style={{
+                <div className="prayer-empty-card" style={{
                   background: 'linear-gradient(145deg, rgba(15, 22, 55, 0.92), rgba(10, 15, 40, 0.97))',
                   backdropFilter: 'blur(20px)',
                   WebkitBackdropFilter: 'blur(20px)',
@@ -375,19 +370,18 @@ export default function Prayer() {
                 </div>
                 
                 {/* Inspirational Verse Card */}
-                <div style={{
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(212,168,67,0.15)',
+                <div className="prayer-for-today-card" style={{
+                  background: '#F0E8D4',
+                  border: '1px solid rgba(212,168,67,0.3)',
                   borderRadius: '16px',
-                  padding: '20px',
-                  borderLeft: '3px solid #D4A843',
-                  marginTop: '24px',
+                  padding: '16px',
+                  marginTop: '16px',
                   animation: 'fadeIn 0.6s ease-out 0.4s both',
                 }}>
                   <p style={{
                     fontSize: '11px',
                     letterSpacing: '1.5px',
-                    color: 'rgba(212,168,67,0.7)',
+                    color: '#1A1A1A',
                     textTransform: 'uppercase',
                     marginBottom: '12px',
                     fontWeight: 600,
@@ -397,7 +391,7 @@ export default function Prayer() {
                   <p style={{
                     fontSize: '15px',
                     fontStyle: 'italic',
-                    color: 'rgba(255,255,255,0.85)',
+                    color: '#1A1A1A',
                     lineHeight: 1.7,
                     marginBottom: '12px',
                   }}>
@@ -405,7 +399,7 @@ export default function Prayer() {
                   </p>
                   <p style={{
                     fontSize: '13px',
-                    color: '#D4A843',
+                    color: '#1A1A1A',
                     fontWeight: 700,
                   }}>
                     {dailyVerseLoading ? '...' : `${t('bible.books.philippians')} 4:6`}
@@ -417,6 +411,7 @@ export default function Prayer() {
                 {items.map((row, index) => (
                   <li
                     key={row.id}
+                    className="prayer-list-card"
                     style={{
                       background: 'linear-gradient(145deg, rgba(15, 22, 55, 0.92), rgba(10, 15, 40, 0.97))',
                       backdropFilter: 'blur(20px)',
@@ -680,7 +675,6 @@ export default function Prayer() {
                   margin: '0 auto',
                   maxHeight: '85vh',
                   overflowY: 'auto',
-                  background: 'rgba(1, 4, 9, 0.97)',
                   backdropFilter: 'blur(20px)',
                   WebkitBackdropFilter: 'blur(20px)',
                   border: '1px solid rgba(212, 168, 67, 0.25)',

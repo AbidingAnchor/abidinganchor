@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { SHIMMER_KEYFRAMES } from '../hooks/useNameStyle'
+import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
 import { supabase } from '../lib/supabase'
+import DayBackground from '../components/DayBackground'
 
 const HALL_STYLES = `
   @keyframes hof-shimmer {
@@ -61,22 +63,6 @@ function NameRow({ name, color, tier, border, isOwn }) {
   const isLifetime = tier === 'lifetime'
   const badge = isLifetime ? '👑' : tier === 'monthly' ? '⭐' : null
 
-  const getNameStyle = (tier) => {
-    if (tier === 'lifetime') {
-      return {
-        background: 'linear-gradient(90deg, #b8860b, #ffd700, #ffec8b, #ffd700, #b8860b)',
-        backgroundSize: '200%',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        backgroundClip: 'text',
-        animation: 'shimmer-gold 2s infinite linear',
-      }
-    } else if (tier === 'monthly') {
-      return { color: '#93c5fd' }
-    }
-    return { color: color || '#ffffff' }
-  }
-
   return (
     <div style={{
       display: 'flex',
@@ -89,22 +75,28 @@ function NameRow({ name, color, tier, border, isOwn }) {
       {badge && <span style={{ fontSize: '18px', flexShrink: 0 }}>{badge}</span>}
       <span
         style={{
-          fontSize: isOwn ? '22px' : '18px',
-          fontWeight: isOwn ? 900 : 700,
-          ...getNameStyle(tier),
+          fontSize: '18px',
+          fontWeight: 700,
+          background: 'linear-gradient(90deg, #B8860B, #D4A843, #F0C96A, #D4A843, #B8860B)',
+          backgroundSize: '200% auto',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+          animation: 'shimmer 2s linear infinite',
           letterSpacing: isOwn ? '0.03em' : '0.01em',
-          textShadow: !isLifetime ? `0 0 8px ${color || 'rgba(255,255,255,0.3)'}40` : undefined,
         }}
       >
         {name}
       </span>
-      {isOwn && <span style={{ fontSize: '14px', color: '#D4A843', fontWeight: 700 }}>← You</span>}
+      {isOwn && <span style={{ fontSize: '14px', color: '#1A1A1A', fontWeight: 500 }}>← You</span>}
     </div>
   )
 }
 
 export default function HallOfFaith() {
   const navigate = useNavigate()
+  const themeType = useThemeBackgroundType()
+  const isDaytime = themeType === 'day' || themeType === 'morning' || themeType === 'afternoon'
   const { user, profile } = useAuth()
   const [supporters, setSupporters] = useState([])
   const [totalCount, setTotalCount] = useState(0)
@@ -162,13 +154,14 @@ export default function HallOfFaith() {
     <div style={{
       position: 'fixed',
       inset: 0,
-      background: 'transparent',
-      color: '#fff',
+      background: isDaytime ? '#F5EFE0' : 'transparent',
+      color: isDaytime ? '#1A1A1A' : '#fff',
       overflow: 'hidden',
       display: 'flex',
       flexDirection: 'column',
     }}>
       <style>{HALL_STYLES}</style>
+      {isDaytime ? <DayBackground /> : null}
       <StarField />
 
       {/* Close button */}
@@ -183,7 +176,7 @@ export default function HallOfFaith() {
           marginTop: '56px',
           width: '40px',
           height: '40px',
-          background: 'rgba(255,255,255,0.08)',
+          background: isDaytime ? '#F0E8D4' : 'rgba(255,255,255,0.08)',
           border: '1px solid rgba(212,168,67,0.3)',
           borderRadius: '50%',
           display: 'flex',
@@ -207,24 +200,24 @@ export default function HallOfFaith() {
         textAlign: 'center',
         paddingTop: '72px',
         paddingBottom: '20px',
-        background: 'linear-gradient(180deg, #010409 60%, transparent 100%)',
+        background: isDaytime ? 'linear-gradient(180deg, #F5EFE0 65%, transparent 100%)' : 'linear-gradient(180deg, #010409 60%, transparent 100%)',
       }}>
         <h1 style={{
           margin: '0 0 4px',
           fontSize: '28px',
           fontWeight: 900,
-          color: 'transparent',
+          color: isDaytime ? '#1A1A1A' : 'transparent',
           background: 'linear-gradient(90deg, #b8860b, #ffd700, #ffec8b, #ffd700, #b8860b)',
           backgroundSize: '200%',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-          animation: 'hof-shimmer 3s infinite linear',
+          WebkitBackgroundClip: isDaytime ? undefined : 'text',
+          WebkitTextFillColor: isDaytime ? undefined : 'transparent',
+          backgroundClip: isDaytime ? undefined : 'text',
+          animation: isDaytime ? undefined : 'hof-shimmer 3s infinite linear',
           letterSpacing: '0.05em',
         }}>
           Hall of Faith
         </h1>
-        <p style={{ margin: 0, color: 'rgba(255,255,255,0.5)', fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+        <p style={{ margin: 0, color: isDaytime ? '#4A4A4A' : 'rgba(255,255,255,0.5)', fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
           Hebrews 11
         </p>
       </div>
@@ -278,6 +271,12 @@ export default function HallOfFaith() {
               width: '100%',
               maxWidth: '400px',
               paddingTop: '160px',
+              background: 'transparent',
+              borderRadius: isDaytime ? '16px' : undefined,
+              border: 'none',
+              outline: 'none',
+              boxShadow: 'none',
+              color: isDaytime ? '#1A1A1A' : undefined,
               animation: `hof-scroll ${scrollDuration}s linear infinite`,
             }}
           >

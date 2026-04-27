@@ -42,6 +42,7 @@ import ResetPassword from './pages/ResetPassword'
 import { useAuth } from './context/AuthContext'
 import LoadingScreen from './components/LoadingScreen'
 import BackgroundManager from './components/BackgroundManager'
+import { useThemeBackgroundType } from './hooks/useThemeBackgroundType'
 import { useWorshipPlaybackState } from './lib/worshipGlobalAudio'
 import { applyDailyStreakOnAppOpen } from './lib/dailyAppStreak'
 import { syncWeeklyActiveDays } from './hooks/useStreakTracker'
@@ -183,6 +184,8 @@ function AppShell() {
     [worshipPlayback.isPlaying, worshipPlayback.trackName, worshipVisible],
   )
   const onboardingBlocking = location.pathname === '/onboarding'
+  const themeType = useThemeBackgroundType()
+  const isDaytime = themeType === 'day'
 
   const showNav =
     !loading &&
@@ -264,7 +267,7 @@ function AppShell() {
   }
 
   return (
-    <div className="relative min-h-[100dvh] text-white" style={{ background: 'transparent' }}>
+    <div className="relative min-h-[100dvh]" style={{ background: 'transparent', color: 'var(--text-primary)' }}>
       <BackgroundManager />
       <div style={{ position: 'relative', zIndex: 10, background: 'transparent' }}>
         <div
@@ -358,7 +361,7 @@ function AppShell() {
         autoPlayToken={worshipAutoPlayToken}
       />
       {showHeader ? <Header /> : null}
-      {showNav ? <BottomNav /> : null}
+      {showNav ? <BottomNav isDaytime={isDaytime} /> : null}
     </div>
   )
 }

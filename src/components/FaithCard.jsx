@@ -349,20 +349,6 @@ export default function FaithCard({
           textAlign: 'center',
           marginBottom: '20px',
         }}>
-          <p
-            className="faith-preview-text-accent"
-            style={{
-              fontFamily: 'Inter, sans-serif',
-              fontSize: '28px',
-              fontWeight: isDarkTheme ? 600 : 500,
-              color: currentStyle.accentColor,
-              letterSpacing: '0.05em',
-              margin: 0,
-              opacity: 0.7,
-              textShadow: previewTextShadow,
-            }}
-          >
-          </p>
         </div>
       </div>
 

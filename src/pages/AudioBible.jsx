@@ -2,6 +2,11 @@ import { useState, useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import { bibleBooks } from '../data/bibleBooks'
 
+const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY
+const ELEVENLABS_VOICE_ID = '1KNqBv4TutQtzSIACsMC'
+const ELEVENLABS_MODEL_ID = 'eleven_multilingual_v2'
+const ELEVENLABS_API_URL = `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}`
+
 export default function AudioBible() {
   const [selectedBook, setSelectedBook] = useState(bibleBooks[0])
   const [selectedChapter, setSelectedChapter] = useState(1)
@@ -9,17 +14,102 @@ export default function AudioBible() {
   const [verses, setVerses] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [selectedVoice, setSelectedVoice] = useState('David')
-  const selectedVoiceRef = useRef('David')
-  const [speechSupported, setSpeechSupported] = useState(true)
-  const currentChunkRef = useRef(0)
-  const chunksRef = useRef([])
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false)
+  const audioPlayer = useRef(null)
   const isPlayingRef = useRef(false)
   const location = useLocation()
   const [currentVerseIndex, setCurrentVerseIndex] = useState(null)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
   const [isMinimized, setIsMinimized] = useState(false)
   const [showVoiceSelector, setShowVoiceSelector] = useState(false)
+
+
+  const playAudio = async (text) => {
+    if (!ELEVENLABS_API_KEY) {
+      console.error('ElevenLabs API key not found.')
+      setError('ElevenLabs API key not found.')
+      return
+    }
+
+    setIsGeneratingAudio(true)
+    setError(null)
+    setIsPlaying(true)
+    isPlayingRef.current = true
+
+    try {
+      const response = await fetch(ELEVENLABS_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'xi-api-key': ELEVENLABS_API_KEY,
+        },
+        body: JSON.stringify({
+          text: text,
+          model_id: ELEVENLABS_MODEL_ID,
+          voice_settings: {
+            stability: 0.5,
+            similarity_boost: 0.75,
+          },
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(`ElevenLabs API error: ${errorData.detail}`)
+      }
+
+      const audioBlob = await response.blob()
+      const audioUrl = URL.createObjectURL(audioBlob)
+
+      if (audioPlayer.current) {
+        audioPlayer.current.src = audioUrl
+        audioPlayer.current.playbackRate = playbackSpeed
+        audioPlayer.current.play()
+      } else {
+        audioPlayer.current = new Audio(audioUrl)
+        audioPlayer.current.playbackRate = playbackSpeed
+        audioPlayer.current.play()
+      }
+      
+      audioPlayer.current.onended = () => {
+        setIsPlaying(false)
+        isPlayingRef.current = false
+      }
+
+    } catch (err) {
+      console.error('Error generating audio:', err)
+      setError(`Audio generation failed: ${err.message}`)
+      setIsPlaying(false)
+      isPlayingRef.current = false
+    } finally {
+      setIsGeneratingAudio(false)
+    }
+  }
+
+  const stopAudio = () => {
+    if (audioPlayer.current) {
+      audioPlayer.current.pause()
+      audioPlayer.current.currentTime = 0
+      URL.revokeObjectURL(audioPlayer.current.src)
+      audioPlayer.current = null
+    }
+    setIsPlaying(false)
+    isPlayingRef.current = false
+  }
+
+  const togglePlay = async () => {
+    if (isPlayingRef.current) {
+      stopAudio()
+    } else {
+      const fullText = verses.map(v => `${v.verse}. ${v.text}`).join(' ')
+      playAudio(fullText)
+    }
+  }
+
+  const stopPlayback = () => {
+    stopAudio()
+    setCurrentVerseIndex(null)
+  }
 
   const handleBookChange = (e) => {
     const book = bibleBooks.find(b => b.name === e.target.value)
@@ -32,217 +122,6 @@ export default function AudioBible() {
   }
 
   // Voice profile definitions with gender keywords and pitch/rate settings
-  const voiceProfiles = {
-    David: {
-      genderKeywords: ['male', 'david', 'james', 'john', 'mark', 'daniel', 'google us english', 'microsoft david'],
-      pitch: 0.75,
-      rate: 0.9,
-    },
-    Elijah: {
-      genderKeywords: ['male', 'elijah', 'thomas', 'george', 'paul', 'richard', 'google uk english male'],
-      pitch: 0.70,
-      rate: 0.88,
-    },
-    Grace: {
-      genderKeywords: ['female', 'grace', 'samantha', 'karen', 'victoria', 'zira', 'susan', 'fiona', 'moira', 'tessa', 'google uk english female', 'microsoft zira', 'microsoft susan'],
-      pitch: 1.35,
-      rate: 0.93,
-    },
-    Miriam: {
-      genderKeywords: ['female', 'miriam', 'allison', 'ava', 'alex', 'linda', 'kate', 'stephanie', 'emily', 'lisa', 'google us english female'],
-      pitch: 1.45,
-      rate: 0.95,
-    },
-  }
-
-  // Get voice with profile based on voice name
-  const getVoice = (voiceName) => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) {
-      return { voice: null, pitch: 1, rate: 1 }
-    }
-
-    const voices = window.speechSynthesis.getVoices()
-    const profile = voiceProfiles[voiceName]
-    
-    if (!profile) {
-      return { voice: voices[0] || null, pitch: 1, rate: 1 }
-    }
-
-    // Try to find a matching voice by keyword in name
-    const matched = voices.find((v) =>
-      profile.genderKeywords.some((kw) =>
-        v.name.toLowerCase().includes(kw)
-      )
-    )
-
-    // Fallback: for female profiles, pick any non-default voice
-    // For male profiles, use the first available voice
-    const fallback = profile.pitch > 1
-      ? voices.find((v) => v !== voices[0]) || voices[0]
-      : voices[0]
-
-    return {
-      voice: matched || fallback || null,
-      pitch: profile.pitch,
-      rate: profile.rate,
-    }
-  }
-
-  // Load voices with proper voiceschanged event handling
-  const loadVoices = () => {
-    return new Promise((resolve) => {
-      if (typeof window === 'undefined' || !window.speechSynthesis) {
-        resolve([])
-        return
-      }
-
-      const voices = window.speechSynthesis.getVoices()
-      if (voices.length > 0) {
-        resolve(voices)
-        return
-      }
-
-      window.speechSynthesis.addEventListener('voiceschanged', () => {
-        resolve(window.speechSynthesis.getVoices())
-      }, { once: true })
-    })
-  }
-
-  // Chunk text for iOS Safari workaround (prevents cutoff after ~15 seconds)
-  const chunkText = (text) => {
-    return text
-      .split(/(?<=[.!?;,])\s+/)
-      .reduce((chunks, sentence) => {
-        const last = chunks[chunks.length - 1]
-        if (last && (last + ' ' + sentence).length < 180) {
-          chunks[chunks.length - 1] = last + ' ' + sentence
-        } else {
-          chunks.push(sentence)
-        }
-        return chunks
-      }, [])
-      .filter(Boolean)
-  }
-
-  // Speak from specific chunk with locked voice
-  const speakFromChunk = async (startIndex) => {
-    await loadVoices()
-    window.speechSynthesis.cancel()
-    await new Promise(r => setTimeout(r, 150))
-
-    const { voice, pitch, rate } = getVoice(selectedVoiceRef.current)
-    const chunks = chunksRef.current
-    if (!chunks.length || startIndex >= chunks.length) return
-
-    isPlayingRef.current = true
-    setIsPlaying(true)
-
-    const speakChunk = (index) => {
-      if (index >= chunks.length || !isPlayingRef.current) {
-        if (index >= chunks.length) {
-          setIsPlaying(false)
-          isPlayingRef.current = false
-          currentChunkRef.current = 0
-          setCurrentVerseIndex(null)
-        }
-        return
-      }
-
-      currentChunkRef.current = index
-      const utterance = new SpeechSynthesisUtterance(chunks[index])
-      utterance.voice = voice
-      utterance.pitch = pitch
-      utterance.rate = rate * playbackSpeed
-      utterance.volume = 1
-
-      // Track current verse being spoken
-      utterance.onboundary = (event) => {
-        if (event.name === 'word') {
-          const textSoFar = chunks.slice(0, index).join(' ') + ' ' + chunks[index].substring(0, event.charIndex)
-          const versePattern = /(\d+)\.\s/g
-          let match
-          let lastVerseNum = 1
-          
-          while ((match = versePattern.exec(textSoFar)) !== null) {
-            lastVerseNum = parseInt(match[1])
-          }
-          
-          const verseIndex = verses.findIndex(v => v.verse === lastVerseNum)
-          if (verseIndex !== -1) {
-            setCurrentVerseIndex(verseIndex)
-          }
-        }
-      }
-
-      utterance.onend = () => {
-        if (isPlayingRef.current) {
-          speakChunk(index + 1)
-        }
-      }
-
-      utterance.onerror = (e) => {
-        if (e.error !== 'canceled' && e.error !== 'interrupted') {
-          console.error('Speech error:', e.error)
-          if (isPlayingRef.current) {
-            speakChunk(index + 1)
-          }
-        }
-      }
-
-      window.speechSynthesis.speak(utterance)
-    }
-
-    speakChunk(startIndex)
-  }
-
-  // Handle voice change with immediate effect
-  const handleVoiceChange = async (newVoiceName) => {
-    setSelectedVoice(newVoiceName)
-    selectedVoiceRef.current = newVoiceName
-    setShowVoiceSelector(false)
-    
-    if (!isPlayingRef.current) return
-    
-    // Stop and restart with new voice from current position
-    const resumeFrom = currentChunkRef.current
-    isPlayingRef.current = false
-    window.speechSynthesis.cancel()
-    
-    await new Promise(r => setTimeout(r, 150))
-    speakFromChunk(resumeFrom)
-  }
-
-  const togglePlay = () => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) {
-      return
-    }
-
-    if (isPlayingRef.current) {
-      // PAUSE: stop speech, remember position
-      isPlayingRef.current = false
-      setIsPlaying(false)
-      window.speechSynthesis.cancel()
-      // currentChunkRef.current already holds our position
-    } else {
-      // PLAY/RESUME: start from saved position
-      if (!chunksRef.current.length) {
-        // First play — chunk the text
-        const fullText = verses.map(v => `${v.verse}. ${v.text}`).join(' ')
-        chunksRef.current = chunkText(fullText)
-        currentChunkRef.current = 0
-      }
-      speakFromChunk(currentChunkRef.current)
-    }
-  }
-
-  const stopPlayback = () => {
-    setIsPlaying(false)
-    isPlayingRef.current = false
-    setCurrentVerseIndex(null)
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel()
-    }
-  }
 
   const goToPreviousChapter = () => {
     stopPlayback()
@@ -274,68 +153,8 @@ export default function AudioBible() {
     }
   }
 
-  // Cleanup on unmount - stop all speech
-  useEffect(() => {
-    return () => {
-      window.speechSynthesis.cancel()
-      setIsPlaying(false)
-      isPlayingRef.current = false
-    }
-  }, [])
 
-  // Stop speech on visibility change (tab switch, app minimize)
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        window.speechSynthesis.cancel()
-        setIsPlaying(false)
-        isPlayingRef.current = false
-      }
-    }
 
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
-  }, [])
-
-  // Stop speech on route change away from audio bible
-  useEffect(() => {
-    if (!location.pathname.includes('audio')) {
-      window.speechSynthesis.cancel()
-      setIsPlaying(false)
-      isPlayingRef.current = false
-    }
-  }, [location.pathname])
-
-  // Keep voice ref in sync
-  useEffect(() => {
-    selectedVoiceRef.current = selectedVoice
-  }, [selectedVoice])
-
-  // iOS keepalive - prevents silent stall after ~15 seconds
-  useEffect(() => {
-    if (!isPlaying) return
-    
-    const keepalive = setInterval(() => {
-      if (isPlayingRef.current && window.speechSynthesis.paused) {
-        window.speechSynthesis.resume()
-      }
-    }, 10000)
-
-    return () => clearInterval(keepalive)
-  }, [isPlaying])
-
-  // Initialize voices on mount
-  useEffect(() => {
-    const initVoices = async () => {
-      if (typeof window !== 'undefined' && window.speechSynthesis) {
-        await loadVoices()
-        if (import.meta.env.DEV) console.log('Voices loaded successfully')
-      } else {
-        setSpeechSupported(false)
-      }
-    }
-    initVoices()
-  }, [])
 
   // Fetch Bible chapter text from API
   useEffect(() => {
@@ -354,11 +173,7 @@ export default function AudioBible() {
         setVerses(data.verses || [])
         
         // Reset position when passage changes
-        window.speechSynthesis.cancel()
-        isPlayingRef.current = false
-        setIsPlaying(false)
-        currentChunkRef.current = 0
-        chunksRef.current = []
+        stopAudio()
         setCurrentVerseIndex(null)
       } catch (err) {
         setError(err.message)
@@ -372,21 +187,6 @@ export default function AudioBible() {
   }, [selectedBook, selectedChapter])
 
 
-  if (!speechSupported) {
-    return (
-      <div className="content-scroll min-h-screen px-4 pt-6 pb-32 flex items-center justify-center">
-        <div className="glass p-8 rounded-2xl text-center max-w-md">
-          <div className="text-5xl mb-4">🙏</div>
-          <p className="text-white/90 text-lg mb-2">
-            Audio not supported on this device.
-          </p>
-          <p className="text-white/60 text-sm">
-            We're working on bringing you more options soon.
-          </p>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="content-scroll min-h-screen px-4 pt-6" style={{ paddingBottom: '160px' }}>
@@ -399,30 +199,64 @@ export default function AudioBible() {
       {/* Book & Chapter Selectors */}
       <div className="flex gap-4 mb-6">
         <div className="flex-1">
-          <label className="block text-section-header mb-2 text-gold-accent text-sm">Book</label>
+          <label className="block text-section-header mb-2 text-sm" style={{ color: '#1A1A1A' }}>Book</label>
           <select
             value={selectedBook.name}
             onChange={handleBookChange}
             className="app-input cursor-pointer"
-            style={{ appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23D4A843'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '20px' }}
+            style={{
+              appearance: 'none',
+              backgroundColor: '#F0E8D4',
+              color: '#1A1A1A',
+              border: '1px solid rgba(212,168,67,0.3)',
+              borderRadius: 12,
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23D4A843'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 12px center',
+              backgroundSize: '20px',
+            }}
           >
             {bibleBooks.map(book => (
-              <option key={book.id} value={book.name} className="bg-slate-900 text-white">
+              <option
+                key={book.id}
+                value={book.name}
+                style={{
+                  backgroundColor: selectedBook.name === book.name ? '#D4A843' : '#F0E8D4',
+                  color: '#1A1A1A',
+                }}
+              >
                 {book.name}
               </option>
             ))}
           </select>
         </div>
         <div className="w-32">
-          <label className="block text-section-header mb-2 text-gold-accent text-sm">Chapter</label>
+          <label className="block text-section-header mb-2 text-sm" style={{ color: '#1A1A1A' }}>Chapter</label>
           <select
             value={selectedChapter}
             onChange={handleChapterChange}
             className="app-input cursor-pointer"
-            style={{ appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23D4A843'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '20px' }}
+            style={{
+              appearance: 'none',
+              backgroundColor: '#F0E8D4',
+              color: '#1A1A1A',
+              border: '1px solid rgba(212,168,67,0.3)',
+              borderRadius: 12,
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23D4A843'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 12px center',
+              backgroundSize: '20px',
+            }}
           >
             {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map(chapter => (
-              <option key={chapter} value={chapter} className="bg-slate-900 text-white">
+              <option
+                key={chapter}
+                value={chapter}
+                style={{
+                  backgroundColor: selectedChapter === chapter ? '#D4A843' : '#F0E8D4',
+                  color: '#1A1A1A',
+                }}
+              >
                 {chapter}
               </option>
             ))}
@@ -544,26 +378,11 @@ export default function AudioBible() {
               textAlign: 'center',
             }}
           >
-            {selectedVoice}
+            ElevenLabs Voice
           </span>
         )}
 
-        {/* Voice Selector Button (only when expanded) */}
-        {!isMinimized && (
-          <button
-            onClick={() => setShowVoiceSelector(!showVoiceSelector)}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--gold)',
-              fontSize: '14px',
-              cursor: 'pointer',
-              padding: '4px 8px',
-            }}
-          >
-            🎤
-          </button>
-        )}
+
 
         {/* Minimize/Expand Button */}
         <button
@@ -581,61 +400,7 @@ export default function AudioBible() {
         </button>
       </div>
 
-      {/* Voice Selector Dropdown (opens upward from pill) */}
-      {showVoiceSelector && !isMinimized && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: '136px',
-            left: '12px',
-            right: '12px',
-            zIndex: 50,
-            background: 'var(--card-parchment)',
-            border: '1px solid var(--glass-border)',
-            borderRadius: '16px',
-            boxShadow: 'var(--glass-shadow)',
-            padding: '12px',
-            animation: 'slideUp 0.2s ease-out',
-          }}
-        >
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '8px',
-            justifyContent: 'center',
-          }}>
-            {[
-              { id: 'David', emoji: '👨', name: 'David' },
-              { id: 'Grace', emoji: '👩', name: 'Grace' },
-              { id: 'Elijah', emoji: '👴', name: 'Elijah' },
-              { id: 'Miriam', emoji: '👩‍🦳', name: 'Miriam' }
-            ].map(voice => (
-              <button
-                key={voice.id}
-                onClick={() => handleVoiceChange(voice.id)}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '20px',
-                  background: selectedVoice === voice.id
-                    ? 'var(--gold)'
-                    : 'rgba(255, 255, 255, 0.08)',
-                  color: selectedVoice === voice.id
-                    ? '#0a1a3e'
-                    : 'var(--text-primary)',
-                  border: '1px solid var(--glass-border)',
-                  fontSize: '13px',
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                <span style={{ marginRight: '6px' }}>{voice.emoji}</span>
-                <span>{voice.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+
 
       {/* Playback Speed Controls (separate pill, only when expanded) */}
       {!isMinimized && (

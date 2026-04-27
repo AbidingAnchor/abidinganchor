@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import CelestialBackground from './CelestialBackground'
+import DayBackground from './DayBackground'
+import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
 
 /**
  * Full-viewport overlay while auth/session resolves. Background is transparent so
@@ -10,6 +12,8 @@ import CelestialBackground from './CelestialBackground'
 export default function LoadingScreen() {
   useTranslation()
   const [logoLoaded, setLogoLoaded] = useState(false)
+  const skyPeriod = useThemeBackgroundType()
+  const isDaytime = skyPeriod === 'day' || skyPeriod === 'morning' || skyPeriod === 'afternoon'
 
   useEffect(() => {
     let alive = true
@@ -43,7 +47,7 @@ export default function LoadingScreen() {
         height: '100dvh',
         zIndex: 9999,
         margin: 0,
-        background: 'var(--loading-screen-bg)',
+        background: isDaytime ? '#F5EFE0' : '#0A1628',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -55,9 +59,16 @@ export default function LoadingScreen() {
         pointerEvents: 'none',
       }}
     >
-      <div style={{ position: 'absolute', inset: 0, zIndex: -1 }}>
-        <CelestialBackground />
-      </div>
+      {isDaytime ? (
+        <div style={{ position: 'absolute', inset: 0, zIndex: -1 }}>
+          <DayBackground />
+        </div>
+      ) : null}
+      {!isDaytime ? (
+        <div style={{ position: 'absolute', inset: 0, zIndex: -1 }}>
+          <CelestialBackground />
+        </div>
+      ) : null}
       <style>{`
         @keyframes loading-logo-pulse {
           0%, 100% { opacity: 1; }
@@ -69,7 +80,9 @@ export default function LoadingScreen() {
         }
         .aa-loading-screen {
           --loading-screen-bg: #050816;
-          background: linear-gradient(to bottom, #050816 0%, #0A0F2C 50%, #050816 100%);
+          background: ${isDaytime
+            ? '#F5EFE0'
+            : 'linear-gradient(to bottom, #050816 0%, #0A0F2C 50%, #050816 100%)'};
         }
         .aa-loading-screen::before {
           content: '';
@@ -78,7 +91,9 @@ export default function LoadingScreen() {
           left: 0;
           right: 0;
           bottom: 0;
-          background: radial-gradient(ellipse at center, rgba(14, 30, 70, 0.5) 0%, transparent 70%);
+          background: ${isDaytime
+            ? 'none'
+            : 'radial-gradient(ellipse at center, rgba(14, 30, 70, 0.5) 0%, transparent 70%)'};
           pointer-events: none;
         }
       `}</style>
@@ -111,19 +126,33 @@ export default function LoadingScreen() {
         />
         <p
           style={{
-            color: 'var(--gold, #D4A843)',
+            color: isDaytime ? '#1A1A1A' : '#FFFFFF',
+            margin: '12px 0 0',
+            fontWeight: 700,
+            letterSpacing: '0.08em',
+            fontSize: 'clamp(16px, 4.1vw, 20px)',
+            lineHeight: 1.2,
+            textTransform: 'uppercase',
+            textShadow: isDaytime ? 'none' : '0 1px 12px rgba(0,0,0,0.5)',
+          }}
+        >
+          Abiding Anchor
+        </p>
+        <p
+          style={{
+            color: isDaytime ? '#1A1A1A' : '#FFFFFF',
             margin: '14px 0 0',
             fontWeight: 700,
             letterSpacing: '0.08em',
             fontSize: 'clamp(13px, 3.5vw, 16px)',
             lineHeight: 1.4,
-            textShadow: '0 1px 14px rgba(0,0,0,0.45)',
+            textShadow: isDaytime ? 'none' : '0 1px 14px rgba(0,0,0,0.45)',
           }}
         >
           Abiding in His Word
-          <span style={{ display: 'inline-block', fontSize: 'inherit', color: '#D4A843', opacity: 0, animation: 'dotAppear 1.5s infinite 0s' }}>.</span>
-          <span style={{ display: 'inline-block', fontSize: 'inherit', color: '#D4A843', opacity: 0, animation: 'dotAppear 1.5s infinite 0.5s' }}>.</span>
-          <span style={{ display: 'inline-block', fontSize: 'inherit', color: '#D4A843', opacity: 0, animation: 'dotAppear 1.5s infinite 1s' }}>.</span>
+          <span style={{ display: 'inline-block', fontSize: 'inherit', color: isDaytime ? '#1A1A1A' : '#FFFFFF', opacity: 0, animation: 'dotAppear 1.5s infinite 0s' }}>.</span>
+          <span style={{ display: 'inline-block', fontSize: 'inherit', color: isDaytime ? '#1A1A1A' : '#FFFFFF', opacity: 0, animation: 'dotAppear 1.5s infinite 0.5s' }}>.</span>
+          <span style={{ display: 'inline-block', fontSize: 'inherit', color: isDaytime ? '#1A1A1A' : '#FFFFFF', opacity: 0, animation: 'dotAppear 1.5s infinite 1s' }}>.</span>
         </p>
       </div>
     </div>

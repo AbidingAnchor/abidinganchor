@@ -1,8 +1,20 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
 
 export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) {
   const { t } = useTranslation()
+  const themeType = useThemeBackgroundType()
+  const isDaytime = themeType === 'day'
+
+  const withMenuSquareIcon = (option) => {
+    if (option.path === '/search') return '🔍'
+    if (option.path === '/faith-journey') return '✨'
+    if (option.path === '/testimony-wall') return '📣'
+    if (option.path === '/share-card') return '🎨'
+    if (option.path === '/settings') return '⚙️'
+    return option.icon
+  }
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
@@ -40,6 +52,7 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
 
       {/* Bottom Sheet */}
       <div
+        className="more-bottom-sheet"
         onClick={(e) => e.stopPropagation()}
         style={{
           position: 'fixed',
@@ -47,7 +60,7 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
           left: 0,
           right: 0,
           zIndex: 10001,
-          background: 'rgba(1,4,9,0.96)',
+          background: isDaytime ? '#F5EFE0' : undefined,
           backdropFilter: 'blur(28px)',
           WebkitBackdropFilter: 'blur(28px)',
           borderTop: '1px solid rgba(255,255,255,0.09)',
@@ -69,7 +82,7 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
           style={{
             width: '40px',
             height: '4px',
-            background: 'rgba(255,255,255,0.2)',
+            backgroundColor: isDaytime ? 'rgba(26,26,26,0.2)' : 'rgba(255,255,255,0.2)',
             borderRadius: '2px',
             margin: '12px auto 16px',
           }}
@@ -77,11 +90,13 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
 
         {/* Header */}
         <div
+          className="more-bottom-sheet__header"
           style={{
             padding: '0 20px 16px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            background: isDaytime ? '#F5EFE0' : 'transparent',
           }}
         >
           <div>
@@ -89,7 +104,7 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
               style={{
                 fontSize: '20px',
                 fontWeight: 800,
-                color: '#ffffff',
+                color: isDaytime ? '#1A1A1A' : '#ffffff',
                 margin: 0,
                 letterSpacing: '0.05em',
               }}
@@ -121,7 +136,7 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
               borderRadius: '50%',
               background: 'rgba(255,255,255,0.08)',
               border: '1px solid rgba(255,255,255,0.1)',
-              color: '#ffffff',
+              color: isDaytime ? '#1A1A1A' : '#ffffff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -141,6 +156,7 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
             <div key={option.path}>
               <button
                 type="button"
+                className="more-bottom-sheet__row"
                 onClick={() => onOptionPress(option.path)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -154,8 +170,8 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
                   display: 'flex',
                   alignItems: 'center',
                   padding: '0 20px',
-                  borderBottom: index < options.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
-                  background: 'transparent',
+                  borderBottom: index < options.length - 1 ? (isDaytime ? '1px solid rgba(26,26,26,0.08)' : '1px solid rgba(255,255,255,0.06)') : 'none',
+                  background: isDaytime ? '#F5EFE0' : 'transparent',
                   border: 'none',
                   borderRadius: '0',
                   cursor: 'pointer',
@@ -165,6 +181,7 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
                 }}
               >
                 <div
+                  className="more-bottom-sheet__icon-wrap"
                   style={{
                     width: '40px',
                     height: '40px',
@@ -176,8 +193,8 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
                     justifyContent: 'center',
                   }}
                 >
-                  <span style={{ color: '#D4A843', fontSize: '20px' }}>
-                    {option.icon}
+                  <span className="more-bottom-sheet__icon-emoji" style={{ color: isDaytime ? '#1A1A1A' : '#D4A843', fontSize: '20px' }}>
+                    {withMenuSquareIcon(option)}
                   </span>
                 </div>
                 <span
@@ -185,7 +202,7 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
                     flex: 1,
                     fontSize: '16px',
                     fontWeight: 600,
-                    color: '#ffffff',
+                    color: isDaytime ? '#1A1A1A' : '#ffffff',
                     textAlign: 'left',
                     marginLeft: '14px',
                   }}
@@ -193,9 +210,10 @@ export default function MoreDrawer({ isOpen, onClose, onOptionPress, options }) 
                   {option.labelKey ? t(option.labelKey) : option.label}
                 </span>
                 <span
+                  className="more-bottom-sheet__chevron"
                   style={{
                     fontSize: '18px',
-                    color: '#D4A843',
+                    color: isDaytime ? '#1A1A1A' : '#D4A843',
                   }}
                 >
                   →

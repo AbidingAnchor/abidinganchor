@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { useFellowship } from '../context/FellowshipContext'
+import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
 import { SHIMMER_KEYFRAMES } from '../hooks/useNameStyle'
 import { supabase } from '../lib/supabase'
 import { fetchVerse } from '../utils/bibleTranslation'
@@ -12,6 +13,8 @@ import { fetchVerse } from '../utils/bibleTranslation'
 
 export default function Fellowship() {
   const { t, i18n } = useTranslation()
+  const themeType = useThemeBackgroundType()
+  const isDaytime = themeType === 'day' || themeType === 'morning' || themeType === 'afternoon'
   const { user, profile } = useAuth()
   const {
     fellowship,
@@ -858,24 +861,39 @@ export default function Fellowship() {
   )
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
+    <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900" style={{ background: 'transparent' }}>
       {view === 'none' && (
-        <div className="flex flex-col items-center justify-center h-full p-4 text-center">
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-3">{t('fellowship.title')}</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md">{t('fellowship.subtitle')}</p>
+        <div className="flex flex-col items-center justify-center h-full p-4 text-center" style={{ background: 'transparent', color: '#1A1A1A' }}>
+          <div
+            className="fellowship-landing-card"
+            style={{
+              background: '#F0E8D4',
+              borderRadius: '20px',
+              border: '1px solid rgba(212,168,67,0.3)',
+              padding: '32px 24px',
+              textAlign: 'center',
+              maxWidth: '520px',
+              width: '100%',
+            }}
+          >
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-3" style={{ color: '#1A1A1A' }}>{t('fellowship.title')}</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md" style={{ color: '#1A1A1A' }}>{t('fellowship.subtitle')}</p>
           
           <button
             onClick={() => setView('create')}
             className="bg-yellow-500 text-white font-bold py-3 px-6 rounded-full text-lg mb-4 shadow-lg hover:bg-yellow-600 transition duration-200"
+            style={{ background: '#D4A843', color: '#1A1A1A' }}
           >
             {t('fellowship.createFellowship')}
           </button>
           <button
             onClick={() => setShowJoinModal(true)}
-            className="text-yellow-600 dark:text-yellow-400 font-semibold py-3 px-6 rounded-full text-lg hover:bg-yellow-100 dark:hover:bg-yellow-900 transition duration-200"
+            className="fellowship-join-with-code text-yellow-600 dark:text-yellow-400 font-semibold py-3 px-6 rounded-full text-lg hover:bg-yellow-100 dark:hover:bg-yellow-900 transition duration-200"
+            style={{ color: '#1A1A1A', fontWeight: 600 }}
           >
             {t('fellowship.joinWithCode')}
           </button>
+          </div>
         </div>
       )}
 
@@ -894,18 +912,29 @@ export default function Fellowship() {
 
       {view === 'inside' && fellowship && (
         <div className="flex flex-col flex-grow">
-          <header className="bg-white dark:bg-gray-800 shadow-sm p-4 border-b border-gray-200 dark:border-gray-700">
+          <header
+            className="shadow-sm p-4 border-b border-gray-200 dark:border-gray-700"
+            style={{ background: isDaytime ? '#F5EFE0' : 'transparent', color: isDaytime ? '#1A1A1A' : undefined }}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <button onClick={() => setView('none')} className="text-gray-600 dark:text-gray-300 mr-3 p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200">
+                <button
+                  onClick={() => setView('none')}
+                  className="mr-3 p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200"
+                  style={{ color: isDaytime ? '#1A1A1A' : undefined }}
+                >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
-                <h1 className="text-xl font-bold text-gray-800 dark:text-white">{fellowship.name}</h1>
+                <h1 className="text-xl font-bold" style={{ color: isDaytime ? '#1A1A1A' : undefined }}>{fellowship.name}</h1>
               </div>
               <div className="relative">
-                <button onClick={() => setShowDeleteMenu(!showDeleteMenu)} className="text-gray-600 dark:text-gray-300 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200">
+                <button
+                  onClick={() => setShowDeleteMenu(!showDeleteMenu)}
+                  className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200"
+                  style={{ color: isDaytime ? '#1A1A1A' : undefined }}
+                >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                   </svg>
@@ -933,8 +962,8 @@ export default function Fellowship() {
           </header>
           
           <div className="flex flex-col flex-grow overflow-hidden">
-            <div className="flex-shrink-0 bg-white dark:bg-gray-800 p-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-2">{t('fellowship.membersLabel')} ({members.length})</h2>
+            <div className="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700" style={{ background: isDaytime ? '#F5EFE0' : undefined }}>
+              <h2 className="text-lg font-bold mb-2" style={{ color: isDaytime ? '#1A1A1A' : undefined }}>{t('fellowship.membersLabel')} ({members.length})</h2>
               <div className="flex flex-wrap gap-2 mb-4">
                 {members.map(member => (
                   <div

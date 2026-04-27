@@ -26,7 +26,7 @@ function ProgressRing({ percent }) {
   const dash = (percent / 100) * c
   return (
     <svg width="44" height="44" viewBox="0 0 44 44">
-      <circle cx="22" cy="22" r={r} stroke="rgba(255,255,255,0.18)" strokeWidth="4" fill="none" />
+      <circle cx="22" cy="22" r={r} stroke="#E8D9B8" strokeWidth="4" fill="none" />
       <circle
         cx="22"
         cy="22"
@@ -38,7 +38,7 @@ function ProgressRing({ percent }) {
         strokeLinecap="round"
         transform="rotate(-90 22 22)"
       />
-      <text x="22" y="26" textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.85)" fontWeight="700">
+      <text x="22" y="26" textAnchor="middle" fontSize="10" fill="#1A1A1A" fontWeight="700">
         {Math.round(percent)}%
       </text>
     </svg>
@@ -195,12 +195,15 @@ export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertica
         </button>
       </div>
 
-      <div className="mb-3 flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between glass-panel rounded-xl p-3">
+      <div
+        className="verse-flashcard-progress-bar mb-3 flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-3"
+        style={{ background: '#E8D9B8', borderRadius: 8 }}
+      >
         <div className="flex items-center gap-2">
           <ProgressRing percent={percent} />
           <div>
-            <p className="text-sm font-semibold text-white">{t('flashcards.progress')}</p>
-            <p className="text-xs text-white/70">
+            <p className="text-sm font-semibold" style={{ color: '#1A1A1A' }}>{t('flashcards.progress')}</p>
+            <p className="text-xs" style={{ color: '#1A1A1A' }}>
               {memorizedCount} {t('flashcards.memorized')} • {VERSE_FLASHCARDS.length} {t('flashcards.total')}
             </p>
           </div>
@@ -210,11 +213,12 @@ export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertica
             type="button"
             ref={buttonRef}
             onClick={() => setFilterMenuOpen((o) => !o)}
-            className="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-white sm:max-w-[220px]"
+            className="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium sm:max-w-[220px]"
             style={{
-              background: 'rgba(15, 23, 41, 0.92)',
+              background: '#E8D9B8',
               border: '1px solid rgba(212, 168, 67, 0.35)',
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25)',
+              color: '#1A1A1A',
             }}
             aria-expanded={filterMenuOpen}
             aria-haspopup="listbox"

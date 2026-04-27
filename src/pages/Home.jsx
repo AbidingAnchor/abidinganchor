@@ -792,11 +792,11 @@ function Home() {
 
             <div style={{ marginBottom: '28px', animation: 'fadeInUp 0.6s ease forwards', animationDelay: '0.3s' }}>
               <h2 style={{ color: 'var(--section-title)', fontSize: '13px', letterSpacing: '0.12em', fontWeight: 500, textTransform: 'uppercase' }}>{t('home.toolsHeading')}</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+            <div className="home-tools-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
               <Link
                 to="/bible-videos"
                 style={{
-                  background: 'rgba(255,255,255,0.05)',
+                  background: '#F0E8D4',
                   border: '1px solid rgba(212,168,67,0.15)',
                   borderRadius: '16px',
                   backdropFilter: 'blur(8px)',
@@ -819,13 +819,13 @@ function Home() {
                   fontSize: '24px',
                   marginBottom: '8px',
                 }}>🎬</div>
-                <p style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: 0 }}>{t('home.toolBibleVideos')}</p>
-                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '4px 0 0 0' }}>{t('home.toolBibleVideosSub')}</p>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: '#1A1A1A', margin: 0 }}>{t('home.toolBibleVideos')}</p>
+                <p style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0' }}>{t('home.toolBibleVideosSub')}</p>
               </Link>
               <Link
                 to="/worship"
                 style={{
-                  background: 'rgba(255,255,255,0.05)',
+                  background: '#F0E8D4',
                   border: '1px solid rgba(212,168,67,0.15)',
                   borderRadius: '16px',
                   backdropFilter: 'blur(8px)',
@@ -848,13 +848,13 @@ function Home() {
                   fontSize: '24px',
                   marginBottom: '8px',
                 }}>🎵</div>
-                <p style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: 0 }}>{t('home.worshipMode')}</p>
-                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '4px 0 0 0' }}>{t('home.worshipSubtitle')}</p>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: '#1A1A1A', margin: 0 }}>{t('home.worshipMode')}</p>
+                <p style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0' }}>{t('home.worshipSubtitle')}</p>
               </Link>
               <Link
                 to="/reading-plans"
                 style={{
-                  background: 'rgba(255,255,255,0.05)',
+                  background: '#F0E8D4',
                   border: '1px solid rgba(212,168,67,0.15)',
                   borderRadius: '16px',
                   backdropFilter: 'blur(8px)',
@@ -877,13 +877,13 @@ function Home() {
                   fontSize: '24px',
                   marginBottom: '8px',
                 }}>📅</div>
-                <p style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: 0 }}>{t('home.toolReadingPlans')}</p>
-                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '4px 0 0 0' }}>{t('home.toolReadingPlansSub')}</p>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: '#1A1A1A', margin: 0 }}>{t('home.toolReadingPlans')}</p>
+                <p style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0' }}>{t('home.toolReadingPlansSub')}</p>
               </Link>
               <Link
                 to="/fasting"
                 style={{
-                  background: 'rgba(255,255,255,0.05)',
+                  background: '#F0E8D4',
                   border: '1px solid rgba(212,168,67,0.15)',
                   borderRadius: '16px',
                   backdropFilter: 'blur(8px)',
@@ -906,13 +906,14 @@ function Home() {
                   fontSize: '24px',
                   marginBottom: '8px',
                 }}>🕐</div>
-                <p style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: 0 }}>{t('home.toolFasting')}</p>
-                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '4px 0 0 0' }}>{t('home.toolFastingSub')}</p>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: '#1A1A1A', margin: 0 }}>{t('home.toolFasting')}</p>
+                <p style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0' }}>{t('home.toolFastingSub')}</p>
               </Link>
               <Link
-                to="/support"
+                to="/supporter-upgrade"
+                className="home-tool-supporter-card"
                 style={{
-                  background: 'rgba(255,255,255,0.05)',
+                  background: '#F0E8D4',
                   border: '1px solid rgba(212,168,67,0.15)',
                   borderRadius: '16px',
                   backdropFilter: 'blur(8px)',
@@ -924,24 +925,36 @@ function Home() {
                   transition: 'all 0.2s ease',
                 }}
               >
-                <div style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '12px',
-                  background: 'rgba(212,168,67,0.12)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '24px',
-                  marginBottom: '8px',
-                }}>🤝</div>
-                <p style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: 0 }}>{t('home.toolSupport')}</p>
-                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '4px 0 0 0' }}>{t('home.toolSupportSub')}</p>
+                <div
+                  className="home-tool-supporter-icon"
+                  style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '12px',
+                    background: 'rgba(212,168,67,0.12)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '24px',
+                    marginBottom: '8px',
+                  }}
+                >
+                  👑
+                </div>
+                <p className="home-tool-supporter-title" style={{ fontSize: '14px', fontWeight: 700, color: '#1A1A1A', margin: 0 }}>
+                  Become a Supporter
+                </p>
+                <p
+                  className="home-tool-supporter-sub"
+                  style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0' }}
+                >
+                  Help keep this ministry free
+                </p>
               </Link>
               <Link
                 to="/testimony-wall"
                 style={{
-                  background: 'rgba(255,255,255,0.05)',
+                  background: '#F0E8D4',
                   border: '1px solid rgba(212,168,67,0.15)',
                   borderRadius: '16px',
                   backdropFilter: 'blur(8px)',
@@ -964,16 +977,17 @@ function Home() {
                   fontSize: '24px',
                   marginBottom: '8px',
                 }}>📜</div>
-                <p style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: 0 }}>{t('home.toolCommunity')}</p>
-                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '4px 0 0 0' }}>{t('home.toolCommunitySub')}</p>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: '#1A1A1A', margin: 0 }}>{t('home.toolCommunity')}</p>
+                <p style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0' }}>{t('home.toolCommunitySub')}</p>
               </Link>
             </div>
           </div>
 
           <div
-            className="home-gold-glass rounded-2xl p-6"
+            className="home-gold-glass verse-of-week-card rounded-2xl p-6"
             style={{
               borderRadius: '16px',
+              background: '#F0E8D4',
               animation: 'fadeInUp 0.6s ease forwards',
               animationDelay: '0.4s'
             }}
@@ -988,7 +1002,7 @@ function Home() {
                 color: 'rgba(212,168,67,0.3)',
                 fontFamily: 'Georgia, serif'
               }}>"</span>
-              <p style={{ 
+              <p className="verse-of-week-label" style={{ 
                 fontSize: '12px', 
                 fontWeight: 500, 
                 letterSpacing: '0.12em',
@@ -996,18 +1010,18 @@ function Home() {
                 textTransform: 'uppercase',
                 marginBottom: '16px'
               }}>{t('home.verseOfWeek')}</p>
-              <p style={{ 
+              <p className="verse-of-week-verse" style={{ 
                 marginTop: '16px', 
                 fontSize: '17px', 
                 lineHeight: 1.6,
-                color: 'white',
+                color: '#1A1A1A',
                 fontStyle: 'italic',
                 fontFamily: 'Georgia, serif',
               }}>
                 "{verseOfWeekLoading ? t('home.verseWeekText') : verseOfWeekText}"
               </p>
             </div>
-            <p style={{ 
+            <p className="verse-of-week-ref" style={{ 
               marginTop: '8px', 
               fontSize: '13px', 
               fontWeight: 700, 

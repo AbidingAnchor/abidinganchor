@@ -187,6 +187,7 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
   const [triviaVerseText, setTriviaVerseText] = useState('')
   const [triviaVerseLoading, setTriviaVerseLoading] = useState(true)
   const [triviaShareVerseText, setTriviaShareVerseText] = useState('')
+  const [hoveredOption, setHoveredOption] = useState(null)
   
   const currentQuestion = roundQuestions[index]
   const progress = Math.round(((index + (done ? 1 : 0)) / roundQuestions.length) * 100)
@@ -329,26 +330,27 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
           <div className="mt-3 grid grid-cols-1 gap-2">
             {currentQuestion.options.map((opt, optIdx) => {
               const isChosen = selected === optIdx
-              const isCorrect = optIdx === currentQuestion.a
-              let bg = 'rgba(255,255,255,0.08)'
-              let border = 'rgba(255,255,255,0.18)'
-              if (selected !== null && isChosen && isCorrect) {
-                bg = 'rgba(34,197,94,0.20)'
-                border = 'rgba(34,197,94,0.55)'
-              } else if (selected !== null && isChosen && !isCorrect) {
-                bg = 'rgba(239,68,68,0.20)'
-                border = 'rgba(239,68,68,0.55)'
-              } else if (selected !== null && isCorrect) {
-                bg = 'rgba(34,197,94,0.12)'
-                border = 'rgba(34,197,94,0.35)'
-              }
+              const isHovered = hoveredOption === optIdx
+              const emphasized = isChosen || isHovered
+              const bg = emphasized ? 'rgba(212,168,67,0.15)' : '#F0E8D4'
+              const border = emphasized ? '#D4A843' : 'rgba(212,168,67,0.4)'
               return (
                 <button
                   key={opt}
                   type="button"
                   onClick={() => handleAnswer(optIdx)}
-                  className="rounded-xl border px-4 py-3 text-left text-sm text-white transition"
-                  style={{ background: bg, borderColor: border }}
+                  onMouseEnter={() => setHoveredOption(optIdx)}
+                  onMouseLeave={() => setHoveredOption(null)}
+                  className="rounded-xl text-left text-sm transition"
+                  style={{
+                    background: bg,
+                    border: `2px solid ${border}`,
+                    borderRadius: '12px',
+                    padding: '14px 16px',
+                    marginBottom: '8px',
+                    color: '#1A1A1A',
+                    fontWeight: 500,
+                  }}
                 >
                   {opt}
                 </button>

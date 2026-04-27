@@ -1,8 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import DayBackground, {
-  getBackgroundTypeForTime,
-  getEffectiveForcedHour,
-} from "./DayBackground";
+import DayBackground, { getBackgroundTypeForTime } from "./DayBackground";
 import SunsetBackground from "./SunsetBackground";
 import CelestialBackground from "./CelestialBackground";
 import {
@@ -40,8 +37,7 @@ function syncBodySkyClasses(theme, reason = "unknown") {
 
   if (theme === "day") {
     body.classList.add("theme-day");
-    const forced = getEffectiveForcedHour();
-    const h = Number.isFinite(forced) ? forced : new Date().getHours();
+    const h = new Date().getHours();
     body.classList.add(h < 12 ? "theme-morning" : "theme-afternoon");
   } else if (theme === "sunset") {
     body.classList.add("theme-sunset", "theme-evening");
@@ -77,8 +73,7 @@ function BackgroundLayer({ type, isVisible }) {
 export default function BackgroundManager() {
   const currentBgRef = useRef(null);
   const [currentBg, setCurrentBg] = useState(() => {
-    // Force night theme only
-    const initial = "night";
+    const initial = getBackgroundTypeForTime();
     currentBgRef.current = initial;
     logThemeMutation("BackgroundManager: set data-theme", { reason: "initial-state", theme: initial });
     document.documentElement.setAttribute("data-theme", initial);
@@ -91,8 +86,7 @@ export default function BackgroundManager() {
     let fadeTimeout;
 
     const updateBackground = () => {
-      // Force night theme only
-      const nextBg = "night";
+      const nextBg = getBackgroundTypeForTime();
       // Dedupe: skip DOM + state when period unchanged (avoids thrash from duplicate events / interval ticks).
       if (nextBg === currentBgRef.current) return;
 
@@ -123,11 +117,7 @@ export default function BackgroundManager() {
       if (e.key === THEME_PREFERENCE_STORAGE_KEY || e.key === null) updateBackground();
     };
 
-    // TODO: REMOVE BEFORE LAUNCH — Settings theme preview
-    const handleDevThemeChanged = () => updateBackground();
-
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("devForceThemeChanged", handleDevThemeChanged);
     window.addEventListener(THEME_PREFERENCE_CHANGED_EVENT, onThemePreferenceChanged);
     window.addEventListener("storage", onStorage);
 
@@ -135,7 +125,6 @@ export default function BackgroundManager() {
       clearInterval(interval);
       clearTimeout(fadeTimeout);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("devForceThemeChanged", handleDevThemeChanged);
       window.removeEventListener(THEME_PREFERENCE_CHANGED_EVENT, onThemePreferenceChanged);
       window.removeEventListener("storage", onStorage);
     };

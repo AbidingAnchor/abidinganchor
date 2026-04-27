@@ -1,19 +1,21 @@
 import { useState, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Home, BookOpenText, Scroll, Users, BookMarked, Menu } from 'lucide-react'
 import MoreDrawer from './MoreDrawer'
 import { useWorshipPlaybackState } from '../lib/worshipGlobalAudio'
+import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
 export default function BottomNav() {
   const { t } = useTranslation()
+  const themeType = useThemeBackgroundType()
+  const isDaytime = themeType === 'day'
   const mainTabs = useMemo(
     () => [
-      { labelKey: 'nav.home', path: '/', icon: Home },
-      { labelKey: 'nav.read', path: '/read', icon: BookOpenText },
-      { labelKey: 'nav.prayer', path: '/prayer', icon: Scroll },
-      { labelKey: 'nav.fellowship', path: '/fellowship', icon: Users },
-      { labelKey: 'nav.journal', path: '/journal', icon: BookMarked },
-      { labelKey: 'nav.more', path: '#more', icon: Menu },
+      { labelKey: 'nav.home', path: '/', emoji: '🏠' },
+      { labelKey: 'nav.read', path: '/read', emoji: '📖' },
+      { labelKey: 'nav.prayer', path: '/prayer', emoji: '🙏' },
+      { labelKey: 'nav.fellowship', path: '/fellowship', emoji: '👥' },
+      { labelKey: 'nav.journal', path: '/journal', emoji: '📝' },
+      { labelKey: 'nav.more', path: '#more', emoji: '☰' },
     ],
     [],
   )
@@ -63,7 +65,7 @@ export default function BottomNav() {
           left: 0,
           right: 0,
           zIndex: 9999,
-          background: 'rgba(10,20,50,0.95)',
+          background: isDaytime ? '#F5EFE0' : '#0A1628',
           backdropFilter: 'blur(20px)',
           borderTop: '1px solid rgba(212,168,67,0.15)',
           height: '72px',
@@ -125,16 +127,12 @@ export default function BottomNav() {
                 }}
               />
             )}
-            <tab.icon
-              size={tab.path === '/' ? 22 : 24}
-              strokeWidth={isActive(tab.path) ? 2.5 : 1.5}
-              color={isActive(tab.path) ? '#D4A843' : 'rgba(255,255,255,0.35)'}
-            />
+            <span style={{ fontSize: 22 }}>{tab.emoji}</span>
             <span
               style={{
                 fontSize: '10px',
                 fontWeight: isActive(tab.path) ? 700 : 500,
-                color: isActive(tab.path) ? '#D4A843' : 'rgba(255,255,255,0.35)',
+                color: isActive(tab.path) ? (isDaytime ? '#8B6200' : '#D4A843') : (isDaytime ? 'rgba(15,31,61,0.55)' : 'rgba(255,255,255,0.35)'),
                 transition: 'color 0.2s ease, font-weight 0.2s ease',
               }}
             >

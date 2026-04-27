@@ -90,8 +90,8 @@ export default function Header() {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '0 16px',
-        borderBottom: '1px solid var(--glass-border)',
-        background: 'var(--nav-bg)',
+        borderBottom: '1px solid var(--header-border, var(--glass-border))',
+        background: 'var(--header-bg, var(--nav-bg))',
       }}
     >
       {/* Profile avatar (settings trigger) */}
@@ -161,10 +161,9 @@ export default function Header() {
         style={{
           fontSize: '16px',
           letterSpacing: '0.15em',
-          color: '#D4A843',
-          fontWeight: 500,
+          color: 'var(--header-text, var(--text-primary))',
+          fontWeight: 600,
           margin: 0,
-          textShadow: '0 0 20px rgba(212, 168, 67, 0.45), 0 0 40px rgba(212, 168, 67, 0.15)',
         }}
       >
         {currentTitle}

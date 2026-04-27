@@ -624,18 +624,14 @@ function Journal() {
                     style={{
                       padding: '8px 16px',
                       borderRadius: '50px',
-                      border: active
-                        ? 'none'
-                        : '1px solid rgba(212, 168, 67, 0.2)',
+                      border: '1px solid rgba(212,168,67,0.3)',
                       cursor: 'pointer',
                       fontSize: '13px',
                       fontWeight: active ? 700 : 500,
                       background: active
                         ? '#D4A843'
-                        : 'rgba(255, 255, 255, 0.06)',
-                      color: active
-                        ? '#0a1428'
-                        : 'rgba(255, 255, 255, 0.6)',
+                        : '#F0E8D4',
+                      color: '#1A1A1A',
                       transition: 'all 0.2s ease',
                     }}
                   >
@@ -877,7 +873,6 @@ function Journal() {
               left: 0,
               right: 0,
               bottom: 0,
-              background: 'rgba(1, 4, 9, 0.97)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
               zIndex: 10051,
@@ -993,7 +988,6 @@ function Journal() {
               margin: '0 auto',
               maxHeight: '85vh',
               overflowY: 'auto',
-              background: 'rgba(1, 4, 9, 0.97)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
               border: '1px solid rgba(212, 168, 67, 0.25)',

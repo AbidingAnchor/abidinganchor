@@ -1,4 +1,4 @@
-﻿import { useEffect, useLayoutEffect, useState, useMemo, useRef, useCallback } from 'react'
+import { useEffect, useLayoutEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { dedupeVersesByNumber, prepareBibleReaderVerseText } from '../utils/kjvVerseText'
@@ -8,6 +8,7 @@ import { fetchGetBibleChapter, resolveGetBibleTranslationId } from '../services/
 import { POPULAR_BIBLES, getSavedBibleId, saveBibleId } from '../services/bibleApi'
 import BibleTranslationSelector from './BibleTranslationSelector'
 import { useAuth } from '../context/AuthContext'
+import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
 import { userStorageKey } from '../utils/userStorage'
 import { supabase } from '../lib/supabase'
 import { BIBLE_LANG_MAP } from '../utils/bibleTranslation'
@@ -190,6 +191,9 @@ function loadStrongsGreekDataset() {
 export default function BibleReader({ open, onModeChange }) {
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
+  const skyPeriod = useThemeBackgroundType()
+  const dayTheme = skyPeriod === 'day'
+
   const uiLang = (i18n.resolvedLanguage || i18n.language || 'en').toLowerCase().split(/[-_]/)[0]
 
   const [bookIndex, setBookIndex] = useState(0)
@@ -471,7 +475,19 @@ export default function BibleReader({ open, onModeChange }) {
       const id = await resolveBibleIdForLanguage('hi')
       if (!cancelled && id) setCachedHindiCatalogId(id)
     })()
-    return () => {
+    const navBtnStyle = {
+    background: 'transparent',
+    border: '1px solid #D4A843',
+    borderRadius: '16px',
+    color: '#D4A843',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    padding: '6px 14px',
+    lineHeight: 1.2,
+  };
+
+  return () => {
       cancelled = true
     }
   }, [open, uiLang])
@@ -917,16 +933,16 @@ export default function BibleReader({ open, onModeChange }) {
   if (!open) return null
 
   const navBtnStyle = {
-    background: 'none',
-    border: '1px solid rgba(240,192,64,0.4)',
+    background: 'transparent',
+    border: '1px solid #D4A843',
     borderRadius: '16px',
-    color: '#F0C040',
+    color: '#D4A843',
     fontSize: '13px',
     fontWeight: 600,
     cursor: 'pointer',
     padding: '6px 14px',
     lineHeight: 1.2,
-  }
+  };
 
   return (
     <div style={{ position: 'relative', zIndex: 10, width: '100%', minHeight: '100dvh', background: 'transparent' }}>
@@ -935,6 +951,7 @@ export default function BibleReader({ open, onModeChange }) {
         ZONE 2 — Chapter header + Read/Listen (fixed below app bar)
       */}
       <div
+        className="bible-reader-header"
         style={{
           position: 'fixed',
           top: APP_BAR_TOP_OFFSET,
@@ -960,6 +977,7 @@ export default function BibleReader({ open, onModeChange }) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '0 16px' }}>
             <button
               type="button"
+              className="bible-nav-arrow"
               onClick={() => {
                 if (chapter > 1) {
                   setChapter(chapter - 1)
@@ -973,7 +991,8 @@ export default function BibleReader({ open, onModeChange }) {
                 background: 'rgba(240, 192, 64, 0.1)',
                 border: '1px solid rgba(240, 192, 64, 0.3)',
                 borderRadius: '12px',
-                color: '#F0C040',
+                color: dayTheme ? '#D4A843' : '#F0C040',
+                borderColor: dayTheme ? '#D4A843' : 'rgba(240, 192, 64, 0.3)',
                 fontSize: '24px',
                 cursor: (bookIndex === 0 && chapter === 1) ? 'not-allowed' : 'pointer',
                 padding: '6px 12px',
@@ -1024,6 +1043,7 @@ export default function BibleReader({ open, onModeChange }) {
             
             <button
               type="button"
+              className="bible-nav-arrow"
               onClick={() => {
                 if (chapter < maxChapter) {
                   setChapter(chapter + 1)
@@ -1037,7 +1057,8 @@ export default function BibleReader({ open, onModeChange }) {
                 background: 'rgba(240, 192, 64, 0.1)',
                 border: '1px solid rgba(240, 192, 64, 0.3)',
                 borderRadius: '12px',
-                color: '#F0C040',
+                color: dayTheme ? '#D4A843' : '#F0C040',
+                borderColor: dayTheme ? '#D4A843' : 'rgba(240, 192, 64, 0.3)',
                 fontSize: '24px',
                 cursor: (bookIndex === BOOKS.length - 1 && chapter === maxChapter) ? 'not-allowed' : 'pointer',
                 padding: '6px 12px',
@@ -1056,6 +1077,7 @@ export default function BibleReader({ open, onModeChange }) {
               <button
                 ref={translationButtonRef}
                 type="button"
+                className="bible-translation-btn"
                 onClick={() => {
                   if (showHindiApiBiblePicker) setShowHindiBiblePicker(true)
                   else setShowTranslationPicker((o) => !o)
@@ -1064,7 +1086,8 @@ export default function BibleReader({ open, onModeChange }) {
                   background: 'rgba(240, 192, 64, 0.1)',
                   border: '1px solid rgba(240, 192, 64, 0.4)',
                   borderRadius: '50px',
-                  color: 'rgba(255, 255, 255, 0.7)',
+                  color: dayTheme ? '#D4A843' : 'rgba(255, 255, 255, 0.7)',
+                  borderColor: dayTheme ? '#D4A843' : 'rgba(240, 192, 64, 0.4)',
                   fontSize: '12px',
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -1084,10 +1107,11 @@ export default function BibleReader({ open, onModeChange }) {
                     : selectedTranslation.label}
               </button>
             ) : (
-              <span style={{
+              <span className="bible-translation-btn" style={{
                 fontSize: '12px',
                 fontWeight: 600,
-                color: 'rgba(255, 255, 255, 0.7)',
+                color: dayTheme ? '#D4A843' : 'rgba(255, 255, 255, 0.7)',
+                borderColor: dayTheme ? '#D4A843' : 'rgba(240, 192, 64, 0.4)',
                 padding: '0 16px',
                 height: '40px',
                 display: 'inline-flex',
@@ -1103,10 +1127,11 @@ export default function BibleReader({ open, onModeChange }) {
             {onModeChange && (
               <button
                 type="button"
+                className="bible-read-btn"
                 onClick={() => onModeChange('read')}
                 style={{
-                  background: '#F0C040',
-                  color: '#0a1428',
+                  background: '#D4A843',
+                  color: '#ffffff',
                   border: 'none',
                   borderRadius: '50px',
                   padding: '0 16px',
@@ -1126,10 +1151,12 @@ export default function BibleReader({ open, onModeChange }) {
             {onModeChange && (
               <button
                 type="button"
+                className="bible-listen-btn"
                 onClick={() => onModeChange('listen')}
                 style={{
                   background: 'rgba(240, 192, 64, 0.1)',
-                  color: 'rgba(255, 255, 255, 0.7)',
+                  color: dayTheme ? '#D4A843' : 'rgba(255, 255, 255, 0.7)',
+                  borderColor: dayTheme ? '#D4A843' : 'rgba(240, 192, 64, 0.4)',
                   border: '1px solid rgba(240, 192, 64, 0.4)',
                   borderRadius: '50px',
                   padding: '0 16px',
@@ -1148,12 +1175,14 @@ export default function BibleReader({ open, onModeChange }) {
             
             <button
               type="button"
+              className="bible-settings-btn"
               onClick={() => setShowReadingControls(true)}
               style={{
                 background: 'rgba(240, 192, 64, 0.1)',
                 border: '1px solid rgba(240, 192, 64, 0.4)',
                 borderRadius: '50px',
-                color: '#F0C040',
+                color: dayTheme ? '#D4A843' : '#F0C040',
+                borderColor: dayTheme ? '#D4A843' : 'rgba(240, 192, 64, 0.4)',
                 fontSize: '16px',
                 cursor: 'pointer',
                 width: '40px',
@@ -1817,6 +1846,7 @@ export default function BibleReader({ open, onModeChange }) {
 
       {/* ZONE 4 — Chapter / font nav (fixed above bottom tab bar). ZONE 5 — tab bar: fixed in App. */}
       <div
+        className="bible-reader-bottom-controls"
         style={{
           position: 'fixed',
           bottom: BOTTOM_TAB_BAR_PX,
@@ -1848,12 +1878,20 @@ export default function BibleReader({ open, onModeChange }) {
           <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'flex-start', minWidth: 0 }}>
             <button
               type="button"
+              className="reader-chapter-nav-day"
               onClick={goToPreviousChapter}
               disabled={chapter === 1 || loading}
               style={{
-                ...navBtnStyle,
-                opacity: chapter === 1 || loading ? 0.35 : 1,
+                background: '#D4A843',
+                border: 'none',
+                borderRadius: '16px',
+                color: '#0a1a3e',
+                fontSize: '13px',
+                fontWeight: 600,
                 cursor: chapter === 1 || loading ? 'not-allowed' : 'pointer',
+                padding: '6px 14px',
+                lineHeight: 1.2,
+                opacity: 1,
               }}
             >
               {t('bible.previous')}
@@ -1865,6 +1903,7 @@ export default function BibleReader({ open, onModeChange }) {
           >
             <button
               type="button"
+              className="reader-font-btn-day"
               onClick={() => {
                 setFontSize((s) => {
                   const next = clampBibleFontSize(s - BIBLE_FONT_STEP)
@@ -1878,14 +1917,15 @@ export default function BibleReader({ open, onModeChange }) {
               }}
               disabled={fontSize <= BIBLE_FONT_MIN}
               style={{
-                background: 'none',
+                backgroundColor: '#D4A843',
                 border: 'none',
-                color: '#F0C040',
+                color: '#0a1a3e',
                 fontSize: '14px',
                 fontWeight: 700,
                 cursor: fontSize <= BIBLE_FONT_MIN ? 'not-allowed' : 'pointer',
                 padding: '4px 6px',
                 opacity: fontSize <= BIBLE_FONT_MIN ? 0.35 : 1,
+                borderRadius: '16px',
               }}
             >
               A-
@@ -1893,6 +1933,7 @@ export default function BibleReader({ open, onModeChange }) {
             <div style={{ width: '1px', height: '14px', background: 'rgba(255,255,255,0.2)' }} />
             <button
               type="button"
+              className="reader-font-btn-day"
               onClick={() => {
                 setFontSize((s) => {
                   const next = clampBibleFontSize(s + BIBLE_FONT_STEP)
@@ -1906,14 +1947,15 @@ export default function BibleReader({ open, onModeChange }) {
               }}
               disabled={fontSize >= BIBLE_FONT_MAX}
               style={{
-                background: 'none',
+                backgroundColor: '#D4A843',
                 border: 'none',
-                color: 'var(--gold)',
+                color: '#0a1a3e',
                 fontSize: '14px',
                 fontWeight: 700,
                 cursor: fontSize >= BIBLE_FONT_MAX ? 'not-allowed' : 'pointer',
                 padding: '4px 6px',
                 opacity: fontSize >= BIBLE_FONT_MAX ? 0.35 : 1,
+                borderRadius: '16px',
               }}
             >
               A+
@@ -1922,12 +1964,20 @@ export default function BibleReader({ open, onModeChange }) {
           <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'flex-end', minWidth: 0 }}>
             <button
               type="button"
+              className="reader-chapter-nav-day"
               onClick={goToNextChapter}
               disabled={chapter === maxChapter || loading}
               style={{
-                ...navBtnStyle,
-                opacity: chapter === maxChapter || loading ? 0.35 : 1,
+                background: '#D4A843',
+                border: 'none',
+                borderRadius: '16px',
+                color: '#0a1a3e',
+                fontSize: '13px',
+                fontWeight: 600,
                 cursor: chapter === maxChapter || loading ? 'not-allowed' : 'pointer',
+                padding: '6px 14px',
+                lineHeight: 1.2,
+                opacity: 1,
               }}
             >
               {t('bible.next')}
@@ -2384,10 +2434,10 @@ export default function BibleReader({ open, onModeChange }) {
                     onClick={() => setFontSize(Math.max(BIBLE_FONT_MIN, fontSize - BIBLE_FONT_STEP))}
                     disabled={fontSize <= BIBLE_FONT_MIN}
                     style={{
-                      background: 'rgba(240, 192, 64, 0.15)',
-                      border: '1px solid rgba(240, 192, 64, 0.3)',
-                      borderRadius: '12px',
-                      color: '#F0C040',
+                      background: 'transparent',
+                      border: '1px solid #D4A843',
+                      borderRadius: '16px',
+                      color: '#D4A843',
                       fontSize: '20px',
                       cursor: fontSize <= BIBLE_FONT_MIN ? 'not-allowed' : 'pointer',
                       padding: '12px 16px',
@@ -2415,10 +2465,10 @@ export default function BibleReader({ open, onModeChange }) {
                     onClick={() => setFontSize(Math.min(BIBLE_FONT_MAX, fontSize + BIBLE_FONT_STEP))}
                     disabled={fontSize >= BIBLE_FONT_MAX}
                     style={{
-                      background: 'rgba(240, 192, 64, 0.15)',
-                      border: '1px solid rgba(240, 192, 64, 0.3)',
-                      borderRadius: '12px',
-                      color: '#F0C040',
+                      background: 'transparent',
+                      border: '1px solid #D4A843',
+                      borderRadius: '16px',
+                      color: '#D4A843',
                       fontSize: '20px',
                       cursor: fontSize >= BIBLE_FONT_MAX ? 'not-allowed' : 'pointer',
                       padding: '12px 16px',

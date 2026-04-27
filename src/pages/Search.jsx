@@ -6,7 +6,7 @@ import { saveToJournal } from '../utils/journal'
 import SaveToast from '../components/SaveToast'
 import FirstJournalEntryCelebration from '../components/FirstJournalEntryCelebration'
 import ShareVerse from '../components/ShareVerse'
-import { TOPIC_LIST, TOPIC_VERSES } from '../utils/topicVerses'
+import { TOPIC_VERSES } from '../utils/topicVerses'
 import BookOverviewCard from '../components/BookOverviewCard'
 import { bibleBooks } from '../data/bibleBooks'
 import { searchBrowseBooks } from '../data/searchBrowseBooks'
@@ -16,6 +16,13 @@ import { BIBLE_LANG_MAP } from '../utils/bibleTranslation'
 
 const quickSuggestionsRow1 = ['faith', 'love', 'peace', 'strength', 'hope']
 const quickSuggestionsRow2 = ['fear', 'greed', 'healing', 'forgiveness', 'anger']
+const topics = [
+  'Faith', 'Hope', 'Love', 'Peace',
+  'Strength', 'Forgiveness', 'Prayer', 'Courage',
+  'Anxiety', 'Salvation', 'Grace', 'Wisdom',
+  'Joy', 'Healing', 'Protection', 'Gratitude',
+  'Humility', 'Trust'
+]
 const FULL_BIBLE_PAGE_SIZE = 20
 
 const BOOK_NAMES = {
@@ -288,13 +295,13 @@ function Search({ onOpenWorship }) {
   }
 
   const bodyStyle = {
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: '#1A1A1A',
     fontSize: '14px',
   }
 
   const headingStyle = {
-    color: '#D4A843',
-    textShadow: '0 1px 8px rgba(0, 60, 120, 0.4)',
+    color: '#1A1A1A',
+    textShadow: 'none',
   }
 
   useEffect(() => {
@@ -425,7 +432,7 @@ function Search({ onOpenWorship }) {
           <div className="flex flex-col gap-3">
             <header style={{ marginBottom: '20px' }}>
               <h1 style={{
-                color: '#ffffff',
+                color: '#1A1A1A',
                 fontSize: '32px',
                 fontWeight: 800,
                 marginBottom: '8px',
@@ -434,7 +441,7 @@ function Search({ onOpenWorship }) {
                 {t('search.title')}
               </h1>
               <p style={{
-                color: 'rgba(255, 255, 255, 0.5)',
+                color: '#1A1A1A',
                 fontSize: '15px',
                 margin: 0,
               }}>
@@ -450,9 +457,9 @@ function Search({ onOpenWorship }) {
                   padding: '0 20px',
                   fontSize: '14px',
                   fontWeight: searchMode === 'keyword' ? 700 : 500,
-                  background: searchMode === 'keyword' ? '#D4A843' : 'rgba(255,255,255,0.06)',
-                  border: searchMode === 'keyword' ? 'none' : '1px solid rgba(212,168,67,0.2)',
-                  color: searchMode === 'keyword' ? '#0a1428' : 'rgba(255,255,255,0.6)',
+                  background: searchMode === 'keyword' ? '#D4A843' : '#F0E8D4',
+                  border: '1px solid rgba(212,168,67,0.3)',
+                  color: '#1A1A1A',
                   cursor: 'pointer',
                 }}>{t('search.byKeyword')}</button>
                 <button type="button" onClick={() => setSearchMode('topic')} style={{
@@ -461,30 +468,27 @@ function Search({ onOpenWorship }) {
                   padding: '0 20px',
                   fontSize: '14px',
                   fontWeight: searchMode === 'topic' ? 700 : 500,
-                  background: searchMode === 'topic' ? '#D4A843' : 'rgba(255,255,255,0.06)',
-                  border: searchMode === 'topic' ? 'none' : '1px solid rgba(212,168,67,0.2)',
-                  color: searchMode === 'topic' ? '#0a1428' : 'rgba(255,255,255,0.6)',
+                  background: searchMode === 'topic' ? '#D4A843' : '#F0E8D4',
+                  border: '1px solid rgba(212,168,67,0.3)',
+                  color: '#1A1A1A',
                   cursor: 'pointer',
                 }}>{t('search.byTopic')}</button>
               </div>
               {searchMode === 'keyword' ? (
-                <label htmlFor="scripture-search" style={{
+                <label htmlFor="scripture-search" className="search-keyword-shell" style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
-                  borderRadius: '50px',
-                  padding: '14px 20px',
-                  border: isFocused ? '1px solid rgba(212,168,67,0.4)' : '1px solid rgba(212,168,67,0.2)',
-                  background: 'rgba(255,255,255,0.06)',
-                  backdropFilter: 'blur(10px)',
-                  WebkitBackdropFilter: 'blur(10px)',
+                  borderRadius: 16,
+                  padding: '14px 18px',
+                  border: '1.5px solid rgba(212,168,67,0.4)',
+                  background: '#FFFFFF',
+                  boxShadow: '0 2px 12px rgba(212,168,67,0.12)',
                 }}>
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'rgba(212,168,67,0.7)' }}>
-                    <circle cx="11" cy="11" r="7" />
-                    <path d="m20 20-3.5-3.5" />
-                  </svg>
+                  <span style={{ fontSize: 18, color: '#1A1A1A', lineHeight: 1 }}>🔍</span>
                   <input
                     id="scripture-search"
+                    className="search-scripture-input"
                     type="text"
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
@@ -494,9 +498,10 @@ function Search({ onOpenWorship }) {
                     style={{
                       width: '100%',
                       background: 'transparent',
-                      color: '#ffffff',
-                      fontSize: '15px',
+                      color: '#1A1A1A',
+                      fontSize: 15,
                       outline: 'none',
+                      border: 'none',
                     }}
                   />
                 </label>
@@ -516,11 +521,12 @@ function Search({ onOpenWorship }) {
                     <>
                       <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
                         {quickSuggestionsRow1.map((suggestion) => (
-                          <button key={suggestion} type="button" onClick={() => setSearchTerm(suggestion)} style={{
+                          <button key={suggestion} type="button" className="search-keyword-chip" onClick={() => setSearchTerm(suggestion)} style={{
                             background: 'rgba(212,168,67,0.1)',
                             border: '1px solid rgba(212,168,67,0.25)',
                             borderRadius: '50px',
-                            color: '#D4A843',
+                            color: '#1A1A1A',
+                            WebkitTextFillColor: '#1A1A1A',
                             fontWeight: 600,
                             padding: '8px 16px',
                             fontSize: '13px',
@@ -533,11 +539,12 @@ function Search({ onOpenWorship }) {
                       </div>
                       <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
                         {quickSuggestionsRow2.map((suggestion) => (
-                          <button key={suggestion} type="button" onClick={() => setSearchTerm(suggestion)} style={{
+                          <button key={suggestion} type="button" className="search-keyword-chip" onClick={() => setSearchTerm(suggestion)} style={{
                             background: 'rgba(212,168,67,0.1)',
                             border: '1px solid rgba(212,168,67,0.25)',
                             borderRadius: '50px',
-                            color: '#D4A843',
+                            color: '#1A1A1A',
+                            WebkitTextFillColor: '#1A1A1A',
                             fontWeight: 600,
                             padding: '8px 16px',
                             fontSize: '13px',
@@ -550,19 +557,25 @@ function Search({ onOpenWorship }) {
                       </div>
                     </>
                   ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-                      {TOPIC_LIST.map((topic) => (
-                        <button key={topic} type="button" onClick={() => setSelectedTopic(topic)} style={{
+                    <div className="search-topic-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+                      {topics.map((topic) => (
+                        <button
+                          key={topic}
+                          type="button"
+                          className={`search-topic-pill${selectedTopic === topic ? ' search-topic-pill--selected' : ''}`}
+                          onClick={() => setSelectedTopic(topic)}
+                          style={{
                           borderRadius: '50px',
                           padding: '8px 16px',
                           fontSize: '13px',
                           fontWeight: 600,
-                          background: selectedTopic === topic ? '#D4A843' : 'rgba(212,168,67,0.1)',
+                          background: selectedTopic === topic ? '#D4A843' : '#F0E8D4',
                           border: '1px solid rgba(212,168,67,0.25)',
-                          color: selectedTopic === topic ? '#0a1428' : '#D4A843',
+                          color: '#1A1A1A',
                           cursor: 'pointer'
-                        }}>
-                          {t(`search.topics.${topic}`)}
+                        }}
+                        >
+                          {topic}
                         </button>
                       ))}
                     </div>
@@ -576,18 +589,18 @@ function Search({ onOpenWorship }) {
                 <h2 className="text-section-header m-0">{t('search.results')}</h2>
                 {selectedTopic ? (
                   <div className="space-y-3">
-                    <p className="text-sm font-semibold uppercase tracking-[0.15em] text-accent-gold">
-                      {t('search.curatedVerses', { keyword: t(`search.topics.${selectedTopic.toLowerCase()}`) })}
+                    <p className="search-curated-heading text-sm font-semibold uppercase tracking-[0.15em]" style={{ color: '#1A1A1A' }}>
+                      {t('search.curatedVerses', { keyword: selectedTopic })}
                     </p>
                     {(TOPIC_VERSES[selectedTopic.toLowerCase()] || []).map((result) => (
-                      <article key={result.ref} className="app-card rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4">
-                        <p className="text-gold text-xs font-semibold uppercase tracking-[0.18em]">{result.ref}</p>
-                        <p className="text-scripture mt-2 text-white [font-family:'Lora',serif] italic">{result.text}</p>
+                      <article key={result.ref} className="search-result-card app-card rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: '#1A1A1A' }}>{result.ref}</p>
+                        <p className="text-scripture mt-2 [font-family:'Lora',serif] italic" style={{ color: '#1A1A1A' }}>{result.text}</p>
                         <div className="mt-3 flex justify-end gap-2">
-                          <button type="button" onClick={() => handleSaveToJournal({ reference: result.ref, text: result.text })} className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
+                          <button type="button" onClick={() => handleSaveToJournal({ reference: result.ref, text: result.text })} className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium" style={{ color: '#1A1A1A', WebkitTextFillColor: '#1A1A1A' }}>
                             {t('search.saveToJournal')}
                           </button>
-                          <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.ref })} className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
+                          <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.ref })} className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium" style={{ color: '#1A1A1A', WebkitTextFillColor: '#1A1A1A' }}>
                             {t('search.shareAsImage')}
                           </button>
                         </div>
@@ -620,14 +633,14 @@ function Search({ onOpenWorship }) {
                 {isVerseReference && results.length > 0 && (
                   <div className="space-y-3">
                     {results.map((result) => (
-                      <article key={result.id} className="app-card rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4">
-                        <p className="text-gold text-xs font-semibold uppercase tracking-[0.18em]">{result.reference}</p>
-                        <p className="text-scripture mt-2 text-white [font-family:'Lora',serif] italic">{result.text}</p>
+                      <article key={result.id} className="search-result-card app-card rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: '#1A1A1A' }}>{result.reference}</p>
+                        <p className="text-scripture mt-2 [font-family:'Lora',serif] italic" style={{ color: '#1A1A1A' }}>{result.text}</p>
                         <div className="mt-3 flex justify-end">
-                          <button type="button" onClick={() => handleSaveToJournal(result)} className="rounded-lg border border-gold px-3 py-1.5 text-xs font-medium text-gold">
+                          <button type="button" onClick={() => handleSaveToJournal(result)} className="rounded-lg border border-gold px-3 py-1.5 text-xs font-medium" style={{ color: '#1A1A1A', WebkitTextFillColor: '#1A1A1A' }}>
                             {t('search.saveToJournal')}
                           </button>
-                          <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.reference })} className="ml-2 rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
+                          <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.reference })} className="ml-2 rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium" style={{ color: '#1A1A1A', WebkitTextFillColor: '#1A1A1A' }}>
                             {t('search.shareAsImage')}
                           </button>
                         </div>
@@ -640,16 +653,16 @@ function Search({ onOpenWorship }) {
                   <div className="space-y-3">
                     {curatedResults.length > 0 ? (
                       <>
-                        <p className="text-sm font-semibold uppercase tracking-[0.15em] text-accent-gold">{t('search.curatedVerses', { keyword })}</p>
+                        <p className="text-sm font-semibold uppercase tracking-[0.15em]" style={{ color: '#1A1A1A' }}>{t('search.curatedVerses', { keyword })}</p>
                         {curatedResults.map((result) => (
-                          <article key={result.ref} className="app-card rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4">
-                            <p className="text-gold text-xs font-semibold uppercase tracking-[0.18em]">{result.ref}</p>
-                            <p className="text-scripture mt-2 text-white [font-family:'Lora',serif] italic">{result.text}</p>
+                          <article key={result.ref} className="search-result-card app-card rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4">
+                            <p className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: '#1A1A1A' }}>{result.ref}</p>
+                            <p className="text-scripture mt-2 [font-family:'Lora',serif] italic" style={{ color: '#1A1A1A' }}>{result.text}</p>
                             <div className="mt-3 flex justify-end">
-                              <button type="button" onClick={() => handleSaveToJournal({ reference: result.ref, text: result.text })} className="rounded-lg border border-gold px-3 py-1.5 text-xs font-medium text-gold">
+                              <button type="button" onClick={() => handleSaveToJournal({ reference: result.ref, text: result.text })} className="rounded-lg border border-gold px-3 py-1.5 text-xs font-medium" style={{ color: '#1A1A1A', WebkitTextFillColor: '#1A1A1A' }}>
                                 {t('search.saveToJournal')}
                               </button>
-                              <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.ref })} className="ml-2 rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
+                              <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.ref })} className="ml-2 rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium" style={{ color: '#1A1A1A', WebkitTextFillColor: '#1A1A1A' }}>
                                 {t('search.shareAsImage')}
                               </button>
                             </div>
@@ -671,14 +684,14 @@ function Search({ onOpenWorship }) {
                       <article className="rounded-xl p-4" style={{ ...glassCard, ...bodyStyle }}>{t('search.searchingFullBible')}</article>
                     ) : fullBibleResults.length > 0 ? (
                       pagedFullBibleResults.map((result, index) => (
-                        <article key={`${result.reference}-${index}`} className="app-card rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4">
-                          <p className="text-gold text-xs font-semibold uppercase tracking-[0.18em]">{result.reference}</p>
-                          <p className="text-scripture mt-2 text-white [font-family:'Lora',serif] italic">{result.text}</p>
+                        <article key={`${result.reference}-${index}`} className="search-result-card app-card rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4">
+                          <p className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: '#1A1A1A' }}>{result.reference}</p>
+                          <p className="text-scripture mt-2 [font-family:'Lora',serif] italic" style={{ color: '#1A1A1A' }}>{result.text}</p>
                           <div className="mt-3 flex justify-end">
-                            <button type="button" onClick={() => handleSaveToJournal(result)} className="rounded-lg border border-gold px-3 py-1.5 text-xs font-medium text-gold">
+                            <button type="button" onClick={() => handleSaveToJournal(result)} className="rounded-lg border border-gold px-3 py-1.5 text-xs font-medium" style={{ color: '#1A1A1A', WebkitTextFillColor: '#1A1A1A' }}>
                               {t('search.saveToJournal')}
                             </button>
-                            <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.reference })} className="ml-2 rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium text-white">
+                            <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.reference })} className="ml-2 rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium" style={{ color: '#1A1A1A', WebkitTextFillColor: '#1A1A1A' }}>
                               {t('search.shareAsImage')}
                             </button>
                           </div>
@@ -695,7 +708,8 @@ function Search({ onOpenWorship }) {
                           type="button"
                           onClick={() => setFullBiblePage((prev) => Math.max(1, prev - 1))}
                           disabled={fullBiblePage === 1}
-                          className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
+                          className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
+                          style={{ color: '#1A1A1A' }}
                         >
                           {t('common.back')}
                         </button>
@@ -706,7 +720,8 @@ function Search({ onOpenWorship }) {
                           type="button"
                           onClick={() => setFullBiblePage((prev) => Math.min(totalFullBiblePages, prev + 1))}
                           disabled={fullBiblePage === totalFullBiblePages}
-                          className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
+                          className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
+                          style={{ color: '#1A1A1A' }}
                         >
                           {t('common.next')}
                         </button>
@@ -723,16 +738,19 @@ function Search({ onOpenWorship }) {
             ) : (
               <>
               <section className="space-y-3">
-                <h2 style={{ color: '#D4A843', fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', margin: '0 0 12px 0' }}>
+                <h2 style={{ color: '#1A1A1A', fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', margin: '0 0 12px 0' }}>
                   ✦ {t('search.askAI')}
                 </h2>
-                <div style={{
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(212,168,67,0.15)',
-                  borderRadius: '16px',
-                  padding: '16px',
-                }}>
-                  <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '13px', marginBottom: '12px', margin: '0 0 12px 0' }}>
+                <div
+                  className="search-ask-ai-card"
+                  style={{
+                    background: '#F0E8D4',
+                    border: '1px solid rgba(212,168,67,0.3)',
+                    borderRadius: '16px',
+                    padding: '16px',
+                  }}
+                >
+                  <p style={{ color: '#1A1A1A', fontSize: '13px', marginBottom: '12px', margin: '0 0 12px 0' }}>
                     {t('search.aiSubtitle')}
                   </p>
                   <Link
@@ -743,8 +761,8 @@ function Search({ onOpenWorship }) {
                       justifyContent: 'center',
                       borderRadius: '50px',
                       border: '1px solid rgba(212,168,67,0.3)',
-                      background: 'rgba(212,168,67,0.1)',
-                      color: '#D4A843',
+                      background: '#D4A843',
+                      color: '#1A1A1A',
                       fontWeight: 700,
                       padding: '12px 24px',
                       fontSize: '14px',
@@ -757,7 +775,7 @@ function Search({ onOpenWorship }) {
               </section>
 
               <section className="space-y-3">
-                <h2 style={{ color: '#D4A843', fontSize: '18px', fontWeight: 700, marginBottom: '12px', margin: '0 0 12px 0' }}>{t('search.browseByBook')}</h2>
+                <h2 style={{ color: '#1A1A1A', fontSize: '18px', fontWeight: 700, marginBottom: '12px', margin: '0 0 12px 0' }}>{t('search.browseByBook')}</h2>
                 <div style={{ display: 'inline-flex', gap: '8px' }}>
                   <button type="button" onClick={() => setTestament('old')} style={{
                     borderRadius: '50px',
@@ -766,7 +784,7 @@ function Search({ onOpenWorship }) {
                     fontWeight: 700,
                     background: testament === 'old' ? '#D4A843' : 'rgba(255,255,255,0.06)',
                     border: testament === 'old' ? 'none' : '1px solid rgba(212,168,67,0.2)',
-                    color: testament === 'old' ? '#0a1428' : 'rgba(255,255,255,0.6)',
+                    color: '#1A1A1A',
                     cursor: 'pointer'
                   }}>{t('search.oldTestament')}</button>
                   <button type="button" onClick={() => setTestament('new')} style={{
@@ -776,7 +794,7 @@ function Search({ onOpenWorship }) {
                     fontWeight: 700,
                     background: testament === 'new' ? '#D4A843' : 'rgba(255,255,255,0.06)',
                     border: testament === 'new' ? 'none' : '1px solid rgba(212,168,67,0.2)',
-                    color: testament === 'new' ? '#0a1428' : 'rgba(255,255,255,0.6)',
+                    color: '#1A1A1A',
                     cursor: 'pointer'
                   }}>{t('search.newTestament')}</button>
                 </div>
@@ -788,21 +806,22 @@ function Search({ onOpenWorship }) {
                   }}
                 >
                   {visibleBooks.map((book) => (
-                    <article key={book.name} style={{
-                      background: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(212,168,67,0.15)',
+                    <article key={book.name} className="search-book-card" style={{
+                      background: '#F0E8D4',
+                      border: '1px solid rgba(212,168,67,0.2)',
                       borderRadius: '12px',
-                      padding: '12px',
+                      padding: '12px 16px',
+                      marginBottom: '8px',
                       textAlign: 'left',
                       transition: 'all 0.2s',
                     }} onMouseEnter={(e) => {
                       e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
                     }} onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
+                      e.currentTarget.style.background = '#F0E8D4'
                     }}>
                       <button type="button" onClick={() => handleBookTap(book)} style={{ background: 'none', border: 'none', textAlign: 'left', padding: 0, width: '100%', cursor: 'pointer' }}>
-                        <p style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff', margin: 0 }}>{t(`bible.books.${book.apiName}`)}</p>
-                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', margin: '4px 0 0 0' }}>
+                        <p style={{ fontSize: '13px', fontWeight: 700, color: '#1A1A1A', margin: 0 }}>{t(`bible.books.${book.apiName}`)}</p>
+                        <p style={{ fontSize: '11px', color: '#4A4A4A', margin: '4px 0 0 0' }}>
                           {book.chapters} {t('search.chapters')}
                         </p>
                       </button>

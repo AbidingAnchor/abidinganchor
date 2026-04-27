@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase'
 import { getAvatarBorderStyle, SUPPORTER_BORDER_KEYFRAMES } from '../utils/supporterBorder'
 
 const CONTENT_MAX = 300
+const TESTIMONY_CATEGORIES = ['Healing', 'Salvation', 'Answered Prayer', 'Provision', 'Protection', 'All']
 
 function timeAgo(iso, t) {
   if (!iso) return ''
@@ -23,6 +24,16 @@ function displayAuthorName(p, t) {
   return (p.full_name && String(p.full_name).trim()) || p.username || t('testimony.friend')
 }
 
+function categorizeTestimony(content = '') {
+  const text = String(content).toLowerCase()
+  if (text.includes('heal') || text.includes('healing') || text.includes('restor')) return 'Healing'
+  if (text.includes('salvation') || text.includes('saved') || text.includes('jesus')) return 'Salvation'
+  if (text.includes('answered') || text.includes('prayer')) return 'Answered Prayer'
+  if (text.includes('provide') || text.includes('provision') || text.includes('job') || text.includes('financ')) return 'Provision'
+  if (text.includes('protect') || text.includes('safe') || text.includes('safety') || text.includes('cover')) return 'Protection'
+  return 'All'
+}
+
 export default function TestimonyWall() {
   const { t } = useTranslation()
   const { user } = useAuth()
@@ -36,6 +47,7 @@ export default function TestimonyWall() {
   const [reactionBusy, setReactionBusy] = useState(null)
   const [menuOpen, setMenuOpen] = useState(null)
   const [toast, setToast] = useState(null)
+  const [activeCategory, setActiveCategory] = useState('All')
 
   /** testimonyId -> { amen: n, love: n, ... } */
   const [countsByTestimony, setCountsByTestimony] = useState({})
@@ -53,6 +65,10 @@ export default function TestimonyWall() {
   )
 
   const trimmed = content.trim()
+  const filteredRows = useMemo(() => {
+    if (activeCategory === 'All') return rows
+    return rows.filter((r) => categorizeTestimony(r.content) === activeCategory)
+  }, [rows, activeCategory])
 
   const loadFeed = useCallback(async () => {
     if (!user?.id) return
@@ -232,7 +248,7 @@ export default function TestimonyWall() {
 
   return (
     <div
-      className="content-scroll content-scroll--nav-clear"
+      className="content-scroll content-scroll--nav-clear testimony-wall-shell"
       style={{
         padding: '16px',
         paddingBottom: '80px',
@@ -240,41 +256,56 @@ export default function TestimonyWall() {
         margin: '0 auto',
         width: '100%',
         color: 'var(--text-primary)',
+        border: '1.5px solid rgba(212,168,67,0.35)',
+        borderRadius: '20px',
+        background: 'rgba(240,232,212,0.5)',
       }}
     >
       <header style={{ marginBottom: '20px' }}>
+        <p style={{ margin: '0 0 8px 0', textAlign: 'center', fontSize: '28px' }}>
+          <span style={{ filter: 'sepia(1) saturate(3) hue-rotate(5deg)' }}>⚓</span>
+        </p>
         <h1 style={{
-          color: '#ffffff',
-          fontSize: '32px',
-          fontWeight: 800,
+          color: '#1A1A1A',
+          fontSize: '28px',
+          fontWeight: 700,
           marginBottom: '8px',
           margin: '0 0 8px 0',
+          textAlign: 'center',
         }}>
-          {t('testimony.title')}
+          Testimony Wall
         </h1>
         <p style={{
-          color: 'rgba(255, 255, 255, 0.5)',
+          color: '#8B6200',
           fontSize: '14px',
           fontStyle: 'italic',
-          margin: 0,
+          margin: '0 0 4px 0',
+          textAlign: 'center',
         }}>
-          {t('testimony.verseQuote')} {t('testimony.verseRef')}
+          Let the redeemed of the Lord say so.
+        </p>
+        <p style={{
+          color: '#D4A843',
+          fontSize: '14px',
+          margin: 0,
+          textAlign: 'center',
+        }}>
+          — Psalm 107:2
         </p>
       </header>
 
-      <section style={{
-        background: 'rgba(255, 255, 255, 0.06)',
-        border: '1px solid rgba(212, 168, 67, 0.2)',
-        borderRadius: '16px',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        padding: '16px',
+      <section className="testimony-input-section" style={{
+        background: '#F0E8D4',
+        border: '1.5px solid rgba(212,168,67,0.35)',
+        borderRadius: '20px',
+        padding: '20px',
         marginBottom: '20px',
       }}>
         <label htmlFor="testimony-input" style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>
           {t('testimony.shareYourTestimony')}
         </label>
         <textarea
+          className="testimony-textarea-day"
           id="testimony-input"
           value={content}
           onChange={(e) => setContent(e.target.value.slice(0, CONTENT_MAX))}
@@ -285,10 +316,10 @@ export default function TestimonyWall() {
             borderRadius: '12px',
             padding: '14px',
             resize: 'vertical',
-            color: '#ffffff',
+            color: '#1A1A1A',
             fontSize: '15px',
-            background: 'rgba(255, 255, 255, 0.04)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            background: '#FFFFFF',
+            border: '1px solid rgba(212,168,67,0.3)',
             outline: 'none',
             boxSizing: 'border-box',
             fontFamily: 'inherit',
@@ -312,7 +343,7 @@ export default function TestimonyWall() {
               gap: '10px',
               cursor: 'pointer',
               fontSize: '13px',
-              color: 'var(--text-primary)',
+              color: '#1A1A1A',
               userSelect: 'none',
             }}
           >
@@ -351,7 +382,7 @@ export default function TestimonyWall() {
           </label>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+          <span style={{ fontSize: '12px', color: '#6B6B6B' }}>
             {trimmed.length}/{CONTENT_MAX}
           </span>
           <button
@@ -360,7 +391,7 @@ export default function TestimonyWall() {
             disabled={posting || !trimmed}
             style={{
               background: '#D4A843',
-              color: '#0a1428',
+              color: '#1A1A1A',
               border: 'none',
               borderRadius: '50px',
               padding: '10px 24px',
@@ -373,44 +404,88 @@ export default function TestimonyWall() {
           </button>
         </div>
       </section>
+      <style>{`
+        .testimony-textarea-day::placeholder {
+          color: rgba(0,0,0,0.35);
+        }
+      `}</style>
 
       {error ? (
         <p style={{ color: 'rgba(255,160,160,0.95)', fontSize: '14px', marginBottom: '16px' }}>{error}</p>
       ) : null}
 
       <section>
-        <h2 style={{
-          fontSize: '11px',
-          letterSpacing: '1.5px',
-          color: 'rgba(212, 168, 67, 0.7)',
+        <h2
+          className="testimony-section-h2"
+          style={{
+          fontSize: '12px',
+          letterSpacing: '0.12em',
+          color: '#1A1A1A',
           textTransform: 'uppercase',
           marginBottom: '12px',
           margin: '0 0 12px 0',
-          fontWeight: 600,
-        }}>
+          fontWeight: 700,
+        }}
+        >
           {t('testimony.testimonies')}
         </h2>
+        <div
+          style={{
+            display: 'flex',
+            gap: '8px',
+            overflowX: 'auto',
+            paddingBottom: '8px',
+            marginBottom: '12px',
+          }}
+        >
+          {TESTIMONY_CATEGORIES.map((category) => {
+            const active = category === activeCategory
+            return (
+              <button
+                key={category}
+                type="button"
+                onClick={() => setActiveCategory(category)}
+                style={{
+                  background: active ? '#D4A843' : '#F0E8D4',
+                  color: '#1A1A1A',
+                  border: active ? '1px solid rgba(212,168,67,0.3)' : '1px solid rgba(212,168,67,0.4)',
+                  borderRadius: '50px',
+                  padding: '6px 16px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                }}
+              >
+                {category}
+              </button>
+            )
+          })}
+        </div>
         {loading ? (
           <p style={{ color: 'var(--text-secondary)' }}>{t('common.loading')}</p>
-        ) : rows.length === 0 ? (
-          <article style={{
-            background: 'rgba(255, 255, 255, 0.04)',
-            border: '1px solid rgba(212, 168, 67, 0.15)',
+        ) : filteredRows.length === 0 ? (
+          <article className="testimony-empty-card" style={{
+            background: '#F0E8D4',
+            border: '1px solid rgba(212,168,67,0.2)',
             borderRadius: '16px',
-            padding: '32px 20px',
+            padding: '40px',
             textAlign: 'center',
           }}>
             <div style={{ fontSize: '32px', marginBottom: '12px' }}>🕊️</div>
             <p style={{
               margin: 0,
-              color: 'rgba(255, 255, 255, 0.5)',
-              fontSize: '15px',
-            }}>{t('testimony.beFirst')}</p>
+              color: '#1A1A1A',
+              fontSize: '16px',
+              fontWeight: 500,
+              textAlign: 'center',
+            }}>Be the first to share!</p>
           </article>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div className="testimony-list-stack" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <style>{SUPPORTER_BORDER_KEYFRAMES}{SHIMMER_KEYFRAMES}</style>
-            {rows.map((t) => {
+            {filteredRows.map((t) => {
               const isAnon = Boolean(t.is_anonymous)
               const name = isAnon ? t('testimony.anonymousBeliever') : displayAuthorName(t.author_profile, t)
               const avatarUrl = isAnon ? null : t.author_profile?.avatar_url
