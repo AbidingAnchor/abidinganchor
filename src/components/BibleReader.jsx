@@ -11,7 +11,7 @@ import { useAuth } from '../context/AuthContext'
 import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
 import { userStorageKey } from '../utils/userStorage'
 import { supabase } from '../lib/supabase'
-import { BIBLE_LANG_MAP } from '../utils/bibleTranslation'
+import { BIBLE_LANG_MAP, fetchBollsGetTextForUiLang } from '../utils/bibleTranslation'
 
 /** Free JSON API — see https://bible-api.com/ and GET /data for supported translations (public domain). */
 const BIBLE_API_COM = 'https://bible-api.com'
@@ -194,7 +194,8 @@ export default function BibleReader({ open, onModeChange }) {
   const skyPeriod = useThemeBackgroundType()
   const dayTheme = skyPeriod === 'day'
 
-  const uiLang = (i18n.resolvedLanguage || i18n.language || 'en').toLowerCase().split(/[-_]/)[0]
+  /** Normalize locale (e.g. ar-SA) to 2-letter language code. */
+  const uiLang = (i18n.resolvedLanguage || i18n.language || 'en').toLowerCase().slice(0, 2)
 
   const [bookIndex, setBookIndex] = useState(0)
   const [chapter, setChapter] = useState(1)
@@ -264,31 +265,23 @@ export default function BibleReader({ open, onModeChange }) {
     }
 
     try {
-      // LANGUAGE-SPECIFIC BIBLE FETCHING — runs BEFORE getBibleSlug check
-      // bolls.life free API: https://bolls.life/get-text/{translation}/{book}/{chapter}/
-      // Filipino (tl/fil) has no bolls.life translation — falls through to GetBible (tagalog slug).
-      const translation = BIBLE_LANG_MAP[uiLang]
-      if (translation) {
-        try {
-          const bookNum = currentBook.bookNumber // use param, not stale closure bookIndex
-          const url = `https://bolls.life/get-text/${translation}/${bookNum}/${currentChapter}/`
-          console.log('[BibleReader] Fetching', uiLang, 'Bible:', url)
-          const res = await fetch(url)
-          if (res.ok) {
-            const data = await res.json()
-            if (!cancelled && data?.length) {
-              const normalized = data.map((v) => ({
-                verse: v.verse,
-                text: prepareBibleReaderVerseText((v.text || '').replace(/[ⓐ-ⓩ]/g, '').replace(/<[^>]*>/g, '').replace(/\s{2,}/g, ' ').trim()),
-              }))
-              setVerses(normalized)
-              setLoading(false)
-              return
-            }
-          }
-        } catch (err) {
-          console.error('[BibleReader] bolls.life error:', err)
+      // LANGUAGE-SPECIFIC BIBLE — same bolls get-text + fallback as AudioBible (BIBLE_LANG_MAP + BOLLS_GETTEXT_FALLBACK, e.g. ko: KRPBA then KRV).
+      let bollsRows = null
+      try {
+        bollsRows = await fetchBollsGetTextForUiLang(uiLang, currentBook.bookNumber, currentChapter)
+      } catch (err) {
+        console.error('[BibleReader] bolls.life error:', err)
+      }
+      if (bollsRows?.length) {
+        if (!cancelled) {
+          const normalized = bollsRows.map((v) => ({
+            verse: v.verse,
+            text: prepareBibleReaderVerseText((v.text || '').replace(/[ⓐ-ⓩ]/g, '').replace(/<[^>]*>/g, '').replace(/\s{2,}/g, ' ').trim()),
+          }))
+          setVerses(normalized)
+          setLoading(false)
         }
+        return
       }
 
       if (getBibleSlug) {
@@ -1145,31 +1138,6 @@ export default function BibleReader({ open, onModeChange }) {
                 }}
               >
                 {t('bible.read')}
-              </button>
-            )}
-            
-            {onModeChange && (
-              <button
-                type="button"
-                className="bible-listen-btn"
-                onClick={() => onModeChange('listen')}
-                style={{
-                  background: 'rgba(240, 192, 64, 0.1)',
-                  color: dayTheme ? '#D4A843' : 'rgba(255, 255, 255, 0.7)',
-                  borderColor: dayTheme ? '#D4A843' : 'rgba(240, 192, 64, 0.4)',
-                  border: '1px solid rgba(240, 192, 64, 0.4)',
-                  borderRadius: '50px',
-                  padding: '0 16px',
-                  height: '40px',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                {t('bible.listen')}
               </button>
             )}
             

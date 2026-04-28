@@ -1,18 +1,63 @@
 import { resolveGetBibleTranslationId, fetchGetBibleChapter } from '../services/getBibleApi'
 
+/**
+ * App UI language (2-letter) → bolls.life `get-text/{id}/{book}/{chapter}/` translation id.
+ * it / ro / tl: no entry here; Audio Bible & BibleReader use getBible or bible-api.com.
+ * If a primary id returns an empty list, `BOLLS_GETTEXT_FALLBACK` (below) is used before other APIs.
+ */
 export const BIBLE_LANG_MAP = {
   en: 'WEB',
+  es: 'RVR1960',
+  fr: 'LSG',
+  pt: 'ARC',
+  de: 'LUTH1545',
+  hi: 'IRV',
+  ko: 'KRPBA',
+  zh: 'CNVS',
+  ru: 'SYNOD',
+  ar: 'NAV',
+}
+
+/** When the primary bolls id returns `[]` (or no rows), try this id before getBible / bible-api.com. */
+export const BOLLS_GETTEXT_FALLBACK = {
   es: 'NVI',
+  fr: 'BDS',
   pt: 'NTLH',
+  de: 'ELB',
   hi: 'HIOV',
   ko: 'KRV',
-  ru: 'SYNOD',      // Russian Synodal Bible (bolls.life) ✅
-  zh: 'CUV',        // Chinese Union Version 和合本 (bolls.life) ✅
-  // Italian (it): uses getBible API → 'giovanni' (Giovanni Diodati 1649)
-  // Romanian (ro): uses getBible API → 'cornilescu'
-  // French (fr): no valid bolls.life translation found; falls through to getBible API
-  // German (de): no valid bolls.life translation found; falls through to getBible API
-  // Tagalog (tl): no valid bolls.life translation; falls through to getBible API with 'tagalog' slug
+  zh: 'CUV',
+  ar: 'SVD',
+}
+
+/**
+ * bolls.life get-text: primary from BIBLE_LANG_MAP, then BOLLS_GETTEXT_FALLBACK if the first id returns an empty list.
+ * Used by BibleReader and AudioBible so both stay aligned (e.g. ko: KRPBA then KRV).
+ * @param {string} uiLang
+ * @param {number} bookNumber 1–66
+ * @param {number} chapter
+ * @returns {Promise<Array<{ verse: number, text?: string, pk?: number }> | null>} verse rows, or null if this language is not in BIBLE_LANG_MAP
+ */
+export async function fetchBollsGetTextForUiLang(uiLang, bookNumber, chapter) {
+  const code = String(uiLang || 'en')
+    .toLowerCase()
+    .split(/[-_]/)[0]
+  const primaryId = BIBLE_LANG_MAP[code]
+  const fallbackId = BOLLS_GETTEXT_FALLBACK[code]
+  if (!primaryId) return null
+  const tryBolls = async (translation) => {
+    const res = await fetch(
+      `https://bolls.life/get-text/${translation}/${bookNumber}/${chapter}/`,
+    )
+    if (!res.ok) return null
+    const data = await res.json()
+    return Array.isArray(data) && data.length ? data : null
+  }
+  return (
+    (await tryBolls(primaryId)) ||
+    (fallbackId && fallbackId !== primaryId ? await tryBolls(fallbackId) : null) ||
+    null
+  )
 }
 
 export function getBollsTranslation(langCode) {
@@ -24,30 +69,37 @@ export async function fetchVerse(book, chapter, verse, langCode) {
   const normalized = String(langCode || 'en').toLowerCase().split(/[-_]/)[0]
   const translation = getBollsTranslation(normalized)
   
-  // Try bolls.life first if translation mapping exists
+  // Try bolls.life if translation mapping exists; optional secondary id (same as get-text in Audio Bible)
   let bollsFailed = false
   if (translation && BIBLE_LANG_MAP[normalized]) {
-    try {
-      const url = `https://bolls.life/get-verse/${translation}/${book}/${chapter}/${verse}/`
-      const res = await fetch(url)
-      if (res.ok) {
-        const data = await res.json()
-        if (data?.text) {
-          return data.text
-            .replace(/[ⓐ-ⓩ]/gu, '')
-            .replace(/<[^>]*>/g, '')
-            .replace(/\s{2,}/g, ' ')
-            .trim()
+    const bollsIds = [translation]
+    const alt = BOLLS_GETTEXT_FALLBACK[normalized]
+    if (alt && alt !== translation) bollsIds.push(alt)
+    let gotBollsVerse = false
+    for (const t of bollsIds) {
+      try {
+        const url = `https://bolls.life/get-verse/${t}/${book}/${chapter}/${verse}/`
+        const res = await fetch(url)
+        if (res.ok) {
+          const data = await res.json()
+          if (data?.text) {
+            gotBollsVerse = true
+            return data.text
+              .replace(/[ⓐ-ⓩ]/gu, '')
+              .replace(/<[^>]*>/g, '')
+              .replace(/\s{2,}/g, ' ')
+              .trim()
+          }
+        } else {
+          console.warn(`[fetchVerse] bolls.life returned ${res.status} for ${t}/${book}/${chapter}/${verse} - trying fallback`)
+          bollsFailed = true
         }
-      } else {
-        // Treat any non-OK response as failure and fall through
-        console.warn(`[fetchVerse] bolls.life returned ${res.status} for ${translation}/${book}/${chapter}/${verse} - trying fallback`)
+      } catch (err) {
+        console.error('[fetchVerse] bolls.life error:', err)
         bollsFailed = true
       }
-    } catch (err) {
-      console.error('[fetchVerse] bolls.life error:', err)
-      bollsFailed = true
     }
+    if (!gotBollsVerse) bollsFailed = true
   }
 
   // Fallback to getBible API if bolls.life failed or no mapping exists
