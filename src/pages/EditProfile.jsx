@@ -16,8 +16,6 @@ const USERNAME_FREE_CHANGES = 1
 const SHIMMER_GOLD_TOKEN = 'shimmer-gold'
 
 export default function EditProfile() {
-  const supporterAvatarBorderStyle = getAvatarBorderStyle(profile?.supporter_tier, profileBorder)
-  const isShimmerGold = String(nameColor || '').toLowerCase() === SHIMMER_GOLD_TOKEN
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { user, profile, refreshProfile } = useAuth()
@@ -40,6 +38,8 @@ export default function EditProfile() {
   const [nameColor, setNameColor] = useState('#FFFFFF')
   const [profileBorder, setProfileBorder] = useState('none')
   const [savingAppearance, setSavingAppearance] = useState(false)
+  const supporterAvatarBorderStyle = getAvatarBorderStyle(profile?.supporter_tier, profileBorder)
+  const isShimmerGold = String(nameColor || '').toLowerCase() === SHIMMER_GOLD_TOKEN
 
   useEffect(() => {
     if (!user?.id) return
