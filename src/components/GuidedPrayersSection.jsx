@@ -205,7 +205,9 @@ export default function GuidedPrayersSection() {
             <div>
               <div style={{ fontSize: '32px', marginBottom: '12px' }}>{prayer.emoji}</div>
               <h3 style={{ color: '#ffffff', fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>{t(prayer.title)}</h3>
-              <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '12px' }}>{t('prayer.guided.durationMinutes', { n: prayer.duration })}</p>
+              <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '12px' }}>
+                {t('prayer.guided.durationMinutes', { count: prayer.duration, n: prayer.duration })}
+              </p>
             </div>
             <div style={{
               width: '40px',
