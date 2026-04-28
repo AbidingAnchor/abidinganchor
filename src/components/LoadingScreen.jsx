@@ -127,20 +127,6 @@ export default function LoadingScreen() {
         <p
           style={{
             color: isDaytime ? '#1A1A1A' : '#FFFFFF',
-            margin: '12px 0 0',
-            fontWeight: 700,
-            letterSpacing: '0.08em',
-            fontSize: 'clamp(16px, 4.1vw, 20px)',
-            lineHeight: 1.2,
-            textTransform: 'uppercase',
-            textShadow: isDaytime ? 'none' : '0 1px 12px rgba(0,0,0,0.5)',
-          }}
-        >
-          Abiding Anchor
-        </p>
-        <p
-          style={{
-            color: isDaytime ? '#1A1A1A' : '#FFFFFF',
             margin: '14px 0 0',
             fontWeight: 700,
             letterSpacing: '0.08em',

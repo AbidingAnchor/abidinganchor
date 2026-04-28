@@ -6,7 +6,6 @@ import { useNameStyle, SHIMMER_KEYFRAMES } from '../hooks/useNameStyle'
 import { getAvatarBorderStyle, SUPPORTER_BORDER_KEYFRAMES } from '../utils/supporterBorder'
 import { supabase } from '../lib/supabase'
 import { getAvatarUploadExtension } from '../utils/avatarUrl'
-import { userStorageKey } from '../utils/userStorage'
 import { LANGUAGE_STORAGE_KEY } from '../i18n.js'
 import {
   cancelUniversalReminder,
@@ -26,18 +25,6 @@ const FEEDBACK_TYPES = [
 ]
 
 const FEEDBACK_MAX_LEN = 500
-const FONT_SIZE_LABEL_TO_VALUE = {
-  Small: 14,
-  Medium: 18,
-  Large: 22,
-  'X-Large': 24,
-}
-function fontSizeLabelFromValue(value) {
-  const entries = Object.entries(FONT_SIZE_LABEL_TO_VALUE)
-  const hit = entries.find(([, v]) => v === value)
-  return hit?.[0] || 'Medium'
-}
-
 export default function Settings() {
   const { t, i18n: i18nHook } = useTranslation()
   const navigate = useNavigate()
@@ -54,7 +41,6 @@ export default function Settings() {
   const [dailyReminderEnabled, setDailyReminderEnabled] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [translationOpen, setTranslationOpen] = useState(false)
-  const [fontSize, setFontSize] = useState('Medium')
   const [shareAppOpen, setShareAppOpen] = useState(false)
   const [rateUsOpen, setRateUsOpen] = useState(false)
   const [whatsNewOpen, setWhatsNewOpen] = useState(false)
@@ -175,21 +161,6 @@ export default function Settings() {
       setLocalUsername(data?.username || '')
     }
     loadAvatar()
-  }, [user?.id])
-
-  useEffect(() => {
-    try {
-      const scoped = localStorage.getItem(userStorageKey(user?.id, 'bible-font-size'))
-      const legacy = localStorage.getItem('bible_font_size')
-      const numeric = Number.parseInt(scoped || legacy || '', 10)
-      if (Number.isFinite(numeric)) {
-        setFontSize(fontSizeLabelFromValue(numeric))
-      } else if (legacy && FONT_SIZE_LABEL_TO_VALUE[legacy]) {
-        setFontSize(legacy)
-      }
-    } catch {
-      /* ignore */
-    }
   }, [user?.id])
 
   useEffect(() => {
@@ -929,66 +900,6 @@ export default function Settings() {
             </div>
             <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
           </button>
-          {/* Font Size */}
-          <div
-            style={{
-              minHeight: '52px',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '8px 16px',
-              width: '100%',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
-            }}
-          >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              background: 'rgba(212,168,67,0.1)',
-              color: '#D4A843',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              🔤
-            </div>
-            <div style={{ marginLeft: '14px', flex: 1 }}>
-              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                {t('settings.fontSize')}
-              </p>
-              <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginTop: '8px' }}>
-                {['Small', 'Medium', 'Large', 'X-Large'].map((size) => {
-                  const active = fontSize === size
-                  return (
-                    <button
-                      key={size}
-                      type="button"
-                      onClick={() => {
-                        setFontSize(size)
-                        const numeric = FONT_SIZE_LABEL_TO_VALUE[size] ?? FONT_SIZE_LABEL_TO_VALUE.Medium
-                        localStorage.setItem('bible_font_size', String(numeric))
-                        localStorage.setItem(userStorageKey(user?.id, 'bible-font-size'), String(numeric))
-                      }}
-                      style={{
-                        borderRadius: '50px',
-                        border: '1px solid rgba(212,168,67,0.3)',
-                        background: active ? '#D4A843' : '#F0E8D4',
-                        color: '#1A1A1A',
-                        fontWeight: active ? 700 : 500,
-                        fontSize: '12px',
-                        padding: '6px 12px',
-                        whiteSpace: 'nowrap',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {size}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
           {/* Reading Reminders */}
           <div
             onClick={handleDailyReminderToggle}
