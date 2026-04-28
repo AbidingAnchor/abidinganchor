@@ -10,6 +10,10 @@ export function getAvatarBorderStyle(supporterTier, profileBorder) {
 
   if (supporterTier === 'lifetime') {
     switch (profileBorder) {
+      case 'none':
+        return {}
+      case 'crown':
+        return { boxShadow: '0 0 12px 4px rgba(255, 215, 0, 0.7)', animation: 'supporter-pulse-gold 2s infinite' }
       case 'fire':
         return { boxShadow: '0 0 12px 4px rgba(255, 100, 30, 0.7)', animation: 'supporter-pulse-fire 2s infinite' }
       case 'rainbow':

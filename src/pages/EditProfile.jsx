@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { SHIMMER_KEYFRAMES } from '../hooks/useNameStyle'
 import { supabase } from '../lib/supabase'
 import { getAvatarUploadExtension } from '../utils/avatarUrl'
+import { getAvatarBorderStyle, SUPPORTER_BORDER_KEYFRAMES } from '../utils/supporterBorder'
 import UsernameInput from '../components/UsernameInput'
 import { normalizeUsername, checkUsernameTaken, hasProfanityInUsername } from '../utils/usernameAvailability'
 import { hasUnlimitedUsernameChanges } from '../utils/usernameChangeBypass'
@@ -12,8 +13,11 @@ import { hasUnlimitedUsernameChanges } from '../utils/usernameChangeBypass'
 const BIO_MAX = 150
 /** One free username change after signup; then the field is locked. */
 const USERNAME_FREE_CHANGES = 1
+const SHIMMER_GOLD_TOKEN = 'shimmer-gold'
 
 export default function EditProfile() {
+  const supporterAvatarBorderStyle = getAvatarBorderStyle(profile?.supporter_tier, profileBorder)
+  const isShimmerGold = String(nameColor || '').toLowerCase() === SHIMMER_GOLD_TOKEN
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { user, profile, refreshProfile } = useAuth()
@@ -252,7 +256,7 @@ export default function EditProfile() {
 
   return (
     <div className="content-scroll" style={{ padding: '0 16px', paddingTop: '110px', paddingBottom: '120px', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
-      <style>{SHIMMER_KEYFRAMES}</style>
+      <style>{SHIMMER_KEYFRAMES}{SUPPORTER_BORDER_KEYFRAMES}</style>
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -303,6 +307,7 @@ export default function EditProfile() {
                   boxShadow: '0 2px 8px rgba(212,168,67,0.3)',
                   cursor: 'pointer',
                   border: hasAvatarImage ? '2px solid rgba(212,168,67,0.4)' : 'none',
+                  ...supporterAvatarBorderStyle,
                 }}
               >
                 <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '32px', fontWeight: 600, zIndex: 0 }}>
@@ -502,7 +507,7 @@ export default function EditProfile() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
               <input
                 type="color"
-                value={nameColor}
+                value={isShimmerGold ? '#D4A843' : nameColor}
                 onChange={(e) => setNameColor(e.target.value)}
                 style={{
                   width: '48px',
@@ -519,15 +524,15 @@ export default function EditProfile() {
                   margin: 0,
                   fontWeight: 700,
                   fontSize: '16px',
-                  color: profile?.supporter_tier === 'lifetime' ? 'transparent' : nameColor,
-                  background: profile?.supporter_tier === 'lifetime'
+                  color: isShimmerGold ? 'transparent' : nameColor,
+                  background: isShimmerGold
                     ? 'linear-gradient(90deg, #b8860b, #ffd700, #ffec8b, #ffd700, #b8860b)'
                     : undefined,
-                  backgroundSize: profile?.supporter_tier === 'lifetime' ? '200%' : undefined,
-                  WebkitBackgroundClip: profile?.supporter_tier === 'lifetime' ? 'text' : undefined,
-                  WebkitTextFillColor: profile?.supporter_tier === 'lifetime' ? 'transparent' : undefined,
-                  backgroundClip: profile?.supporter_tier === 'lifetime' ? 'text' : undefined,
-                  animation: profile?.supporter_tier === 'lifetime' ? 'shimmer-gold 2s infinite linear' : undefined,
+                  backgroundSize: isShimmerGold ? '200%' : undefined,
+                  WebkitBackgroundClip: isShimmerGold ? 'text' : undefined,
+                  WebkitTextFillColor: isShimmerGold ? 'transparent' : undefined,
+                  backgroundClip: isShimmerGold ? 'text' : undefined,
+                  animation: isShimmerGold ? 'shimmer-gold 2s infinite linear' : undefined,
                 }}>
                   {displayName}
                   {' '}
@@ -539,6 +544,22 @@ export default function EditProfile() {
 
             {/* Preset colors */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px' }}>
+              <button
+                type="button"
+                onClick={() => setNameColor(SHIMMER_GOLD_TOKEN)}
+                style={{
+                  borderRadius: '999px',
+                  border: isShimmerGold ? '2px solid #fff' : '1px solid rgba(255,255,255,0.25)',
+                  background: 'linear-gradient(90deg, #8B6200, #D4A843, #FFE08A, #D4A843, #8B6200)',
+                  color: '#1A1A1A',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  padding: '6px 10px',
+                  cursor: 'pointer',
+                }}
+              >
+                Shimmering Gold
+              </button>
               {['#FFFFFF', '#FFD700', '#93C5FD', '#86EFAC', '#F9A8D4', '#FCA5A5', '#C4B5FD', '#FCD34D'].map((c) => (
                 <button
                   key={c}

@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { getGuestBrowse } from '../utils/guestBrowse'
 import { useGuestSignupModal } from '../context/GuestSignupModalContext'
+import { getAvatarBorderStyle, SUPPORTER_BORDER_KEYFRAMES } from '../utils/supporterBorder'
 
 const HEADER_PATH_TO_KEY = {
   '/': 'brand',
@@ -75,6 +76,7 @@ export default function Header() {
       user?.user_metadata?.picture,
     [localAvatarUrl, profile?.avatar_url, user?.user_metadata?.avatar_url, user?.user_metadata?.picture]
   )
+  const avatarBorderStyle = getAvatarBorderStyle(profile?.supporter_tier, profile?.profile_border)
 
   return (
     <div
@@ -94,6 +96,7 @@ export default function Header() {
         background: 'var(--header-bg, var(--nav-bg))',
       }}
     >
+      <style>{SUPPORTER_BORDER_KEYFRAMES}</style>
       {/* Profile avatar (settings trigger) */}
       <button
           type="button"
@@ -119,6 +122,7 @@ export default function Header() {
             border: '2px solid #D4A843',
             cursor: 'pointer',
             padding: 0,
+            ...avatarBorderStyle,
           }}
         >
           <span

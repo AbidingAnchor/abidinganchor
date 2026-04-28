@@ -498,6 +498,20 @@ export default function TestimonyWall() {
               const isOwnPost = t.user_id === user?.id
 
               const getNameStyle = (tier) => {
+                const colorToken = String(authorColor || '').toLowerCase()
+                if (colorToken === 'shimmer-gold') {
+                  return {
+                    background: 'linear-gradient(90deg, #b8860b, #ffd700, #ffec8b, #ffd700, #b8860b)',
+                    backgroundSize: '200%',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    animation: 'shimmer-gold 2s infinite linear',
+                  }
+                }
+                if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(String(authorColor || ''))) {
+                  return { color: authorColor }
+                }
                 if (tier === 'lifetime') {
                   return {
                     background: 'linear-gradient(90deg, #b8860b, #ffd700, #ffec8b, #ffd700, #b8860b)',
@@ -510,7 +524,7 @@ export default function TestimonyWall() {
                 } else if (tier === 'monthly') {
                   return { color: '#93c5fd' }
                 }
-                return { color: authorColor || 'var(--text-primary)' }
+                return { color: 'var(--text-primary)' }
               }
               return (
                 <article key={t.id} className="app-card" style={{ ...cardStyle, padding: '16px', position: 'relative' }}>

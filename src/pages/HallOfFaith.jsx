@@ -59,9 +59,11 @@ function StarField({ count = 120 }) {
   )
 }
 
-function NameRow({ name, color, tier, border, isOwn }) {
+function NameRow({ name, color, tier, isOwn }) {
   const isLifetime = tier === 'lifetime'
   const badge = isLifetime ? '👑' : tier === 'monthly' ? '⭐' : null
+  const shimmer = String(color || '').toLowerCase() === 'shimmer-gold'
+  const hasCustomColor = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(String(color || ''))
 
   return (
     <div style={{
@@ -77,12 +79,15 @@ function NameRow({ name, color, tier, border, isOwn }) {
         style={{
           fontSize: '18px',
           fontWeight: 700,
-          background: 'linear-gradient(90deg, #B8860B, #D4A843, #F0C96A, #D4A843, #B8860B)',
+          color: hasCustomColor ? color : undefined,
+          background: shimmer
+            ? 'linear-gradient(90deg, #B8860B, #D4A843, #F0C96A, #D4A843, #B8860B)'
+            : 'linear-gradient(90deg, #B8860B, #D4A843, #F0C96A, #D4A843, #B8860B)',
           backgroundSize: '200% auto',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-          animation: 'shimmer 2s linear infinite',
+          WebkitBackgroundClip: hasCustomColor ? undefined : 'text',
+          WebkitTextFillColor: hasCustomColor ? undefined : 'transparent',
+          backgroundClip: hasCustomColor ? undefined : 'text',
+          animation: hasCustomColor ? undefined : 'shimmer 2s linear infinite',
           letterSpacing: isOwn ? '0.03em' : '0.01em',
         }}
       >

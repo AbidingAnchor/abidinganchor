@@ -7,13 +7,27 @@ const SHIMMER_KEYFRAMES = `
   }
 `
 
-export function useNameStyle(supporterTier) {
+export function useNameStyle(supporterTier, nameColor) {
   return useMemo(() => {
     const isDayTheme = document.documentElement.getAttribute('data-theme') === 'day' ||
                        document.body.classList.contains('theme-day') ||
                        document.body.classList.contains('theme-morning') ||
                        document.body.classList.contains('theme-afternoon');
 
+    const colorToken = String(nameColor || '').trim().toLowerCase()
+    if (colorToken === 'shimmer-gold') {
+      return {
+        background: 'linear-gradient(90deg, #8B6200, #D4A843, #FFE08A, #D4A843, #8B6200)',
+        backgroundSize: '200% auto',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
+        animation: 'shimmer-gold 1.5s linear infinite',
+      }
+    }
+    if (nameColor && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(nameColor)) {
+      return { color: nameColor }
+    }
     if (supporterTier === 'lifetime') {
       return {
         background: 'linear-gradient(90deg, #8B6200, #D4A843, #FFE08A, #D4A843, #8B6200)',
@@ -32,7 +46,7 @@ export function useNameStyle(supporterTier) {
         color: isDayTheme ? '#B8860B' : 'rgba(255,255,255,0.9)',
       }
     }
-  }, [supporterTier])
+  }, [supporterTier, nameColor])
 }
 
 export { SHIMMER_KEYFRAMES }

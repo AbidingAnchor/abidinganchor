@@ -113,7 +113,7 @@ function Home() {
   const { openGuestSignupModal } = useGuestSignupModal()
   const skyPeriod = useThemeBackgroundType()
   const { activeDays: profileWeekActiveDays } = useStreakTracker(user?.id)
-  const nameStyle = useNameStyle(profile?.supporter_tier)
+  const nameStyle = useNameStyle(profile?.supporter_tier, profile?.name_color)
   const [journalWeekActiveDays, setJournalWeekActiveDays] = useState([])
   const [dailyEncounter, setDailyEncounter] = useState(() => getDailyEncounter())
   const [dailyVerseText, setDailyVerseText] = useState('')

@@ -3,8 +3,10 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { useNameStyle, SHIMMER_KEYFRAMES } from '../hooks/useNameStyle'
+import { getAvatarBorderStyle, SUPPORTER_BORDER_KEYFRAMES } from '../utils/supporterBorder'
 import { supabase } from '../lib/supabase'
 import { getAvatarUploadExtension } from '../utils/avatarUrl'
+import { userStorageKey } from '../utils/userStorage'
 import { LANGUAGE_STORAGE_KEY } from '../i18n.js'
 import {
   cancelUniversalReminder,
@@ -24,12 +26,23 @@ const FEEDBACK_TYPES = [
 ]
 
 const FEEDBACK_MAX_LEN = 500
+const FONT_SIZE_LABEL_TO_VALUE = {
+  Small: 14,
+  Medium: 18,
+  Large: 22,
+  'X-Large': 24,
+}
+function fontSizeLabelFromValue(value) {
+  const entries = Object.entries(FONT_SIZE_LABEL_TO_VALUE)
+  const hit = entries.find(([, v]) => v === value)
+  return hit?.[0] || 'Medium'
+}
 
 export default function Settings() {
   const { t, i18n: i18nHook } = useTranslation()
   const navigate = useNavigate()
   const { user, profile, signOut, refreshProfile } = useAuth()
-  const nameStyle = useNameStyle(profile?.supporter_tier)
+  const nameStyle = useNameStyle(profile?.supporter_tier, profile?.name_color)
   const [selectedTranslation] = useState('WEB')
   const [uploadStatus, setUploadStatus] = useState('idle') // idle, uploading, success
   const [uploadError, setUploadError] = useState('')
@@ -41,7 +54,7 @@ export default function Settings() {
   const [dailyReminderEnabled, setDailyReminderEnabled] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [translationOpen, setTranslationOpen] = useState(false)
-  const [fontSize, setFontSize] = useState(() => localStorage.getItem('bible_font_size') || 'Medium')
+  const [fontSize, setFontSize] = useState('Medium')
   const [shareAppOpen, setShareAppOpen] = useState(false)
   const [rateUsOpen, setRateUsOpen] = useState(false)
   const [whatsNewOpen, setWhatsNewOpen] = useState(false)
@@ -54,6 +67,7 @@ export default function Settings() {
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false)
   const [deleteAccountSubmitting, setDeleteAccountSubmitting] = useState(false)
   const [deleteAccountError, setDeleteAccountError] = useState('')
+  const avatarBorderStyle = getAvatarBorderStyle(profile?.supporter_tier, profile?.profile_border)
   const feedbackSuccessTimerRef = useRef(null)
   const fileInputRef = useRef(null)
 
@@ -161,6 +175,21 @@ export default function Settings() {
       setLocalUsername(data?.username || '')
     }
     loadAvatar()
+  }, [user?.id])
+
+  useEffect(() => {
+    try {
+      const scoped = localStorage.getItem(userStorageKey(user?.id, 'bible-font-size'))
+      const legacy = localStorage.getItem('bible_font_size')
+      const numeric = Number.parseInt(scoped || legacy || '', 10)
+      if (Number.isFinite(numeric)) {
+        setFontSize(fontSizeLabelFromValue(numeric))
+      } else if (legacy && FONT_SIZE_LABEL_TO_VALUE[legacy]) {
+        setFontSize(legacy)
+      }
+    } catch {
+      /* ignore */
+    }
   }, [user?.id])
 
   useEffect(() => {
@@ -462,6 +491,7 @@ export default function Settings() {
           to { transform: rotate(360deg); }
         }
         ${SHIMMER_KEYFRAMES}
+        ${SUPPORTER_BORDER_KEYFRAMES}
       `}</style>
       <section>
 
@@ -493,6 +523,7 @@ export default function Settings() {
                   justifyContent: 'center',
                   border: '2px solid #D4A843',
                   cursor: 'pointer',
+                  ...avatarBorderStyle,
                 }}
               >
                 <span
@@ -935,7 +966,9 @@ export default function Settings() {
                       type="button"
                       onClick={() => {
                         setFontSize(size)
-                        localStorage.setItem('bible_font_size', size)
+                        const numeric = FONT_SIZE_LABEL_TO_VALUE[size] ?? FONT_SIZE_LABEL_TO_VALUE.Medium
+                        localStorage.setItem('bible_font_size', String(numeric))
+                        localStorage.setItem(userStorageKey(user?.id, 'bible-font-size'), String(numeric))
                       }}
                       style={{
                         borderRadius: '50px',
