@@ -64,8 +64,14 @@ export default function BottomNav() {
           left: 0,
           right: 0,
           zIndex: 9999,
+          display: 'flex',
+          flexDirection: 'column',
           backgroundColor: isDaytime ? '#F5EFE0' : '#0A1628',
+          background: isDaytime ? '#F5EFE0' : '#0A1628',
           paddingBottom: 'env(safe-area-inset-bottom)',
+          paddingLeft: 'env(safe-area-inset-left, 0px)',
+          paddingRight: 'env(safe-area-inset-right, 0px)',
+          margin: 0,
         }}
       >
       <nav
@@ -79,8 +85,8 @@ export default function BottomNav() {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          paddingLeft: 'env(safe-area-inset-left, 0px)',
-          paddingRight: 'env(safe-area-inset-right, 0px)',
+          paddingLeft: 0,
+          paddingRight: 0,
           margin: 0,
         }}
       >

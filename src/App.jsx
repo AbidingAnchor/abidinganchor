@@ -288,7 +288,7 @@ function AppShell() {
               display: 'flex',
               flexDirection: 'column',
               paddingTop: showHeader ? '56px' : '0px',
-              paddingBottom: showNav ? '80px' : '0px',
+              paddingBottom: showNav ? 'calc(80px + env(safe-area-inset-bottom, 0px))' : '0px',
               background: 'transparent',
               pointerEvents: onboardingBlocking ? 'none' : 'auto',
             }}
