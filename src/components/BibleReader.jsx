@@ -247,9 +247,10 @@ export default function BibleReader({ open, onModeChange }) {
   const getBibleSlug = resolveGetBibleTranslationId(uiLang, activeTranslationId)
   const showEnglishBibleVersions = uiLang === 'en'
   const showHindiApiBiblePicker = uiLang === 'hi' && HAS_API_BIBLE
+  const bollsTranslationId = BIBLE_LANG_MAP[uiLang] || null
   const getStorageTranslationKey = useCallback(
-    (overrideBibleId = null) => overrideBibleId || bibleIdRef.current || getBibleSlug || activeTranslationId || uiLang,
-    [getBibleSlug, activeTranslationId, uiLang],
+    (overrideBibleId = null) => getBibleSlug || bollsTranslationId || activeTranslationId || uiLang || overrideBibleId || bibleIdRef.current,
+    [getBibleSlug, bollsTranslationId, activeTranslationId, uiLang],
   )
 
   const loadChapter = useCallback(async (overrideBibleId, currentBook, currentChapter) => {
@@ -258,11 +259,26 @@ export default function BibleReader({ open, onModeChange }) {
 
     const idToUse = overrideBibleId || bibleIdRef.current
     const storageTranslation = getStorageTranslationKey(overrideBibleId)
+    const offlineLookupKeys = Array.from(
+      new Set(
+        [storageTranslation, overrideBibleId, idToUse, getBibleSlug, bollsTranslationId, activeTranslationId, uiLang]
+          .filter(Boolean)
+          .map((x) => String(x)),
+      ),
+    )
+
+    const saveOfflineWithFallbackKeys = async (rows) => {
+      const keysToSave = Array.from(new Set([storageTranslation, idToUse].filter(Boolean).map((x) => String(x))))
+      await Promise.all(
+        keysToSave.map((k) => saveOfflineChapter(k, currentBook.bookNumber, currentChapter, rows)),
+      )
+    }
 
     try {
-      const downloaded = await isChapterDownloaded(storageTranslation, currentBook.bookNumber, currentChapter)
-      if (downloaded) {
-        const offlineVerses = await loadOfflineChapter(storageTranslation, currentBook.bookNumber, currentChapter)
+      for (const key of offlineLookupKeys) {
+        const downloaded = await isChapterDownloaded(key, currentBook.bookNumber, currentChapter)
+        if (!downloaded) continue
+        const offlineVerses = await loadOfflineChapter(key, currentBook.bookNumber, currentChapter)
         if (!cancelled && Array.isArray(offlineVerses)) {
           setVerses(offlineVerses)
           setIsCurrentChapterOffline(true)
@@ -305,7 +321,7 @@ export default function BibleReader({ open, onModeChange }) {
             text: prepareBibleReaderVerseText((v.text || '').replace(/[ⓐ-ⓩ]/g, '').replace(/<[^>]*>/g, '').replace(/\s{2,}/g, ' ').trim()),
           }))
           setVerses(normalized)
-          await saveOfflineChapter(storageTranslation, currentBook.bookNumber, currentChapter, normalized)
+          await saveOfflineWithFallbackKeys(normalized)
           setIsCurrentChapterOffline(true)
           setLoading(false)
         }
@@ -323,11 +339,11 @@ export default function BibleReader({ open, onModeChange }) {
               })),
             )
             setVerses(normalized)
-            await saveOfflineChapter(storageTranslation, currentBook.bookNumber, currentChapter, normalized)
+            await saveOfflineWithFallbackKeys(normalized)
             setIsCurrentChapterOffline(true)
           } else {
             setVerses([])
-            await saveOfflineChapter(storageTranslation, currentBook.bookNumber, currentChapter, [])
+            await saveOfflineWithFallbackKeys([])
             setIsCurrentChapterOffline(false)
           }
           setLoading(false)
@@ -363,7 +379,7 @@ export default function BibleReader({ open, onModeChange }) {
               })),
             )
             setVerses(normalized)
-            await saveOfflineChapter(storageTranslation, currentBook.bookNumber, currentChapter, normalized)
+            await saveOfflineWithFallbackKeys(normalized)
             setIsCurrentChapterOffline(true)
             setLoading(false)
             return
@@ -373,7 +389,7 @@ export default function BibleReader({ open, onModeChange }) {
       const rows = await loadFromBibleApiCom()
       if (!cancelled) {
         setVerses(rows || [])
-        await saveOfflineChapter(storageTranslation, currentBook.bookNumber, currentChapter, rows || [])
+        await saveOfflineWithFallbackKeys(rows || [])
         setIsCurrentChapterOffline(Boolean(rows?.length))
         setLoading(false)
       }
@@ -388,6 +404,7 @@ export default function BibleReader({ open, onModeChange }) {
 
   }, [
     activeTranslationId,
+    bollsTranslationId,
     getBibleSlug,
     hindiSavedBibleId,
     open,
