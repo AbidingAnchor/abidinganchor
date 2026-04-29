@@ -57,16 +57,21 @@ export default function BottomNav() {
 
   return (
     <>
-      <nav
-        className="bottom-nav"
+      <div
         style={{
           position: 'fixed',
           bottom: 0,
           left: 0,
           right: 0,
           zIndex: 9999,
-          background: isDaytime ? '#F5EFE0' : '#0A1628',
           backgroundColor: isDaytime ? '#F5EFE0' : '#0A1628',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+        }}
+      >
+      <nav
+        className="bottom-nav"
+        style={{
+          background: isDaytime ? '#F5EFE0' : '#0A1628',
           backdropFilter: 'blur(20px)',
           borderTop: '1px solid rgba(212,168,67,0.15)',
           minHeight: '64px',
@@ -74,11 +79,9 @@ export default function BottomNav() {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          paddingBottom: 'env(safe-area-inset-bottom)',
           paddingLeft: 'env(safe-area-inset-left, 0px)',
           paddingRight: 'env(safe-area-inset-right, 0px)',
           margin: 0,
-          boxSizing: 'content-box',
         }}
       >
         {showWorshipPlaying ? (
@@ -147,6 +150,7 @@ export default function BottomNav() {
           </button>
         ))}
       </nav>
+      </div>
 
       <MoreDrawer
         isOpen={moreOpen}

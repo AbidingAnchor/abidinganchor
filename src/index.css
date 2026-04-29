@@ -204,16 +204,6 @@ body {
   overscroll-behavior: contain;
 }
 
-html,
-body,
-#root {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  position: fixed;
-  touch-action: pan-y;
-}
-
 .safe-top {
   padding-top: env(safe-area-inset-top, 0px);
 }
@@ -230,9 +220,11 @@ body {
 
 #root {
   height: 100%;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   max-width: 100vw;
-  position: fixed;
+  position: relative;
   z-index: 10;
   background-color: #0a1a3e;
   padding-top: env(safe-area-inset-top, 0px);
