@@ -31,6 +31,7 @@ import BibleVideos from './pages/BibleVideos'
 import About from './pages/About'
 import SupporterUpgrade from './pages/SupporterUpgrade'
 import HallOfFaith from './pages/HallOfFaith'
+import SermonLibrary from './components/SermonLibrary'
 import BottomNav from './components/BottomNav'
 import Header from './components/Header'
 import LegalModal from './components/LegalModal'
@@ -340,6 +341,7 @@ function AppShell() {
               <Route path="/about" element={<About />} />
               <Route path="/supporter-upgrade" element={<ProtectedRoute><SupporterUpgrade /></ProtectedRoute>} />
               <Route path="/hall-of-faith" element={<ProtectedRoute><HallOfFaith /></ProtectedRoute>} />
+              <Route path="/sermons" element={<ProtectedRoute guestOk><SermonLibrary /></ProtectedRoute>} />
               <Route path="*" element={<CatchAllRedirect />} />
             </Routes>
             {showFooter ? <Footer /> : null}
