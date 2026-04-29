@@ -9,14 +9,16 @@ import { getAvatarBorderStyle, SUPPORTER_BORDER_KEYFRAMES } from '../utils/suppo
 const CONTENT_MAX = 300
 const TESTIMONY_CATEGORIES = ['Healing', 'Salvation', 'Answered Prayer', 'Provision', 'Protection', 'All']
 
-function timeAgo(iso, t) {
-  if (!iso) return ''
-  const sec = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
-  if (sec < 45) return t('testimony.justNow')
-  if (sec < 3600) return t('testimony.minutesAgo', { count: Math.floor(sec / 60) })
-  if (sec < 86400) return t('testimony.hoursAgo', { count: Math.floor(sec / 3600) })
-  if (sec < 604800) return t('testimony.daysAgo', { count: Math.floor(sec / 86400) })
-  return new Date(iso).toLocaleDateString()
+const timeAgo = (dateString) => {
+  const now = new Date()
+  const date = new Date(dateString)
+  const seconds = Math.floor((now - date) / 1000)
+  
+  if (seconds < 60) return 'just now'
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`
+  return `${Math.floor(seconds / 604800)}w ago`
 }
 
 function displayAuthorName(p, t) {
@@ -637,7 +639,7 @@ export default function TestimonyWall() {
                         </button>
                       )}
                       <p style={{ margin: '6px 0 0', fontSize: '14px', lineHeight: 1.55, color: 'var(--text-primary)' }}>{t.content}</p>
-                      <p style={{ margin: '8px 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>{timeAgo(t.created_at, t)}</p>
+                      <p style={{ margin: '8px 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>{timeAgo(t.created_at)}</p>
                       <div
                         style={{
                           display: 'flex',
