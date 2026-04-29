@@ -18,6 +18,13 @@ import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
 import { userStorageKey } from '../utils/userStorage'
 import { supabase } from '../lib/supabase'
 import { BIBLE_LANG_MAP, fetchBollsGetTextForUiLang, fetchBollsGetTextForTranslationId } from '../utils/bibleTranslation'
+import tobitData from '../data/deuterocanonical/tobit.json'
+import judithData from '../data/deuterocanonical/judith.json'
+import wisdomData from '../data/deuterocanonical/wisdom.json'
+import sirachData from '../data/deuterocanonical/sirach.json'
+import baruchData from '../data/deuterocanonical/baruch.json'
+import maccabees1Data from '../data/deuterocanonical/1maccabees.json'
+import maccabees2Data from '../data/deuterocanonical/2maccabees.json'
 
 /** Free JSON API — see https://bible-api.com/ and GET /data for supported translations (public domain). */
 const BIBLE_API_COM = 'https://bible-api.com'
@@ -168,6 +175,28 @@ const BOOKS = [
   {name:'Revelation',cdnName:'revelation',chapters:22},
 ]
 
+// Mapping of Deuterocanonical books to their bolls.life book numbers
+const DEUTEROCANONICAL_BOOK_MAP = {
+  'tobit': 68,
+  'judith': 69,
+  '1maccabees': 70,
+  '2maccabees': 71,
+  'wisdom': 72,
+  'sirach': 73,
+  'baruch': 74,
+}
+
+// Mapping of Deuterocanonical CDN names to their local JSON data
+const DEUTEROCANONICAL_JSON_MAP = {
+  'tobit': tobitData,
+  'judith': judithData,
+  'wisdom': wisdomData,
+  'sirach': sirachData,
+  'baruch': baruchData,
+  '1maccabees': maccabees1Data,
+  '2maccabees': maccabees2Data,
+}
+
 let crossReferencesDatasetPromise = null
 function loadCrossReferencesDataset() {
   if (!crossReferencesDatasetPromise) {
@@ -279,6 +308,8 @@ export default function BibleReader({ open, onModeChange }) {
 
     const idToUse = overrideBibleId || bibleIdRef.current
     const storageTranslation = getStorageTranslationKey(overrideBibleId)
+    const isDeuterocanonicalBook = currentBook.deuterocanonical
+    const isDraTranslation = activeTranslationId === 'dra'
     
     const offlineLookupKeys = Array.from(
       new Set(
@@ -338,13 +369,51 @@ export default function BibleReader({ open, onModeChange }) {
     }
 
     try {
+      // For Deuterocanonical books with DRA or Catholic translations, use local JSON
+      if (isDeuterocanonicalBook && (isDraTranslation || activeTranslationId === 'cpdv')) {
+        const localData = DEUTEROCANONICAL_JSON_MAP[currentBook.cdnName]
+        if (localData && localData.chapters && localData.chapters[currentChapter]) {
+          console.log(`[BibleReader] Loading Deuterocanonical book from local JSON: ${currentBook.cdnName} chapter ${currentChapter}`)
+          const chapterVerses = localData.chapters[currentChapter]
+          if (!cancelled) {
+            const normalized = chapterVerses.map((v) => ({
+              verse: v.verse,
+              text: prepareBibleReaderVerseText(v.text),
+            }))
+            setVerses(normalized)
+            setIsCurrentChapterOffline(true)
+            setLoading(false)
+          }
+          return
+        }
+      }
+
       // TRANSLATION-SPECIFIC BIBLE — use activeTranslationId instead of uiLang for translation picker
-      // Skip bolls.life for DRA (not supported) and go straight to bible-api.com
+      // Skip bolls.life for DRA (not supported) and go straight to bible-api.com, EXCEPT for Deuterocanonical books
       const skipBolls = ['dra']
       let bollsRows = null
-      if (!skipBolls.includes(activeTranslationId)) {
+
+      if (!skipBolls.includes(activeTranslationId) || (isDraTranslation && isDeuterocanonicalBook)) {
         try {
-          bollsRows = await fetchBollsGetTextForTranslationId(activeTranslationId, currentBook.bookNumber, currentChapter)
+          if (isDraTranslation && isDeuterocanonicalBook) {
+            // For Deuterocanonical books with DRA, use specific bolls.life book numbers
+            const bollsBookNumber = DEUTEROCANONICAL_BOOK_MAP[currentBook.cdnName]
+            if (bollsBookNumber) {
+              console.log(`[BibleReader] Fetching Deuterocanonical book from bolls.life: DRA/${bollsBookNumber}/${currentChapter}`)
+              const bollsUrl = `https://bolls.life/get-text/DRA/${bollsBookNumber}/${currentChapter}/`
+              const response = await fetch(bollsUrl)
+              if (response.ok) {
+                const data = await response.json()
+                if (data?.verses?.length) {
+                  bollsRows = data.verses
+                }
+              } else {
+                console.log('[BibleReader] bolls.life returned non-OK for Deuterocanonical book')
+              }
+            }
+          } else {
+            bollsRows = await fetchBollsGetTextForTranslationId(activeTranslationId, currentBook.bookNumber, currentChapter)
+          }
         } catch (err) {
           console.error('[BibleReader] bolls.life error:', err)
         }
@@ -426,17 +495,31 @@ export default function BibleReader({ open, onModeChange }) {
 
       const rows = await loadFromBibleApiCom()
       if (!cancelled) {
-        setVerses(rows || [])
-        await saveOfflineWithFallbackKeys(rows || [])
-        setIsCurrentChapterOffline(Boolean(rows?.length))
-        setLoading(false)
+        // Special handling for Deuterocanonical books that failed to load
+        if (isDeuterocanonicalBook && isDraTranslation && (!rows || rows.length === 0)) {
+          setVerses([{ verse: 1, text: 'This book is coming soon in a future update.' }])
+          setIsCurrentChapterOffline(false)
+          setLoading(false)
+        } else {
+          setVerses(rows || [])
+          await saveOfflineWithFallbackKeys(rows || [])
+          setIsCurrentChapterOffline(Boolean(rows?.length))
+          setLoading(false)
+        }
       }
     } catch (err) {
       if (import.meta.env.DEV) console.error('Error loading verses:', err)
       if (!cancelled) {
-        setVerses([])
-        setIsCurrentChapterOffline(false)
-        setLoading(false)
+        // Special handling for Deuterocanonical books that failed to load
+        if (isDeuterocanonicalBook && isDraTranslation) {
+          setVerses([{ verse: 1, text: 'This book is coming soon in a future update.' }])
+          setIsCurrentChapterOffline(false)
+          setLoading(false)
+        } else {
+          setVerses([])
+          setIsCurrentChapterOffline(false)
+          setLoading(false)
+        }
       }
     }
 
@@ -1425,7 +1508,17 @@ export default function BibleReader({ open, onModeChange }) {
         <div style={{ maxWidth: '680px', margin: '0 auto', width: '100%', animation: 'fadeIn 0.6s ease-out' }}>
           {loading ? (
             <div style={{ textAlign: 'center', padding: '80px 24px' }}>
-              <div style={{ fontSize: '48px', marginBottom: '24px', filter: 'drop-shadow(0 0 20px rgba(240, 192, 64, 0.3))' }}>✝</div>
+              <img
+                src="/NewLogo.png"
+                alt="Abiding Anchor"
+                style={{
+                  width: '64px',
+                  height: '64px',
+                  marginBottom: '24px',
+                  filter: 'drop-shadow(0 0 20px rgba(240, 192, 64, 0.3))',
+                  objectFit: 'contain',
+                }}
+              />
               <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '15px' }}>{t('bible.loading')}</p>
             </div>
           ) : (
@@ -2208,10 +2301,10 @@ export default function BibleReader({ open, onModeChange }) {
               right: 0,
               zIndex: 201,
               maxHeight: '85vh',
-              background: 'rgba(6, 15, 38, 0.75)',
+              background: dayTheme ? 'rgba(245, 240, 225, 0.95)' : 'rgba(6, 15, 38, 0.75)',
               backdropFilter: 'blur(28px)',
               WebkitBackdropFilter: 'blur(28px)',
-              borderTop: '1px solid rgba(255, 255, 255, 0.09)',
+              borderTop: dayTheme ? '1px solid rgba(212, 168, 67, 0.3)' : '1px solid rgba(255, 255, 255, 0.09)',
               borderRadius: '24px 24px 0 0',
               padding: '24px',
               animation: 'slideUp 0.3s ease-out',
@@ -2222,10 +2315,10 @@ export default function BibleReader({ open, onModeChange }) {
           >
             <div style={{ maxWidth: '680px', margin: '0 auto' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2 style={{ 
-                  color: '#F0C040', 
-                  fontSize: '20px', 
-                  fontWeight: 600, 
+                <h2 style={{
+                  color: dayTheme ? '#D4A843' : '#F0C040',
+                  fontSize: '20px',
+                  fontWeight: 600,
                   margin: 0
                 }}>
                   {t('bible.selectBook')}
@@ -2246,74 +2339,163 @@ export default function BibleReader({ open, onModeChange }) {
                 </button>
               </div>
 
-              <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
-                <button
-                  type="button"
-                  onClick={() => setTestamentFilter('old')}
-                  style={{
-                    flex: 1,
-                    borderRadius: '99px',
-                    border: testamentFilter === 'old' ? 'none' : '1px solid rgba(240, 192, 64, 0.3)',
-                    background: testamentFilter === 'old' ? 'linear-gradient(135deg, #F0C040 0%, #C08010 100%)' : 'rgba(10, 15, 40, 0.6)',
-                    color: testamentFilter === 'old' ? '#0a0f28' : 'rgba(255, 255, 255, 0.7)',
-                    fontWeight: 600,
-                    padding: '10px 16px',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  Old Testament
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTestamentFilter('new')}
-                  style={{
-                    flex: 1,
-                    borderRadius: '99px',
-                    border: testamentFilter === 'new' ? 'none' : '1px solid rgba(240, 192, 64, 0.3)',
-                    background: testamentFilter === 'new' ? 'linear-gradient(135deg, #F0C040 0%, #C08010 100%)' : 'rgba(10, 15, 40, 0.6)',
-                    color: testamentFilter === 'new' ? '#0a0f28' : 'rgba(255, 255, 255, 0.7)',
-                    fontWeight: 600,
-                    padding: '10px 16px',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  New Testament
-                </button>
-              </div>
-
-              <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(3, 1fr)', 
-                gap: '12px',
+              <div style={{
                 maxHeight: '50vh',
                 overflowY: 'auto',
                 paddingBottom: '20px'
               }}>
-                {filteredBooks.map(({ book, index }) => (
-                  <button
-                    key={book.name}
-                    type="button"
-                    onClick={() => handleBookSelect(index)}
-                    style={{
-                      background: index === bookIndex ? 'rgba(240, 192, 64, 0.15)' : 'rgba(255, 255, 255, 0.04)',
-                      border: index === bookIndex ? '1px solid rgba(240, 192, 64, 0.4)' : '1px solid rgba(255, 255, 255, 0.1)',
-                      color: index === bookIndex ? '#F0C040' : 'rgba(255, 255, 255, 0.85)',
+                {/* Old Testament Section */}
+                <div style={{ marginBottom: '20px' }}>
+                  <h3 style={{
+                    color: dayTheme ? '#D4A843' : '#F0C040',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    margin: '0 0 12px 0',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px',
+                  }}>
+                    Old Testament
+                  </h3>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gap: '12px',
+                  }}>
+                    {BOOKS.slice(0, OLD_TESTAMENT_LAST_INDEX + 1)
+                      .filter(book => !book.deuterocanonical)
+                      .map((book, idx) => (
+                        <button
+                          key={book.name}
+                          type="button"
+                          onClick={() => handleBookSelect(idx)}
+                          style={{
+                            background: idx === bookIndex
+                              ? (dayTheme ? 'rgba(212, 168, 67, 0.2)' : 'rgba(240, 192, 64, 0.15)')
+                              : (dayTheme ? 'rgba(212, 168, 67, 0.08)' : 'rgba(255, 255, 255, 0.04)'),
+                            border: idx === bookIndex
+                              ? (dayTheme ? '1px solid rgba(212, 168, 67, 0.5)' : '1px solid rgba(240, 192, 64, 0.4)')
+                              : (dayTheme ? '1px solid rgba(212, 168, 67, 0.2)' : '1px solid rgba(255, 255, 255, 0.1)'),
+                            color: idx === bookIndex
+                              ? (dayTheme ? '#D4A843' : '#F0C040')
+                              : (dayTheme ? 'rgba(10, 20, 50, 0.85)' : 'rgba(255, 255, 255, 0.85)'),
+                            fontSize: '14px',
+                            fontWeight: idx === bookIndex ? 600 : 500,
+                            cursor: 'pointer',
+                            padding: '14px 12px',
+                            borderRadius: '12px',
+                            textAlign: 'left',
+                            transition: 'all 0.2s ease',
+                          }}
+                        >
+                          {bookDisplayName(book)}
+                        </button>
+                      ))}
+                  </div>
+                </div>
+
+                {/* Deuterocanonical Section - Catholic/Orthodox only */}
+                {(bibleCategory === 'catholic' || bibleCategory === 'orthodox') && (
+                  <div style={{ marginBottom: '20px' }}>
+                    <h3 style={{
+                      color: '#F0C040',
                       fontSize: '14px',
-                      fontWeight: index === bookIndex ? 600 : 500,
-                      cursor: 'pointer',
-                      padding: '14px 12px',
-                      borderRadius: '12px',
-                      textAlign: 'left',
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    {bookDisplayName(book)}
-                  </button>
-                ))}
+                      fontWeight: 600,
+                      margin: '0 0 12px 0',
+                      textTransform: 'uppercase',
+                      letterSpacing: '1px',
+                    }}>
+                      Deuterocanonical
+                    </h3>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(3, 1fr)',
+                      gap: '12px',
+                    }}>
+                      {BOOKS.filter(book => book.deuterocanonical).map((book, idx) => {
+                        const actualIndex = BOOKS.findIndex(b => b.name === book.name)
+                        return (
+                          <button
+                            key={book.name}
+                            type="button"
+                            onClick={() => handleBookSelect(actualIndex)}
+                            style={{
+                              background: actualIndex === bookIndex
+                                ? (dayTheme ? 'rgba(212, 168, 67, 0.2)' : 'rgba(240, 192, 64, 0.15)')
+                                : (dayTheme ? 'rgba(212, 168, 67, 0.08)' : 'rgba(255, 255, 255, 0.04)'),
+                              border: actualIndex === bookIndex
+                                ? (dayTheme ? '1px solid rgba(212, 168, 67, 0.5)' : '1px solid rgba(240, 192, 64, 0.4)')
+                                : (dayTheme ? '1px solid rgba(212, 168, 67, 0.2)' : '1px solid rgba(255, 255, 255, 0.1)'),
+                              color: actualIndex === bookIndex
+                                ? (dayTheme ? '#D4A843' : '#F0C040')
+                                : (dayTheme ? 'rgba(10, 20, 50, 0.85)' : 'rgba(255, 255, 255, 0.85)'),
+                              fontSize: '14px',
+                              fontWeight: actualIndex === bookIndex ? 600 : 500,
+                              cursor: 'pointer',
+                              padding: '14px 12px',
+                              borderRadius: '12px',
+                              textAlign: 'left',
+                              transition: 'all 0.2s ease',
+                            }}
+                          >
+                            {bookDisplayName(book)}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* New Testament Section */}
+                <div>
+                  <h3 style={{
+                    color: dayTheme ? '#D4A843' : '#F0C040',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    margin: '0 0 12px 0',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px',
+                  }}>
+                    New Testament
+                  </h3>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gap: '12px',
+                  }}>
+                    {BOOKS.slice(OLD_TESTAMENT_LAST_INDEX + 1)
+                      .filter(book => !book.deuterocanonical)
+                      .map((book, idx) => {
+                        const actualIndex = BOOKS.findIndex(b => b.name === book.name)
+                        return (
+                          <button
+                            key={book.name}
+                            type="button"
+                            onClick={() => handleBookSelect(actualIndex)}
+                            style={{
+                              background: actualIndex === bookIndex
+                                ? (dayTheme ? 'rgba(212, 168, 67, 0.2)' : 'rgba(240, 192, 64, 0.15)')
+                                : (dayTheme ? 'rgba(212, 168, 67, 0.08)' : 'rgba(255, 255, 255, 0.04)'),
+                              border: actualIndex === bookIndex
+                                ? (dayTheme ? '1px solid rgba(212, 168, 67, 0.5)' : '1px solid rgba(240, 192, 64, 0.4)')
+                                : (dayTheme ? '1px solid rgba(212, 168, 67, 0.2)' : '1px solid rgba(255, 255, 255, 0.1)'),
+                              color: actualIndex === bookIndex
+                                ? (dayTheme ? '#D4A843' : '#F0C040')
+                                : (dayTheme ? 'rgba(10, 20, 50, 0.85)' : 'rgba(255, 255, 255, 0.85)'),
+                              fontSize: '14px',
+                              fontWeight: actualIndex === bookIndex ? 600 : 500,
+                              cursor: 'pointer',
+                              padding: '14px 12px',
+                              borderRadius: '12px',
+                              textAlign: 'left',
+                              transition: 'all 0.2s ease',
+                            }}
+                          >
+                            {bookDisplayName(book)}
+                          </button>
+                        )
+                      })}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

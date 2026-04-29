@@ -31,7 +31,6 @@ export default function Settings() {
   const navigate = useNavigate()
   const { user, profile, signOut, refreshProfile } = useAuth()
   const nameStyle = useNameStyle(profile?.supporter_tier, profile?.name_color)
-  const [selectedTranslation] = useState('WEB')
   const [uploadStatus, setUploadStatus] = useState('idle') // idle, uploading, success
   const [uploadError, setUploadError] = useState('')
   const [pendingAvatarUrl, setPendingAvatarUrl] = useState(null)
@@ -41,7 +40,6 @@ export default function Settings() {
   const [localUsername, setLocalUsername] = useState('')
   const [dailyReminderEnabled, setDailyReminderEnabled] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
-  const [translationOpen, setTranslationOpen] = useState(false)
   const [offlineBibleOpen, setOfflineBibleOpen] = useState(false)
   const [shareAppOpen, setShareAppOpen] = useState(false)
   const [rateUsOpen, setRateUsOpen] = useState(false)
@@ -862,45 +860,6 @@ export default function Settings() {
           marginBottom: '24px',
         }}
         >
-          {/* Bible Translation */}
-          <button
-            type="button"
-            onClick={() => setTranslationOpen(true)}
-            style={{
-              minHeight: '52px',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0 16px',
-              width: '100%',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
-            }}
-          >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              background: 'rgba(212,168,67,0.1)',
-              color: '#D4A843',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              📖
-            </div>
-            <div style={{ marginLeft: '14px', flex: 1 }}>
-              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                {t('settings.bibleTranslation')}
-              </p>
-              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
-                {selectedTranslation}
-              </p>
-            </div>
-            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
-          </button>
           {/* Offline Bible */}
           <button
             type="button"
@@ -1866,59 +1825,6 @@ export default function Settings() {
                   }}
                 />
               </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {/* Bible Translation Modal */}
-      {translationOpen ? (
-        <div
-          className="fixed inset-0 z-[10050] flex items-center justify-center p-4"
-          style={{ background: 'var(--glass-scrim)' }}
-          role="dialog"
-          aria-modal="true"
-        >
-          <button
-            type="button"
-            className="absolute inset-0 cursor-default border-0"
-            style={{ background: 'transparent' }}
-            aria-label={t('common.close')}
-            onClick={() => setTranslationOpen(false)}
-          />
-          <div
-            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
-            style={{
-              background: 'var(--modal-bg)',
-              border: '1px solid var(--glass-border)',
-              boxShadow: 'var(--glass-shadow)',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: '20px',
-              paddingTop: '8px',
-            }}>
-              <button
-                type="button"
-                onClick={() => setTranslationOpen(false)}
-                style={settingsBackButtonStyle}
-              >
-                ←
-              </button>
-              <div style={{ flex: 1, textAlign: 'center' }}>
-                <span style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
-                  Bible Translation
-                </span>
-              </div>
-              <div style={{ width: '40px' }} />
-            </div>
-            <div className="px-5 pb-6">
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                Current: {selectedTranslation}
-              </p>
             </div>
           </div>
         </div>
