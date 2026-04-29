@@ -3,6 +3,62 @@ import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { GUIDED_PRAYERS } from '../data/guidedPrayers'
 
+const CATEGORY_STYLES = {
+  peace: {
+    gradient: 'linear-gradient(135deg, #1a3a4a, #0d2233, #1a4a3a)',
+    animation: 'breathing-circle',
+  },
+  worship: {
+    gradient: 'linear-gradient(135deg, #2a1a00, #3d2800, #1a1200)',
+    animation: 'gold-glow-pulse',
+  },
+  praise: {
+    gradient: 'linear-gradient(135deg, #2a1a00, #3d2800, #1a1200)',
+    animation: 'gold-glow-pulse',
+  },
+  protection: {
+    gradient: 'linear-gradient(135deg, #0a1628, #0d1f3c, #0a0f1e)',
+    animation: 'rotating-ring',
+  },
+  strength: {
+    gradient: 'linear-gradient(135deg, #0a1628, #0d1f3c, #0a0f1e)',
+    animation: 'rotating-ring',
+  },
+  healing: {
+    gradient: 'linear-gradient(135deg, #0a2a1a, #0d3320, #0a1f15)',
+    animation: 'ripple-wave',
+  },
+  gratitude: {
+    gradient: 'linear-gradient(135deg, #2a1800, #3d2400, #1f1000)',
+    animation: 'floating-particle',
+  },
+  thanksgiving: {
+    gradient: 'linear-gradient(135deg, #2a1800, #3d2400, #1f1000)',
+    animation: 'floating-particle',
+  },
+  morning: {
+    gradient: 'linear-gradient(135deg, #1a2a3a, #0d1a2a, #1a3a4a)',
+    animation: 'breathing-circle',
+  },
+  evening: {
+    gradient: 'linear-gradient(135deg, #0a1a2a, #0d0f1a, #0a0f1e)',
+    animation: 'breathing-circle',
+  },
+  guidance: {
+    gradient: 'linear-gradient(135deg, #1a1a3a, #0d1a2a, #1a2a4a)',
+    animation: 'breathing-circle',
+  },
+  family: {
+    gradient: 'linear-gradient(135deg, #1a2a3a, #0d1a2a, #1a3a4a)',
+    animation: 'breathing-circle',
+  },
+}
+
+const getDefaultStyle = () => ({
+  gradient: 'linear-gradient(135deg, #1a1a2a, #0d0d1a, #1a1a3a)',
+  animation: 'breathing-circle',
+})
+
 function formatTime(seconds) {
   if (!Number.isFinite(seconds) || seconds < 0) return '0:00'
   const m = Math.floor(seconds / 60)
@@ -155,6 +211,29 @@ export default function GuidedPrayersSection() {
 
   return (
     <section className="mb-8" aria-labelledby="guided-prayers-heading">
+      <style>{`
+        @keyframes breathing-circle {
+          0%, 100% { transform: scale(1); opacity: 0.3; }
+          50% { transform: scale(1.08); opacity: 0.5; }
+        }
+        @keyframes gold-glow-pulse {
+          0%, 100% { transform: scale(1); opacity: 0.4; box-shadow: 0 0 20px rgba(212, 168, 67, 0.3); }
+          50% { transform: scale(1.05); opacity: 0.7; box-shadow: 0 0 40px rgba(212, 168, 67, 0.5); }
+        }
+        @keyframes rotating-ring {
+          0% { transform: rotate(0deg); opacity: 0.3; }
+          100% { transform: rotate(360deg); opacity: 0.3; }
+        }
+        @keyframes ripple-wave {
+          0% { transform: scale(0.8); opacity: 0.2; }
+          50% { transform: scale(1.2); opacity: 0.4; }
+          100% { transform: scale(0.8); opacity: 0.2; }
+        }
+        @keyframes floating-particle {
+          0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
+          50% { transform: translateY(-10px) scale(1.1); opacity: 0.6; }
+        }
+      `}</style>
       <audio ref={audioRef} preload="metadata" playsInline hidden />
 
       <h2
@@ -247,10 +326,7 @@ export default function GuidedPrayersSection() {
                 }}
               >
                 <div className="flex-1 flex items-stretch justify-center p-4 pointer-events-auto min-h-0">
-                  <div
-                    className="guided-prayer-player-panel w-full max-w-md flex flex-col p-6 shadow-2xl max-h-full min-h-0"
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                  <div className="guided-prayer-player-panel w-full max-w-md flex flex-col p-6 shadow-2xl max-h-full min-h-0 relative overflow-hidden">
                     <div className="flex justify-end mb-2 shrink-0">
                       <button
                         type="button"
@@ -266,12 +342,15 @@ export default function GuidedPrayersSection() {
                       <p id="guided-player-title" className="text-xl font-bold leading-tight px-2">
                         {t(modalPrayer.title)}
                       </p>
-                      <p className="text-sm mt-2" style={{ color: 'var(--guided-prayer-card-muted)' }}>
+                      <p className="text-sm mt-2">
                         {t(`prayer.guided.${modalPrayer.category}`)}
                       </p>
                     </div>
 
                     <div className="flex-1 flex flex-col items-center justify-center min-h-[120px] mb-6">
+                      <div className="text-center px-4 mb-6">
+                        {modalPrayer.content || t(modalPrayer.title)}
+                      </div>
                       <div className="relative">
                         <button
                           type="button"
@@ -312,20 +391,25 @@ export default function GuidedPrayersSection() {
                         aria-valuenow={currentTime}
                         aria-label={t('prayer.guided.progressAria')}
                       />
-                      <div
-                        className="flex justify-between text-xs mt-2 tabular-nums"
-                        style={{ color: 'var(--guided-prayer-card-muted)' }}
-                      >
+                      <div className="flex justify-between text-xs mt-2 tabular-nums">
                         <span>{formatTime(currentTime)}</span>
                         <span>{formatTime(duration)}</span>
                       </div>
                     </div>
 
                     <div className="flex justify-between gap-3 mt-auto shrink-0">
-                      <button type="button" className="guided-prayer-nav-btn flex-1" onClick={goPrev}>
+                      <button
+                        type="button"
+                        className="guided-prayer-nav-btn flex-1"
+                        onClick={goPrev}
+                      >
                         {t('prayer.guided.prev')}
                       </button>
-                      <button type="button" className="guided-prayer-nav-btn flex-1" onClick={goNext}>
+                      <button
+                        type="button"
+                        className="guided-prayer-nav-btn flex-1"
+                        onClick={goNext}
+                      >
                         {t('prayer.guided.next')}
                       </button>
                     </div>
