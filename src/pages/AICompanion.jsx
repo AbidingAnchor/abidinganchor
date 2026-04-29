@@ -86,6 +86,7 @@ export default function AICompanion() {
         },
         body: JSON.stringify({
           messages: [...conversationHistory, { role: 'user', content: text }],
+          displayName: profile?.display_name || profile?.username || 'friend',
         }),
       })
 
@@ -98,6 +99,35 @@ export default function AICompanion() {
       const aiText = typeof data?.reply === 'string' ? data.reply.trim() : ''
       const safeText = aiText || "I couldn't generate a response right now. Please try again."
       setMessages((prev) => [...prev, { id: `${Date.now()}-assistant`, role: 'assistant', content: safeText }])
+      if (user?.id && data?.conversationSummary) {
+        const payload = {
+          user_id: user.id,
+          session_id: sessionId,
+          summary: data.conversationSummary.summary,
+          last_topic: data.conversationSummary.last_topic,
+          emotional_tone: data.conversationSummary.emotional_tone,
+          follow_up_sent: false,
+          follow_up_scheduled_at: new Date(Date.now() + 20 * 60 * 60 * 1000).toISOString(),
+          updated_at: new Date().toISOString(),
+        }
+        try {
+          await supabase
+            .from('ai_conversations')
+            .upsert(payload, { onConflict: 'user_id,session_id' })
+        } catch {
+          await supabase
+            .from('ai_conversations')
+            .insert({
+              user_id: payload.user_id,
+              summary: payload.summary,
+              last_topic: payload.last_topic,
+              emotional_tone: payload.emotional_tone,
+              follow_up_sent: payload.follow_up_sent,
+              follow_up_scheduled_at: payload.follow_up_scheduled_at,
+              updated_at: payload.updated_at,
+            })
+        }
+      }
       if (user?.id && aiText) {
         void supabase.from('ai_logs').insert({ user_id: user.id })
       }

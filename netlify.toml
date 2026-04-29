@@ -13,6 +13,9 @@
 [functions."ai-companion"]
   timeout = 26
 
+[functions."ai-followup"]
+  schedule = "@hourly"
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
