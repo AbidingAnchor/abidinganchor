@@ -8,17 +8,12 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      strategies: 'injectManifest',
-      srcDir: 'src',
-      filename: 'sw.js',
-      injectRegister: false,
-      manifest: false,
-      injectManifest: {
+      workbox: {
         maximumFileSizeToCacheInBytes: 50 * 1024 * 1024,
         globIgnores: ['**/crossReferences*.js'],
       },
       devOptions: {
-        enabled: true,
+        enabled: false,
       },
     }),
   ],

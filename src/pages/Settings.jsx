@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { useNameStyle, SHIMMER_KEYFRAMES } from '../hooks/useNameStyle'
 import { getAvatarBorderStyle, SUPPORTER_BORDER_KEYFRAMES } from '../utils/supporterBorder'
 import { supabase } from '../lib/supabase'
+import OfflineManager from '../components/OfflineManager'
 import { getAvatarUploadExtension } from '../utils/avatarUrl'
 import { LANGUAGE_STORAGE_KEY } from '../i18n.js'
 import {
@@ -41,6 +42,7 @@ export default function Settings() {
   const [dailyReminderEnabled, setDailyReminderEnabled] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [translationOpen, setTranslationOpen] = useState(false)
+  const [offlineBibleOpen, setOfflineBibleOpen] = useState(false)
   const [shareAppOpen, setShareAppOpen] = useState(false)
   const [rateUsOpen, setRateUsOpen] = useState(false)
   const [whatsNewOpen, setWhatsNewOpen] = useState(false)
@@ -141,13 +143,13 @@ export default function Settings() {
   }, [])
 
   useEffect(() => {
-    if (!feedbackModalOpen && !deleteAccountModalOpen) return
+    if (!feedbackModalOpen && !deleteAccountModalOpen && !offlineBibleOpen) return
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
       document.body.style.overflow = prev
     }
-  }, [feedbackModalOpen, deleteAccountModalOpen])
+  }, [feedbackModalOpen, deleteAccountModalOpen, offlineBibleOpen])
 
   useEffect(() => {
     if (!user?.id) return
@@ -896,6 +898,45 @@ export default function Settings() {
               </p>
               <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
                 {selectedTranslation}
+              </p>
+            </div>
+            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+          </button>
+          {/* Offline Bible */}
+          <button
+            type="button"
+            onClick={() => setOfflineBibleOpen(true)}
+            style={{
+              minHeight: '52px',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 16px',
+              width: '100%',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: 'rgba(212,168,67,0.1)',
+              color: '#D4A843',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              📥
+            </div>
+            <div style={{ marginLeft: '14px', flex: 1, textAlign: 'left' }}>
+              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+                Offline Bible
+              </p>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
+                Download Bible books to read without internet
               </p>
             </div>
             <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
@@ -1879,6 +1920,61 @@ export default function Settings() {
               <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                 Current: {selectedTranslation}
               </p>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Offline Bible Modal */}
+      {offlineBibleOpen ? (
+        <div
+          className="fixed inset-0 z-[10050] flex items-center justify-center p-4"
+          style={{ background: 'var(--glass-scrim)' }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="settings-offline-bible-title"
+        >
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default border-0"
+            style={{ background: 'transparent' }}
+            aria-label={t('common.close')}
+            onClick={() => setOfflineBibleOpen(false)}
+          />
+          <div
+            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
+            style={{
+              background: 'var(--modal-bg)',
+              border: '1px solid var(--glass-border)',
+              boxShadow: 'var(--glass-shadow)',
+              maxHeight: '85dvh',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '10px',
+              paddingTop: '8px',
+              paddingLeft: '12px',
+              paddingRight: '12px',
+            }}>
+              <button
+                type="button"
+                onClick={() => setOfflineBibleOpen(false)}
+                style={settingsBackButtonStyle}
+              >
+                ←
+              </button>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <span id="settings-offline-bible-title" style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>
+                  Offline Bible
+                </span>
+              </div>
+              <div style={{ width: '40px' }} />
+            </div>
+            <div style={{ maxHeight: 'calc(85dvh - 56px)', overflowY: 'auto' }}>
+              <OfflineManager />
             </div>
           </div>
         </div>

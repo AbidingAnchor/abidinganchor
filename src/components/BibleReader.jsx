@@ -6,6 +6,11 @@ import { BOOK_CDN_TO_OSIS } from '../utils/bookOsisMap'
 import { fetchApiBibleChapterVerses, resolveBibleIdForLanguage } from '../services/apiBible'
 import { fetchGetBibleChapter, resolveGetBibleTranslationId } from '../services/getBibleApi'
 import { POPULAR_BIBLES, getSavedBibleId, saveBibleId } from '../services/bibleApi'
+import {
+  isChapterDownloaded,
+  loadChapter as loadOfflineChapter,
+  saveChapter as saveOfflineChapter,
+} from '../services/offlineStorage'
 import BibleTranslationSelector from './BibleTranslationSelector'
 import { useAuth } from '../context/AuthContext'
 import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
@@ -226,6 +231,7 @@ export default function BibleReader({ open, onModeChange }) {
   const bibleIdRef = useRef(bibleId)
   const [fontSize, setFontSize] = useState(BIBLE_FONT_DEFAULT)
   const [showReadingControls, setShowReadingControls] = useState(false)
+  const [isCurrentChapterOffline, setIsCurrentChapterOffline] = useState(false)
   const [showHindiBiblePicker, setShowHindiBiblePicker] = useState(false)
   const [cachedHindiCatalogId, setCachedHindiCatalogId] = useState(null)
   const [hindiSavedBibleId, setHindiSavedBibleId] = useState(null)
@@ -241,12 +247,32 @@ export default function BibleReader({ open, onModeChange }) {
   const getBibleSlug = resolveGetBibleTranslationId(uiLang, activeTranslationId)
   const showEnglishBibleVersions = uiLang === 'en'
   const showHindiApiBiblePicker = uiLang === 'hi' && HAS_API_BIBLE
+  const getStorageTranslationKey = useCallback(
+    (overrideBibleId = null) => overrideBibleId || bibleIdRef.current || getBibleSlug || activeTranslationId || uiLang,
+    [getBibleSlug, activeTranslationId, uiLang],
+  )
 
   const loadChapter = useCallback(async (overrideBibleId, currentBook, currentChapter) => {
     let cancelled = false
     setLoading(true)
 
     const idToUse = overrideBibleId || bibleIdRef.current
+    const storageTranslation = getStorageTranslationKey(overrideBibleId)
+
+    try {
+      const downloaded = await isChapterDownloaded(storageTranslation, currentBook.bookNumber, currentChapter)
+      if (downloaded) {
+        const offlineVerses = await loadOfflineChapter(storageTranslation, currentBook.bookNumber, currentChapter)
+        if (!cancelled && Array.isArray(offlineVerses)) {
+          setVerses(offlineVerses)
+          setIsCurrentChapterOffline(true)
+          setLoading(false)
+          return
+        }
+      }
+    } catch {
+      // Ignore offline read errors and continue with normal network fetch flow.
+    }
 
     const loadFromBibleApiCom = () => {
       const url = `${BIBLE_API_COM}/${encodeURIComponent(currentBook.cdnName)}+${currentChapter}?translation=${encodeURIComponent(activeTranslationId)}`
@@ -279,6 +305,8 @@ export default function BibleReader({ open, onModeChange }) {
             text: prepareBibleReaderVerseText((v.text || '').replace(/[ⓐ-ⓩ]/g, '').replace(/<[^>]*>/g, '').replace(/\s{2,}/g, ' ').trim()),
           }))
           setVerses(normalized)
+          await saveOfflineChapter(storageTranslation, currentBook.bookNumber, currentChapter, normalized)
+          setIsCurrentChapterOffline(true)
           setLoading(false)
         }
         return
@@ -295,8 +323,12 @@ export default function BibleReader({ open, onModeChange }) {
               })),
             )
             setVerses(normalized)
+            await saveOfflineChapter(storageTranslation, currentBook.bookNumber, currentChapter, normalized)
+            setIsCurrentChapterOffline(true)
           } else {
             setVerses([])
+            await saveOfflineChapter(storageTranslation, currentBook.bookNumber, currentChapter, [])
+            setIsCurrentChapterOffline(false)
           }
           setLoading(false)
           return
@@ -331,6 +363,8 @@ export default function BibleReader({ open, onModeChange }) {
               })),
             )
             setVerses(normalized)
+            await saveOfflineChapter(storageTranslation, currentBook.bookNumber, currentChapter, normalized)
+            setIsCurrentChapterOffline(true)
             setLoading(false)
             return
           }
@@ -339,12 +373,15 @@ export default function BibleReader({ open, onModeChange }) {
       const rows = await loadFromBibleApiCom()
       if (!cancelled) {
         setVerses(rows || [])
+        await saveOfflineChapter(storageTranslation, currentBook.bookNumber, currentChapter, rows || [])
+        setIsCurrentChapterOffline(Boolean(rows?.length))
         setLoading(false)
       }
     } catch (err) {
       if (import.meta.env.DEV) console.error('Error loading verses:', err)
       if (!cancelled) {
         setVerses([])
+        setIsCurrentChapterOffline(false)
         setLoading(false)
       }
     }
@@ -360,7 +397,28 @@ export default function BibleReader({ open, onModeChange }) {
     setVerses,
     setCachedHindiCatalogId,
     bibleIdRef,
+    getStorageTranslationKey,
   ])
+
+  useEffect(() => {
+    if (!open || !selectedBook || !chapter) {
+      setIsCurrentChapterOffline(false)
+      return
+    }
+    let cancelled = false
+    ;(async () => {
+      try {
+        const translationKey = getStorageTranslationKey()
+        const downloaded = await isChapterDownloaded(translationKey, selectedBook.bookNumber, chapter)
+        if (!cancelled) setIsCurrentChapterOffline(downloaded)
+      } catch {
+        if (!cancelled) setIsCurrentChapterOffline(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [open, selectedBook, chapter, getStorageTranslationKey])
 
   useEffect(() => {
     setActiveTranslationId(getStoredTranslationId(user?.id))
@@ -1116,6 +1174,26 @@ export default function BibleReader({ open, onModeChange }) {
                 {getBibleSlug ? String(getBibleSlug).toUpperCase() : ''}
               </span>
             )}
+
+            <span
+              title={isCurrentChapterOffline ? 'Available offline' : 'Not saved offline'}
+              aria-label={isCurrentChapterOffline ? 'Chapter available offline' : 'Chapter not available offline'}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '40px',
+                height: '40px',
+                borderRadius: '50px',
+                background: isCurrentChapterOffline ? 'rgba(212, 168, 67, 0.18)' : 'rgba(255, 255, 255, 0.08)',
+                border: `1px solid ${isCurrentChapterOffline ? 'rgba(212, 168, 67, 0.5)' : 'rgba(255, 255, 255, 0.2)'}`,
+                color: isCurrentChapterOffline ? '#D4A843' : 'rgba(255, 255, 255, 0.7)',
+                fontSize: '16px',
+                lineHeight: 1,
+              }}
+            >
+              {isCurrentChapterOffline ? '📥' : '🌐'}
+            </span>
             
             {onModeChange && (
               <button
