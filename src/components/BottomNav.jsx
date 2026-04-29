@@ -66,16 +66,19 @@ export default function BottomNav() {
           right: 0,
           zIndex: 9999,
           background: isDaytime ? '#F5EFE0' : '#0A1628',
+          backgroundColor: isDaytime ? '#F5EFE0' : '#0A1628',
           backdropFilter: 'blur(20px)',
           borderTop: '1px solid rgba(212,168,67,0.15)',
-          minHeight: '72px',
-          height: 'calc(72px + env(safe-area-inset-bottom, 0px))',
+          minHeight: '64px',
+          height: '64px',
           display: 'flex',
-          justifyContent: 'space-around',
+          justifyContent: 'space-between',
           alignItems: 'center',
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          paddingBottom: 'env(safe-area-inset-bottom)',
           paddingLeft: 'env(safe-area-inset-left, 0px)',
           paddingRight: 'env(safe-area-inset-right, 0px)',
+          margin: 0,
+          boxSizing: 'content-box',
         }}
       >
         {showWorshipPlaying ? (
@@ -108,10 +111,10 @@ export default function BottomNav() {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '4px',
+              gap: '3px',
               height: '100%',
-              paddingTop: '8px',
-              paddingBottom: '8px',
+              paddingTop: '6px',
+              paddingBottom: '6px',
               background: 'none',
               border: 'none',
               cursor: 'pointer',
@@ -129,13 +132,14 @@ export default function BottomNav() {
                 }}
               />
             )}
-            <span style={{ fontSize: 22 }}>{tab.emoji}</span>
+            <span style={{ fontSize: 20, lineHeight: 1 }}>{tab.emoji}</span>
             <span
               style={{
-                fontSize: '10px',
+                fontSize: '9px',
                 fontWeight: isActive(tab.path) ? 700 : 500,
                 color: isActive(tab.path) ? (isDaytime ? '#8B6200' : '#D4A843') : (isDaytime ? 'rgba(15,31,61,0.55)' : 'rgba(255,255,255,0.35)'),
                 transition: 'color 0.2s ease, font-weight 0.2s ease',
+                whiteSpace: 'nowrap',
               }}
             >
               {t(tab.labelKey)}
