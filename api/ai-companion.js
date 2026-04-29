@@ -1,10 +1,10 @@
-exports.handler = async (event) => {
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method not allowed' }
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' })
   }
 
   try {
-    const { messages, displayName = 'friend' } = JSON.parse(event.body)
+    const { messages, displayName = 'friend' } = req.body
 
     const systemPrompt = `You are a compassionate, Spirit-filled Bible companion inside the AbidingAnchor app. You are warm, empathetic, and deeply caring — not robotic or preachy. You speak like a trusted, wise friend who loves God and loves people.
 
@@ -74,19 +74,11 @@ Always respond with grace, wisdom, and genuine love. You are not just answering 
       .replace(/\n?\[CONVERSATION_SUMMARY\][\s\S]*?\[\/CONVERSATION_SUMMARY\]\n?/g, '')
       .trim()
 
-    return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        reply,
-        conversationSummary
-      })
-    }
+    return res.status(200).json({
+      reply,
+      conversationSummary
+    })
   } catch (error) {
-    return {
-      statusCode: 500,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: error.message })
-    }
+    return res.status(500).json({ error: error.message })
   }
 }
