@@ -26,7 +26,7 @@ export default function BottomNav() {
       { labelKey: 'nav.community', path: '/testimony-wall', icon: '✎' },
       { labelKey: 'nav.create', path: '/share-card', icon: '♦' },
       { label: 'Hall of Faith 👑', path: '/hall-of-faith', icon: '👑' },
-      { label: 'Sermons 🎙️', path: '/sermons', icon: '🎙️' },
+      // { label: 'Sermons 🎙️', path: '/sermons', icon: '🎙️' },
       { labelKey: 'nav.settings', path: '/settings', icon: '⚙' },
     ],
     [],

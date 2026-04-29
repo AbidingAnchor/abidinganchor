@@ -341,7 +341,7 @@ function AppShell() {
               <Route path="/about" element={<About />} />
               <Route path="/supporter-upgrade" element={<ProtectedRoute><SupporterUpgrade /></ProtectedRoute>} />
               <Route path="/hall-of-faith" element={<ProtectedRoute><HallOfFaith /></ProtectedRoute>} />
-              <Route path="/sermons" element={<ProtectedRoute guestOk><SermonLibrary /></ProtectedRoute>} />
+              {/* <Route path="/sermons" element={<ProtectedRoute guestOk><SermonLibrary /></ProtectedRoute>} /> */}
               <Route path="*" element={<CatchAllRedirect />} />
             </Routes>
             {showFooter ? <Footer /> : null}

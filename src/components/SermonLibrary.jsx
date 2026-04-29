@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   searchSermons,
   getSermonsByTopic,
   getSermonsByBook,
   getFeaturedSermons,
-} from '../services/youtubeSermonApi'
+} from '../services/sermonAudioApi'
 
 export default function SermonLibrary() {
   const [activeTab, setActiveTab] = useState('featured')
@@ -13,9 +13,14 @@ export default function SermonLibrary() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [selectedSermon, setSelectedSermon] = useState(null)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
   const [topicInput, setTopicInput] = useState('')
   const [bookInput, setBookInput] = useState('')
   const [page, setPage] = useState(1)
+
+  const audioRef = useRef(null)
 
   const loadSermons = useCallback(async () => {
     setLoading(true)
@@ -56,6 +61,26 @@ export default function SermonLibrary() {
     loadSermons()
   }, [activeTab, page, loadSermons])
 
+  useEffect(() => {
+    const audio = audioRef.current
+    if (audio) {
+      const handleTimeUpdate = () => setCurrentTime(audio.currentTime)
+      const handleLoadedMetadata = () => setDuration(audio.duration)
+      const handleEnded = () => {
+        setIsPlaying(false)
+        setCurrentTime(0)
+      }
+      audio.addEventListener('timeupdate', handleTimeUpdate)
+      audio.addEventListener('loadedmetadata', handleLoadedMetadata)
+      audio.addEventListener('ended', handleEnded)
+      return () => {
+        audio.removeEventListener('timeupdate', handleTimeUpdate)
+        audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
+        audio.removeEventListener('ended', handleEnded)
+      }
+    }
+  }, [selectedSermon])
+
 
   const handleSearch = async (e) => {
     e.preventDefault()
@@ -76,6 +101,39 @@ export default function SermonLibrary() {
 
   const handleSermonClick = (sermon) => {
     setSelectedSermon(sermon)
+    setIsPlaying(false)
+    setCurrentTime(0)
+  }
+
+  const togglePlayPause = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause()
+      } else {
+        audioRef.current.play()
+      }
+      setIsPlaying(!isPlaying)
+    }
+  }
+
+  const handleSeek = (e) => {
+    const time = parseFloat(e.target.value)
+    if (audioRef.current) {
+      audioRef.current.currentTime = time
+      setCurrentTime(time)
+    }
+  }
+
+  const formatTime = (seconds) => {
+    if (!seconds || isNaN(seconds)) return '0:00'
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+
+  const formatDuration = (durationStr) => {
+    if (!durationStr) return 'Unknown'
+    return durationStr
   }
 
   const formatDate = (dateString) => {
@@ -95,7 +153,7 @@ export default function SermonLibrary() {
         `}
       </style>
 
-      <h1 className="mb-4 text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Sermon Videos</h1>
+      <h1 className="mb-4 text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Sermon Library</h1>
 
       {/* Search Bar */}
       <form onSubmit={handleSearch} className="mb-4">
@@ -256,10 +314,12 @@ export default function SermonLibrary() {
                 )}
                 <div className="flex-1">
                   <h3 className="mb-2 text-lg font-semibold line-clamp-2" style={{ color: 'var(--text-primary)' }}>{sermon.title}</h3>
-                  <p className="mb-1 text-sm" style={{ color: 'var(--accent-gold)' }}>{sermon.channel}</p>
-                  {sermon.publishedAt && (
-                    <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{formatDate(sermon.publishedAt)}</p>
-                  )}
+                  <p className="mb-1 text-sm" style={{ color: 'var(--accent-gold)' }}>{sermon.speaker}</p>
+                  <p className="mb-1 text-xs" style={{ color: 'var(--text-secondary)' }}>{sermon.church}</p>
+                  <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                    {sermon.date && <span>{formatDate(sermon.date)}</span>}
+                    {sermon.duration && <span>• {formatDuration(sermon.duration)}</span>}
+                  </div>
                 </div>
               </div>
             </article>
@@ -273,32 +333,85 @@ export default function SermonLibrary() {
         </div>
       )}
 
-      {/* Video Player Modal */}
+      {/* Audio Player Modal */}
       {selectedSermon && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.9)' }}>
           <div className="relative w-full max-w-4xl">
             <button
-              onClick={() => setSelectedSermon(null)}
+              onClick={() => {
+                setSelectedSermon(null)
+                setIsPlaying(false)
+                if (audioRef.current) {
+                  audioRef.current.pause()
+                }
+              }}
               className="absolute -top-12 right-0 text-2xl"
               style={{ color: 'var(--text-primary)' }}
             >
               ✕
             </button>
-            <div className="aspect-video w-full overflow-hidden rounded-xl">
-              <iframe
-                src={`https://www.youtube.com/embed/${selectedSermon.id}?autoplay=1`}
-                title={selectedSermon.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="h-full w-full"
+            <div className="rounded-xl p-6" style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
+              <audio
+                ref={audioRef}
+                src={selectedSermon.audioUrl}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
               />
-            </div>
-            <div className="mt-4">
-              <h3 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>{selectedSermon.title}</h3>
-              <p style={{ color: 'var(--accent-gold)' }}>{selectedSermon.channel}</p>
-              {selectedSermon.description && (
-                <p className="mt-2 text-sm line-clamp-3" style={{ color: 'var(--text-secondary)' }}>{selectedSermon.description}</p>
-              )}
+              <div className="mb-4">
+                <h3 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>{selectedSermon.title}</h3>
+                <p style={{ color: 'var(--accent-gold)' }}>{selectedSermon.speaker}</p>
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{selectedSermon.church}</p>
+                <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                  {selectedSermon.date && <span>{formatDate(selectedSermon.date)}</span>}
+                  {selectedSermon.duration && <span>• {formatDuration(selectedSermon.duration)}</span>}
+                </div>
+              </div>
+              <div className="mb-4">
+                <input
+                  type="range"
+                  min="0"
+                  max={duration || 0}
+                  value={currentTime}
+                  onChange={handleSeek}
+                  className="w-full accent-[#D4A843]"
+                />
+                <div className="mt-1 flex justify-between text-xs" style={{ color: 'var(--text-secondary)' }}>
+                  <span>{formatTime(currentTime)}</span>
+                  <span>{formatTime(duration)}</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-center gap-4">
+                <button
+                  onClick={() => {
+                    if (audioRef.current) {
+                      audioRef.current.currentTime = Math.max(0, currentTime - 30)
+                    }
+                  }}
+                  className="rounded-full p-2" style={{ color: 'var(--text-secondary)' }}
+                >
+                  ⏪
+                </button>
+                <button
+                  onClick={togglePlayPause}
+                  className="flex h-12 w-12 items-center justify-center rounded-full text-xl font-bold"
+                  style={{
+                    background: 'var(--accent-gold)',
+                    color: 'var(--text-primary)',
+                  }}
+                >
+                  {isPlaying ? '⏸' : '▶'}
+                </button>
+                <button
+                  onClick={() => {
+                    if (audioRef.current) {
+                      audioRef.current.currentTime = Math.min(duration, currentTime + 30)
+                    }
+                  }}
+                  className="rounded-full p-2" style={{ color: 'var(--text-secondary)' }}
+                >
+                  ⏩
+                </button>
+              </div>
             </div>
           </div>
         </div>
