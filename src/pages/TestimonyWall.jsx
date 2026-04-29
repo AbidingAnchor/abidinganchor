@@ -48,6 +48,10 @@ export default function TestimonyWall() {
   const [error, setError] = useState('')
   const [reactionBusy, setReactionBusy] = useState(null)
   const [menuOpen, setMenuOpen] = useState(null)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(null)
+  const [editingId, setEditingId] = useState(null)
+  const [editContent, setEditContent] = useState('')
+  const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState(null)
   const [activeCategory, setActiveCategory] = useState('All')
 
@@ -173,7 +177,6 @@ export default function TestimonyWall() {
 
   const handleDeleteTestimony = async (testimonyId) => {
     if (!user?.id) return
-    if (!confirm(t('testimony.deleteConfirm'))) return
     
     try {
       // Delete reactions first
@@ -190,9 +193,10 @@ export default function TestimonyWall() {
       
       if (deleteError) throw deleteError
       
-      // Remove from UI
+      // Remove from UI (optimistic)
       setRows(prev => prev.filter(t => t.id !== testimonyId))
       setMenuOpen(null)
+      setDeleteConfirmOpen(null)
       
       // Show toast
       setToast(t('testimony.deleteSuccess'))
@@ -200,6 +204,41 @@ export default function TestimonyWall() {
     } catch (err) {
       console.error('Error deleting testimony:', err)
       setError(t('testimony.deleteError'))
+    }
+  }
+
+  const handleEditSave = async (testimonyId) => {
+    if (!user?.id) return
+    const trimmed = editContent.trim()
+    if (!trimmed) return
+    
+    setSaving(true)
+    try {
+      const { error: updateError } = await supabase
+        .from('testimonies')
+        .update({ content: trimmed.slice(0, CONTENT_MAX) })
+        .eq('id', testimonyId)
+      
+      if (updateError) throw updateError
+      
+      // Update local state (optimistic)
+      setRows(prev => prev.map(t => 
+        t.id === testimonyId ? { ...t, content: trimmed.slice(0, CONTENT_MAX) } : t
+      ))
+      
+      // Reset edit state
+      setEditingId(null)
+      setEditContent('')
+      setMenuOpen(null)
+      
+      // Show toast
+      setToast(t('testimony.editSuccess'))
+      setTimeout(() => setToast(null), 3000)
+    } catch (err) {
+      console.error('Error editing testimony:', err)
+      setError(t('testimony.editError'))
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -251,6 +290,12 @@ export default function TestimonyWall() {
   return (
     <div
       className="content-scroll content-scroll--nav-clear testimony-wall-shell"
+      onClick={() => {
+        if (menuOpen) {
+          setMenuOpen(null)
+          setDeleteConfirmOpen(null)
+        }
+      }}
       style={{
         padding: '16px',
         paddingBottom: '80px',
@@ -487,17 +532,17 @@ export default function TestimonyWall() {
         ) : (
           <div className="testimony-list-stack" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <style>{SUPPORTER_BORDER_KEYFRAMES}{SHIMMER_KEYFRAMES}</style>
-            {filteredRows.map((t) => {
-              const isAnon = Boolean(t.is_anonymous)
-              const name = isAnon ? t('testimony.anonymousBeliever') : displayAuthorName(t.author_profile, t)
-              const avatarUrl = isAnon ? null : t.author_profile?.avatar_url
-              const authorTier = t.author_profile?.supporter_tier
-              const authorBorder = t.author_profile?.profile_border
-              const authorColor = t.author_profile?.name_color
+            {filteredRows.map((testimony) => {
+              const isAnon = Boolean(testimony.is_anonymous)
+              const name = isAnon ? t('testimony.anonymousBeliever') : displayAuthorName(testimony.author_profile, t)
+              const avatarUrl = isAnon ? null : testimony.author_profile?.avatar_url
+              const authorTier = testimony.author_profile?.supporter_tier
+              const authorBorder = testimony.author_profile?.profile_border
+              const authorColor = testimony.author_profile?.name_color
               const avatarBorderStyle = isAnon ? {} : getAvatarBorderStyle(authorTier, authorBorder)
-              const counts = countsByTestimony[t.id] || { amen: 0, love: 0, fire: 0, cross: 0 }
-              const my = myReactionByTestimony[t.id]
-              const isOwnPost = t.user_id === user?.id
+              const counts = countsByTestimony[testimony.id] || { amen: 0, love: 0, fire: 0, cross: 0 }
+              const my = myReactionByTestimony[testimony.id]
+              const isOwnPost = testimony.user_id === user?.id
 
               const getNameStyle = (tier) => {
                 const colorToken = String(authorColor || '').toLowerCase()
@@ -529,57 +574,134 @@ export default function TestimonyWall() {
                 return { color: 'var(--text-primary)' }
               }
               return (
-                <article key={t.id} className="app-card" style={{ ...cardStyle, padding: '16px', position: 'relative' }}>
+                <article key={testimony.id} className="app-card" style={{ ...cardStyle, padding: '16px', position: 'relative' }}>
                   {isOwnPost && (
                     <button
                       type="button"
-                      onClick={() => setMenuOpen(menuOpen === t.id ? null : t.id)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setMenuOpen(menuOpen === testimony.id ? null : testimony.id)
+                        setDeleteConfirmOpen(null)
+                      }}
                       style={{
                         position: 'absolute',
                         top: '12px',
                         right: '12px',
                         background: 'transparent',
-                        color: 'rgba(255,255,255,0.4)',
-                        fontSize: '20px',
+                        color: 'rgba(26,26,26,0.7)',
+                        fontSize: '18px',
                         cursor: 'pointer',
                         padding: '4px 8px',
                         borderRadius: '8px',
                         border: 'none',
+                        transition: 'color 0.15s ease',
                       }}
+                      onMouseEnter={(e) => e.currentTarget.style.color = 'rgba(26,26,26,0.9)'}
+                      onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(26,26,26,0.7)'}
                     >
-                      ⋯
+                      ⋮
                     </button>
                   )}
-                  {menuOpen === t.id && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '36px',
-                      right: '12px',
-                      background: 'rgba(10,20,50,0.98)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: '12px',
-                      padding: '8px 0',
-                      zIndex: 100,
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-                    }}>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteTestimony(t.id)}
-                        style={{
-                          padding: '10px 16px',
-                          color: '#ff6b6b',
-                          fontSize: '14px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          background: 'transparent',
-                          border: 'none',
-                          width: '100%',
-                        }}
-                      >
-                        🗑️ {t('testimony.deleteAction')}
-                      </button>
+                  {menuOpen === testimony.id && (
+                    <div
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        position: 'absolute',
+                        top: '36px',
+                        right: '12px',
+                        background: 'rgba(10,20,50,0.98)',
+                        border: '1px solid rgba(212,168,67,0.2)',
+                        borderRadius: '12px',
+                        padding: deleteConfirmOpen === testimony.id ? '8px' : '8px 0',
+                        zIndex: 100,
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                        minWidth: '160px',
+                      }}
+                    >
+                      {deleteConfirmOpen === testimony.id ? (
+                        <div style={{ padding: '8px 12px' }}>
+                          <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#ffffff', opacity: 1, WebkitTextFillColor: '#ffffff' }}>
+                            {t('testimony.deleteConfirm')}
+                          </p>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteTestimony(testimony.id)}
+                              style={{
+                                flex: 1,
+                                padding: '6px 12px',
+                                background: 'rgba(255,107,107,0.2)',
+                                color: '#ff6b6b',
+                                border: '1px solid rgba(255,107,107,0.3)',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              Delete
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDeleteConfirmOpen(null)}
+                              style={{
+                                flex: 1,
+                                padding: '6px 12px',
+                                background: 'rgba(255,255,255,0.1)',
+                                color: 'rgba(255,255,255,0.8)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingId(testimony.id)
+                              setEditContent(testimony.content)
+                              setMenuOpen(null)
+                            }}
+                            style={{
+                              padding: '10px 16px',
+                              color: 'rgba(255,255,255,0.9)',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              background: 'transparent',
+                              border: 'none',
+                              width: '100%',
+                            }}
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDeleteConfirmOpen(testimony.id)}
+                            style={{
+                              padding: '10px 16px',
+                              color: '#ff6b6b',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              background: 'transparent',
+                              border: 'none',
+                              width: '100%',
+                            }}
+                          >
+                            🗑️ {t('testimony.deleteAction')}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                   <div className="flex items-start gap-3" style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
@@ -621,12 +743,12 @@ export default function TestimonyWall() {
                       ) : (
                         <button
                           type="button"
-                          onClick={() => t.user_id && navigate(`/profile/${t.user_id}`)}
+                          onClick={() => testimony.user_id && navigate(`/profile/${testimony.user_id}`)}
                           style={{
                             background: 'none',
                             border: 'none',
                             padding: 0,
-                            cursor: t.user_id ? 'pointer' : 'default',
+                            cursor: testimony.user_id ? 'pointer' : 'default',
                             fontWeight: 700,
                             fontSize: '15px',
                             ...getNameStyle(authorTier),
@@ -638,8 +760,74 @@ export default function TestimonyWall() {
                           {authorTier === 'lifetime' && <span style={{ marginLeft: '4px', fontSize: '12px' }}>👑</span>}
                         </button>
                       )}
-                      <p style={{ margin: '6px 0 0', fontSize: '14px', lineHeight: 1.55, color: 'var(--text-primary)' }}>{t.content}</p>
-                      <p style={{ margin: '8px 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>{timeAgo(t.created_at)}</p>
+                      {editingId === testimony.id ? (
+                        <div style={{ marginTop: '6px' }}>
+                          <textarea
+                            value={editContent}
+                            onChange={(e) => setEditContent(e.target.value.slice(0, CONTENT_MAX))}
+                            rows={4}
+                            style={{
+                              width: '100%',
+                              borderRadius: '8px',
+                              padding: '10px',
+                              resize: 'vertical',
+                              color: '#1A1A1A',
+                              fontSize: '14px',
+                              background: '#FFFFFF',
+                              border: '1px solid rgba(212,168,67,0.3)',
+                              outline: 'none',
+                              boxSizing: 'border-box',
+                              fontFamily: 'inherit',
+                            }}
+                          />
+                          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleEditSave(testimony.id)}
+                              disabled={saving || !editContent.trim()}
+                              style={{
+                                flex: 1,
+                                padding: '6px 12px',
+                                background: '#D4A843',
+                                color: '#1A1A1A',
+                                border: 'none',
+                                borderRadius: '6px',
+                                fontSize: '13px',
+                                fontWeight: 600,
+                                cursor: saving || !editContent.trim() ? 'not-allowed' : 'pointer',
+                                opacity: saving || !editContent.trim() ? 0.6 : 1,
+                              }}
+                            >
+                              {saving ? t('testimony.saving') : t('testimony.save')}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingId(null)
+                                setEditContent('')
+                              }}
+                              style={{
+                                flex: 1,
+                                padding: '6px 12px',
+                                background: 'rgba(255,255,255,0.1)',
+                                color: 'rgba(255,255,255,0.7)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '6px',
+                                fontSize: '13px',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              {t('testimony.cancel')}
+                            </button>
+                          </div>
+                          <span style={{ fontSize: '11px', color: 'rgba(26,26,26,0.5)' }}>
+                            {editContent.length}/{CONTENT_MAX}
+                          </span>
+                        </div>
+                      ) : (
+                        <p style={{ margin: '6px 0 0', fontSize: '14px', lineHeight: 1.55, color: 'var(--text-primary)' }}>{testimony.content}</p>
+                      )}
+                      <p style={{ margin: '8px 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>{timeAgo(testimony.created_at)}</p>
                       <div
                         style={{
                           display: 'flex',
@@ -656,8 +844,8 @@ export default function TestimonyWall() {
                             <button
                               key={r.key}
                               type="button"
-                              disabled={!user?.id || reactionBusy === t.id}
-                              onClick={() => toggleReaction(t.id, r.key)}
+                              disabled={!user?.id || reactionBusy === testimony.id}
+                              onClick={() => toggleReaction(testimony.id, r.key)}
                               title={r.label}
                               style={{
                                 display: 'flex',
