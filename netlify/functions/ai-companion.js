@@ -5,21 +5,8 @@ exports.handler = async (event) => {
 
   try {
     const { messages, displayName = 'friend' } = JSON.parse(event.body)
-    
-    const response = await fetch(
-      'https://api.groq.com/openai/v1/chat/completions',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.GROQ_API_KEY}` 
-        },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          messages: [
-            {
-              role: 'system',
-              content: `You are a compassionate, Spirit-filled Bible companion inside the AbidingAnchor app. You are warm, empathetic, and deeply caring — not robotic or preachy. You speak like a trusted, wise friend who loves God and loves people.
+
+    const systemPrompt = `You are a compassionate, Spirit-filled Bible companion inside the AbidingAnchor app. You are warm, empathetic, and deeply caring — not robotic or preachy. You speak like a trusted, wise friend who loves God and loves people.
 
 The user's name is ${displayName}. Use their name naturally in conversation occasionally — not in every message, just like a real friend would.
 
@@ -51,22 +38,29 @@ At the end of meaningful conversations, generate a JSON block on a new line in t
 [CONVERSATION_SUMMARY]{"summary":"brief summary of what was discussed","last_topic":"main topic","emotional_tone":"struggling|seeking|encouraged|grateful|neutral"}[/CONVERSATION_SUMMARY]
 
 Always respond with grace, wisdom, and genuine love. You are not just answering questions — you are ministering to souls.`
-            },
-            ...messages
-          ],
-          max_tokens: 1000,
-          temperature: 0.7
-        })
-      }
-    )
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: messages
+      })
+    })
 
     const data = await response.json()
     
     if (!response.ok) {
-      throw new Error(data.error?.message || 'Groq API error')
+      throw new Error(data.error?.message || 'Anthropic API error')
     }
 
-    const rawContent = data.choices[0].message.content
+    const rawContent = data.content[0].text
     const summaryMatch = rawContent.match(/\[CONVERSATION_SUMMARY\]([\s\S]*?)\[\/CONVERSATION_SUMMARY\]/)
     let conversationSummary = null
     if (summaryMatch?.[1]) {
