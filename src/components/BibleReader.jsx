@@ -10,13 +10,14 @@ import {
   isChapterDownloaded,
   loadChapter as loadOfflineChapter,
   saveChapter as saveOfflineChapter,
+  deleteBook,
 } from '../services/offlineStorage'
 import BibleTranslationSelector from './BibleTranslationSelector'
 import { useAuth } from '../context/AuthContext'
 import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
 import { userStorageKey } from '../utils/userStorage'
 import { supabase } from '../lib/supabase'
-import { BIBLE_LANG_MAP, fetchBollsGetTextForUiLang } from '../utils/bibleTranslation'
+import { BIBLE_LANG_MAP, fetchBollsGetTextForUiLang, fetchBollsGetTextForTranslationId } from '../utils/bibleTranslation'
 
 /** Free JSON API — see https://bible-api.com/ and GET /data for supported translations (public domain). */
 const BIBLE_API_COM = 'https://bible-api.com'
@@ -49,12 +50,14 @@ const HAS_API_BIBLE = Boolean(import.meta.env.VITE_API_BIBLE_KEY)
 
 /** bible-api.com `translation` ids — labels match the actual public-domain texts. */
 const BIBLE_READER_TRANSLATIONS = [
-  { id: 'kjv', labelKey: 'bible.kjv', subtitleKey: 'bible.subtitleKjv' },
-  { id: 'web', labelKey: 'bible.web', subtitleKey: 'bible.subtitleWeb' },
-  { id: 'asv', labelKey: 'bible.asv', subtitleKey: 'bible.subtitleAsv' },
-  { id: 'webbe', labelKey: 'bible.webbe', subtitleKey: 'bible.subtitleWebbe' },
-  { id: 'bbe', labelKey: 'bible.bbe', subtitleKey: 'bible.subtitleBbe' },
-  { id: 'darby', labelKey: 'bible.darby', subtitleKey: 'bible.subtitleDarby' },
+  { id: 'kjv', labelKey: 'bible.kjv', subtitleKey: 'bible.subtitleKjv', denomination: 'Protestant' },
+  { id: 'web', labelKey: 'bible.web', subtitleKey: 'bible.subtitleWeb', denomination: 'Protestant' },
+  { id: 'asv', labelKey: 'bible.asv', subtitleKey: 'bible.subtitleAsv', denomination: 'Protestant' },
+  { id: 'webbe', labelKey: 'bible.webbe', subtitleKey: 'bible.subtitleWebbe', denomination: 'Protestant' },
+  { id: 'bbe', labelKey: 'bible.bbe', subtitleKey: 'bible.subtitleBbe', denomination: 'Protestant' },
+  { id: 'darby', labelKey: 'bible.darby', subtitleKey: 'bible.subtitleDarby', denomination: 'Protestant' },
+  { id: 'dra', label: 'Douay-Rheims 1899 (DRA)', subtitle: 'Catholic translation with Deuterocanonical books', isCatholic: true, denomination: 'Catholic' },
+  { id: 'orthodox-coming-soon', label: 'Orthodox Bible', subtitle: 'Coming soon', isOrthodox: true, disabled: true, denomination: 'Orthodox' },
 ]
 
 function translationStorageKey(userId) {
@@ -129,6 +132,13 @@ const BOOKS = [
   {name:'Haggai',cdnName:'haggai',chapters:2},
   {name:'Zechariah',cdnName:'zechariah',chapters:14},
   {name:'Malachi',cdnName:'malachi',chapters:4},
+  {name:'Tobit',cdnName:'tobit',chapters:14,deuterocanonical:true},
+  {name:'Judith',cdnName:'judith',chapters:16,deuterocanonical:true},
+  {name:'Wisdom',cdnName:'wisdom',chapters:19,deuterocanonical:true},
+  {name:'Sirach',cdnName:'sirach',chapters:51,deuterocanonical:true},
+  {name:'Baruch',cdnName:'baruch',chapters:6,deuterocanonical:true},
+  {name:'1 Maccabees',cdnName:'1maccabees',chapters:16,deuterocanonical:true},
+  {name:'2 Maccabees',cdnName:'2maccabees',chapters:15,deuterocanonical:true},
   {name:'Matthew',cdnName:'matthew',chapters:28},
   {name:'Mark',cdnName:'mark',chapters:16},
   {name:'Luke',cdnName:'luke',chapters:24},
@@ -222,6 +232,7 @@ export default function BibleReader({ open, onModeChange }) {
   const [jumpHighlightTarget, setJumpHighlightTarget] = useState(null)
   const [showBookPicker, setShowBookPicker] = useState(false)
   const [testamentFilter, setTestamentFilter] = useState('old')
+  const [bibleCategory, setBibleCategory] = useState('protestant')
   const [showChapterPicker, setShowChapterPicker] = useState(false)
   const [showTranslationPicker, setShowTranslationPicker] = useState(false)
   const [translationDropdownRect, setTranslationDropdownRect] = useState(null)
@@ -254,11 +265,21 @@ export default function BibleReader({ open, onModeChange }) {
   )
 
   const loadChapter = useCallback(async (overrideBibleId, currentBook, currentChapter) => {
+    console.log('loadChapter called, translation:', activeTranslationId)
+    console.log('Loading chapter with translation:', activeTranslationId)
     let cancelled = false
     setLoading(true)
 
+    // Show static message for Orthodox placeholder
+    if (activeTranslationId === 'orthodox-coming-soon') {
+      setVerses([{ verse: 1, text: 'Orthodox Bible coming soon. We are working on adding full Orthodox Bible support.' }])
+      setLoading(false)
+      return
+    }
+
     const idToUse = overrideBibleId || bibleIdRef.current
     const storageTranslation = getStorageTranslationKey(overrideBibleId)
+    
     const offlineLookupKeys = Array.from(
       new Set(
         [storageTranslation, overrideBibleId, idToUse, getBibleSlug, bollsTranslationId, activeTranslationId, uiLang]
@@ -275,29 +296,39 @@ export default function BibleReader({ open, onModeChange }) {
     }
 
     try {
-      for (const key of offlineLookupKeys) {
-        const downloaded = await isChapterDownloaded(key, currentBook.bookNumber, currentChapter)
-        if (!downloaded) continue
-        const offlineVerses = await loadOfflineChapter(key, currentBook.bookNumber, currentChapter)
-        if (!cancelled && Array.isArray(offlineVerses)) {
-          setVerses(offlineVerses)
-          setIsCurrentChapterOffline(true)
-          setLoading(false)
-          return
+      // Only use offline cache if activeTranslationId is WEB (the downloaded translation)
+      if (activeTranslationId === 'WEB') {
+        console.log('Checking offline cache for keys:', offlineLookupKeys)
+        for (const key of offlineLookupKeys) {
+          const downloaded = await isChapterDownloaded(key, currentBook.bookNumber, currentChapter)
+          if (!downloaded) continue
+          const offlineVerses = await loadOfflineChapter(key, currentBook.bookNumber, currentChapter)
+          if (!cancelled && Array.isArray(offlineVerses)) {
+            console.log('Found offline cache, returning cached verses')
+            setVerses(offlineVerses)
+            setIsCurrentChapterOffline(true)
+            setLoading(false)
+            return
+          }
         }
+        console.log('No offline cache found, proceeding to API fetch')
+      } else {
+        console.log('Skipping offline cache for non-WEB translation:', activeTranslationId)
       }
     } catch {
       // Ignore offline read errors and continue with normal network fetch flow.
     }
 
     const loadFromBibleApiCom = () => {
-      const url = `${BIBLE_API_COM}/${encodeURIComponent(currentBook.cdnName)}+${currentChapter}?translation=${encodeURIComponent(activeTranslationId)}`
+      const url = `https://bible-api.com/${currentBook.cdnName}+${currentChapter}?translation=${activeTranslationId}`
+      console.log('Fetching URL:', url)
       return fetch(url)
         .then((r) => {
           if (!r.ok) throw new Error(`HTTP ${r.status}`)
           return r.json()
         })
         .then((data) => {
+          console.log('API Response verse 1:', data?.verses?.[0]?.text)
           const rows = dedupeVersesByNumber(data.verses || [])
           return rows.map((v) => ({
             verse: v.verse,
@@ -307,12 +338,18 @@ export default function BibleReader({ open, onModeChange }) {
     }
 
     try {
-      // LANGUAGE-SPECIFIC BIBLE — same bolls get-text + fallback as AudioBible (BIBLE_LANG_MAP + BOLLS_GETTEXT_FALLBACK, e.g. ko: KRPBA then KRV).
+      // TRANSLATION-SPECIFIC BIBLE — use activeTranslationId instead of uiLang for translation picker
+      // Skip bolls.life for DRA (not supported) and go straight to bible-api.com
+      const skipBolls = ['dra']
       let bollsRows = null
-      try {
-        bollsRows = await fetchBollsGetTextForUiLang(uiLang, currentBook.bookNumber, currentChapter)
-      } catch (err) {
-        console.error('[BibleReader] bolls.life error:', err)
+      if (!skipBolls.includes(activeTranslationId)) {
+        try {
+          bollsRows = await fetchBollsGetTextForTranslationId(activeTranslationId, currentBook.bookNumber, currentChapter)
+        } catch (err) {
+          console.error('[BibleReader] bolls.life error:', err)
+        }
+      } else {
+        console.log('[BibleReader] Skipping bolls.life for translation:', activeTranslationId)
       }
       if (bollsRows?.length) {
         if (!cancelled) {
@@ -386,6 +423,7 @@ export default function BibleReader({ open, onModeChange }) {
           }
         }
       }
+
       const rows = await loadFromBibleApiCom()
       if (!cancelled) {
         setVerses(rows || [])
@@ -407,13 +445,8 @@ export default function BibleReader({ open, onModeChange }) {
     bollsTranslationId,
     getBibleSlug,
     hindiSavedBibleId,
-    open,
     showEnglishBibleVersions,
     uiLang,
-    setLoading,
-    setVerses,
-    setCachedHindiCatalogId,
-    bibleIdRef,
     getStorageTranslationKey,
   ])
 
@@ -471,8 +504,7 @@ export default function BibleReader({ open, onModeChange }) {
           console.log('[BibleReader] Auto-switching to Hindi Bible:', HINDI_BIBLE_ID)
           saveBibleId(HINDI_BIBLE_ID)
           setHindiSavedBibleId(HINDI_BIBLE_ID)
-          bibleIdRef.current = HINDI_BIBLE_ID // Add this line
-          loadChapter(HINDI_BIBLE_ID, selectedBook, chapter) // Replace setVerses([]) and setLoading(true)
+          bibleIdRef.current = HINDI_BIBLE_ID
         }
       } catch {
         setHindiSavedBibleId(null)
@@ -492,7 +524,7 @@ export default function BibleReader({ open, onModeChange }) {
         /* ignore */
       }
     }
-  }, [uiLang, user?.id, loadChapter, selectedBook, chapter])
+  }, [uiLang, user?.id])
 
   useEffect(() => {
     let newBibleId = null;
@@ -502,7 +534,7 @@ export default function BibleReader({ open, onModeChange }) {
       newBibleId = activeTranslationId;
     }
     setBibleId(newBibleId);
-  }, [uiLang, activeTranslationId, hindiSavedBibleId, setBibleId]);
+  }, [uiLang, activeTranslationId, hindiSavedBibleId]);
 
   useEffect(() => {
     try {
@@ -560,33 +592,47 @@ export default function BibleReader({ open, onModeChange }) {
     }
   }, [open, uiLang])
 
-  // Re-fetch chapter when Hindi Bible ID changes
-  useEffect(() => {
-    if (uiLang === 'hi' && hindiSavedBibleId && selectedBook && chapter && open) {
-      console.log('[BibleReader] Hindi Bible ID changed, re-fetching chapter:', hindiSavedBibleId)
-      // Trigger re-fetch by clearing verses to force reload
-      setVerses([])
-      setLoading(true)
-    }
-  }, [hindiSavedBibleId, uiLang, selectedBook, chapter, open])
   const filteredBooks = useMemo(() => {
     const start = testamentFilter === 'old' ? 0 : OLD_TESTAMENT_LAST_INDEX + 1
     const end = testamentFilter === 'old' ? OLD_TESTAMENT_LAST_INDEX : BOOKS.length - 1
-    return BOOKS.slice(start, end + 1).map((book, offset) => ({
+    const booksInTestament = BOOKS.slice(start, end + 1)
+    
+    // Filter out Deuterocanonical books if Protestant is selected
+    // Catholic and Orthodox both include Deuterocanonical books
+    const filtered = bibleCategory === 'catholic' || bibleCategory === 'orthodox'
+      ? booksInTestament 
+      : booksInTestament.filter(book => !book.deuterocanonical)
+    
+    return filtered.map((book, offset) => ({
       book,
       index: start + offset,
     }))
-  }, [testamentFilter])
+  }, [testamentFilter, bibleCategory])
 
   const translationOptions = useMemo(
     () =>
       BIBLE_READER_TRANSLATIONS.map((tr) => ({
         id: tr.id,
-        label: t(tr.labelKey),
-        subtitle: t(tr.subtitleKey),
+        label: tr.label || t(tr.labelKey),
+        subtitle: tr.subtitle || t(tr.subtitleKey),
+        isCatholic: tr.isCatholic || false,
+        isOrthodox: tr.isOrthodox || false,
+        denomination: tr.denomination || 'Protestant',
       })),
     [t],
   )
+  
+  const filteredTranslationOptions = useMemo(() => {
+    if (bibleCategory === 'protestant') {
+      return translationOptions.filter(opt => opt.denomination === 'Protestant')
+    } else if (bibleCategory === 'catholic') {
+      return translationOptions.filter(opt => opt.denomination === 'Catholic')
+    } else if (bibleCategory === 'orthodox') {
+      return translationOptions.filter(opt => opt.denomination === 'Orthodox')
+    }
+    return translationOptions
+  }, [translationOptions, bibleCategory])
+  
   const selectedTranslation = translationOptions.find((x) => x.id === activeTranslationId) ?? translationOptions[0]
 
   const bookDisplayName = (book) =>
@@ -595,6 +641,16 @@ export default function BibleReader({ open, onModeChange }) {
   useEffect(() => {
     if (!showEnglishBibleVersions) setShowTranslationPicker(false)
   }, [showEnglishBibleVersions])
+
+  // Auto-switch Bible category based on translation selection
+  useEffect(() => {
+    if (activeTranslationId === 'cpdv' || activeTranslationId === 'dra') {
+      setBibleCategory('catholic')
+    } else if (activeTranslationId === 'bst') {
+      setBibleCategory('orthodox')
+    }
+  }, [activeTranslationId])
+
 
   const measureTranslationDropdownPosition = useCallback(() => {
     const el = translationButtonRef.current
@@ -650,8 +706,10 @@ export default function BibleReader({ open, onModeChange }) {
 
   useEffect(() => {
     if (!open || !selectedBook) return
+    console.log('Translation changed to:', activeTranslationId)
+    setVerses([])
     loadChapter(null, selectedBook, chapter)
-  }, [open, selectedBook, chapter, loadChapter])
+  }, [open, selectedBook, chapter, activeTranslationId])
 
   useEffect(() => {
     if (!showBookPicker) return
@@ -1140,7 +1198,92 @@ export default function BibleReader({ open, onModeChange }) {
             </button>
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 4, marginBottom: 0, gap: '8px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 4, marginBottom: 0, gap: '6px', flexShrink: 0 }}>
+            {showEnglishBibleVersions && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBibleCategory('protestant')
+                    const categoryTranslations = translationOptions.filter(opt => opt.denomination === 'Protestant')
+                    const currentInCategory = categoryTranslations.some(opt => opt.id === activeTranslationId)
+                    if (!currentInCategory && categoryTranslations.length > 0) {
+                      setActiveTranslationId(categoryTranslations[0].id)
+                    }
+                  }}
+                  style={{
+                    background: bibleCategory === 'protestant' ? 'rgba(240, 192, 64, 0.25)' : 'rgba(240, 192, 64, 0.08)',
+                    border: bibleCategory === 'protestant' ? '1.5px solid rgba(240, 192, 64, 0.5)' : '1px solid rgba(240, 192, 64, 0.25)',
+                    borderRadius: '50px',
+                    color: bibleCategory === 'protestant' ? '#D4A843' : (dayTheme ? 'rgba(212, 168, 67, 0.7)' : 'rgba(255, 255, 255, 0.5)'),
+                    fontSize: '10px',
+                    fontWeight: bibleCategory === 'protestant' ? 700 : 500,
+                    cursor: 'pointer',
+                    padding: '0 10px',
+                    height: '36px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  Protestant
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBibleCategory('catholic')
+                    const categoryTranslations = translationOptions.filter(opt => opt.denomination === 'Catholic')
+                    const currentInCategory = categoryTranslations.some(opt => opt.id === activeTranslationId)
+                    if (!currentInCategory && categoryTranslations.length > 0) {
+                      setActiveTranslationId(categoryTranslations[0].id)
+                    }
+                  }}
+                  style={{
+                    background: bibleCategory === 'catholic' ? 'rgba(192, 64, 64, 0.25)' : 'rgba(192, 64, 64, 0.08)',
+                    border: bibleCategory === 'catholic' ? '1.5px solid rgba(192, 64, 64, 0.5)' : '1px solid rgba(192, 64, 64, 0.25)',
+                    borderRadius: '50px',
+                    color: bibleCategory === 'catholic' ? '#E06666' : (dayTheme ? 'rgba(224, 102, 102, 0.7)' : 'rgba(255, 255, 255, 0.5)'),
+                    fontSize: '10px',
+                    fontWeight: bibleCategory === 'catholic' ? 700 : 500,
+                    cursor: 'pointer',
+                    padding: '0 10px',
+                    height: '36px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  Catholic
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBibleCategory('orthodox')
+                    const categoryTranslations = translationOptions.filter(opt => opt.denomination === 'Orthodox')
+                    const currentInCategory = categoryTranslations.some(opt => opt.id === activeTranslationId)
+                    if (!currentInCategory && categoryTranslations.length > 0) {
+                      setActiveTranslationId(categoryTranslations[0].id)
+                    }
+                  }}
+                  style={{
+                    background: bibleCategory === 'orthodox' ? 'rgba(64, 128, 192, 0.25)' : 'rgba(64, 128, 192, 0.08)',
+                    border: bibleCategory === 'orthodox' ? '1.5px solid rgba(64, 128, 192, 0.5)' : '1px solid rgba(64, 128, 192, 0.25)',
+                    borderRadius: '50px',
+                    color: bibleCategory === 'orthodox' ? '#6699CC' : (dayTheme ? 'rgba(102, 153, 204, 0.7)' : 'rgba(255, 255, 255, 0.5)'),
+                    fontSize: '10px',
+                    fontWeight: bibleCategory === 'orthodox' ? 700 : 500,
+                    cursor: 'pointer',
+                    padding: '0 10px',
+                    height: '36px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  Orthodox
+                </button>
+              </>
+            )}
             {showEnglishBibleVersions || showHindiApiBiblePicker ? (
               <button
                 ref={translationButtonRef}
@@ -2247,7 +2390,7 @@ export default function BibleReader({ open, onModeChange }) {
               </p>
               {!HAS_API_BIBLE ? (
                 <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-                  {translationOptions.map((opt, index) => {
+                  {filteredTranslationOptions.map((opt, index) => {
                     const active = opt.id === activeTranslationId
                     return (
                       <li
@@ -2256,7 +2399,7 @@ export default function BibleReader({ open, onModeChange }) {
                           margin: 0,
                           padding: 0,
                           borderBottom:
-                            index < translationOptions.length - 1
+                            index < filteredTranslationOptions.length - 1
                               ? '1px solid var(--glass-border)'
                               : 'none',
                         }}
@@ -2282,17 +2425,47 @@ export default function BibleReader({ open, onModeChange }) {
                             transition: 'background 0.15s ease',
                           }}
                         >
-                          <span
-                            className="read-translation-picker__label"
-                            style={{
-                              fontSize: '14px',
-                              fontWeight: 700,
-                              color: active ? '#F0C040' : 'var(--text-primary)',
-                              display: 'block',
-                            }}
-                          >
-                            {opt.label}
-                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                            <span
+                              className="read-translation-picker__label"
+                              style={{
+                                fontSize: '14px',
+                                fontWeight: 700,
+                                color: active ? '#F0C040' : 'var(--text-primary)',
+                                display: 'block',
+                                flex: 1,
+                              }}
+                            >
+                              {opt.label}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: '9px',
+                                fontWeight: 600,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em',
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                background: opt.denomination === 'Catholic' 
+                                  ? 'rgba(192, 64, 64, 0.2)' 
+                                  : opt.denomination === 'Orthodox'
+                                    ? 'rgba(64, 128, 192, 0.2)'
+                                    : 'rgba(240, 192, 64, 0.15)',
+                                color: opt.denomination === 'Catholic'
+                                  ? '#E06666'
+                                  : opt.denomination === 'Orthodox'
+                                    ? '#6699CC'
+                                    : '#D4A843',
+                                border: `1px solid ${opt.denomination === 'Catholic'
+                                  ? 'rgba(192, 64, 64, 0.3)'
+                                  : opt.denomination === 'Orthodox'
+                                    ? 'rgba(64, 128, 192, 0.3)'
+                                    : 'rgba(240, 192, 64, 0.3)'}`,
+                              }}
+                            >
+                              {opt.denomination}
+                            </span>
+                          </div>
                           <span
                             className="read-translation-picker__sublabel"
                             style={{

@@ -456,7 +456,6 @@ export default function Settings() {
         width: '100%',
         minHeight: '100dvh',
         boxSizing: 'border-box',
-        background: 'var(--card-bg)',
       }}
     >
       <style>{`

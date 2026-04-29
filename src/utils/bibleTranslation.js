@@ -31,6 +31,59 @@ export const BOLLS_GETTEXT_FALLBACK = {
 }
 
 /**
+ * Map our translation IDs to bolls.life slugs
+ * These need to match the exact slugs used by bolls.life API
+ * BST is not supported by bolls.life - falls back to ebible.org
+ */
+export const TRANSLATION_ID_TO_BOLLS_SLUG = {
+  web: 'WEB',
+  kjv: 'KJV',
+  asv: 'ASV',
+  dra: 'DRA',
+  // bst: null, // Not supported by bolls.life - falls back to ebible.org
+}
+
+/**
+ * Fetch from bolls.life using a specific translation ID instead of uiLang
+ * Used by BibleReader when user selects a specific translation (DRA, BST, etc.)
+ * @param {string} translationId - Our internal translation ID (dra, bst, kjv, web, etc.)
+ * @param {number} bookNumber 1–66
+ * @param {number} chapter
+ * @returns {Promise<Array<{ verse: number, text?: string, pk?: number }> | null>} verse rows, or null if translation not supported
+ */
+export async function fetchBollsGetTextForTranslationId(translationId, bookNumber, chapter) {
+  const bollsSlug = TRANSLATION_ID_TO_BOLLS_SLUG[translationId.toLowerCase()]
+  if (!bollsSlug) {
+    console.log(`[bolls.life] No slug mapping for translation: ${translationId}`)
+    return null
+  }
+  try {
+    const url = `https://bolls.life/get-text/${bollsSlug}/${bookNumber}/${chapter}/`
+    console.log(`[bolls.life] Fetching: ${url}`)
+    const res = await fetch(url)
+    if (!res.ok) {
+      console.warn(`[bolls.life] Returned ${res.status} for ${bollsSlug}/${bookNumber}/${chapter}`)
+      return null
+    }
+    const data = await res.json()
+    if (Array.isArray(data) && data.length) {
+      console.log(`[bolls.life] Got ${data.length} verses from ${bollsSlug}`)
+      // Strip numeric codes (Strong's numbers) from verse text
+      const cleanedData = data.map(v => ({
+        ...v,
+        text: v.text ? v.text.replace(/\d+/g, '').trim() : v.text
+      }))
+      return cleanedData
+    }
+    console.warn(`[bolls.life] Empty response for ${bollsSlug}/${bookNumber}/${chapter}`)
+    return null
+  } catch (err) {
+    console.error('[bolls.life] Error:', err)
+    return null
+  }
+}
+
+/**
  * bolls.life get-text: primary from BIBLE_LANG_MAP, then BOLLS_GETTEXT_FALLBACK if the first id returns an empty list.
  * Used by BibleReader and AudioBible so both stay aligned (e.g. ko: KRPBA then KRV).
  * @param {string} uiLang
@@ -51,7 +104,15 @@ export async function fetchBollsGetTextForUiLang(uiLang, bookNumber, chapter) {
     )
     if (!res.ok) return null
     const data = await res.json()
-    return Array.isArray(data) && data.length ? data : null
+    if (Array.isArray(data) && data.length) {
+      // Strip numeric codes (Strong's numbers) from verse text
+      const cleanedData = data.map(v => ({
+        ...v,
+        text: v.text ? v.text.replace(/\d+/g, '').trim() : v.text
+      }))
+      return cleanedData
+    }
+    return null
   }
   return (
     (await tryBolls(primaryId)) ||

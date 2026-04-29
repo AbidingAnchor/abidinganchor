@@ -97,38 +97,44 @@ export default function BibleTranslationSelector({ isOpen, onClose, currentBible
                 <button
                   key={bible.id}
                   type="button"
-                  onClick={() => handleSelect(bible)}
+                  onClick={() => !bible.disabled && handleSelect(bible)}
+                  disabled={bible.disabled}
                   style={{
-                    background: 'none',
+                    background: bible.disabled ? 'rgba(255,255,255,0.03)' : 'none',
                     border: 'none',
                     borderBottom: '1px solid rgba(255,255,255,0.06)',
-                    color: '#FFFFFF',
+                    color: bible.disabled ? 'rgba(255,255,255,0.3)' : '#FFFFFF',
                     fontSize: '16px',
                     fontWeight: 600,
-                    cursor: 'pointer',
+                    cursor: bible.disabled ? 'not-allowed' : 'pointer',
                     padding: '16px 4px',
                     textAlign: 'left',
                     width: '100%',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    transition: 'background 0.2s ease'
+                    transition: 'background 0.2s ease',
+                    opacity: bible.disabled ? 0.5 : 1
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(240,192,64,0.1)'
-                    e.currentTarget.style.color = '#F0C040'
+                    if (!bible.disabled) {
+                      e.currentTarget.style.background = 'rgba(240,192,64,0.1)'
+                      e.currentTarget.style.color = '#F0C040'
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'none'
-                    e.currentTarget.style.color = '#FFFFFF'
+                    if (!bible.disabled) {
+                      e.currentTarget.style.background = 'none'
+                      e.currentTarget.style.color = '#FFFFFF'
+                    }
                   }}
                 >
                   <span>{bible.name}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', fontWeight: 400 }}>
+                    <span style={{ color: bible.disabled ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.4)', fontSize: '13px', fontWeight: 400 }}>
                       {bible.abbr}
                     </span>
-                    {currentBibleId === bible.id && (
+                    {currentBibleId === bible.id && !bible.disabled && (
                       <span style={{ color: '#F0C040', fontSize: '18px' }}>✓</span>
                     )}
                   </div>
@@ -160,38 +166,44 @@ export default function BibleTranslationSelector({ isOpen, onClose, currentBible
                   <button
                     key={bible.id}
                     type="button"
-                    onClick={() => handleSelect(bible)}
+                    onClick={() => !bible.disabled && handleSelect(bible)}
+                    disabled={bible.disabled}
                     style={{
-                      background: 'none',
+                      background: bible.disabled ? 'rgba(255,255,255,0.03)' : 'none',
                       border: 'none',
                       borderBottom: '1px solid rgba(255,255,255,0.06)',
-                      color: '#FFFFFF',
+                      color: bible.disabled ? 'rgba(255,255,255,0.3)' : '#FFFFFF',
                       fontSize: '16px',
                       fontWeight: 600,
-                      cursor: 'pointer',
+                      cursor: bible.disabled ? 'not-allowed' : 'pointer',
                       padding: '16px 4px',
                       textAlign: 'left',
                       width: '100%',
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      transition: 'background 0.2s ease'
+                      transition: 'background 0.2s ease',
+                      opacity: bible.disabled ? 0.5 : 1
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(240,192,64,0.1)'
-                      e.currentTarget.style.color = '#F0C040'
+                      if (!bible.disabled) {
+                        e.currentTarget.style.background = 'rgba(240,192,64,0.1)'
+                        e.currentTarget.style.color = '#F0C040'
+                      }
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'none'
-                      e.currentTarget.style.color = '#FFFFFF'
+                      if (!bible.disabled) {
+                        e.currentTarget.style.background = 'none'
+                        e.currentTarget.style.color = '#FFFFFF'
+                      }
                     }}
                   >
                     <span>{bible.name}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', fontWeight: 400 }}>
+                      <span style={{ color: bible.disabled ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.4)', fontSize: '13px', fontWeight: 400 }}>
                         {bible.abbr}
                       </span>
-                      {currentBibleId === bible.id && (
+                      {currentBibleId === bible.id && !bible.disabled && (
                         <span style={{ color: '#F0C040', fontSize: '18px' }}>✓</span>
                       )}
                     </div>
