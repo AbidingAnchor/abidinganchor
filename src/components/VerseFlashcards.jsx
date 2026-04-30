@@ -259,11 +259,23 @@ export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertica
         ) : null}
 
         {/* Compact card (max 280px); glass-panel picks up day / evening / night from body + index.css */}
-        <div className="relative h-[260px] w-full max-h-[280px]">
+        <div className="relative h-[260px] w-full max-h-[280px]" style={{ perspective: '1000px' }}>
           <button
             type="button"
             onClick={() => setFlipped((f) => !f)}
-            className={`verse-flip-card glass-panel h-full w-full rounded-2xl p-0 text-left ${flipped ? 'flipped' : ''}`}
+            className={`verse-flip-card h-full w-full rounded-2xl p-0 text-left ${flipped ? 'flipped' : ''}`}
+            style={{
+              transformStyle: 'preserve-3d',
+              transition: 'transform 520ms ease',
+              transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+              position: 'relative',
+              width: '100%',
+              height: '100%',
+              background: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+            }}
           >
             <div className="flip-face flex flex-col justify-between overflow-y-auto p-5 md:p-6">
               <div className="min-h-0">
