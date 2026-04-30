@@ -64,13 +64,13 @@ export default function ShareCard() {
       idleBorder: 'rgba(212,168,67,0.35)',
     },
     {
-      id: 'midnight',
-      name: t('shareCard.midnight'),
-      description: t('shareCard.midnightDesc'),
-      previewBg: 'linear-gradient(180deg, #000000 0%, #0a0a0f 55%, #000000 100%)',
+      id: 'ember',
+      name: 'Ember',
+      description: 'Dark charcoal with deep red glow',
+      previewBg: 'linear-gradient(135deg, #1c1917 0%, #3b0f0f 50%, #450a0a 100%)',
       labelColor: '#FFFFFF',
       subColor: 'rgba(255,255,255,0.78)',
-      idleBorder: 'rgba(212,168,67,0.4)',
+      idleBorder: 'rgba(239,68,68,0.4)',
     },
     {
       id: 'golden',

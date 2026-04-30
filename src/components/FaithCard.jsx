@@ -93,14 +93,14 @@ export default function FaithCard({
           accentColor: '#D4A843',
           showStars: false,
         }
-      case 'midnight':
+      case 'ember':
         return {
-          background: 'linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)',
+          background: 'linear-gradient(135deg, #1c1917 0%, #3b0f0f 50%, #450a0a 100%)',
           starOpacity: 0,
-          borderColor: '#D4A843',
+          borderColor: '#ef4444',
           borderWidth: '2px',
           textColor: '#FFFFFF',
-          accentColor: '#D4A843',
+          accentColor: '#fca5a5',
           showStars: false,
         }
       case 'golden':
