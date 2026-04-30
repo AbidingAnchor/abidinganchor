@@ -279,7 +279,7 @@ export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertica
               inset: 0,
               backfaceVisibility: 'hidden',
               WebkitBackfaceVisibility: 'hidden',
-              transform: 'rotateY(180deg)',
+              transform: 'rotateY(0deg)',
               padding: '1.25rem',
               display: 'flex',
               flexDirection: 'column',
