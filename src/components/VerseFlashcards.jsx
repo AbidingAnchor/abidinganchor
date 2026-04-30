@@ -96,7 +96,12 @@ export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertica
   useEffect(() => {
     if (!filterMenuOpen) return
     const onDoc = (e) => {
-      if (filterMenuRef.current && !filterMenuRef.current.contains(e.target)) setFilterMenuOpen(false)
+      if (
+        filterMenuRef.current && !filterMenuRef.current.contains(e.target) &&
+        !e.target.closest('[data-filter-portal]')
+      ) {
+        setFilterMenuOpen(false)
+      }
     }
     document.addEventListener('mousedown', onDoc)
     return () => document.removeEventListener('mousedown', onDoc)
@@ -334,6 +339,7 @@ export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertica
       {filterMenuOpen &&
         ReactDOM.createPortal(
           <div
+            data-filter-portal=""
             style={{
               position: 'fixed',
               top: buttonPosition?.top + 'px',
