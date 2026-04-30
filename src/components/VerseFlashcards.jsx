@@ -259,50 +259,70 @@ export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertica
         ) : null}
 
         {/* Compact card (max 280px); glass-panel picks up day / evening / night from body + index.css */}
-        <div className="relative h-[260px] w-full max-h-[280px]" style={{ perspective: '1000px' }}>
-          <button
-            type="button"
-            onClick={() => setFlipped((f) => !f)}
-            className={`verse-flip-card h-full w-full rounded-2xl p-0 text-left ${flipped ? 'flipped' : ''}`}
-            style={{
-              transformStyle: 'preserve-3d',
-              transition: 'transform 520ms ease',
-              transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-              position: 'relative',
-              width: '100%',
-              height: '100%',
-              background: 'rgba(255, 255, 255, 0.08)',
-              backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-            }}
-          >
-            <div className="flip-face flex flex-col justify-between overflow-y-auto p-5 md:p-6">
-              <div className="min-h-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/70">{t('flashcards.tapToFlip')}</p>
+        <div style={{ perspective: '1000px', width: '100%', height: '260px' }}>
+          <div style={{
+            position: 'relative',
+            width: '100%',
+            height: '100%',
+            transformStyle: 'preserve-3d',
+            transition: 'transform 520ms ease',
+            transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+            background: 'rgba(255, 255, 255, 0.08)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+            borderRadius: '1rem',
+          }}>
+            {/* FRONT */}
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+              transform: 'rotateY(0deg)',
+              padding: '1.25rem',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              overflowY: 'auto',
+            }} onClick={() => setFlipped(true)}>
+              <div>
+                <p style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.7)' }}>{t('flashcards.tapToFlip')}</p>
                 <p className="mt-2 text-lg font-bold leading-snug md:text-xl" style={{ color: '#D4A843' }}>
                   {current.ref}
                 </p>
-                <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-white/55">{t('flashcards.category')}</p>
-                <p className="mt-0.5 text-sm text-white/90">{t(current.bookGroup)}</p>
-                <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-white/55">{t('flashcards.theme')}</p>
-                <p className="mt-0.5 text-sm text-white/85">{t(current.theme)}</p>
+                <p style={{ marginTop: '0.5rem', fontSize: '0.625rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.55)' }}>{t('flashcards.category')}</p>
+                <p style={{ marginTop: '0.125rem', fontSize: '0.875rem', color: 'rgba(255,255,255,0.9)' }}>{t(current.bookGroup)}</p>
+                <p style={{ marginTop: '0.5rem', fontSize: '0.625rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.55)' }}>{t('flashcards.theme')}</p>
+                <p style={{ marginTop: '0.125rem', fontSize: '0.875rem', color: 'rgba(255,255,255,0.85)' }}>{t(current.theme)}</p>
               </div>
-              <p className="mt-3 shrink-0 text-xs text-white/60">
+              <p style={{ marginTop: '0.75rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)' }}>
                 {currentProg ? t('flashcards.memorized') : t('flashcards.statusStillLearning')}
               </p>
             </div>
-            <div className="flip-face flip-back flex flex-col overflow-hidden p-5 text-center md:p-6">
-              <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2">
-                <p className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/70">
+            {/* BACK */}
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+              transform: 'rotateY(180deg)',
+              padding: '1.25rem',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              textAlign: 'center',
+            }} onClick={() => setFlipped(false)}>
+              <div style={{ display: 'flex', minHeight: 0, flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                <p style={{ fontSize: '0.625rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'rgba(255,255,255,0.7)' }}>
                   {t('flashcards.tapToFlipBack')}
                 </p>
-                <p className="min-h-0 w-full max-w-full flex-1 overflow-y-auto text-base leading-relaxed text-white [font-family:'Lora',serif] italic md:text-lg md:leading-relaxed">
+                <p style={{ minHeight: 0, width: '100%', maxWidth: '100%', flex: 1, overflowY: 'auto', fontSize: '1rem', lineHeight: 1.625, color: 'white', fontFamily: 'Lora, serif', fontStyle: 'italic' }}>
                   {current.text}
                 </p>
               </div>
             </div>
-          </button>
+          </div>
         </div>
       </div>
 
