@@ -131,6 +131,7 @@ function Journal() {
   const [showSimpleComposeModal, setShowSimpleComposeModal] = useState(false)
   const [showMoodPicker, setShowMoodPicker] = useState(false)
   const [selectedMoodForNew, setSelectedMoodForNew] = useState(null)
+  const [editingEntry, setEditingEntry] = useState(null)
   const [simpleComposeDraft, setSimpleComposeDraft] = useState('')
   const [simpleComposeSaving, setSimpleComposeSaving] = useState(false)
 
@@ -309,6 +310,14 @@ function Journal() {
     setShowSimpleComposeModal(true)
   }
 
+  const handleEditEntry = (entry) => {
+    setEditingEntry(entry)
+    setSimpleComposeDraft(entry.note || '')
+    setSelectedMoodForNew(entry.mood ? getMoodDisplay(entry.mood) : null)
+    setShowReaderModal(null)
+    setShowSimpleComposeModal(true)
+  }
+
   const handleOpenGuidedModal = () => {
     setCurrentStep(1)
     setVerseReference('')
@@ -441,30 +450,48 @@ function Journal() {
 
     setSimpleComposeSaving(true)
     try {
-      const saved = await saveToJournal({
-        verse: null,
-        reference: null,
-        note: text,
-        prayer: null,
-        gratitude: null,
-        tags: ['reflection'],
-        userId: user.id,
-        mood: selectedMoodForNew?.id || null,
-        entry_type: 'reflection',
-      })
-      
-      if (saved) {
-        const { isFirstJournalEntry, ...savedRow } = saved
-        if (isFirstJournalEntry) setShowFirstEntryCelebration(true)
-        setEntries((prev) => [normalizeEntry(savedRow), ...prev])
-        const full = await getJournalEntries(user?.id)
-        setJournalWeekLocalDates(await fetchJournalWeekEntryLocalDates(user?.id))
-        setWritingStreak(computeWritingStreakFromActivityDates(await fetchJournalActivityLocalYmds(user?.id)))
-        setTotalEntries((full || []).length)
+      if (editingEntry) {
+        // Update existing entry
+        const { error } = await supabase
+          .from('journal_entries')
+          .update({
+            note: text,
+            mood: selectedMoodForNew?.id || null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', editingEntry.id)
+        
+        if (!error) {
+          setEntries(prev => prev.map(e => e.id === editingEntry.id ? { ...e, note: text, mood: selectedMoodForNew?.id || null } : e))
+        }
+      } else {
+        // Create new entry
+        const saved = await saveToJournal({
+          verse: null,
+          reference: null,
+          note: text,
+          prayer: null,
+          gratitude: null,
+          tags: ['reflection'],
+          userId: user.id,
+          mood: selectedMoodForNew?.id || null,
+          entry_type: 'reflection',
+        })
+        
+        if (saved) {
+          const { isFirstJournalEntry, ...savedRow } = saved
+          if (isFirstJournalEntry) setShowFirstEntryCelebration(true)
+          setEntries((prev) => [normalizeEntry(savedRow), ...prev])
+          const full = await getJournalEntries(user?.id)
+          setJournalWeekLocalDates(await fetchJournalWeekEntryLocalDates(user?.id))
+          setWritingStreak(computeWritingStreakFromActivityDates(await fetchJournalActivityLocalYmds(user?.id)))
+          setTotalEntries((full || []).length)
+        }
       }
       
       setSimpleComposeDraft('')
       setSelectedMoodForNew(null)
+      setEditingEntry(null)
       setShowSimpleComposeModal(false)
     } catch (error) {
       console.error('Error saving journal entry:', error)
@@ -520,65 +547,71 @@ function Journal() {
         <GuestPreviewBanner />
         
         {/* Header */}
-        <div style={{ marginBottom: '24px', animation: 'fadeIn 0.6s ease-out' }}>
-          <h1 style={{
-            color: '#ffffff',
-            fontSize: '32px',
-            fontWeight: 800,
-            marginBottom: '8px',
-            margin: '0 0 8px 0',
-          }}>
-            {t('journal.pageTitle')}
-          </h1>
-          <p style={{
-            color: 'rgba(255, 255, 255, 0.5)',
-            fontSize: '15px',
-            margin: 0,
-          }}>
-            {t('journal.pageSubtitle')}
-          </p>
-        </div>
+        {!showReaderModal && (
+          <div style={{ marginBottom: '24px', animation: 'fadeIn 0.6s ease-out' }}>
+            <h1 style={{
+              color: '#ffffff',
+              fontSize: '32px',
+              fontWeight: 800,
+              marginBottom: '8px',
+              margin: '0 0 8px 0',
+            }}>
+              {t('journal.pageTitle')}
+            </h1>
+            <p style={{
+              color: 'rgba(255, 255, 255, 0.5)',
+              fontSize: '15px',
+              margin: 0,
+            }}>
+              {t('journal.pageSubtitle')}
+            </p>
+          </div>
+        )}
 
         {/* Stats Bar */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '24px',
-          marginBottom: '32px',
-          padding: '20px',
-          background: 'rgba(255, 255, 255, 0.06)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          border: '1px solid rgba(212, 168, 67, 0.2)',
-          borderRadius: '16px',
-          animation: 'fadeIn 0.6s ease-out 0.1s both',
-        }}>
-          <div style={{ textAlign: 'center', minWidth: '60px' }}>
-            <p style={{ color: '#D4A843', fontSize: '28px', fontWeight: 800, margin: '0 0 4px 0', lineHeight: 1 }}>{totalEntries}</p>
-            <p style={{ color: 'rgba(255, 255, 255, 0.45)', fontSize: '11px', letterSpacing: '1.5px', margin: 0, fontWeight: 600, textTransform: 'uppercase' }}>{totalEntries === 1 ? t('journal.entrySingular') : t('journal.entryPlural')}</p>
-          </div>
-          <div style={{ width: '1px', height: '32px', background: 'rgba(255, 255, 255, 0.1)' }} />
-          <div style={{ textAlign: 'center', minWidth: '60px' }}>
-            <p style={{ color: '#D4A843', fontSize: '28px', fontWeight: 800, margin: '0 0 4px 0', lineHeight: 1 }}>{writingStreak}</p>
-            <p style={{ color: 'rgba(255, 255, 255, 0.45)', fontSize: '11px', letterSpacing: '1.5px', margin: 0, fontWeight: 600, textTransform: 'uppercase' }}>{writingStreak === 1 ? t('journal.day') : t('journal.days')}</p>
-          </div>
-          <div style={{ width: '1px', height: '32px', background: 'rgba(255, 255, 255, 0.1)' }} />
-          <div style={{ textAlign: 'center', minWidth: '60px' }}>
-            <p style={{ color: '#D4A843', fontSize: '28px', fontWeight: 800, margin: '0 0 4px 0', lineHeight: 1 }}>{entries.length > 0 ? new Date(entries[entries.length - 1].created_at).toLocaleDateString(i18n.language, { month: 'short', year: 'numeric' }) : '—'}</p>
-            <p style={{ color: 'rgba(255, 255, 255, 0.45)', fontSize: '11px', letterSpacing: '1.5px', margin: 0, fontWeight: 600, textTransform: 'uppercase' }}>{t('journal.dayStreakLabel', { n: writingStreak })}</p>
-          </div>
-        </div>
-
-        {loading ? (
+        {showReaderModal ? null : (
           <div style={{
-            textAlign: 'center',
-            padding: '48px 24px',
-            color: 'rgba(255, 255, 255, 0.5)',
-            animation: 'fadeIn 0.6s ease-out 0.2s both',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '24px',
+            marginBottom: '32px',
+            padding: '20px',
+            background: 'rgba(255, 255, 255, 0.06)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            border: '1px solid rgba(212, 168, 67, 0.2)',
+            borderRadius: '16px',
+            animation: 'fadeIn 0.6s ease-out 0.1s both',
           }}>
-            {t('common.loading')}
+            <div style={{ textAlign: 'center', minWidth: '60px' }}>
+              <p style={{ color: '#D4A843', fontSize: '28px', fontWeight: 800, margin: '0 0 4px 0', lineHeight: 1 }}>{totalEntries}</p>
+              <p style={{ color: 'rgba(255, 255, 255, 0.45)', fontSize: '11px', letterSpacing: '1.5px', margin: 0, fontWeight: 600, textTransform: 'uppercase' }}>{totalEntries === 1 ? t('journal.entrySingular') : t('journal.entryPlural')}</p>
+            </div>
+            <div style={{ width: '1px', height: '32px', background: 'rgba(255, 255, 255, 0.1)' }} />
+            <div style={{ textAlign: 'center', minWidth: '60px' }}>
+              <p style={{ color: '#D4A843', fontSize: '28px', fontWeight: 800, margin: '0 0 4px 0', lineHeight: 1 }}>{writingStreak}</p>
+              <p style={{ color: 'rgba(255, 255, 255, 0.45)', fontSize: '11px', letterSpacing: '1.5px', margin: 0, fontWeight: 600, textTransform: 'uppercase' }}>{writingStreak === 1 ? t('journal.day') : t('journal.days')}</p>
+            </div>
+            <div style={{ width: '1px', height: '32px', background: 'rgba(255, 255, 255, 0.1)' }} />
+            <div style={{ textAlign: 'center', minWidth: '60px' }}>
+              <p style={{ color: '#D4A843', fontSize: '28px', fontWeight: 800, margin: '0 0 4px 0', lineHeight: 1 }}>{entries.length > 0 ? new Date(entries[entries.length - 1].created_at).toLocaleDateString(i18n.language, { month: 'short', year: 'numeric' }) : '—'}</p>
+              <p style={{ color: 'rgba(255, 255, 255, 0.45)', fontSize: '11px', letterSpacing: '1.5px', margin: 0, fontWeight: 600, textTransform: 'uppercase' }}>{t('journal.dayStreakLabel', { n: writingStreak })}</p>
+            </div>
           </div>
-        ) : entries.length > 0 ? (
+        )}
+
+        {!showReaderModal ? (
+          <>
+            {loading ? (
+              <div style={{
+                textAlign: 'center',
+                padding: '48px 24px',
+                color: 'rgba(255, 255, 255, 0.5)',
+                animation: 'fadeIn 0.6s ease-out 0.2s both',
+              }}>
+                {t('common.loading')}
+              </div>
+            ) : entries.length > 0 ? (
           <div style={{ animation: 'fadeIn 0.6s ease-out 0.2s both' }}>
             <div style={{
               display: 'flex',
@@ -861,147 +894,77 @@ function Journal() {
             </button>
           </div>
         )}
+        </>
+        ) : null}
+
+        {/* Reader View (inline, not overlay) */}
+        {showReaderModal && (
+          <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+            {/* Top buttons */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <button onClick={() => setShowReaderModal(null)} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.7)', fontSize: '15px', cursor: 'pointer', padding: '8px 0' }}>← Back</button>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button onClick={() => handleEditEntry(showReaderModal)} style={{ background: 'transparent', borderWidth: '1px', borderStyle: 'solid', borderColor: '#D4A843', color: '#D4A843', borderRadius: '8px', padding: '6px 16px', fontSize: '13px', cursor: 'pointer' }}>{t('common.edit')}</button>
+                <button onClick={() => handleDeleteEntry(showReaderModal)} style={{ background: 'rgba(239,68,68,0.15)', borderWidth: '1px', borderStyle: 'solid', borderColor: 'rgba(239,68,68,0.4)', color: '#ef4444', borderRadius: '8px', padding: '6px 16px', fontSize: '13px', cursor: 'pointer' }}>{t('common.delete')}</button>
+              </div>
+            </div>
+
+            {/* Date + mood */}
+            <div style={{ marginBottom: '24px' }}>
+              <h1 style={{ fontSize: '36px', fontWeight: '700', color: '#ffffff', marginTop: '0', marginBottom: '4px', fontFamily: 'Georgia, serif' }}>{new Date(showReaderModal.created_at || Date.now()).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })}</h1>
+              <p style={{ fontSize: '11px', color: '#D4A843', marginTop: '0', marginBottom: '12px', letterSpacing: '0.15em', textTransform: 'uppercase' }}>{new Date(showReaderModal.created_at || Date.now()).toLocaleDateString(i18n.language, { weekday: 'long' }).toUpperCase()}</p>
+              {showReaderModal.mood && (() => {
+                const moodDisplay = getMoodDisplay(showReaderModal.mood)
+                return (
+                  <div style={{ display: 'inline-block', background: moodDisplay.color + '22', borderRadius: '20px', paddingTop: '4px', paddingBottom: '4px', paddingLeft: '12px', paddingRight: '12px', borderWidth: '1px', borderStyle: 'solid', borderColor: moodDisplay.color + '44' }}>
+                    <span style={{ fontSize: '13px', color: moodDisplay.color, fontWeight: '500' }}>{moodDisplay.emoji} {moodDisplay.label}</span>
+                  </div>
+                )
+              })()}
+            </div>
+
+            {/* Entry text card */}
+            <div style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', borderWidth: '1px', borderStyle: 'solid', borderColor: 'rgba(255,255,255,0.2)', borderRadius: '16px', padding: '24px' }}>
+              <p style={{ fontSize: '17px', color: 'rgba(255,255,255,0.9)', lineHeight: '1.8', marginTop: '0', marginBottom: '20px', fontFamily: 'Georgia, serif', whiteSpace: 'pre-wrap' }}>{showReaderModal.note || getEntryBodyPreview(showReaderModal)}</p>
+              {showReaderModal.reference && (
+                <p style={{ fontSize: '14px', color: '#D4A843', fontWeight: '600', marginTop: '16px', marginBottom: '20px', fontFamily: 'Georgia, serif' }}>{showReaderModal.reference}</p>
+              )}
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)', marginTop: '0', marginBottom: '0' }}>{(showReaderModal.note || '').split(/\s+/).filter(w => w).length} {t('journal.wordsLabel', { count: (showReaderModal.note || '').split(/\s+/).filter(w => w).length })} · {Math.max(1, Math.ceil((showReaderModal.note || '').split(/\s+/).filter(w => w).length / 200))} {t('journal.minReadLabel')}</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Floating Compose Button */}
-      <button
-        type="button"
-        onClick={handleOpenModal}
-        style={{
-          position: 'fixed',
-          bottom: '90px',
-          right: '20px',
-          width: '56px',
-          height: '56px',
-          borderRadius: '50%',
-          border: 'none',
-          background: '#D4A843',
-          color: '#0a1428',
-          fontSize: '28px',
-          fontWeight: 600,
-          cursor: 'pointer',
-          boxShadow: '0 4px 20px rgba(212, 168, 67, 0.4)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transition: 'all 0.2s ease',
-          zIndex: 100,
-          animation: 'fadeIn 0.6s ease-out 0.4s both',
-        }}
-      >
-        +
-      </button>
-
-      {/* Reader Modal */}
-      {showReaderModal && typeof document !== 'undefined' ? createPortal(
-        <>
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(0, 0, 0, 0.6)',
-              zIndex: 10050,
-            }}
-            onClick={() => setShowReaderModal(null)}
-          />
-          <div
-            role="dialog"
-            aria-modal="true"
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              zIndex: 10051,
-              animation: 'fadeIn 0.3s ease-out',
-            }}
-          >
-            <div style={{ padding: '60px 24px 24px', maxWidth: '680px', margin: '0 auto' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
-                <button
-                  type="button"
-                  onClick={() => setShowReaderModal(null)}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  {t('common.close')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDeleteEntry(showReaderModal)}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
-                    background: 'rgba(239, 68, 68, 0.1)',
-                    color: '#FCA5A5',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  {t('common.delete')}
-                </button>
-              </div>
-              
-              <div style={{ marginBottom: '32px' }}>
-                <p style={{
-                  color: '#ffffff',
-                  fontSize: '48px',
-                  fontWeight: 600,
-                  marginBottom: '8px',
-                  lineHeight: 1,
-                }}>
-                  {new Date(showReaderModal.created_at || Date.now()).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })}
-                </p>
-                <p style={{
-                  color: '#D4A843',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  letterSpacing: '0.18em',
-                }}>
-                  {new Date(showReaderModal.created_at || Date.now()).toLocaleDateString(i18n.language, { weekday: 'long' }).toUpperCase()}
-                </p>
-              </div>
-              
-              <p style={{
-                color: 'rgba(255, 255, 255, 0.9)',
-                fontSize: '18px',
-                lineHeight: 1.8,
-                marginBottom: '16px',
-                whiteSpace: 'pre-wrap',
-              }}>
-                {showReaderModal.note || getEntryBodyPreview(showReaderModal)}
-              </p>
-              
-              {showReaderModal.reference && (
-                <p style={{
-                  color: '#D4A843',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  marginTop: '24px',
-                }}>
-                  {showReaderModal.reference}
-                </p>
-              )}
-            </div>
-          </div>
-        </>,
-        document.body,
-      ) : null}
+      {!showReaderModal && (
+        <button
+          type="button"
+          onClick={handleOpenModal}
+          style={{
+            position: 'fixed',
+            bottom: '90px',
+            right: '20px',
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            border: 'none',
+            background: '#D4A843',
+            color: '#0a1428',
+            fontSize: '28px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            boxShadow: '0 4px 20px rgba(212, 168, 67, 0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.2s ease',
+            zIndex: 100,
+            animation: 'fadeIn 0.6s ease-out 0.4s both',
+          }}
+        >
+          +
+        </button>
+      )}
 
       {/* Mood Picker Modal */}
       {showMoodPicker && typeof document !== 'undefined' ? createPortal(
@@ -1159,7 +1122,7 @@ function Journal() {
               fontWeight: 600,
               marginBottom: '8px',
             }}>
-              New Entry
+              {editingEntry ? 'Edit Entry' : 'New Entry'}
             </h2>
             <p style={{
               color: 'rgba(255, 255, 255, 0.6)',
@@ -1240,7 +1203,12 @@ function Journal() {
             </button>
             <button
               type="button"
-              onClick={() => setShowSimpleComposeModal(false)}
+              onClick={() => {
+                setShowSimpleComposeModal(false)
+                setSimpleComposeDraft('')
+                setSelectedMoodForNew(null)
+                setEditingEntry(null)
+              }}
               style={{
                 width: '100%',
                 padding: '12px',
