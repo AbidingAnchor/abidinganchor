@@ -25,6 +25,22 @@ import { useGuestSignupModal } from '../context/GuestSignupModalContext'
 const ACCENT_GOLD = '#c9922a'
 const JOURNAL_MOUNT_DELAY_MS = 600
 
+const MOOD_OPTIONS = [
+  { id: 'grateful', emoji: '🙏', label: 'Grateful', color: '#D4A843' },
+  { id: 'hopeful', emoji: '✨', label: 'Hopeful', color: '#5DCAA5' },
+  { id: 'faithful', emoji: '💪', label: 'Faithful', color: '#378ADD' },
+  { id: 'struggling', emoji: '😔', label: 'Struggling', color: '#D85A30' },
+  { id: 'loved', emoji: '❤️', label: 'Loved', color: '#EC4899' },
+  { id: 'inspired', emoji: '🔥', label: 'Inspired', color: '#F97316' },
+  { id: 'peaceful', emoji: '😌', label: 'Peaceful', color: '#10B981' },
+  { id: 'seeking', emoji: '🤔', label: 'Seeking', color: '#8B5CF6' },
+]
+
+function getMoodDisplay(moodId) {
+  const mood = MOOD_OPTIONS.find(m => m.id === moodId)
+  return mood || { emoji: '✍️', label: 'Reflection', color: '#D4A843' }
+}
+
 function getPromptForEntryDate(iso, prompts) {
   if (!prompts?.length) return { prompt: '', verse: '' }
   const d = iso ? new Date(iso) : new Date()
@@ -113,6 +129,8 @@ function Journal() {
   const [entriesExpanded, setEntriesExpanded] = useState(false)
   const [showReaderModal, setShowReaderModal] = useState(null)
   const [showSimpleComposeModal, setShowSimpleComposeModal] = useState(false)
+  const [showMoodPicker, setShowMoodPicker] = useState(false)
+  const [selectedMoodForNew, setSelectedMoodForNew] = useState(null)
   const [simpleComposeDraft, setSimpleComposeDraft] = useState('')
   const [simpleComposeSaving, setSimpleComposeSaving] = useState(false)
 
@@ -280,6 +298,18 @@ function Journal() {
   }
 
   const handleOpenModal = () => {
+    setShowMoodPicker(true)
+    setSelectedMoodForNew(null)
+    setSimpleComposeDraft('')
+  }
+
+  const handleMoodSelect = (mood) => {
+    setSelectedMoodForNew(mood)
+    setShowMoodPicker(false)
+    setShowSimpleComposeModal(true)
+  }
+
+  const handleOpenGuidedModal = () => {
     setCurrentStep(1)
     setVerseReference('')
     setVerseText('')
@@ -419,7 +449,7 @@ function Journal() {
         gratitude: null,
         tags: ['reflection'],
         userId: user.id,
-        mood: null,
+        mood: selectedMoodForNew?.id || null,
         entry_type: 'reflection',
       })
       
@@ -434,6 +464,7 @@ function Journal() {
       }
       
       setSimpleComposeDraft('')
+      setSelectedMoodForNew(null)
       setShowSimpleComposeModal(false)
     } catch (error) {
       console.error('Error saving journal entry:', error)
@@ -658,11 +689,7 @@ function Journal() {
                   const monthDay = date.toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })
                   const wordCount = (entry.note || '').split(/\s+/).filter(w => w).length
                   const readTime = Math.max(1, Math.ceil(wordCount / 200))
-                  const note = (entry.note || '').toLowerCase()
-                  let moodEmoji = '✍️'
-                  if (note.includes('grateful') || note.includes('thankful')) moodEmoji = '🙏'
-                  else if (note.includes('struggle') || note.includes('hard') || note.includes('difficult')) moodEmoji = '💪'
-                  else if (note.includes('praise') || note.includes('worship') || note.includes('amazing')) moodEmoji = '✨'
+                  const moodDisplay = getMoodDisplay(entry.mood)
                   return (
                     <div
                       key={entry.id}
@@ -702,7 +729,22 @@ function Journal() {
                           </p>
                         </div>
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                          <span style={{ fontSize: '20px' }}>{moodEmoji}</span>
+                          <span
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '20px',
+                              background: `${moodDisplay.color}25`,
+                              border: `1px solid ${moodDisplay.color}50`,
+                              color: moodDisplay.color,
+                              fontSize: '13px',
+                              fontWeight: 600,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                            }}
+                          >
+                            {moodDisplay.emoji} {moodDisplay.label}
+                          </span>
                           {entry.entry_type === 'prayer' && entry.answered && (
                             <div style={{
                               width: '32px',
@@ -801,7 +843,7 @@ function Journal() {
             </p>
             <button
               type="button"
-              onClick={() => { setSimpleComposeDraft(''); setShowSimpleComposeModal(true) }}
+              onClick={handleOpenModal}
               style={{
                 padding: '14px 28px',
                 borderRadius: '99px',
@@ -824,7 +866,7 @@ function Journal() {
       {/* Floating Compose Button */}
       <button
         type="button"
-        onClick={() => { setSimpleComposeDraft(''); setShowSimpleComposeModal(true) }}
+        onClick={handleOpenModal}
         style={{
           position: 'fixed',
           bottom: '90px',
@@ -956,6 +998,119 @@ function Journal() {
                 </p>
               )}
             </div>
+          </div>
+        </>,
+        document.body,
+      ) : null}
+
+      {/* Mood Picker Modal */}
+      {showMoodPicker && typeof document !== 'undefined' ? createPortal(
+        <>
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0, 0, 0, 0.6)',
+              zIndex: 10050,
+            }}
+            onClick={() => setShowMoodPicker(false)}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              width: '100%',
+              maxWidth: '390px',
+              margin: '0 auto',
+              maxHeight: '85vh',
+              overflowY: 'auto',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1px solid rgba(212, 168, 67, 0.25)',
+              borderTop: '1px solid rgba(212, 168, 67, 0.4)',
+              borderRadius: '24px 24px 0 0',
+              padding: '24px',
+              zIndex: 10051,
+              animation: 'slideUp 0.3s ease-out',
+            }}
+          >
+            <h2 style={{
+              color: '#D4A843',
+              fontSize: '20px',
+              fontWeight: 600,
+              marginBottom: '8px',
+            }}>
+              How are you feeling?
+            </h2>
+            <p style={{
+              color: 'rgba(255, 255, 255, 0.6)',
+              fontSize: '13px',
+              marginBottom: '20px',
+            }}>
+              Choose a mood to tag your entry
+            </p>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '12px',
+            }}>
+              {MOOD_OPTIONS.map((mood) => (
+                <button
+                  key={mood.id}
+                  type="button"
+                  onClick={() => handleMoodSelect(mood)}
+                  style={{
+                    padding: '16px',
+                    borderRadius: '16px',
+                    border: `1px solid ${mood.color}40`,
+                    background: `${mood.color}15`,
+                    color: '#ffffff',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = `${mood.color}25`
+                    e.currentTarget.style.borderColor = `${mood.color}60`
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = `${mood.color}15`
+                    e.currentTarget.style.borderColor = `${mood.color}40`
+                  }}
+                >
+                  <span style={{ fontSize: '20px' }}>{mood.emoji}</span>
+                  <span>{mood.label}</span>
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowMoodPicker(false)}
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '16px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                background: 'transparent',
+                color: 'rgba(255, 255, 255, 0.6)',
+                fontSize: '14px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                marginTop: '16px',
+              }}
+            >
+              Cancel
+            </button>
           </div>
         </>,
         document.body,
