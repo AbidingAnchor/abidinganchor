@@ -267,11 +267,6 @@ export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertica
             transformStyle: 'preserve-3d',
             transition: 'transform 520ms ease',
             transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-            background: 'rgba(255, 255, 255, 0.08)',
-            backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-            borderRadius: '1rem',
           }}>
             {/* FRONT */}
             <div style={{
@@ -285,6 +280,11 @@ export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertica
               flexDirection: 'column',
               justifyContent: 'space-between',
               overflowY: 'auto',
+              background: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+              borderRadius: '1rem',
             }} onClick={() => setFlipped(true)}>
               <div>
                 <p style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.7)' }}>{t('flashcards.tapToFlip')}</p>
@@ -313,6 +313,11 @@ export default function VerseFlashcards({ onExit, onMemorizedChange, fillVertica
               flexDirection: 'column',
               overflow: 'hidden',
               textAlign: 'center',
+              background: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+              borderRadius: '1rem',
             }} onClick={() => setFlipped(false)}>
               <div style={{ display: 'flex', minHeight: 0, flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                 <p style={{ fontSize: '0.625rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'rgba(255,255,255,0.7)' }}>
