@@ -4,21 +4,31 @@ export const THEME_PREFERENCE_STORAGE_KEY = 'theme-preference'
 export const THEME_PREFERENCE_CHANGED_EVENT = 'abidinganchor-theme-preference-changed'
 
 export function normalizeThemePreferenceValue(raw) {
-  if (raw == null || raw === '') return 'automatic'
+  if (raw == null || raw === '') return 'auto'
   const t = String(raw).trim().toLowerCase()
-  if (t === 'day' || t === 'evening' || t === 'night' || t === 'automatic') return t
-  return 'automatic'
+  if (t === 'day' || t === 'evening' || t === 'night' || t === 'auto') return t
+  return 'auto'
 }
 
 export function readThemePreferenceFromStorage() {
-  return 'automatic'
+  if (typeof localStorage === 'undefined') return 'auto'
+  try {
+    const raw = localStorage.getItem(THEME_PREFERENCE_STORAGE_KEY)
+    return normalizeThemePreferenceValue(raw)
+  } catch {
+    return 'auto'
+  }
 }
 
 export function writeThemePreferenceToStorage(value) {
   if (typeof localStorage === 'undefined') return
   try {
-    // Manual theme selection is disabled for now; keep storage clear.
-    localStorage.removeItem(THEME_PREFERENCE_STORAGE_KEY)
+    const normalized = normalizeThemePreferenceValue(value)
+    if (normalized === 'auto') {
+      localStorage.removeItem(THEME_PREFERENCE_STORAGE_KEY)
+    } else {
+      localStorage.setItem(THEME_PREFERENCE_STORAGE_KEY, normalized)
+    }
   } catch {
     /* ignore */
   }
@@ -41,7 +51,7 @@ export function emitThemePreferenceChanged() {
 /** Call when a full (or theme-updating) profile row arrives from Supabase. */
 export function syncThemePreferenceFromProfileRow(profile) {
   if (!profile || typeof profile !== 'object') return
-  // Manual theme selection is disabled; sky is time-based only. Do not emit —
-  // emitting on every profile refresh caused BackgroundManager to "thrash" and log repeatedly.
-  writeThemePreferenceToStorage('automatic')
+  // Manual theme selection is now enabled; sky can be time-based or manual.
+  // Do not emit — emitting on every profile refresh caused BackgroundManager to "thrash" and log repeatedly.
+  writeThemePreferenceToStorage('auto')
 }

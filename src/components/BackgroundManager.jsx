@@ -5,6 +5,7 @@ import CelestialBackground from "./CelestialBackground";
 import {
   THEME_PREFERENCE_CHANGED_EVENT,
   THEME_PREFERENCE_STORAGE_KEY,
+  readThemePreferenceFromStorage,
 } from "../utils/themePreferenceStorage";
 
 const FADE_DURATION_MS = 800;
@@ -73,7 +74,10 @@ function BackgroundLayer({ type, isVisible }) {
 export default function BackgroundManager() {
   const currentBgRef = useRef(null);
   const [currentBg, setCurrentBg] = useState(() => {
-    const initial = getBackgroundTypeForTime();
+    const themePreference = readThemePreferenceFromStorage();
+    const initial = themePreference === 'auto' || !themePreference 
+      ? getBackgroundTypeForTime() 
+      : themePreference === 'evening' ? 'sunset' : themePreference;
     currentBgRef.current = initial;
     logThemeMutation("BackgroundManager: set data-theme", { reason: "initial-state", theme: initial });
     document.documentElement.setAttribute("data-theme", initial);
@@ -86,6 +90,12 @@ export default function BackgroundManager() {
     let fadeTimeout;
 
     const updateBackground = () => {
+      const themePreference = readThemePreferenceFromStorage();
+      console.log('theme-preference:', themePreference);
+      console.log('applying theme:', themePreference === 'auto' || !themePreference ? 'time-based' : themePreference);
+      // Skip automatic updates if manual theme preference is set
+      if (themePreference && themePreference !== 'auto') return;
+
       const nextBg = getBackgroundTypeForTime();
       // Dedupe: skip DOM + state when period unchanged (avoids thrash from duplicate events / interval ticks).
       if (nextBg === currentBgRef.current) return;
@@ -105,6 +115,24 @@ export default function BackgroundManager() {
       fadeTimeout = setTimeout(() => setPreviousBg(null), FADE_DURATION_MS);
     };
 
+    const applyThemePreference = () => {
+      const themePreference = readThemePreferenceFromStorage();
+      const nextBg = themePreference === 'auto' || !themePreference
+        ? getBackgroundTypeForTime()
+        : themePreference === 'evening' ? 'sunset' : themePreference;
+      
+      if (nextBg === currentBgRef.current) return;
+      
+      const prevBg = currentBgRef.current;
+      currentBgRef.current = nextBg;
+      syncBodySkyClasses(nextBg, 'themePreferenceChanged');
+      document.documentElement.setAttribute('data-theme', nextBg);
+      setPreviousBg(prevBg);
+      setCurrentBg(nextBg);
+      clearTimeout(fadeTimeout);
+      fadeTimeout = setTimeout(() => setPreviousBg(null), FADE_DURATION_MS);
+    };
+
     updateBackground();
     const interval = setInterval(updateBackground, 30 * 1000);
 
@@ -112,7 +140,7 @@ export default function BackgroundManager() {
       if (!document.hidden) updateBackground();
     };
 
-    const onThemePreferenceChanged = () => updateBackground();
+    const onThemePreferenceChanged = () => applyThemePreference();
     const onStorage = (e) => {
       if (e.key === THEME_PREFERENCE_STORAGE_KEY || e.key === null) updateBackground();
     };
