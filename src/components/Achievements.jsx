@@ -1,5 +1,6 @@
 ﻿import { useTranslation } from 'react-i18next'
 import { useEffect, useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { JOURNEY_MAP_GEOMETRY } from '../data/journeyMapGeometry'
 import { userStorageKey } from '../utils/userStorage'
@@ -50,7 +51,9 @@ function computeSnapshot(userId, profile) {
   const start = startDateRaw ? new Date(startDateRaw) : new Date()
   const appDays = Math.max(1, Math.floor((Date.now() - start.getTime()) / 86400000) + 1)
 
+  console.log('verseProgress raw:', verseProgress)
   const memorized = Object.values(verseProgress).filter((p) => p?.memorized)
+  console.log('memorized array:', memorized)
   const memorizedTotal = memorized.length
 
   const memorizedNT = memorized.filter((p) => {
@@ -59,6 +62,7 @@ function computeSnapshot(userId, profile) {
       r,
     )
   }).length
+  console.log('memorizedNT:', memorizedNT)
 
   const memorizedHope = memorized.filter((p) => String(p.category || '').toLowerCase() === 'hope').length
   const memorizedPeace = memorized.filter((p) => String(p.category || '').toLowerCase() === 'peace').length
@@ -94,9 +98,15 @@ function computeSnapshot(userId, profile) {
 
 export default function Achievements({ onExit, fillVertical = false }) {
   const { t } = useTranslation()
+  const location = useLocation()
   const { profile, user } = useAuth()
   const achievementKey = user?.id ? userStorageKey(user.id, 'achievements') : null
   const [store, setStore] = useState({})
+  const [tick, setTick] = useState(0)
+
+  useEffect(() => {
+    setTick(t => t + 1)
+  }, [location])
 
   const BADGES = useMemo(() => [
     { id: 'first-steps', icon: '🌟', name: t('achievements.firstSteps'), desc: t('achievements.firstStepsDesc'), check: (s) => (s.gamesCompleted || 0) >= 1 },
@@ -129,7 +139,7 @@ export default function Achievements({ onExit, fillVertical = false }) {
     setStore(readJson(achievementKey, {}))
   }, [achievementKey])
 
-  const snapshot = useMemo(() => computeSnapshot(profile, user?.id), [profile, user?.id])
+  const snapshot = useMemo(() => computeSnapshot(user?.id, profile), [tick, profile, user?.id])
 
   const computed = useMemo(() => {
     if (!achievementKey) return BADGES.map((b) => ({ ...b, unlockedAt: null }))
@@ -146,6 +156,9 @@ export default function Achievements({ onExit, fillVertical = false }) {
     const now = new Date().toISOString()
     const nextStore = { ...store }
     let changed = false
+    console.log('Checking achievements, snapshot:', snapshot)
+    console.log('memorized count:', snapshot?.memorizedTotal)
+    console.log('memorizedNT count:', snapshot?.memorizedNT)
     BADGES.forEach((b) => {
       const unlocked = b.check(snapshot)
       if (unlocked && !nextStore[b.id]?.unlockedAt) {
