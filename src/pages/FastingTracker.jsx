@@ -163,6 +163,9 @@ export default function FastingTracker() {
 
       <section className="mt-4 glass-panel rounded-2xl p-4 text-white">
         <p className="text-sm font-semibold text-[#D4A843]">History</p>
+        <button type="button" onClick={() => { if (window.confirm('Clear all fasting history?')) { const next = { ...store, history: [] }; setStore(next); saveStore(storageKey, next) } }} style={{ float: 'right', background: 'transparent', border: 'none', color: 'rgba(255,100,100,0.7)', fontSize: '12px', cursor: 'pointer', fontWeight: 600 }}>
+          🗑 Clear All
+        </button>
         <p className="mt-1 text-xs text-white/75">Total fasting hours: {totalHours.toFixed(1)} | Personal record: {personalRecord.toFixed(1)}h</p>
         <div className="mt-3 space-y-2">
           {loading ? (
@@ -174,6 +177,9 @@ export default function FastingTracker() {
             <article key={h.id} className="glass-panel rounded-xl p-3 text-sm">
               <p className="text-white/90">{h.typeLabel}</p>
               <p className="text-xs text-white/70">{h.date} - {(h.durationMs / 3600000).toFixed(1)}h</p>
+              <button type="button" onClick={() => { const next = { ...store, history: store.history.filter(e => e.id !== h.id) }; setStore(next); saveStore(storageKey, next) }} style={{ marginTop: '6px', background: 'transparent', border: 'none', color: 'rgba(255,100,100,0.6)', fontSize: '11px', cursor: 'pointer', padding: 0 }}>
+                🗑 Delete
+              </button>
             </article>
           )) : <p className="text-sm text-white/70">🕐 Your fasting journey begins here.</p>}
         </div>
