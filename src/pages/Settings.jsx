@@ -702,19 +702,22 @@ export default function Settings() {
         </div>
 
         {/* SECTION 2 - ACCOUNT */}
-        <p
-          className="settings-section-label"
-          style={{
-          fontSize: '11px',
-          letterSpacing: '1.5px',
-          color: 'rgba(212,168,67,0.7)',
-          textTransform: 'uppercase',
-          marginBottom: '8px',
-          fontWeight: 600,
-        }}
-        >
-          {t('settings.sectionAccount')}
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+          <div style={{ width: '24px', height: '2px', background: 'rgba(212,168,67,0.6)', marginRight: '8px' }} />
+          <p
+            className="settings-section-label"
+            style={{
+            fontSize: '12px',
+            letterSpacing: '1.5px',
+            color: 'rgba(212,168,67,0.9)',
+            textTransform: 'uppercase',
+            fontWeight: 700,
+            margin: 0,
+          }}
+          >
+            {t('settings.sectionAccount')}
+          </p>
+        </div>
         <div
           className="settings-theme-panel"
           style={{
@@ -738,15 +741,15 @@ export default function Settings() {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              borderBottom: '1px solid rgba(212,168,67,0.2)',
             }}
           >
             <div style={{
               width: '36px',
               height: '36px',
-              borderRadius: '10px',
-              background: 'rgba(212,168,67,0.1)',
-              color: '#D4A843',
+              borderRadius: '50%',
+              background: 'rgba(59,130,246,0.2)',
+              color: '#3B82F6',
               fontSize: '18px',
               display: 'flex',
               alignItems: 'center',
@@ -774,15 +777,15 @@ export default function Settings() {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              borderBottom: '1px solid rgba(212,168,67,0.2)',
             }}
           >
             <div style={{
               width: '36px',
               height: '36px',
-              borderRadius: '10px',
-              background: 'rgba(212,168,67,0.1)',
-              color: '#D4A843',
+              borderRadius: '50%',
+              background: 'rgba(249,115,22,0.2)',
+              color: '#F97316',
               fontSize: '18px',
               display: 'flex',
               alignItems: 'center',
@@ -805,14 +808,15 @@ export default function Settings() {
               alignItems: 'center',
               padding: '0 16px',
               width: '100%',
+              borderTop: '1px solid rgba(212,168,67,0.2)',
             }}
           >
             <div style={{
               width: '36px',
               height: '36px',
-              borderRadius: '10px',
-              background: 'rgba(212,168,67,0.1)',
-              color: '#D4A843',
+              borderRadius: '50%',
+              background: 'rgba(16,185,129,0.2)',
+              color: '#10B981',
               fontSize: '18px',
               display: 'flex',
               alignItems: 'center',
@@ -853,19 +857,22 @@ export default function Settings() {
         </div>
 
         {/* SECTION 3 - READING */}
-        <p
-          className="settings-section-label"
-          style={{
-          fontSize: '11px',
-          letterSpacing: '1.5px',
-          color: 'rgba(212,168,67,0.7)',
-          textTransform: 'uppercase',
-          marginBottom: '8px',
-          fontWeight: 600,
-        }}
-        >
-          {t('settings.sectionReading')}
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+          <div style={{ width: '24px', height: '2px', background: 'rgba(212,168,67,0.6)', marginRight: '8px' }} />
+          <p
+            className="settings-section-label"
+            style={{
+            fontSize: '12px',
+            letterSpacing: '1.5px',
+            color: 'rgba(212,168,67,0.9)',
+            textTransform: 'uppercase',
+            fontWeight: 700,
+            margin: 0,
+          }}
+          >
+            {t('settings.sectionReading')}
+          </p>
+        </div>
         <div
           className="settings-theme-panel"
           style={{
@@ -889,15 +896,15 @@ export default function Settings() {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              borderBottom: '1px solid rgba(212,168,67,0.2)',
             }}
           >
             <div style={{
               width: '36px',
               height: '36px',
-              borderRadius: '10px',
-              background: 'rgba(212,168,67,0.1)',
-              color: '#D4A843',
+              borderRadius: '50%',
+              background: 'rgba(6,182,212,0.2)',
+              color: '#06B6D4',
               fontSize: '18px',
               display: 'flex',
               alignItems: 'center',
@@ -925,14 +932,15 @@ export default function Settings() {
               padding: '0 16px',
               width: '100%',
               cursor: 'pointer',
+              borderTop: '1px solid rgba(212,168,67,0.2)',
             }}
           >
             <div style={{
               width: '36px',
               height: '36px',
-              borderRadius: '10px',
-              background: 'rgba(212,168,67,0.1)',
-              color: '#D4A843',
+              borderRadius: '50%',
+              background: 'rgba(139,92,246,0.2)',
+              color: '#8B5CF6',
               fontSize: '18px',
               display: 'flex',
               alignItems: 'center',
@@ -979,15 +987,15 @@ export default function Settings() {
               alignItems: 'center',
               padding: '0 16px',
               width: '100%',
-              borderTop: '1px solid rgba(255,255,255,0.06)',
+              borderTop: '1px solid rgba(212,168,67,0.2)',
             }}
           >
             <div style={{
               width: '36px',
               height: '36px',
-              borderRadius: '10px',
-              background: 'rgba(212,168,67,0.1)',
-              color: '#D4A843',
+              borderRadius: '50%',
+              background: 'rgba(245,158,11,0.2)',
+              color: '#F59E0B',
               fontSize: '18px',
               display: 'flex',
               alignItems: 'center',
@@ -1022,19 +1030,22 @@ export default function Settings() {
         </div>
 
         {/* SECTION 4 - COMMUNITY */}
-        <p
-          className="settings-section-label"
-          style={{
-          fontSize: '11px',
-          letterSpacing: '1.5px',
-          color: 'rgba(212,168,67,0.7)',
-          textTransform: 'uppercase',
-          marginBottom: '8px',
-          fontWeight: 600,
-        }}
-        >
-          {t('settings.sectionCommunity')}
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+          <div style={{ width: '24px', height: '2px', background: 'rgba(212,168,67,0.6)', marginRight: '8px' }} />
+          <p
+            className="settings-section-label"
+            style={{
+            fontSize: '12px',
+            letterSpacing: '1.5px',
+            color: 'rgba(212,168,67,0.9)',
+            textTransform: 'uppercase',
+            fontWeight: 700,
+            margin: 0,
+          }}
+          >
+            {t('settings.sectionCommunity')}
+          </p>
+        </div>
         <div
           className="settings-theme-panel"
           style={{
@@ -1063,9 +1074,9 @@ export default function Settings() {
             <div style={{
               width: '36px',
               height: '36px',
-              borderRadius: '10px',
-              background: 'rgba(212,168,67,0.1)',
-              color: '#D4A843',
+              borderRadius: '50%',
+              background: 'rgba(236,72,153,0.2)',
+              color: '#EC4899',
               fontSize: '18px',
               display: 'flex',
               alignItems: 'center',
@@ -1083,19 +1094,22 @@ export default function Settings() {
         </div>
 
         {/* SECTION 5 - SUPPORT */}
-        <p
-          className="settings-section-label"
-          style={{
-          fontSize: '11px',
-          letterSpacing: '1.5px',
-          color: 'rgba(212,168,67,0.7)',
-          textTransform: 'uppercase',
-          marginBottom: '8px',
-          fontWeight: 600,
-        }}
-        >
-          {t('settings.sectionSupport')}
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+          <div style={{ width: '24px', height: '2px', background: 'rgba(212,168,67,0.6)', marginRight: '8px' }} />
+          <p
+            className="settings-section-label"
+            style={{
+            fontSize: '12px',
+            letterSpacing: '1.5px',
+            color: 'rgba(212,168,67,0.9)',
+            textTransform: 'uppercase',
+            fontWeight: 700,
+            margin: 0,
+          }}
+          >
+            {t('settings.sectionSupport')}
+          </p>
+        </div>
         <div
           className="settings-theme-panel"
           style={{
@@ -1119,15 +1133,15 @@ export default function Settings() {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              borderBottom: '1px solid rgba(212,168,67,0.2)',
             }}
           >
             <div style={{
               width: '36px',
               height: '36px',
-              borderRadius: '10px',
-              background: 'rgba(212,168,67,0.1)',
-              color: '#D4A843',
+              borderRadius: '50%',
+              background: 'rgba(20,184,166,0.2)',
+              color: '#14B8A6',
               fontSize: '18px',
               display: 'flex',
               alignItems: 'center',
@@ -1155,15 +1169,15 @@ export default function Settings() {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              borderBottom: '1px solid rgba(212,168,67,0.2)',
             }}
           >
             <div style={{
               width: '36px',
               height: '36px',
-              borderRadius: '10px',
-              background: 'rgba(212,168,67,0.1)',
-              color: '#D4A843',
+              borderRadius: '50%',
+              background: 'rgba(234,179,8,0.2)',
+              color: '#EAB308',
               fontSize: '18px',
               display: 'flex',
               alignItems: 'center',
@@ -1196,9 +1210,9 @@ export default function Settings() {
             <div style={{
               width: '36px',
               height: '36px',
-              borderRadius: '10px',
-              background: 'rgba(212,168,67,0.1)',
-              color: '#D4A843',
+              borderRadius: '50%',
+              background: 'rgba(239,68,68,0.2)',
+              color: '#EF4444',
               fontSize: '18px',
               display: 'flex',
               alignItems: 'center',
@@ -1216,19 +1230,22 @@ export default function Settings() {
         </div>
 
         {/* SECTION 6 - ABOUT */}
-        <p
-          className="settings-section-label"
-          style={{
-          fontSize: '11px',
-          letterSpacing: '1.5px',
-          color: 'rgba(212,168,67,0.7)',
-          textTransform: 'uppercase',
-          marginBottom: '8px',
-          fontWeight: 600,
-        }}
-        >
-          {t('settings.sectionAbout')}
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+          <div style={{ width: '24px', height: '2px', background: 'rgba(212,168,67,0.6)', marginRight: '8px' }} />
+          <p
+            className="settings-section-label"
+            style={{
+            fontSize: '12px',
+            letterSpacing: '1.5px',
+            color: 'rgba(212,168,67,0.9)',
+            textTransform: 'uppercase',
+            fontWeight: 700,
+            margin: 0,
+          }}
+          >
+            {t('settings.sectionAbout')}
+          </p>
+        </div>
         <div
           className="settings-theme-panel"
           style={{
@@ -1252,21 +1269,21 @@ export default function Settings() {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              borderBottom: '1px solid rgba(212,168,67,0.2)',
             }}
           >
             <div style={{
               width: '36px',
               height: '36px',
-              borderRadius: '10px',
-              background: 'rgba(212,168,67,0.1)',
-              color: '#D4A843',
+              borderRadius: '50%',
+              background: 'rgba(99,102,241,0.2)',
+              color: '#6366F1',
               fontSize: '18px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-              🎉
+              📢
             </div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
               <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
@@ -1288,15 +1305,15 @@ export default function Settings() {
               border: 'none',
               cursor: 'pointer',
               textDecoration: 'none',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              borderBottom: '1px solid rgba(212,168,67,0.2)',
             }}
           >
             <div style={{
               width: '36px',
               height: '36px',
-              borderRadius: '10px',
-              background: 'rgba(212,168,67,0.1)',
-              color: '#D4A843',
+              borderRadius: '50%',
+              background: 'rgba(71,85,105,0.2)',
+              color: '#475569',
               fontSize: '18px',
               display: 'flex',
               alignItems: 'center',
@@ -1324,15 +1341,15 @@ export default function Settings() {
               border: 'none',
               cursor: 'pointer',
               textDecoration: 'none',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              borderBottom: '1px solid rgba(212,168,67,0.2)',
             }}
           >
             <div style={{
               width: '36px',
               height: '36px',
-              borderRadius: '10px',
-              background: 'rgba(212,168,67,0.1)',
-              color: '#D4A843',
+              borderRadius: '50%',
+              background: 'rgba(16,185,129,0.2)',
+              color: '#10B981',
               fontSize: '18px',
               display: 'flex',
               alignItems: 'center',
@@ -1358,9 +1375,9 @@ export default function Settings() {
             <div style={{
               width: '36px',
               height: '36px',
-              borderRadius: '10px',
-              background: 'rgba(212,168,67,0.1)',
-              color: '#D4A843',
+              borderRadius: '50%',
+              background: 'rgba(107,114,128,0.2)',
+              color: '#6B7280',
               fontSize: '18px',
               display: 'flex',
               alignItems: 'center',
