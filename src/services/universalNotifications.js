@@ -72,6 +72,10 @@ export async function readReminderFromSupabase(userId) {
 }
 
 export async function requestUniversalNotificationPermission({ userGesture = false } = {}) {
+  if (typeof Notification === 'undefined') {
+    // Notifications not supported on this platform
+    return 'unsupported'
+  }
   const platform = getNotificationPlatform()
   if (platform.isNativeCapacitor) {
     const { display } = await LocalNotifications.requestPermissions()

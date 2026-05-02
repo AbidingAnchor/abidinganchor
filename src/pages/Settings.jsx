@@ -224,6 +224,11 @@ export default function Settings() {
   }, [user?.id, dailyReminderTime])
 
   const handleDailyReminderToggle = async () => {
+    if (typeof Notification === 'undefined') {
+      // Notifications not supported on this platform
+      setDailyReminderEnabled(false)
+      return
+    }
     try {
       const newValue = !dailyReminderEnabled
       setDailyReminderEnabled(newValue)
@@ -2200,22 +2205,26 @@ export default function Settings() {
             onClick={() => setWhatsNewOpen(false)}
           />
           <div
-            className="whats-new-modal relative z-10 w-full max-w-md overflow-y-auto rounded-2xl shadow-2xl"
+            className="whats-new-modal relative z-10 w-full max-w-md rounded-2xl shadow-2xl"
             style={{
               background: 'transparent',
               border: '1px solid var(--glass-border)',
               boxShadow: 'var(--glass-shadow)',
               maxHeight: '85dvh',
+              position: 'relative',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ overflowY: 'auto', maxHeight: '85dvh' }}>
-              <div
+            <div
               className="whats-new-modal__sky-gradient"
               aria-hidden
               style={{
                 position: 'absolute',
                 inset: 0,
+                zIndex: 0,
                 background: `
                   linear-gradient(
                     to bottom,
@@ -2233,21 +2242,23 @@ export default function Settings() {
               style={{
                 position: 'absolute',
                 inset: 0,
+                zIndex: 0,
                 background: 'radial-gradient(ellipse at 75% 8%, rgba(255, 240, 150, 0.55) 0%, transparent 45%)',
               }}
             />
-            <div
-              className="whats-new-modal__header"
-              style={{
-              position: 'relative',
-              zIndex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              marginBottom: '12px',
-              paddingTop: '18px',
-            }}
-            >
+            <div style={{ position: 'relative', zIndex: 1, overflowY: 'auto', maxHeight: '85dvh', WebkitOverflowScrolling: 'touch' }}>
+              <div
+                className="whats-new-modal__header"
+                style={{
+                  position: 'relative',
+                  zIndex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  marginBottom: '12px',
+                  paddingTop: '56px',
+                }}
+              >
               <button
                 type="button"
                 onClick={() => setWhatsNewOpen(false)}
