@@ -496,7 +496,7 @@ export default function Prayer() {
                               borderRadius: '12px',
                               border: '1px solid rgba(255, 255, 255, 0.15)',
                               background: 'rgba(255, 255, 255, 0.05)',
-                              color: 'rgba(255, 255, 255, 0.85)',
+                              color: '#0a0f28',
                               fontSize: '13px',
                               fontWeight: 500,
                               cursor: 'pointer',

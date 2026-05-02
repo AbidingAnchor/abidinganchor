@@ -19,6 +19,7 @@ export default function Fellowship() {
   const {
     fellowship,
     setFellowship,
+    fellowships,
     members,
     setMembers,
     posts,
@@ -29,6 +30,7 @@ export default function Fellowship() {
     setView,
     triggerRefetch,
     addDeletedFellowshipId,
+    selectFellowship,
   } = useFellowship()
 
   const POST_TYPES = useMemo(() => [
@@ -159,7 +161,65 @@ export default function Fellowship() {
 
       setFellowshipName('')
       setFellowshipDescription('')
+      // Set the fellowship directly and load its data
+      setFellowship(newFellowship)
       setView('inside')
+      // Load members and posts for the new fellowship
+      const { data: membersData } = await supabase
+        .from('fellowship_members')
+        .select('user_id, role, joined_at')
+        .eq('fellowship_id', newFellowship.id)
+      
+      const userIds = (membersData || []).map(m => m.user_id)
+      let profilesById = {}
+      
+      if (userIds.length > 0) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('id, display_name, username, email, avatar_url')
+          .in('id', userIds)
+        
+        profilesById = (profileData || []).reduce((acc, p) => {
+          acc[p.id] = p
+          return acc
+        }, {})
+      }
+      
+      const membersWithProfiles = (membersData || []).map(m => ({
+        ...m,
+        profile: profilesById[m.user_id] || null
+      }))
+      
+      setMembers(membersWithProfiles)
+      
+      const { data: postsData } = await supabase
+        .from('fellowship_posts')
+        .select('*')
+        .eq('fellowship_id', newFellowship.id)
+        .order('created_at', { ascending: false })
+      
+      const postUserIds = (postsData || []).map(p => p.user_id)
+      let postProfilesById = {}
+      
+      if (postUserIds.length > 0) {
+        const { data: postProfileData } = await supabase
+          .from('profiles')
+          .select('id, display_name, username, email, avatar_url')
+          .in('id', postUserIds)
+        
+        postProfilesById = (postProfileData || []).reduce((acc, p) => {
+          acc[p.id] = p
+          return acc
+        }, {})
+      }
+      
+      const postsWithProfiles = (postsData || []).map(p => ({
+        ...p,
+        profile: postProfilesById[p.user_id] || null
+      }))
+      
+      setPosts(postsWithProfiles)
+      
       triggerRefetch()
 
     } catch (error) {
@@ -215,9 +275,76 @@ export default function Fellowship() {
       
       if (memberError) throw memberError
       
+      // Fetch the fellowship details
+      const { data: fellowshipData } = await supabase
+        .from('fellowships')
+        .select('*')
+        .eq('id', inviteData.fellowship_id)
+        .maybeSingle()
+      
+      if (!fellowshipData) throw new Error('Fellowship not found')
+      
       setInviteCode('')
       setShowJoinModal(false)
+      // Set the fellowship directly and load its data
+      setFellowship(fellowshipData)
       setView('inside')
+      // Load members and posts for the fellowship
+      const { data: membersData } = await supabase
+        .from('fellowship_members')
+        .select('user_id, role, joined_at')
+        .eq('fellowship_id', fellowshipData.id)
+      
+      const userIds = (membersData || []).map(m => m.user_id)
+      let profilesById = {}
+      
+      if (userIds.length > 0) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('id, display_name, username, email, avatar_url')
+          .in('id', userIds)
+        
+        profilesById = (profileData || []).reduce((acc, p) => {
+          acc[p.id] = p
+          return acc
+        }, {})
+      }
+      
+      const membersWithProfiles = (membersData || []).map(m => ({
+        ...m,
+        profile: profilesById[m.user_id] || null
+      }))
+      
+      setMembers(membersWithProfiles)
+      
+      const { data: postsData } = await supabase
+        .from('fellowship_posts')
+        .select('*')
+        .eq('fellowship_id', fellowshipData.id)
+        .order('created_at', { ascending: false })
+      
+      const postUserIds = (postsData || []).map(p => p.user_id)
+      let postProfilesById = {}
+      
+      if (postUserIds.length > 0) {
+        const { data: postProfileData } = await supabase
+          .from('profiles')
+          .select('id, display_name, username, email, avatar_url')
+          .in('id', postUserIds)
+        
+        postProfilesById = (postProfileData || []).reduce((acc, p) => {
+          acc[p.id] = p
+          return acc
+        }, {})
+      }
+      
+      const postsWithProfiles = (postsData || []).map(p => ({
+        ...p,
+        profile: postProfilesById[p.user_id] || null
+      }))
+      
+      setPosts(postsWithProfiles)
+      
       triggerRefetch()
       
     } catch (error) {
@@ -879,6 +1006,46 @@ export default function Fellowship() {
           <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-3" style={{ color: '#1A1A1A' }}>{t('fellowship.title')}</h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md" style={{ color: '#1A1A1A' }}>{t('fellowship.subtitle')}</p>
           
+          {fellowships.length > 0 && (
+            <div className="mb-6">
+              <h2 className="text-lg font-bold mb-3" style={{ color: '#1A1A1A' }}>Your Fellowships</h2>
+              <div className="space-y-3">
+                {fellowships.map(f => (
+                  <button
+                    key={f.id}
+                    onClick={() => selectFellowship(f.id)}
+                    className="w-full text-left p-4 rounded-lg transition duration-200 flex items-center gap-3"
+                    style={{
+                      background: isDaytime ? '#FFFFFF' : 'rgba(10, 15, 38, 0.6)',
+                      border: isDaytime ? '1px solid rgba(212,168,67,0.3)' : '1px solid rgba(212,168,67,0.4)',
+                      boxShadow: isDaytime ? '0 2px 4px rgba(0,0,0,0.05)' : '0 2px 8px rgba(0,0,0,0.3)',
+                      color: isDaytime ? '#1A1A1A' : '#FFFFFF'
+                    }}
+                  >
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{
+                        background: isDaytime ? 'rgba(212,168,67,0.15)' : 'rgba(212,168,67,0.25)',
+                        color: isDaytime ? '#D4A843' : '#D4A843'
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <div className="flex-grow min-w-0">
+                      <div className="font-bold text-base truncate" style={{ color: isDaytime ? '#1A1A1A' : '#FFFFFF' }}>{f.name}</div>
+                      {f.description && <div className="text-sm opacity-70 truncate" style={{ color: isDaytime ? '#6B7280' : 'rgba(255,255,255,0.7)' }}>{f.description}</div>}
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: isDaytime ? '#D4A843' : 'rgba(212,168,67,0.7)' }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          
           <button
             onClick={() => setView('create')}
             className="bg-yellow-500 text-white font-bold py-3 px-6 rounded-full text-lg mb-4 shadow-lg hover:bg-yellow-600 transition duration-200"
@@ -943,7 +1110,8 @@ export default function Fellowship() {
                   <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg z-10">
                     <button
                       onClick={() => { setShowInviteModal(true); setShowDeleteMenu(false); }}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600"
+                      style={{ color: '#ffffff' }}
                     >
                       {t('fellowship.inviteMembers')}
                     </button>
@@ -969,17 +1137,18 @@ export default function Fellowship() {
                   <div
                     key={member.user_id}
                     onClick={() => handleProfileTap(member.user_id)}
-                    className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-full pr-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-200"
+                    className="flex items-center rounded-full pr-3 cursor-pointer transition duration-200"
+                    style={{ background: isDaytime ? '#F3F4F6' : 'rgba(10, 15, 38, 0.4)', color: isDaytime ? '#1A1A1A' : '#FFFFFF' }}
                   >
-                    <div className="w-8 h-8 rounded-full bg-blue-200 dark:bg-blue-700 flex items-center justify-center text-sm font-medium text-blue-800 dark:text-blue-200 mr-2">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium mr-2" style={{ background: isDaytime ? '#BFDBFE' : 'rgba(212,168,67,0.2)', color: isDaytime ? '#1E40AF' : '#D4A843' }}>
                       {getInitials(getMemberDisplayName(member))}
                     </div>
-                    <span className="text-gray-800 dark:text-gray-200 text-sm font-medium">{getMemberDisplayName(member)}</span>
+                    <span className="text-sm">{getMemberDisplayName(member)}</span>
                     {member.role === 'admin' && (
-                      <span className="ml-2 px-2 py-0.5 text-xs font-semibold bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 rounded-full">{t('fellowship.admin')}</span>
+                      <span className="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full" style={{ background: isDaytime ? '#FEF3C7' : 'rgba(212,168,67,0.3)', color: isDaytime ? '#92400E' : '#D4A843' }}>{t('fellowship.admin')}</span>
                     )}
                     {isAdmin && member.user_id !== user?.id && (
-                      <button onClick={(e) => { e.stopPropagation(); setShowRemoveConfirm(member.user_id); }} className="ml-2 text-gray-500 hover:text-red-600">
+                      <button onClick={(e) => { e.stopPropagation(); setShowRemoveConfirm(member.user_id); }} className="ml-2" style={{ color: isDaytime ? '#6B7280' : 'rgba(255,255,255,0.5)' }}>
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -989,45 +1158,46 @@ export default function Fellowship() {
                 ))}
               </div>
 
-              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mb-4">
-                <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2">{t('fellowship.communityVerseLabel')}</h3>
+              <div className="rounded-lg p-4 mb-4" style={{ background: isDaytime ? '#F3F4F6' : 'rgba(10, 15, 38, 0.4)', border: isDaytime ? 'none' : '1px solid rgba(212,168,67,0.15)' }}>
+                <h3 className="text-lg font-bold mb-2" style={{ color: isDaytime ? '#1A1A1A' : '#FFFFFF' }}>{t('fellowship.communityVerseLabel')}</h3>
                 {communityVerseLoading ? (
-                  <p className="text-gray-600 dark:text-gray-400">{t('common.loading')}</p>
+                  <p style={{ color: isDaytime ? '#6B7280' : 'rgba(255,255,255,0.5)' }}>{t('common.loading')}</p>
                 ) : (
-                  <p className="italic text-gray-700 dark:text-gray-300">"{communityVerseText}"</p>
+                  <p className="italic" style={{ color: isDaytime ? '#374151' : 'rgba(255,255,255,0.8)' }}>"{communityVerseText}"</p>
                 )}
               </div>
             </div>
 
-            <div className="flex-shrink-0 p-4 bg-white dark:bg-gray-800">
+            <div className="flex-shrink-0 p-4" style={{ background: isDaytime ? '#F5EFE0' : 'transparent' }}>
               <button
                 onClick={() => setShowPostModal(true)}
-                className="w-full bg-yellow-400 text-yellow-900 font-bold py-2 px-4 rounded-full flex items-center justify-center shadow-md hover:bg-yellow-300 transition duration-200"
+                className="w-full font-bold py-2 px-4 rounded-full flex items-center justify-center shadow-md hover:opacity-90 transition duration-200"
+                style={{ background: '#D4A843', color: '#1A1A1A' }}
               >
                 <span className="text-xl mr-2">+
                 </span> {t('fellowship.shareUpdate')}
               </button>
             </div>
 
-            <div className="flex-grow overflow-y-auto p-4">
+            <div className="flex-grow overflow-y-auto p-4" style={{ background: isDaytime ? '#F5EFE0' : undefined }}>
               {posts.length === 0 && (
-                <p className="text-gray-500 dark:text-gray-400 text-center mt-8">
+                <p className="text-gray-500 dark:text-gray-400 text-center mt-8" style={{ color: isDaytime ? '#1A1A1A' : 'rgba(255,255,255,0.5)' }}>
                   {t('fellowship.noPosts')}
                 </p>
               )}
               {posts.map(post => (
-                <div key={post.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-4">
+                <div key={post.id} className="rounded-lg shadow p-4 mb-4" style={{ background: isDaytime ? '#FFFFFF' : 'rgba(10, 15, 38, 0.6)', border: isDaytime ? 'none' : '1px solid rgba(212,168,67,0.2)' }}>
                   <div className="flex items-center mb-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-200 dark:bg-blue-700 flex items-center justify-center text-xl font-bold text-blue-800 dark:text-blue-200 mr-3">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold mr-3" style={{ background: isDaytime ? '#BFDBFE' : 'rgba(212,168,67,0.2)', color: isDaytime ? '#1E40AF' : '#D4A843' }}>
                       {getInitials(getDisplayName(post.profile, post.user_id))}
                     </div>
                     <div>
-                      <p className="font-bold text-gray-800 dark:text-white" style={getNameStyle(post.profile?.supporter_tier)}>{getDisplayName(post.profile, post.user_id)}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{formatDate(post.created_at)}</p>
+                      <p className="font-bold" style={{ ...getNameStyle(post.profile?.supporter_tier), color: isDaytime ? '#1A1A1A' : '#FFFFFF' }}>{getDisplayName(post.profile, post.user_id)}</p>
+                      <p className="text-sm" style={{ color: isDaytime ? '#6B7280' : 'rgba(255,255,255,0.5)' }}>{formatDate(post.created_at)}</p>
                     </div>
                   </div>
-                  <p className="text-gray-800 dark:text-gray-200 mb-3">{post.content}</p>
-                  <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+                  <p className="mb-3" style={{ color: isDaytime ? '#1A1A1A' : 'rgba(255,255,255,0.9)' }}>{post.content}</p>
+                  <div className="flex items-center justify-between text-sm" style={{ color: isDaytime ? '#6B7280' : 'rgba(255,255,255,0.6)' }}>
                     <div className="flex space-x-3">
                       {REACTION_TYPES.map(reactionType => {
                         const count = postReactions[post.id]?.[reactionType.id] || 0
@@ -1036,14 +1206,18 @@ export default function Fellowship() {
                           <button
                             key={reactionType.id}
                             onClick={() => handleReaction(post.id, reactionType.id)}
-                            className={`flex items-center p-1 rounded-full ${userReacted ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                            className="flex items-center p-1 rounded-full"
+                            style={{
+                              background: userReacted ? 'rgba(212,168,67,0.2)' : 'transparent',
+                              color: isDaytime ? '#1A1A1A' : 'rgba(255,255,255,0.8)'
+                            }}
                           >
                             {reactionType.emoji} {count > 0 && <span className="ml-1">{count}</span>}
                           </button>
                         )
                       })}
                     </div>
-                    <span className="hover:text-gray-800 dark:hover:text-gray-200">
+                    <span style={{ color: isDaytime ? '#6B7280' : 'rgba(255,255,255,0.6)' }}>
                       {t('fellowship.comments', { count: postComments[post.id]?.length || 0 })}
                     </span>
                   </div>

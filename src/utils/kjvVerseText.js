@@ -10,6 +10,26 @@ export function formatBibleApiVerseText(text) {
 }
 
 /**
+ * Remove translator footnote artifacts from verse text (e.g., "Heb.", "Gr.", "Heb. word").
+ * These appear at the end of verses like "the light from: Heb." or "- Heb.".
+ */
+export function cleanTranslatorFootnotes(text) {
+  if (text == null || typeof text !== 'string') return ''
+  let t = text.trim()
+  
+  console.log('cleanTranslatorFootnotes input:', t)
+  
+  // More permissive patterns - catch any language abbreviation at end
+  // Pattern: word: Heb. or word: Heb or : Heb. or - Heb. or just Heb.
+  t = t.replace(/\s+(?:from|to|by|for|with|in|on|at|of|the|that|which|who)\s*[:\-]\s*(?:Heb|Gr|Lat|Aram|Chald|Hebrew|Greek|Latin|Aramaic|Chaldee)\.?\s*$/gi, '')
+  t = t.replace(/\s+[:\-]\s*(?:Heb|Gr|Lat|Aram|Chald|Hebrew|Greek|Latin|Aramaic|Chaldee)\.?\s*$/gi, '')
+  t = t.replace(/\s+(?:Heb|Gr|Lat|Aram|Chald|Hebrew|Greek|Latin|Aramaic|Chaldee)\.?\s*$/gi, '')
+  
+  console.log('cleanTranslatorFootnotes output:', t)
+  return t.trim()
+}
+
+/**
  * Legacy / defensive: wldeh jsDelivr en-kjv appended KJV marginal notes after verse text, e.g.:
  * "...darkness.1.4 the light from…: Heb. …" — strip from first chapter.verse anchor onward.
  * Safe to run after formatBibleApiVerseText if any source still concatenates notes.
@@ -73,11 +93,12 @@ export function truncateVerseToLastCompleteSentence(text) {
   return t
 }
 
-/** Normalize bible-api.com lines, strip marginal junk, then enforce clean sentence ending. */
+/** Normalize bible-api.com lines, strip marginal junk, remove translator footnotes, then enforce clean sentence ending. */
 export function prepareBibleReaderVerseText(text) {
   const step1 = formatBibleApiVerseText(text)
   const step2 = cleanKjvVerseText(step1)
-  return truncateVerseToLastCompleteSentence(step2)
+  const step3 = cleanTranslatorFootnotes(step2)
+  return truncateVerseToLastCompleteSentence(step3)
 }
 
 /** wldeh chapter JSON sometimes repeats verse rows; keep first occurrence per verse number. */

@@ -7,6 +7,7 @@ const FellowshipContext = createContext(null)
 export function FellowshipProvider({ children }) {
   const { user, loading: authLoading } = useAuth()
   const [fellowship, setFellowship] = useState(null)
+  const [fellowships, setFellowships] = useState([])
   const [members, setMembers] = useState([])
   const [posts, setPosts] = useState([])
   const [postReactions, setPostReactions] = useState({})
@@ -80,29 +81,48 @@ export function FellowshipProvider({ children }) {
         .select('*')
         .in('id', fellowshipIds)
         .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
 
       if (fellowshipError) throw fellowshipError
 
-      console.log('Fetched fellowship data:', fellowshipData?.id, fellowshipData?.name)
+      console.log('Fetched fellowship data:', fellowshipData?.length, 'fellowships')
 
-      if (!fellowshipData) {
+      if (!fellowshipData || fellowshipData.length === 0) {
         setView('none')
         setFellowship(null)
+        setFellowships([])
         setMembers([])
         setPosts([])
         return
       }
 
-      setFellowship(fellowshipData)
-      setView('inside')
+      setFellowships(fellowshipData)
+      // Don't auto-select or auto-open - let user choose
+      return
+      
+    } catch (error) {
+      console.error('Error fetching fellowship:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [user?.id])
+
+  const selectFellowship = useCallback(async (fellowshipId) => {
+    if (!user?.id || !fellowshipId) return
+    
+    try {
+      setLoading(true)
+      
+      // Get the fellowship from the list
+      const selectedFellowship = fellowships.find(f => f.id === fellowshipId)
+      if (!selectedFellowship) return
+      
+      setFellowship(selectedFellowship)
       
       // Fetch members
       const { data: membersData, error: membersError } = await supabase
         .from('fellowship_members')
         .select('user_id, role, joined_at')
-        .eq('fellowship_id', fellowshipData.id)
+        .eq('fellowship_id', fellowshipId)
       
       if (membersError) throw membersError
       
@@ -133,7 +153,7 @@ export function FellowshipProvider({ children }) {
       const { data: postsData, error: postsError } = await supabase
         .from('fellowship_posts')
         .select('*')
-        .eq('fellowship_id', fellowshipData.id)
+        .eq('fellowship_id', fellowshipId)
         .order('created_at', { ascending: false })
       
       if (postsError) throw postsError
@@ -170,7 +190,6 @@ export function FellowshipProvider({ children }) {
           .in('post_id', postIds)
         
         if (!reactionsError && reactionsData) {
-          // Group reactions by post_id
           const reactionsByPost = reactionsData.reduce((acc, r) => {
             if (!acc[r.post_id]) {
               acc[r.post_id] = []
@@ -179,7 +198,6 @@ export function FellowshipProvider({ children }) {
             return acc
           }, {})
           
-          // Calculate counts and user reactions
           const reactionsState = {}
           Object.keys(reactionsByPost).forEach(postId => {
             const reactionsForPost = reactionsByPost[postId]
@@ -208,12 +226,13 @@ export function FellowshipProvider({ children }) {
         }
       }
       
+      setView('inside')
     } catch (error) {
-      console.error('Error fetching fellowship:', error)
+      console.error('Error selecting fellowship:', error)
     } finally {
       setLoading(false)
     }
-  }, [user?.id])
+  }, [user?.id, fellowships])
 
   // Initial fetch on user load - only when auth is fully resolved
   useEffect(() => {
@@ -249,6 +268,7 @@ export function FellowshipProvider({ children }) {
   const value = {
     fellowship,
     setFellowship,
+    fellowships,
     members,
     setMembers,
     posts,
@@ -262,6 +282,7 @@ export function FellowshipProvider({ children }) {
     setView,
     triggerRefetch,
     fetchUserFellowship,
+    selectFellowship,
     addDeletedFellowshipId,
   }
 
