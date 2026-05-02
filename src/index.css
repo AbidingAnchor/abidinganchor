@@ -631,6 +631,18 @@ body {
   animation: prayer-faithful-sparkle 1.2s ease-in-out infinite;
 }
 
+/* Settings page - Time picker styling */
+input[type="time"] {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(212, 168, 67, 0.3) !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  color: #ffffff !important;
+  font-size: 14px !important;
+  outline: none !important;
+  cursor: pointer !important;
+}
+
 @keyframes personal-prayer-shimmer {
   0%,
   100% {

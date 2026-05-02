@@ -44,6 +44,7 @@ export default function Settings() {
   const [localAvatarUrl, setLocalAvatarUrl] = useState(null)
   const [localUsername, setLocalUsername] = useState('')
   const [dailyReminderEnabled, setDailyReminderEnabled] = useState(false)
+  const [dailyReminderTime, setDailyReminderTime] = useState('08:00')
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [offlineBibleOpen, setOfflineBibleOpen] = useState(false)
   const [shareAppOpen, setShareAppOpen] = useState(false)
@@ -206,32 +207,40 @@ export default function Settings() {
     setThemePreference(savedPreference)
   }, [])
 
+  // Load daily reminder time from localStorage
+  useEffect(() => {
+    const savedTime = localStorage.getItem('dailyReminderTime')
+    if (savedTime) {
+      setDailyReminderTime(savedTime)
+    }
+  }, [])
+
   const scheduleNotifications = useCallback(async () => {
     try {
-      await scheduleUniversalReminder({ time: '08:00', userId: user?.id })
+      await scheduleUniversalReminder({ time: dailyReminderTime, userId: user?.id })
     } catch (error) {
       console.error('Error scheduling notifications:', error)
     }
-  }, [user?.id])
+  }, [user?.id, dailyReminderTime])
 
   const handleDailyReminderToggle = async () => {
     const newValue = !dailyReminderEnabled
     setDailyReminderEnabled(newValue)
     if (user?.id) {
-      writeReminderLocal(user.id, { enabled: newValue, time: '08:00' })
-      await persistReminderToSupabase(user.id, { enabled: newValue, time: '08:00' })
+      writeReminderLocal(user.id, { enabled: newValue, time: dailyReminderTime })
+      await persistReminderToSupabase(user.id, { enabled: newValue, time: dailyReminderTime })
     }
 
     if (newValue) {
       const permission = await requestUniversalNotificationPermission({ userGesture: true })
       if (permission === 'gesture-required') {
         setDailyReminderEnabled(false)
-        if (user?.id) writeReminderLocal(user.id, { enabled: false, time: '08:00' })
+        if (user?.id) writeReminderLocal(user.id, { enabled: false, time: dailyReminderTime })
         return
       }
       if (permission !== 'granted') {
         setDailyReminderEnabled(false)
-        if (user?.id) writeReminderLocal(user.id, { enabled: false, time: '08:00' })
+        if (user?.id) writeReminderLocal(user.id, { enabled: false, time: dailyReminderTime })
         return
       }
       await scheduleNotifications()
@@ -979,6 +988,41 @@ export default function Settings() {
               }} />
             </button>
           </div>
+          {dailyReminderEnabled && (
+            <div style={{
+              padding: '12px 16px',
+              borderTop: '1px solid rgba(212,168,67,0.15)',
+              background: 'rgba(212,168,67,0.05)',
+            }}>
+              <label style={{
+                fontSize: '12px',
+                color: 'rgba(255,255,255,0.6)',
+                marginBottom: '8px',
+                display: 'block',
+              }}>
+                {t('settings.reminderTime')}
+              </label>
+              <input
+                type="time"
+                value={dailyReminderTime}
+                onChange={(e) => {
+                  setDailyReminderTime(e.target.value)
+                  localStorage.setItem('dailyReminderTime', e.target.value)
+                }}
+                style={{
+                  background: 'rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(212,168,67,0.3)',
+                  borderRadius: '8px',
+                  padding: '8px 12px',
+                  color: '#ffffff',
+                  fontSize: '14px',
+                  width: '100%',
+                  outline: 'none',
+                  cursor: 'pointer',
+                }}
+              />
+            </div>
+          )}
           {/* Theme Preference */}
           <div
             style={{
