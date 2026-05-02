@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import DayBackground, { getBackgroundTypeForTime } from "./DayBackground";
 import SunsetBackground from "./SunsetBackground";
 import CelestialBackground from "./CelestialBackground";
+import { StatusBar } from '@capacitor/status-bar';
 import {
   THEME_PREFERENCE_CHANGED_EVENT,
   THEME_PREFERENCE_STORAGE_KEY,
@@ -49,6 +50,33 @@ function syncBodySkyClasses(theme, reason = "unknown") {
   logThemeMutation("BackgroundManager: body theme classes", { reason, theme, before, after });
 }
 
+/** Update Android system navigation bar color (theme-color meta tag and StatusBar) */
+async function updateThemeColorMeta(theme) {
+  let themeColor;
+  if (theme === "day") {
+    themeColor = "#E0D4BC"; // Slightly darker cream
+  } else if (theme === "sunset") {
+    themeColor = "#3C145A"; // Slightly darker warm purple
+  } else {
+    themeColor = "#0A1628"; // Slightly darker navy
+  }
+  
+  // Update meta tag for web browsers
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+  if (metaThemeColor) {
+    metaThemeColor.setAttribute("content", themeColor);
+  }
+  
+  // Update Android navigation bar using Capacitor StatusBar
+  try {
+    await StatusBar.setStyle({ style: 'DARK' });
+    await StatusBar.setBackgroundColor({ color: themeColor });
+  } catch (error) {
+    // StatusBar might not be available on web, ignore error
+    console.debug('StatusBar update failed (expected on web):', error);
+  }
+}
+
 function BackgroundLayer({ type, isVisible }) {
   const component = useMemo(() => {
     switch (type) {
@@ -73,13 +101,37 @@ function BackgroundLayer({ type, isVisible }) {
 
 export default function BackgroundManager() {
   const currentBgRef = useRef(null);
+  
+  // Early check: immediately apply saved manual theme preference on every render
+  // This prevents time-based theme from overriding manual selection on remount
+  useEffect(() => {
+    const themePreference = readThemePreferenceFromStorage();
+    if (themePreference === 'day' || themePreference === 'evening' || themePreference === 'night') {
+      const savedTheme = themePreference === 'evening' ? 'sunset' : themePreference;
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      syncBodySkyClasses(savedTheme, 'early-theme-check');
+      updateThemeColorMeta(savedTheme);
+      currentBgRef.current = savedTheme;
+      setCurrentBg(savedTheme);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  
   const [currentBg, setCurrentBg] = useState(() => {
     const themePreference = readThemePreferenceFromStorage();
-    const initial = themePreference === 'auto' || !themePreference 
-      ? getBackgroundTypeForTime() 
-      : themePreference === 'evening' ? 'sunset' : themePreference;
+    let initial;
+    
+    // Always check saved preference first - use it if set to day, evening, or night
+    if (themePreference === 'day' || themePreference === 'evening' || themePreference === 'night') {
+      // Use the saved preference directly (evening maps to sunset)
+      initial = themePreference === 'evening' ? 'sunset' : themePreference;
+    } else {
+      // Only use time-based if preference is 'auto' or undefined
+      initial = getBackgroundTypeForTime();
+    }
+    
     currentBgRef.current = initial;
-    logThemeMutation("BackgroundManager: set data-theme", { reason: "initial-state", theme: initial });
+    logThemeMutation("BackgroundManager: set data-theme", { reason: "initial-state", theme: initial, themePreference });
     document.documentElement.setAttribute("data-theme", initial);
     syncBodySkyClasses(initial, "initial-state");
     return initial;
@@ -109,6 +161,7 @@ export default function BackgroundManager() {
         nextTheme: nextBg,
       });
       document.documentElement.setAttribute("data-theme", nextBg);
+      updateThemeColorMeta(nextBg);
       setPreviousBg(prevBg);
       setCurrentBg(nextBg);
       clearTimeout(fadeTimeout);
@@ -127,6 +180,7 @@ export default function BackgroundManager() {
       currentBgRef.current = nextBg;
       syncBodySkyClasses(nextBg, 'themePreferenceChanged');
       document.documentElement.setAttribute('data-theme', nextBg);
+      updateThemeColorMeta(nextBg);
       setPreviousBg(prevBg);
       setCurrentBg(nextBg);
       clearTimeout(fadeTimeout);
@@ -134,15 +188,28 @@ export default function BackgroundManager() {
     };
 
     updateBackground();
+    updateThemeColorMeta(currentBgRef.current);
     const interval = setInterval(updateBackground, 30 * 1000);
 
     const handleVisibilityChange = () => {
-      if (!document.hidden) updateBackground();
+      if (!document.hidden) {
+        const themePreference = readThemePreferenceFromStorage();
+        // Only update background if preference is auto
+        if (!themePreference || themePreference === 'auto') {
+          updateBackground();
+        }
+      }
     };
 
     const onThemePreferenceChanged = () => applyThemePreference();
     const onStorage = (e) => {
-      if (e.key === THEME_PREFERENCE_STORAGE_KEY || e.key === null) updateBackground();
+      if (e.key === THEME_PREFERENCE_STORAGE_KEY || e.key === null) {
+        const themePreference = readThemePreferenceFromStorage();
+        // Only update background if preference is auto
+        if (!themePreference || themePreference === 'auto') {
+          updateBackground();
+        }
+      }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);

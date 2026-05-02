@@ -11,7 +11,7 @@ export default function Legal() {
     <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
       <div
         className="content-scroll"
-        style={{ padding: '0 16px', paddingTop: '220px', paddingBottom: '120px', maxWidth: '680px', margin: '0 auto', width: '100%' }}
+        style={{ padding: '0 16px', paddingTop: 'calc(env(safe-area-inset-top) + 80px)', paddingBottom: '120px', maxWidth: '680px', margin: '0 auto', width: '100%' }}
       >
         <div style={{
           display: 'flex',

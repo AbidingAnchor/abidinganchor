@@ -52,6 +52,11 @@ export function emitThemePreferenceChanged() {
 export function syncThemePreferenceFromProfileRow(profile) {
   if (!profile || typeof profile !== 'object') return
   // Manual theme selection is now enabled; sky can be time-based or manual.
-  // Do not emit — emitting on every profile refresh caused BackgroundManager to "thrash" and log repeatedly.
-  writeThemePreferenceToStorage('auto')
+  // Only set to auto if there's no existing manual preference - don't override user's choice
+  const currentPreference = readThemePreferenceFromStorage()
+  if (!currentPreference || currentPreference === 'auto') {
+    // No manual preference set, or already on auto - safe to set to auto
+    writeThemePreferenceToStorage('auto')
+  }
+  // If user has manually selected day, evening, or night, preserve it
 }

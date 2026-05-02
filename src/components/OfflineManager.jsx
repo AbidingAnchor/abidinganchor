@@ -335,8 +335,8 @@ export default function OfflineManager({ translation = null }) {
   return (
     <div
       style={{
-        background: '#050c24',
-        color: '#f5f6fb',
+        background: 'var(--card-bg, rgba(255,255,255,0.08))',
+        color: 'var(--text-primary)',
         minHeight: '100%',
         width: '100%',
         padding: '16px',
@@ -345,7 +345,7 @@ export default function OfflineManager({ translation = null }) {
     >
       <div
         style={{
-          background: 'rgba(10, 26, 62, 0.9)',
+          background: 'var(--card-bg, rgba(255,255,255,0.08))',
           border: '1px solid rgba(212, 168, 67, 0.45)',
           borderRadius: '14px',
           padding: '14px',
@@ -411,7 +411,7 @@ export default function OfflineManager({ translation = null }) {
                 <div
                   key={bookMeta.book}
                   style={{
-                    background: 'rgba(10, 26, 62, 0.72)',
+                    background: 'var(--card-bg, rgba(255,255,255,0.08))',
                     border: '1px solid rgba(212, 168, 67, 0.2)',
                     borderRadius: '12px',
                     padding: '10px',
@@ -455,7 +455,7 @@ export default function OfflineManager({ translation = null }) {
                               borderRadius: '10px',
                               padding: '8px 10px',
                               background: '#D4A843',
-                              color: '#0a1a3e',
+                              color: 'var(--text-primary)',
                               fontWeight: 700,
                               fontSize: '12px',
                               cursor: isDownloading ? 'not-allowed' : 'pointer',

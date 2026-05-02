@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 const DAILY_LIMITS = {
   free: 5,
   monthly: 50,
-  lifetime: Infinity,
+  lifetime: 200,
 };
 
 export function useAiUsage() {

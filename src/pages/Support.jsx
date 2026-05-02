@@ -357,7 +357,7 @@ export default function Support() {
           </div>
           <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
             {[
-              'Unlimited AI messages/day ∞',
+              '200 AI messages/day',
               'Full name color picker',
               'Shimmering gold name effect',
               'Exclusive animated borders',

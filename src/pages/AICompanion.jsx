@@ -261,7 +261,7 @@ export default function AICompanion() {
               Daily Limit Reached
             </h2>
             <p style={{ color: 'white', fontSize: '15px', lineHeight: 1.5, marginBottom: '16px' }}>
-              You've reached your daily limit of 5 AI interactions. Upgrade to Supporter for unlimited access to the AI Bible Study Companion.
+              You've reached your daily limit of 5 AI interactions. Upgrade to Supporter for 200 messages/day access to the AI Bible Study Companion.
             </p>
             <div style={{ display: 'flex', gap: '12px' }}>
               <button

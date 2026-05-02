@@ -377,7 +377,11 @@ export function AuthProvider({ children }) {
         }
         setSuspendedInfo(null)
         setProfile(nextProfile)
-        applyThemeStorageForProfile(nextProfile)
+        // Only sync theme from profile if user hasn't manually selected a theme
+        const currentThemePref = readThemePreferenceFromStorage()
+        if (!currentThemePref || currentThemePref === 'auto') {
+          applyThemeStorageForProfile(nextProfile)
+        }
         syncLocalOnboardingCompletion(nextProfile)
       } catch (e) {
         console.warn('Silent session refresh:', e)

@@ -224,32 +224,43 @@ export default function Settings() {
   }, [user?.id, dailyReminderTime])
 
   const handleDailyReminderToggle = async () => {
-    const newValue = !dailyReminderEnabled
-    setDailyReminderEnabled(newValue)
-    if (user?.id) {
-      writeReminderLocal(user.id, { enabled: newValue, time: dailyReminderTime })
-      await persistReminderToSupabase(user.id, { enabled: newValue, time: dailyReminderTime })
-    }
+    try {
+      const newValue = !dailyReminderEnabled
+      setDailyReminderEnabled(newValue)
+      if (user?.id) {
+        writeReminderLocal(user.id, { enabled: newValue, time: dailyReminderTime })
+        await persistReminderToSupabase(user.id, { enabled: newValue, time: dailyReminderTime })
+      }
 
-    if (newValue) {
-      const permission = await requestUniversalNotificationPermission({ userGesture: true })
-      if (permission === 'gesture-required') {
-        setDailyReminderEnabled(false)
-        if (user?.id) writeReminderLocal(user.id, { enabled: false, time: dailyReminderTime })
-        return
+      if (newValue) {
+        try {
+          const permission = await requestUniversalNotificationPermission({ userGesture: true })
+          if (permission === 'gesture-required') {
+            setDailyReminderEnabled(false)
+            if (user?.id) writeReminderLocal(user.id, { enabled: false, time: dailyReminderTime })
+            return
+          }
+          if (permission !== 'granted') {
+            setDailyReminderEnabled(false)
+            if (user?.id) writeReminderLocal(user.id, { enabled: false, time: dailyReminderTime })
+            return
+          }
+          await scheduleNotifications()
+        } catch (error) {
+          console.error('Error requesting notification permission:', error)
+          setDailyReminderEnabled(false)
+          if (user?.id) writeReminderLocal(user.id, { enabled: false, time: dailyReminderTime })
+          return
+        }
+      } else {
+        try {
+          await cancelUniversalReminder()
+        } catch (e) {
+          console.error('Error canceling reminders:', e)
+        }
       }
-      if (permission !== 'granted') {
-        setDailyReminderEnabled(false)
-        if (user?.id) writeReminderLocal(user.id, { enabled: false, time: dailyReminderTime })
-        return
-      }
-      await scheduleNotifications()
-    } else {
-      try {
-        await cancelUniversalReminder()
-      } catch (e) {
-        console.error('Error canceling reminders:', e)
-      }
+    } catch (error) {
+      console.error('Error in handleDailyReminderToggle:', error)
     }
   }
 
@@ -861,6 +872,8 @@ export default function Settings() {
               <option value="ko">Korean</option>
               <option value="ru">Russian</option>
               <option value="it">Italian</option>
+              <option value="tl">Tagalog</option>
+              <option value="ro">Romanian</option>
             </select>
           </div>
         </div>
@@ -1878,6 +1891,7 @@ export default function Settings() {
               <button
                 type="button"
                 className="notifications-settings-toggle"
+                onClick={() => {}}
                 style={{
                   width: 52,
                   height: 28,
@@ -1927,6 +1941,7 @@ export default function Settings() {
               <button
                 type="button"
                 className="notifications-settings-toggle"
+                onClick={() => {}}
                 style={{
                   width: 52,
                   height: 28,
@@ -1974,7 +1989,7 @@ export default function Settings() {
           <div
             className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
             style={{
-              background: 'var(--modal-bg)',
+              background: 'var(--app-bg, var(--modal-bg))',
               border: '1px solid var(--glass-border)',
               boxShadow: 'var(--glass-shadow)',
               maxHeight: '85dvh',
@@ -2185,15 +2200,17 @@ export default function Settings() {
             onClick={() => setWhatsNewOpen(false)}
           />
           <div
-            className="whats-new-modal relative z-10 w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
+            className="whats-new-modal relative z-10 w-full max-w-md overflow-y-auto rounded-2xl shadow-2xl"
             style={{
               background: 'transparent',
               border: '1px solid var(--glass-border)',
               boxShadow: 'var(--glass-shadow)',
+              maxHeight: '85dvh',
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div
+            <div style={{ overflowY: 'auto', maxHeight: '85dvh' }}>
+              <div
               className="whats-new-modal__sky-gradient"
               aria-hidden
               style={{
@@ -2349,6 +2366,7 @@ export default function Settings() {
                   </div>
                 ))}
               </div>
+            </div>
             </div>
           </div>
         </div>
