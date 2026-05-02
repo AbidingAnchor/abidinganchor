@@ -368,9 +368,20 @@ function AppShell() {
   )
 }
 
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    const contentEl = document.querySelector('.content-scroll')
+    if (contentEl) contentEl.scrollTop = 0
+  }, [pathname])
+  return null
+}
+
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <GuestSignupModalProvider>
         <AppShell />
       </GuestSignupModalProvider>

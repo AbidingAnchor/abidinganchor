@@ -1707,7 +1707,7 @@ export default function Settings() {
       {notificationsOpen ? (
         <div
           className="fixed inset-0 z-[10050] overflow-y-auto notifications-settings-panel"
-          style={{ background: 'transparent' }}
+          style={{ background: 'var(--app-bg, #F0E8D4)' }}
           role="dialog"
           aria-modal="true"
           aria-labelledby="settings-notifications-title"
@@ -1718,7 +1718,7 @@ export default function Settings() {
               maxWidth: '680px',
               margin: '0 auto',
               padding: '0 16px 100px',
-              paddingTop: '56px',
+              paddingTop: 'calc(env(safe-area-inset-top) + 60px)',
               boxSizing: 'border-box',
             }}
           >
@@ -1851,7 +1851,7 @@ export default function Settings() {
                 <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }} aria-hidden>⏰</span>
                 <div style={{ minWidth: 0 }}>
                   <p className="notifications-settings-row-title" style={{ fontSize: 15, fontWeight: 600, color: '#1A1A1A', margin: 0 }}>Reminder Time</p>
-                  <p className="notifications-settings-row-sub" style={{ fontSize: 12, color: '#6B6B6B', margin: '4px 0 0' }}>08:00 AM</p>
+                  <input type="time" value={dailyReminderTime} onChange={(e) => { setDailyReminderTime(e.target.value); localStorage.setItem('dailyReminderTime', e.target.value); }} style={{ background: 'transparent', border: 'none', color: '#6B6B6B', fontSize: '12px', cursor: 'pointer', padding: 0, margin: '4px 0 0' }} />
                 </div>
               </div>
               <span className="notifications-settings-row-chevron" style={{ color: '#1A1A1A', fontSize: 18, flexShrink: 0 }} aria-hidden>›</span>
@@ -1896,7 +1896,7 @@ export default function Settings() {
               <button
                 type="button"
                 className="notifications-settings-toggle"
-                onClick={() => {}}
+                onClick={() => showComingSoonToast('Coming soon')}
                 style={{
                   width: 52,
                   height: 28,
@@ -1946,7 +1946,7 @@ export default function Settings() {
               <button
                 type="button"
                 className="notifications-settings-toggle"
-                onClick={() => {}}
+                onClick={() => showComingSoonToast('Coming soon')}
                 style={{
                   width: 52,
                   height: 28,
@@ -2256,7 +2256,7 @@ export default function Settings() {
                   flexDirection: 'column',
                   alignItems: 'center',
                   marginBottom: '12px',
-                  paddingTop: '56px',
+                  paddingTop: '72px',
                 }}
               >
               <button
@@ -2266,7 +2266,7 @@ export default function Settings() {
                   ...settingsBackButtonStyle,
                   position: 'absolute',
                   left: '12px',
-                  top: '12px',
+                  top: '24px',
                 }}
               >
                 ←
