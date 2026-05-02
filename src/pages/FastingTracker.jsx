@@ -125,6 +125,9 @@ export default function FastingTracker() {
           <div className="mx-auto flex h-52 w-52 items-center justify-center rounded-full border-4 border-[#D4A843]" style={{ boxShadow: '0 0 20px rgba(212,168,67,0.45)' }}>
             <p className="text-3xl font-semibold">{formatDuration(elapsedMs)}</p>
           </div>
+          <button type="button" onClick={breakFast} style={{ display: 'block', margin: '16px auto 0', background: 'rgba(220,50,50,0.15)', border: '1px solid rgba(220,50,50,0.4)', borderRadius: '12px', color: '#ff6b6b', fontSize: '15px', fontWeight: 600, padding: '12px 32px', cursor: 'pointer' }}>
+            ⏹ Stop Fast
+          </button>
           <p className="mt-3 text-center text-sm text-white/80">Fasting since {new Date(active.startedAt).toLocaleTimeString()}</p>
           <p className="mt-1 text-center text-xs text-[#D4A843]">{active.typeLabel}</p>
           <div className="mt-4 glass-panel rounded-xl p-3 text-sm">
@@ -133,7 +136,6 @@ export default function FastingTracker() {
             <p className="mt-1 text-xs text-white/70">{versePick.note}</p>
           </div>
           <div className="mt-3 flex gap-2">
-            <button type="button" onClick={breakFast} className="rounded-lg border border-white/35 px-3 py-2 text-sm text-white">Break Fast</button>
             <input value={note} onChange={(e) => setNote(e.target.value)} className="flex-1 glass-input-field rounded-lg px-3 py-2 text-sm text-white" placeholder="Add prayer note..." />
             <button type="button" onClick={addNote} className="rounded-lg px-3 py-2 text-sm font-semibold text-[#1a1a1a]" style={{ background: '#D4A843' }}>Save</button>
           </div>
@@ -152,7 +154,7 @@ export default function FastingTracker() {
               <input type="number" min={1} max={168} value={customHours} onChange={(e) => setCustomHours(e.target.value)} className="w-full glass-input-field rounded-lg px-3 py-2 text-sm text-white" placeholder="Custom hours" />
             ) : null}
             <input value={intention} onChange={(e) => setIntention(e.target.value)} className="w-full glass-input-field rounded-lg px-3 py-2 text-sm text-white" placeholder="What are you seeking God for? (optional)" />
-            <button type="button" onClick={startFast} className="w-full rounded-xl px-4 py-2 text-sm font-semibold text-[#1a1a1a]" style={{ background: '#D4A843' }}>
+            <button type="button" onClick={startFast} className="w-full rounded-xl px-4 py-2 text-sm font-semibold text-[#1a1a1a]" style={{ background: '#D4A843', padding: '14px 24px', fontSize: '16px' }}>
               Start Fast
             </button>
           </div>
