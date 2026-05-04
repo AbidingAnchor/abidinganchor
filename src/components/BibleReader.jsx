@@ -1507,18 +1507,7 @@ export default function BibleReader({ open, onModeChange }) {
       >
         <div style={{ maxWidth: '680px', margin: '0 auto', width: '100%', animation: 'fadeIn 0.6s ease-out' }}>
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '80px 24px' }}>
-              <img
-                src="/NewLogo.png"
-                alt="Abiding Anchor"
-                style={{
-                  width: '64px',
-                  height: '64px',
-                  marginBottom: '24px',
-                  filter: 'drop-shadow(0 0 20px rgba(240, 192, 64, 0.3))',
-                  objectFit: 'contain',
-                }}
-              />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', paddingBottom: '80px', padding: '80px 24px' }}>
               <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '15px' }}>{t('bible.loading')}</p>
             </div>
           ) : (

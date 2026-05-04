@@ -746,7 +746,7 @@ function Home() {
                 fontSize: '15px',
                 fontWeight: 400,
                 marginBottom: '32px',
-                opacity: 0.6,
+                opacity: 0.8,
                 letterSpacing: '0.02em',
                 lineHeight: 1.5,
               }}>
@@ -820,7 +820,7 @@ function Home() {
                   marginBottom: '8px',
                 }}>🎬</div>
                 <p style={{ fontSize: '14px', fontWeight: 700, color: '#1A1A1A', margin: 0 }}>{t('home.toolBibleVideos')}</p>
-                <p style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0' }}>{t('home.toolBibleVideosSub')}</p>
+                <p style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0', textAlign: 'center' }}>{t('home.toolBibleVideosSub')}</p>
               </Link>
               <Link
                 to="/worship"
@@ -849,7 +849,7 @@ function Home() {
                   marginBottom: '8px',
                 }}>🎵</div>
                 <p style={{ fontSize: '14px', fontWeight: 700, color: '#1A1A1A', margin: 0 }}>{t('home.worshipMode')}</p>
-                <p style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0' }}>{t('home.worshipSubtitle')}</p>
+                <p style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0', textAlign: 'center' }}>{t('home.worshipSubtitle')}</p>
               </Link>
               <Link
                 to="/reading-plans"
@@ -878,7 +878,7 @@ function Home() {
                   marginBottom: '8px',
                 }}>📅</div>
                 <p style={{ fontSize: '14px', fontWeight: 700, color: '#1A1A1A', margin: 0 }}>{t('home.toolReadingPlans')}</p>
-                <p style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0' }}>{t('home.toolReadingPlansSub')}</p>
+                <p style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0', textAlign: 'center' }}>{t('home.toolReadingPlansSub')}</p>
               </Link>
               <Link
                 to="/fasting"
@@ -907,7 +907,7 @@ function Home() {
                   marginBottom: '8px',
                 }}>🕐</div>
                 <p style={{ fontSize: '14px', fontWeight: 700, color: '#1A1A1A', margin: 0 }}>{t('home.toolFasting')}</p>
-                <p style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0' }}>{t('home.toolFastingSub')}</p>
+                <p style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0', textAlign: 'center' }}>{t('home.toolFastingSub')}</p>
               </Link>
               <Link
                 to="/supporter-upgrade"
@@ -941,12 +941,12 @@ function Home() {
                 >
                   👑
                 </div>
-                <p className="home-tool-supporter-title" style={{ fontSize: '14px', fontWeight: 700, color: '#1A1A1A', margin: 0 }}>
+                <p className="home-tool-supporter-title" style={{ fontSize: '14px', fontWeight: 700, color: '#1A1A1A', margin: 0, textAlign: 'center' }}>
                   Become a Supporter
                 </p>
                 <p
                   className="home-tool-supporter-sub"
-                  style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0' }}
+                  style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0', textAlign: 'center' }}
                 >
                   Help keep this ministry free
                 </p>
@@ -978,7 +978,7 @@ function Home() {
                   marginBottom: '8px',
                 }}>📜</div>
                 <p style={{ fontSize: '14px', fontWeight: 700, color: '#1A1A1A', margin: 0 }}>{t('home.toolCommunity')}</p>
-                <p style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0' }}>{t('home.toolCommunitySub')}</p>
+                <p style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0', textAlign: 'center' }}>{t('home.toolCommunitySub')}</p>
               </Link>
             </div>
           </div>

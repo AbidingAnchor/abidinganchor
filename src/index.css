@@ -3455,6 +3455,30 @@ body.theme-evening .daily-encounter-verse,
   -webkit-text-fill-color: rgba(255, 255, 255, 0.92) !important;
 }
 
+body.theme-evening .daily-encounter-reflection,
+[data-theme="sunset"] .daily-encounter-reflection {
+  color: rgba(255, 255, 255, 0.88) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.88) !important;
+}
+
+body.theme-evening .daily-encounter-prompt,
+[data-theme="sunset"] .daily-encounter-prompt {
+  color: rgba(255, 255, 255, 0.88) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.88) !important;
+}
+
+body.theme-evening .daily-encounter-card-premium p:not([style*="#D4A843"]):not([style*="212, 168, 67"]),
+[data-theme="sunset"] .daily-encounter-card-premium p:not([style*="#D4A843"]):not([style*="212, 168, 67"]) {
+  color: rgba(255, 255, 255, 0.88) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.88) !important;
+}
+
+body.theme-evening .daily-encounter-card-premium span,
+[data-theme="sunset"] .daily-encounter-card-premium span {
+  color: rgba(255, 255, 255, 0.88) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.88) !important;
+}
+
 body.theme-evening .home-tools-grid > a p,
 [data-theme="sunset"] .home-tools-grid > a p {
   color: rgba(255, 255, 255, 0.75) !important;

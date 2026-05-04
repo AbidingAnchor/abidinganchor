@@ -9,15 +9,6 @@ import OfflineManager from '../components/OfflineManager'
 import { getAvatarUploadExtension } from '../utils/avatarUrl'
 import { LANGUAGE_STORAGE_KEY } from '../i18n.js'
 import {
-  cancelUniversalReminder,
-  persistReminderToSupabase,
-  readReminderFromSupabase,
-  readReminderLocal,
-  requestUniversalNotificationPermission,
-  scheduleUniversalReminder,
-  writeReminderLocal,
-} from '../services/universalNotifications'
-import {
   readThemePreferenceFromStorage,
   writeThemePreferenceToStorage,
   emitThemePreferenceChanged,
@@ -43,9 +34,6 @@ export default function Settings() {
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState(null)
   const [localAvatarUrl, setLocalAvatarUrl] = useState(null)
   const [localUsername, setLocalUsername] = useState('')
-  const [dailyReminderEnabled, setDailyReminderEnabled] = useState(false)
-  const [dailyReminderTime, setDailyReminderTime] = useState('08:00')
-  const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [offlineBibleOpen, setOfflineBibleOpen] = useState(false)
   const [shareAppOpen, setShareAppOpen] = useState(false)
   const [rateUsOpen, setRateUsOpen] = useState(false)
@@ -186,88 +174,11 @@ export default function Settings() {
     }
   }, [avatarPreviewUrl])
 
-  // Load daily reminder preferences from localStorage (per user)
-  useEffect(() => {
-    if (!user?.id) return
-    const localPrefs = readReminderLocal(user.id)
-    setDailyReminderEnabled(localPrefs.enabled)
-
-    readReminderFromSupabase(user.id).then((cloudPrefs) => {
-      if (!cloudPrefs) return
-      setDailyReminderEnabled(cloudPrefs.enabled)
-      writeReminderLocal(user.id, cloudPrefs)
-    }).catch((error) => {
-      console.warn('Unable to read reminder preferences from Supabase:', error)
-    })
-  }, [user?.id])
-
   // Load theme preference from localStorage
   useEffect(() => {
     const savedPreference = readThemePreferenceFromStorage()
     setThemePreference(savedPreference)
   }, [])
-
-  // Load daily reminder time from localStorage
-  useEffect(() => {
-    const savedTime = localStorage.getItem('dailyReminderTime')
-    if (savedTime) {
-      setDailyReminderTime(savedTime)
-    }
-  }, [])
-
-  const scheduleNotifications = useCallback(async () => {
-    try {
-      await scheduleUniversalReminder({ time: dailyReminderTime, userId: user?.id })
-    } catch (error) {
-      console.error('Error scheduling notifications:', error)
-    }
-  }, [user?.id, dailyReminderTime])
-
-  const handleDailyReminderToggle = async () => {
-    if (typeof Notification === 'undefined') {
-      // Notifications not supported on this platform
-      setDailyReminderEnabled(false)
-      return
-    }
-    try {
-      const newValue = !dailyReminderEnabled
-      setDailyReminderEnabled(newValue)
-      if (user?.id) {
-        writeReminderLocal(user.id, { enabled: newValue, time: dailyReminderTime })
-        await persistReminderToSupabase(user.id, { enabled: newValue, time: dailyReminderTime })
-      }
-
-      if (newValue) {
-        try {
-          const permission = await requestUniversalNotificationPermission({ userGesture: true })
-          if (permission === 'gesture-required') {
-            setDailyReminderEnabled(false)
-            if (user?.id) writeReminderLocal(user.id, { enabled: false, time: dailyReminderTime })
-            return
-          }
-          if (permission !== 'granted') {
-            setDailyReminderEnabled(false)
-            if (user?.id) writeReminderLocal(user.id, { enabled: false, time: dailyReminderTime })
-            return
-          }
-          await scheduleNotifications()
-        } catch (error) {
-          console.error('Error requesting notification permission:', error)
-          setDailyReminderEnabled(false)
-          if (user?.id) writeReminderLocal(user.id, { enabled: false, time: dailyReminderTime })
-          return
-        }
-      } else {
-        try {
-          await cancelUniversalReminder()
-        } catch (e) {
-          console.error('Error canceling reminders:', e)
-        }
-      }
-    } catch (error) {
-      console.error('Error in handleDailyReminderToggle:', error)
-    }
-  }
 
   const handleThemePreferenceChange = (value) => {
     setThemePreference(value)
@@ -792,7 +703,7 @@ export default function Settings() {
           {/* Notifications */}
           <button
             type="button"
-            onClick={() => setNotificationsOpen(true)}
+            onClick={() => navigate('/notifications-settings')}
             style={{
               minHeight: '52px',
               display: 'flex',
@@ -830,8 +741,8 @@ export default function Settings() {
             style={{
               minHeight: '52px',
               display: 'flex',
-              alignItems: 'center',
-              padding: '0 16px',
+              alignItems: 'flex-start',
+              padding: '12px 16px',
               width: '100%',
               borderTop: '1px solid rgba(212,168,67,0.2)',
             }}
@@ -846,40 +757,42 @@ export default function Settings() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              flexShrink: 0,
             }}>
               🌐
             </div>
-            <div style={{ marginLeft: '14px', flex: 1 }}>
-              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
+            <div style={{ marginLeft: '14px', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0, whiteSpace: 'nowrap' }}>
                 {t('settings.uiLanguage')}
               </p>
+              <select
+                value={(i18nHook.resolvedLanguage || i18nHook.language || 'en').split('-')[0]}
+                onChange={(e) => handleLanguageChange(e.target.value)}
+                style={{
+                  background: '#F0E8D4',
+                  color: '#1A1A1A',
+                  border: '1px solid rgba(212,168,67,0.3)',
+                  borderRadius: '8px',
+                  padding: '8px 10px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  width: '100%',
+                }}
+              >
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="hi">Hindi</option>
+                <option value="pt">Portuguese</option>
+                <option value="de">German</option>
+                <option value="zh">Chinese (Simplified)</option>
+                <option value="ko">Korean</option>
+                <option value="ru">Russian</option>
+                <option value="it">Italian</option>
+                <option value="tl">Tagalog</option>
+                <option value="ro">Romanian</option>
+              </select>
             </div>
-            <select
-              value={(i18nHook.resolvedLanguage || i18nHook.language || 'en').split('-')[0]}
-              onChange={(e) => handleLanguageChange(e.target.value)}
-              style={{
-                background: '#F0E8D4',
-                color: '#1A1A1A',
-                border: '1px solid rgba(212,168,67,0.3)',
-                borderRadius: '8px',
-                padding: '8px 10px',
-                fontSize: '13px',
-                fontWeight: 600,
-              }}
-            >
-              <option value="en">English</option>
-              <option value="es">Spanish</option>
-              <option value="fr">French</option>
-              <option value="hi">Hindi</option>
-              <option value="pt">Portuguese</option>
-              <option value="de">German</option>
-              <option value="zh">Chinese (Simplified)</option>
-              <option value="ko">Korean</option>
-              <option value="ru">Russian</option>
-              <option value="it">Italian</option>
-              <option value="tl">Tagalog</option>
-              <option value="ro">Romanian</option>
-            </select>
           </div>
         </div>
 
@@ -949,98 +862,6 @@ export default function Settings() {
             </div>
             <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
           </button>
-          {/* Reading Reminders */}
-          <div
-            onClick={handleDailyReminderToggle}
-            style={{
-              minHeight: '52px',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0 16px',
-              width: '100%',
-              cursor: 'pointer',
-              borderTop: '1px solid rgba(212,168,67,0.2)',
-            }}
-          >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: 'rgba(139,92,246,0.2)',
-              color: '#8B5CF6',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              ⏰
-            </div>
-            <div style={{ marginLeft: '14px', flex: 1 }}>
-              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                {t('settings.dailyReminder')}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); handleDailyReminderToggle(); }}
-              style={{
-                width: '52px',
-                height: '28px',
-                borderRadius: '14px',
-                background: dailyReminderEnabled ? '#D4A843' : 'rgba(255,255,255,0.15)',
-                border: 'none',
-                cursor: 'pointer',
-                position: 'relative',
-                transition: 'background 0.2s ease'
-              }}
-            >
-              <div style={{
-                width: '22px',
-                height: '22px',
-                borderRadius: '50%',
-                background: '#FFFFFF',
-                position: 'absolute',
-                top: '3px',
-                left: dailyReminderEnabled ? '27px' : '3px',
-                transition: 'left 0.2s ease'
-              }} />
-            </button>
-          </div>
-          {dailyReminderEnabled && (
-            <div style={{
-              padding: '12px 16px',
-              borderTop: '1px solid rgba(212,168,67,0.15)',
-              background: 'rgba(212,168,67,0.05)',
-            }}>
-              <label style={{
-                fontSize: '12px',
-                color: 'rgba(255,255,255,0.6)',
-                marginBottom: '8px',
-                display: 'block',
-              }}>
-                {t('settings.reminderTime')}
-              </label>
-              <input
-                type="time"
-                value={dailyReminderTime}
-                onChange={(e) => {
-                  setDailyReminderTime(e.target.value)
-                  localStorage.setItem('dailyReminderTime', e.target.value)
-                }}
-                style={{
-                  background: 'rgba(255,255,255,0.1)',
-                  border: '1px solid rgba(212,168,67,0.3)',
-                  borderRadius: '8px',
-                  padding: '8px 12px',
-                  color: '#ffffff',
-                  fontSize: '14px',
-                  width: '100%',
-                  outline: 'none',
-                  cursor: 'pointer',
-                }}
-              />
-            </div>
-          )}
           {/* Theme Preference */}
           <div
             style={{
@@ -1697,278 +1518,6 @@ export default function Settings() {
                 }}
               >
                 {t('common.cancel')}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {/* Notifications — full-screen panel (sky shows through) */}
-      {notificationsOpen ? (
-        <div
-          className="fixed inset-0 z-[10050] overflow-y-auto notifications-settings-panel"
-          style={{ background: 'var(--app-bg, #F0E8D4)' }}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="settings-notifications-title"
-        >
-          <div
-            style={{
-              width: '100%',
-              maxWidth: '680px',
-              margin: '0 auto',
-              padding: '0 16px 100px',
-              paddingTop: 'calc(env(safe-area-inset-top) + 60px)',
-              boxSizing: 'border-box',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                marginBottom: 8,
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => setNotificationsOpen(false)}
-                style={settingsBackButtonStyle}
-                aria-label={t('common.close')}
-              >
-                ←
-              </button>
-              <div style={{ flex: 1, minWidth: 0, textAlign: 'center', padding: '0 8px' }}>
-                <h2
-                  id="settings-notifications-title"
-                  className="notifications-settings-page-title"
-                  style={{
-                    margin: 0,
-                    fontSize: 20,
-                    fontWeight: 700,
-                    color: '#1A1A1A',
-                  }}
-                >
-                  Notifications
-                </h2>
-                <p
-                  className="notifications-settings-hero-subtitle"
-                  style={{
-                    margin: '8px 0 24px',
-                    color: '#8B6200',
-                    fontSize: 13,
-                    textAlign: 'center',
-                  }}
-                >
-                  Stay connected to your daily walk
-                </p>
-              </div>
-              <div style={{ width: 36, flexShrink: 0 }} aria-hidden />
-            </div>
-
-            <p
-              className="notifications-settings-section-label"
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                color: '#8B6200',
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                marginBottom: 8,
-                marginTop: 0,
-              }}
-            >
-              Reminders
-            </p>
-
-            <div
-              className="notifications-settings-row"
-              style={{
-                background: '#F0E8D4',
-                borderRadius: 16,
-                border: '1px solid rgba(212,168,67,0.2)',
-                padding: '16px',
-                marginBottom: 8,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 12,
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
-                <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }} aria-hidden>🔔</span>
-                <div style={{ minWidth: 0 }}>
-                  <p className="notifications-settings-row-title" style={{ fontSize: 15, fontWeight: 600, color: '#1A1A1A', margin: 0 }}>Daily Reminder</p>
-                  <p className="notifications-settings-row-sub" style={{ fontSize: 12, color: '#6B6B6B', margin: '4px 0 0' }}>Get reminded to read the Bible</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="notifications-settings-toggle"
-                onClick={handleDailyReminderToggle}
-                aria-label={dailyReminderEnabled ? 'Disable daily reminder' : 'Enable daily reminder'}
-                style={{
-                  width: 52,
-                  height: 28,
-                  borderRadius: 14,
-                  background: dailyReminderEnabled ? '#D4A843' : 'rgba(26,26,26,0.12)',
-                  border: 'none',
-                  cursor: 'pointer',
-                  position: 'relative',
-                  flexShrink: 0,
-                  transition: 'background 0.2s ease',
-                }}
-              >
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 2,
-                    left: dailyReminderEnabled ? 26 : 2,
-                    width: 24,
-                    height: 24,
-                    borderRadius: '50%',
-                    background: '#ffffff',
-                    transition: 'left 0.2s ease',
-                  }}
-                />
-              </button>
-            </div>
-
-            <div
-              className="notifications-settings-row"
-              style={{
-                background: '#F0E8D4',
-                borderRadius: 16,
-                border: '1px solid rgba(212,168,67,0.2)',
-                padding: '16px',
-                marginBottom: 8,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 12,
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
-                <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }} aria-hidden>⏰</span>
-                <div style={{ minWidth: 0 }}>
-                  <p className="notifications-settings-row-title" style={{ fontSize: 15, fontWeight: 600, color: '#1A1A1A', margin: 0 }}>Reminder Time</p>
-                  <input type="time" value={dailyReminderTime} onChange={(e) => { setDailyReminderTime(e.target.value); localStorage.setItem('dailyReminderTime', e.target.value); }} style={{ background: 'transparent', border: 'none', color: '#6B6B6B', fontSize: '12px', cursor: 'pointer', padding: 0, margin: '4px 0 0' }} />
-                </div>
-              </div>
-              <span className="notifications-settings-row-chevron" style={{ color: '#1A1A1A', fontSize: 18, flexShrink: 0 }} aria-hidden>›</span>
-            </div>
-
-            <p
-              className="notifications-settings-section-label"
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                color: '#8B6200',
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                marginBottom: 8,
-                marginTop: 16,
-              }}
-            >
-              Community
-            </p>
-
-            <div
-              className="notifications-settings-row"
-              style={{
-                background: '#F0E8D4',
-                borderRadius: 16,
-                border: '1px solid rgba(212,168,67,0.2)',
-                padding: '16px',
-                marginBottom: 8,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 12,
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
-                <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }} aria-hidden>👥</span>
-                <div style={{ minWidth: 0 }}>
-                  <p className="notifications-settings-row-title" style={{ fontSize: 15, fontWeight: 600, color: '#1A1A1A', margin: 0 }}>Fellowship Notifications</p>
-                  <p className="notifications-settings-row-sub" style={{ fontSize: 12, color: '#6B6B6B', margin: '4px 0 0' }}>New posts in your group</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="notifications-settings-toggle"
-                onClick={() => showComingSoonToast('Coming soon')}
-                style={{
-                  width: 52,
-                  height: 28,
-                  borderRadius: 14,
-                  background: 'rgba(26,26,26,0.12)',
-                  border: 'none',
-                  cursor: 'pointer',
-                  position: 'relative',
-                  flexShrink: 0,
-                }}
-              >
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 2,
-                    left: 2,
-                    width: 24,
-                    height: 24,
-                    borderRadius: '50%',
-                    background: '#ffffff',
-                  }}
-                />
-              </button>
-            </div>
-
-            <div
-              className="notifications-settings-row"
-              style={{
-                background: '#F0E8D4',
-                borderRadius: 16,
-                border: '1px solid rgba(212,168,67,0.2)',
-                padding: '16px',
-                marginBottom: 8,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 12,
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
-                <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }} aria-hidden>🙏</span>
-                <div style={{ minWidth: 0 }}>
-                  <p className="notifications-settings-row-title" style={{ fontSize: 15, fontWeight: 600, color: '#1A1A1A', margin: 0 }}>Prayer Notifications</p>
-                  <p className="notifications-settings-row-sub" style={{ fontSize: 12, color: '#6B6B6B', margin: '4px 0 0' }}>Updates on your prayers</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="notifications-settings-toggle"
-                onClick={() => showComingSoonToast('Coming soon')}
-                style={{
-                  width: 52,
-                  height: 28,
-                  borderRadius: 14,
-                  background: 'rgba(26,26,26,0.12)',
-                  border: 'none',
-                  cursor: 'pointer',
-                  position: 'relative',
-                  flexShrink: 0,
-                }}
-              >
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 2,
-                    left: 2,
-                    width: 24,
-                    height: 24,
-                    borderRadius: '50%',
-                    background: '#ffffff',
-                  }}
-                />
               </button>
             </div>
           </div>

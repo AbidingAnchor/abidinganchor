@@ -10,15 +10,7 @@ export default function DailyStreakCard({ activeDays = [], consecutiveStreak }) 
   const { t } = useTranslation()
 
   // Week starts on Sunday: Sun, Mon, Tue, Wed, Thu, Fri, Sat
-  const dayLabels = [
-    t('home.weekdaySun'),
-    t('home.weekdayMon'),
-    t('home.weekdayTue'),
-    t('home.weekdayWed'),
-    t('home.weekdayThu'),
-    t('home.weekdayFri'),
-    t('home.weekdaySat'),
-  ]
+  const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
   // Calculate the current week starting from the most recent Sunday
   const today = new Date()
@@ -118,7 +110,7 @@ export default function DailyStreakCard({ activeDays = [], consecutiveStreak }) 
         <p style={{ marginBottom: '16px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
           {streakMessage}
         </p>
-        <div className="flex items-center justify-between gap-2" style={{ overflowX: 'auto' }}>
+        <div className="flex items-center" style={{ justifyContent: 'space-between', flexWrap: 'nowrap', overflowX: 'auto' }}>
           {weekDates.map((date, index) => {
             const isLit = isDateActive(date)
             const isToday = index === todayIndex
@@ -130,13 +122,13 @@ export default function DailyStreakCard({ activeDays = [], consecutiveStreak }) 
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '6px',
+                  gap: '3px',
                 }}
               >
                 <span
                   style={{
                     color: 'rgba(255,255,255,0.5)',
-                    fontSize: '11px',
+                    fontSize: '9px',
                     fontWeight: 600,
                   }}
                 >
@@ -145,8 +137,8 @@ export default function DailyStreakCard({ activeDays = [], consecutiveStreak }) 
                 {isLit ? (
                   <div
                     style={{
-                      width: '36px',
-                      height: '36px',
+                      width: '28px',
+                      height: '28px',
                       borderRadius: '50%',
                       background: '#D4A843',
                       display: 'flex',
@@ -155,15 +147,15 @@ export default function DailyStreakCard({ activeDays = [], consecutiveStreak }) 
                       flexShrink: 0,
                     }}
                   >
-                    <span style={{ fontSize: '16px', lineHeight: 1, color: 'white' }} aria-hidden>
+                    <span style={{ fontSize: '12px', lineHeight: 1, color: 'white' }} aria-hidden>
                       ✓
                     </span>
                   </div>
                 ) : isToday ? (
                   <div
                     style={{
-                      width: '36px',
-                      height: '36px',
+                      width: '28px',
+                      height: '28px',
                       borderRadius: '50%',
                       background: 'transparent',
                       border: '2px solid #D4A843',
@@ -176,8 +168,8 @@ export default function DailyStreakCard({ activeDays = [], consecutiveStreak }) 
                 ) : (
                   <div
                     style={{
-                      width: '36px',
-                      height: '36px',
+                      width: '28px',
+                      height: '28px',
                       borderRadius: '50%',
                       background: 'transparent',
                       border: '2px solid #D4A843',

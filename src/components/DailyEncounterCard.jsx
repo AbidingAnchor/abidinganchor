@@ -139,7 +139,7 @@ export default function DailyEncounterCard({
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '8px',
+            gap: '6px',
             marginBottom: '10px',
           }}
         >
@@ -150,20 +150,20 @@ export default function DailyEncounterCard({
               background: dayTheme ? 'rgba(212,168,67,0.15)' : 'rgba(255,255,255,0.07)',
               border: '1px solid rgba(212,168,67,0.3)',
               borderRadius: '50px',
-              padding: '14px 20px',
+              padding: '10px 14px',
               backdropFilter: 'blur(10px)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px',
+              gap: '6px',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
             }}
             onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(212,168,67,0.15)'}
             onMouseLeave={(e) => e.currentTarget.style.background = dayTheme ? 'rgba(212,168,67,0.1)' : 'rgba(255,255,255,0.07)'}
           >
-            <span style={{ fontSize: '24px', lineHeight: 1 }} aria-hidden>✍️</span>
-            <span style={{ fontSize: '13px', fontWeight: 600, color: dayTheme ? '#1A1A2E' : '#ffffff' }}>{t('home.encounterWrite')}</span>
+            <span style={{ fontSize: '20px', lineHeight: 1 }} aria-hidden>✍️</span>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: dayTheme ? '#1A1A2E' : '#ffffff' }}>{t('home.encounterWrite')}</span>
           </button>
           <button
             type="button"
@@ -172,20 +172,20 @@ export default function DailyEncounterCard({
               background: dayTheme ? 'rgba(212,168,67,0.15)' : 'rgba(255,255,255,0.07)',
               border: '1px solid rgba(212,168,67,0.3)',
               borderRadius: '50px',
-              padding: '14px 20px',
+              padding: '10px 14px',
               backdropFilter: 'blur(10px)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px',
+              gap: '6px',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
             }}
             onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(212,168,67,0.15)'}
             onMouseLeave={(e) => e.currentTarget.style.background = dayTheme ? 'rgba(212,168,67,0.1)' : 'rgba(255,255,255,0.07)'}
           >
-            <span style={{ fontSize: '24px', lineHeight: 1 }} aria-hidden>🙏</span>
-            <span style={{ fontSize: '13px', fontWeight: 600, color: dayTheme ? '#1A1A2E' : '#ffffff' }}>{t('home.encounterPray')}</span>
+            <span style={{ fontSize: '20px', lineHeight: 1 }} aria-hidden>🙏</span>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: dayTheme ? '#1A1A2E' : '#ffffff' }}>{t('home.encounterPray')}</span>
           </button>
           <button
             type="button"
@@ -194,20 +194,20 @@ export default function DailyEncounterCard({
               background: dayTheme ? 'rgba(212,168,67,0.15)' : 'rgba(255,255,255,0.07)',
               border: '1px solid rgba(212,168,67,0.3)',
               borderRadius: '50px',
-              padding: '14px 20px',
+              padding: '10px 14px',
               backdropFilter: 'blur(10px)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px',
+              gap: '6px',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
             }}
             onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(212,168,67,0.15)'}
             onMouseLeave={(e) => e.currentTarget.style.background = dayTheme ? 'rgba(212,168,67,0.1)' : 'rgba(255,255,255,0.07)'}
           >
-            <span style={{ fontSize: '24px', lineHeight: 1 }} aria-hidden>🤖</span>
-            <span style={{ fontSize: '13px', fontWeight: 600, color: dayTheme ? '#1A1A2E' : '#ffffff' }}>{t('home.encounterAskAi')}</span>
+            <span style={{ fontSize: '20px', lineHeight: 1 }} aria-hidden>🤖</span>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: dayTheme ? '#1A1A2E' : '#ffffff' }}>{t('home.encounterAskAi')}</span>
           </button>
         </div>
 

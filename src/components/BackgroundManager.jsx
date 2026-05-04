@@ -54,11 +54,11 @@ function syncBodySkyClasses(theme, reason = "unknown") {
 async function updateThemeColorMeta(theme) {
   let themeColor;
   if (theme === "day") {
-    themeColor = "#E0D4BC"; // Slightly darker cream
+    themeColor = "#F5E6C8"; // Day theme cream
   } else if (theme === "sunset") {
-    themeColor = "#3C145A"; // Slightly darker warm purple
+    themeColor = "#1a0533"; // Evening theme deep purple
   } else {
-    themeColor = "#0A1628"; // Slightly darker navy
+    themeColor = "#0a0a1a"; // Night theme dark navy
   }
   
   // Update meta tag for web browsers
