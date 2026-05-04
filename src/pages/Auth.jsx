@@ -266,11 +266,18 @@ export default function Auth() {
     }
     setLoading(true)
     const { error: signUpError } = await signUp(cleanSignUpEmail, signUpPassword, name)
-    if (signUpError) setError(formatAuthErrorMessage(signUpError))
-    else {
-      setSuccess(t('auth.confirmationSent'))
+    if (signUpError) {
+      setError(formatAuthErrorMessage(signUpError))
+      setLoading(false)
+    } else {
+      // Auto-login after successful signup
+      const { error: signInError } = await signIn(cleanSignUpEmail, signUpPassword)
+      if (signInError) {
+        setError(formatAuthErrorMessage(signInError))
+        setLoading(false)
+      }
+      // If successful, AuthContext will handle redirect to Home/onboarding
     }
-    setLoading(false)
   }
 
   const pad = 'max(8px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) max(8px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px))'

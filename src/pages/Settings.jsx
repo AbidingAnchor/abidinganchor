@@ -1673,9 +1673,28 @@ export default function Settings() {
               <div style={{ width: '40px' }} />
             </div>
             <div className="px-5 pb-6">
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                Rate Abiding Anchor on the app store coming soon.
-              </p>
+              <button
+                type="button"
+                onClick={() => window.open('https://play.google.com/store/apps/details?id=com.abideapp.bible', '_blank')}
+                style={{
+                  width: '100%',
+                  padding: '14px 20px',
+                  background: 'rgba(212, 168, 67, 0.2)',
+                  border: '1px solid rgba(212, 168, 67, 0.5)',
+                  borderRadius: '12px',
+                  color: '#D4A843',
+                  fontSize: '15px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px',
+                }}
+              >
+                <span style={{ fontSize: '20px' }}>⭐</span>
+                Rate on Google Play Store
+              </button>
             </div>
           </div>
         </div>
