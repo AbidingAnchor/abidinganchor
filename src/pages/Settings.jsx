@@ -8,11 +8,6 @@ import { supabase } from '../lib/supabase'
 import OfflineManager from '../components/OfflineManager'
 import { getAvatarUploadExtension } from '../utils/avatarUrl'
 import { LANGUAGE_STORAGE_KEY } from '../i18n.js'
-import {
-  readThemePreferenceFromStorage,
-  writeThemePreferenceToStorage,
-  emitThemePreferenceChanged,
-} from '../utils/themePreferenceStorage'
 
 const FEEDBACK_TYPES = [
   { id: 'bug', label: '🐛 Bug Report' },
@@ -47,7 +42,6 @@ export default function Settings() {
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false)
   const [deleteAccountSubmitting, setDeleteAccountSubmitting] = useState(false)
   const [deleteAccountError, setDeleteAccountError] = useState('')
-  const [themePreference, setThemePreference] = useState('auto')
   const avatarBorderStyle = getAvatarBorderStyle(profile?.supporter_tier, profile?.profile_border)
   const feedbackSuccessTimerRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -174,17 +168,14 @@ export default function Settings() {
     }
   }, [avatarPreviewUrl])
 
-  // Load theme preference from localStorage
+  // Clear any manual theme preference from localStorage to ensure auto theming
   useEffect(() => {
-    const savedPreference = readThemePreferenceFromStorage()
-    setThemePreference(savedPreference)
+    try {
+      localStorage.removeItem('manualThemePreference')
+    } catch {
+      /* ignore */
+    }
   }, [])
-
-  const handleThemePreferenceChange = (value) => {
-    setThemePreference(value)
-    writeThemePreferenceToStorage(value)
-    emitThemePreferenceChanged()
-  }
 
 
   const handleSignOut = async () => {
@@ -862,54 +853,6 @@ export default function Settings() {
             </div>
             <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
           </button>
-          {/* Theme Preference */}
-          <div
-            style={{
-              minHeight: '52px',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0 16px',
-              width: '100%',
-              borderTop: '1px solid rgba(212,168,67,0.2)',
-            }}
-          >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: 'rgba(245,158,11,0.2)',
-              color: '#F59E0B',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              🌅
-            </div>
-            <div style={{ marginLeft: '14px', flex: 1 }}>
-              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                {t('settings.themePreference')}
-              </p>
-            </div>
-            <select
-              value={themePreference}
-              onChange={(e) => handleThemePreferenceChange(e.target.value)}
-              style={{
-                background: 'rgba(12,20,38,0.98)',
-                color: '#ffffff',
-                border: '1px solid rgba(212,168,67,0.35)',
-                borderRadius: '8px',
-                padding: '8px 10px',
-                fontSize: '13px',
-                fontWeight: 600,
-              }}
-            >
-              <option value="auto">{t('settings.themeAuto')}</option>
-              <option value="day">{t('settings.themeDay')}</option>
-              <option value="evening">{t('settings.themeEvening')}</option>
-              <option value="night">{t('settings.themeNight')}</option>
-            </select>
-          </div>
         </div>
 
         {/* SECTION 4 - COMMUNITY */}

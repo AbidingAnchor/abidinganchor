@@ -7,6 +7,7 @@ import {
   THEME_PREFERENCE_CHANGED_EVENT,
   THEME_PREFERENCE_STORAGE_KEY,
   readThemePreferenceFromStorage,
+  readManualThemePreference,
 } from "../utils/themePreferenceStorage";
 
 const FADE_DURATION_MS = 800;
@@ -105,7 +106,8 @@ export default function BackgroundManager() {
   // Early check: immediately apply saved manual theme preference on every render
   // This prevents time-based theme from overriding manual selection on remount
   useEffect(() => {
-    const themePreference = readThemePreferenceFromStorage();
+    const manualPref = readManualThemePreference();
+    const themePreference = manualPref || readThemePreferenceFromStorage();
     if (themePreference === 'day' || themePreference === 'evening' || themePreference === 'night') {
       const savedTheme = themePreference === 'evening' ? 'sunset' : themePreference;
       document.documentElement.setAttribute('data-theme', savedTheme);
@@ -118,7 +120,8 @@ export default function BackgroundManager() {
   }, []);
   
   const [currentBg, setCurrentBg] = useState(() => {
-    const themePreference = readThemePreferenceFromStorage();
+    const manualPref = readManualThemePreference();
+    const themePreference = manualPref || readThemePreferenceFromStorage();
     let initial;
     
     // Always check saved preference first - use it if set to day, evening, or night
@@ -169,7 +172,8 @@ export default function BackgroundManager() {
     };
 
     const applyThemePreference = () => {
-      const themePreference = readThemePreferenceFromStorage();
+      const manualPref = readManualThemePreference();
+      const themePreference = manualPref || readThemePreferenceFromStorage();
       const nextBg = themePreference === 'auto' || !themePreference
         ? getBackgroundTypeForTime()
         : themePreference === 'evening' ? 'sunset' : themePreference;
@@ -193,7 +197,15 @@ export default function BackgroundManager() {
 
     const handleVisibilityChange = () => {
       if (!document.hidden) {
-        const themePreference = readThemePreferenceFromStorage();
+        // Check for manual theme preference FIRST - before ANY other code runs
+        const manualPref = readManualThemePreference();
+        if (manualPref && manualPref !== 'auto') {
+          // User has manually selected a theme - preserve it, emit event and return immediately
+          emitThemePreferenceChanged();
+          return;
+        }
+        
+        const themePreference = manualPref || readThemePreferenceFromStorage();
         // Only update background if preference is auto
         if (!themePreference || themePreference === 'auto') {
           updateBackground();
@@ -204,7 +216,8 @@ export default function BackgroundManager() {
     const onThemePreferenceChanged = () => applyThemePreference();
     const onStorage = (e) => {
       if (e.key === THEME_PREFERENCE_STORAGE_KEY || e.key === null) {
-        const themePreference = readThemePreferenceFromStorage();
+        const manualPref = readManualThemePreference();
+        const themePreference = manualPref || readThemePreferenceFromStorage();
         // Only update background if preference is auto
         if (!themePreference || themePreference === 'auto') {
           updateBackground();

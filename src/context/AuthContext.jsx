@@ -5,8 +5,10 @@ import { clearGuestBrowse } from '../utils/guestBrowse'
 import { profileFullNameFromUser } from '../utils/profileDisplay'
 import {
   clearThemePreferenceStorage,
+  clearManualThemePreference,
   emitThemePreferenceChanged,
   readThemePreferenceFromStorage,
+  readManualThemePreference,
   syncThemePreferenceFromProfileRow,
 } from '../utils/themePreferenceStorage'
 
@@ -342,6 +344,15 @@ export function AuthProvider({ children }) {
     let debounceId = null
     const runSilent = async () => {
       if (!initialBootCompleteRef.current) return
+      
+      // Check for manual theme preference FIRST - before ANY other code runs
+      const manualThemePref = readManualThemePreference()
+      if (manualThemePref && manualThemePref !== 'auto') {
+        // User has manually selected a theme - preserve it, emit event and return immediately
+        emitThemePreferenceChanged()
+        return
+      }
+      
       try {
         const { data: { session }, error } = await supabase.auth.getSession()
         if (error) return
@@ -377,11 +388,8 @@ export function AuthProvider({ children }) {
         }
         setSuspendedInfo(null)
         setProfile(nextProfile)
-        // Only sync theme from profile if user hasn't manually selected a theme
-        const currentThemePref = readThemePreferenceFromStorage()
-        if (!currentThemePref || currentThemePref === 'auto') {
-          applyThemeStorageForProfile(nextProfile)
-        }
+        // No manual preference (already checked above) - safe to sync from profile
+        applyThemeStorageForProfile(nextProfile)
         syncLocalOnboardingCompletion(nextProfile)
       } catch (e) {
         console.warn('Silent session refresh:', e)
@@ -389,6 +397,14 @@ export function AuthProvider({ children }) {
     }
 
     const schedule = () => {
+      // Check for manual theme preference FIRST - before ANY other code runs
+      const manualThemePref = readManualThemePreference()
+      if (manualThemePref && manualThemePref !== 'auto') {
+        // User has manually selected a theme - preserve it, emit event and return immediately
+        emitThemePreferenceChanged()
+        return
+      }
+      
       if (debounceId) clearTimeout(debounceId)
       debounceId = window.setTimeout(() => {
         debounceId = null
@@ -450,6 +466,7 @@ export function AuthProvider({ children }) {
     setSuspendedInfo(null)
     clearAbidingAnchorUserStorage()
     clearThemePreferenceStorage()
+    clearManualThemePreference()
     emitThemePreferenceChanged()
     clearCachedSession()
     await supabase.auth.signOut()

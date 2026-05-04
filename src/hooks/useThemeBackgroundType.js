@@ -3,6 +3,7 @@ import { getBackgroundTypeForTime } from '../components/DayBackground'
 import {
   THEME_PREFERENCE_CHANGED_EVENT,
   THEME_PREFERENCE_STORAGE_KEY,
+  readManualThemePreference,
 } from '../utils/themePreferenceStorage'
 
 /**
@@ -21,7 +22,17 @@ export function useThemeBackgroundType() {
   const [sky, setSky] = useState(safeBackgroundType)
 
   useEffect(() => {
-    const sync = () => setSky(safeBackgroundType())
+    const sync = () => {
+      // Check for manual theme preference FIRST - before ANY other code runs
+      const manualPref = readManualThemePreference()
+      if (manualPref && manualPref !== 'auto') {
+        // User has manually selected a theme - preserve it
+        const theme = manualPref === 'evening' ? 'sunset' : manualPref
+        setSky(theme)
+        return
+      }
+      setSky(safeBackgroundType())
+    }
 
     sync()
     window.addEventListener(THEME_PREFERENCE_CHANGED_EVENT, sync)

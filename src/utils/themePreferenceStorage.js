@@ -1,5 +1,7 @@
 /** Manual theme selection is temporarily disabled; app always uses automatic time-based theme. */
 export const THEME_PREFERENCE_STORAGE_KEY = 'theme-preference'
+/** Separate key for manual theme selection to prevent auto-theme from overriding */
+export const MANUAL_THEME_PREFERENCE_KEY = 'manualThemePreference'
 
 export const THEME_PREFERENCE_CHANGED_EVENT = 'abidinganchor-theme-preference-changed'
 
@@ -38,6 +40,40 @@ export function clearThemePreferenceStorage() {
   if (typeof localStorage === 'undefined') return
   try {
     localStorage.removeItem(THEME_PREFERENCE_STORAGE_KEY)
+  } catch {
+    /* ignore */
+  }
+}
+
+export function readManualThemePreference() {
+  if (typeof localStorage === 'undefined') return null
+  try {
+    const raw = localStorage.getItem(MANUAL_THEME_PREFERENCE_KEY)
+    if (!raw) return null
+    return normalizeThemePreferenceValue(raw)
+  } catch {
+    return null
+  }
+}
+
+export function writeManualThemePreference(value) {
+  if (typeof localStorage === 'undefined') return
+  try {
+    const normalized = normalizeThemePreferenceValue(value)
+    if (normalized === 'auto') {
+      localStorage.removeItem(MANUAL_THEME_PREFERENCE_KEY)
+    } else {
+      localStorage.setItem(MANUAL_THEME_PREFERENCE_KEY, normalized)
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+export function clearManualThemePreference() {
+  if (typeof localStorage === 'undefined') return
+  try {
+    localStorage.removeItem(MANUAL_THEME_PREFERENCE_KEY)
   } catch {
     /* ignore */
   }
