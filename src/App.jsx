@@ -1,6 +1,8 @@
 import { BrowserRouter, Navigate, Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ReactGA from 'react-ga4'
+import { Capacitor } from '@capacitor/core'
+import { Purchases, LOG_LEVEL } from '@revenuecat/purchases-capacitor'
 import Home from './pages/Home'
 import ReadingPlan from './pages/ReadingPlan'
 import Search from './pages/Search'
@@ -207,6 +209,21 @@ function AppShell() {
     setWorshipVisible(true)
     if (startPlaying) setWorshipAutoPlayToken((t) => t + 1)
   }
+
+  useEffect(() => {
+    async function configurePurchases() {
+      try {
+        await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG })
+        const platform = Capacitor.getPlatform()
+        if (platform === 'android') {
+          await Purchases.configure({ apiKey: "test_PjFMMzpYtAywUlNaceEZwGKctOV" })
+        }
+      } catch (e) {
+        console.log('RevenueCat init skipped (web):', e)
+      }
+    }
+    configurePurchases()
+  }, [])
 
   useEffect(() => {
     if (!user?.id) return

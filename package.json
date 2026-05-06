@@ -21,6 +21,7 @@
     "@capacitor/local-notifications": "^8.0.2",
     "@capacitor/share": "^8.0.1",
     "@capacitor/status-bar": "^8.0.2",
+    "@revenuecat/purchases-capacitor": "^13.0.1",
     "@supabase/supabase-js": "^2.100.1",
     "html-to-image": "^1.11.13",
     "i18next": "^26.0.4",
