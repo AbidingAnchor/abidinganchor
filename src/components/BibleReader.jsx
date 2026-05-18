@@ -379,8 +379,8 @@ const DEUTEROCANONICAL_JSON_MAP = {
 let crossReferencesDatasetPromise = null
 function loadCrossReferencesDataset() {
   if (!crossReferencesDatasetPromise) {
-    crossReferencesDatasetPromise = import('../data/crossReferences.json')
-      .then((m) => m.default || {})
+    crossReferencesDatasetPromise = fetch('/data/crossReferences.json')
+      .then((r) => r.json())
       .catch(() => ({}))
   }
   return crossReferencesDatasetPromise
