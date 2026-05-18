@@ -265,6 +265,10 @@ export function FellowshipProvider({ children }) {
     }
   }, [])
 
+  const removeFellowship = useCallback((id) => {
+    setFellowships(prev => prev.filter(f => f.id !== id))
+  }, [])
+
   const value = {
     fellowship,
     setFellowship,
@@ -284,6 +288,7 @@ export function FellowshipProvider({ children }) {
     fetchUserFellowship,
     selectFellowship,
     addDeletedFellowshipId,
+    removeFellowship,
   }
 
   return (

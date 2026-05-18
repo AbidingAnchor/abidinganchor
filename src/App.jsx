@@ -216,7 +216,7 @@ function AppShell() {
         await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG })
         const platform = Capacitor.getPlatform()
         if (platform === 'android') {
-          await Purchases.configure({ apiKey: "test_PjFMMzpYtAywUlNaceEZwGKctOV" })
+          await Purchases.configure({ apiKey: 'goog_JppZNBAVAHDdaOfsYIrFyZJJPTM' })
         }
       } catch (e) {
         console.log('RevenueCat init skipped (web):', e)

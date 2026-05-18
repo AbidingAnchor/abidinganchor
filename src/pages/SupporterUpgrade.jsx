@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
+import { Capacitor } from '@capacitor/core'
+import { Purchases } from '@revenuecat/purchases-capacitor'
 import DayBackground from '../components/DayBackground'
 import {
   SUPPORT_BMAC_LINK,
@@ -46,25 +48,19 @@ export default function SupporterUpgrade() {
   const [transparencyLoading, setTransparencyLoading] = useState(true)
 
   const monthlyFeatures = [
-    t('supporter.feature50Ai'),
-    t('supporter.featureColorPicker'),
-    t('supporter.featureSilverBorder'),
-    t('supporter.featureSupporterBadge'),
-    t('supporter.featureHallOfFaith'),
-    t('supporter.featurePrayerList'),
+    '50 AI messages/day',
+    'Supporter badge',
+    'Animated silver/blue profile border',
+    'Full name color picker',
   ]
 
   const lifetimeFeatures = [
-    t('supporter.featureUnlimitedAi'),
-    t('supporter.featureColorPicker'),
-    t('supporter.featureGoldName'),
-    t('supporter.featureAnimatedBorders'),
-    t('supporter.featureCrownBadge'),
-    t('supporter.featureFoundingStatus'),
-    t('supporter.featureHallOfFaithFirst'),
-    t('supporter.featureMinistryPrayer'),
-    t('supporter.featurePersonalPrayer'),
-    t('supporter.featureAboutPage'),
+    '200 AI messages/day',
+    'Gold crown badge',
+    'Shimmering gold name effect',
+    'Exclusive animated borders (crown, fire, rainbow, stars)',
+    'Founding Member status',
+    'Name in Hall of Faith (shown first)',
   ]
 
   useEffect(() => {
@@ -101,12 +97,44 @@ export default function SupporterUpgrade() {
     }
   }, [])
 
-  const openStripe = (tier) => {
-    const url =
-      tier === 'monthly'
-        ? 'https://buy.stripe.com/cNifZibWh3FF2I35PfdAk01'
-        : 'https://buy.stripe.com/9B6bJ2gcx2BB3M76TjdAk02'
-    window.open(url, '_blank')
+  const openStripe = async (tier) => {
+    const isNative = Capacitor.isNativePlatform()
+    
+    if (isNative) {
+      // Use RevenueCat for Android app
+      try {
+        const productId = tier === 'monthly' ? 'supporter_monthly' : 'lifetime_4999'
+        
+        const offerings = await Purchases.getOfferings()
+        if (!offerings.current) {
+          console.error('No offerings available')
+          return
+        }
+        
+        const product = offerings.current.availableProducts.find(p => p.identifier === productId)
+        if (!product) {
+          console.error('Product not found:', productId)
+          return
+        }
+        
+        await Purchases.purchasePackage({ product })
+      } catch (error) {
+        console.error('RevenueCat purchase error:', error)
+        // Fallback to Stripe if RevenueCat fails
+        const url =
+          tier === 'monthly'
+            ? 'https://buy.stripe.com/cNifZibWh3FF2I35PfdAk01'
+            : 'https://buy.stripe.com/9B6bJ2gcx2BB3M76TjdAk02'
+        window.open(url, '_blank')
+      }
+    } else {
+      // Use Stripe for web
+      const url =
+        tier === 'monthly'
+          ? 'https://buy.stripe.com/cNifZibWh3FF2I35PfdAk01'
+          : 'https://buy.stripe.com/9B6bJ2gcx2BB3M76TjdAk02'
+      window.open(url, '_blank')
+    }
   }
 
   return (
