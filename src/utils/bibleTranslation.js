@@ -40,6 +40,7 @@ export const TRANSLATION_ID_TO_BOLLS_SLUG = {
   kjv: 'KJV',
   asv: 'ASV',
   dra: 'DRA',
+  lxxe: 'LXXE',
   // bst: null, // Not supported by bolls.life - falls back to ebible.org
 }
 

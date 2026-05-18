@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { JOURNEY_MAP_GEOMETRY } from '../data/journeyMapGeometry'
 import { useAuth } from '../context/AuthContext'
 import { userStorageKey } from '../utils/userStorage'
-import JourneyMapParchmentScene from './JourneyMapParchmentScene'
 
 function readJson(key, fallback) {
   try {
@@ -57,6 +56,29 @@ function remapGeoYToViewBox(yGeo, viewBoxH) {
 }
 
 /** ViewBox height so lowest stop + figure + padding fit; trail occupies y ∈ [0.30H, 0.72H]. */
+const STAR_FIELD = [
+  {x:8,y:5,r:0.8,o:0.5,d:0.0},{x:18,y:12,r:1.2,o:0.7,d:0.6},{x:5,y:22,r:0.6,o:0.4,d:1.1},
+  {x:25,y:8,r:1.0,o:0.6,d:0.3},{x:290,y:6,r:0.9,o:0.5,d:1.4},{x:305,y:18,r:1.3,o:0.8,d:0.7},
+  {x:315,y:9,r:0.7,o:0.4,d:2.0},{x:298,y:28,r:1.1,o:0.6,d:0.2},{x:280,y:12,r:0.8,o:0.5,d:1.7},
+  {x:12,y:38,r:1.0,o:0.6,d:0.9},{x:22,y:52,r:0.6,o:0.3,d:1.5},{x:8,y:65,r:1.2,o:0.7,d:0.4},
+  {x:310,y:42,r:0.9,o:0.5,d:2.3},{x:318,y:55,r:1.1,o:0.7,d:1.0},{x:302,y:68,r:0.7,o:0.4,d:0.8},
+  {x:15,y:80,r:1.0,o:0.6,d:1.9},{x:6,y:92,r:0.8,o:0.5,d:0.5},{x:20,y:105,r:1.3,o:0.7,d:2.6},
+  {x:312,y:82,r:0.6,o:0.4,d:1.3},{x:308,y:96,r:1.0,o:0.6,d:0.1},{x:320,y:110,r:0.8,o:0.5,d:3.0},
+  {x:10,y:118,r:1.2,o:0.7,d:0.7},{x:25,y:130,r:0.7,o:0.4,d:1.6},{x:5,y:142,r:1.1,o:0.6,d:2.1},
+  {x:315,y:125,r:0.9,o:0.5,d:0.4},{x:305,y:138,r:1.3,o:0.8,d:1.8},{x:298,y:150,r:0.6,o:0.3,d:0.6},
+  {x:18,y:155,r:1.0,o:0.6,d:2.4},{x:8,y:168,r:0.8,o:0.5,d:1.2},{x:22,y:180,r:1.2,o:0.7,d:0.0},
+  {x:318,y:162,r:0.7,o:0.4,d:2.8},{x:310,y:175,r:1.1,o:0.6,d:0.9},{x:302,y:188,r:0.9,o:0.5,d:1.5},
+  {x:12,y:195,r:1.3,o:0.8,d:0.3},{x:6,y:208,r:0.6,o:0.4,d:2.2},{x:20,y:220,r:1.0,o:0.6,d:1.1},
+  {x:315,y:200,r:0.8,o:0.5,d:0.7},{x:308,y:214,r:1.2,o:0.7,d:1.9},{x:295,y:225,r:0.7,o:0.4,d:0.5},
+  {x:80,y:8,r:0.9,o:0.5,d:1.4},{x:105,y:15,r:1.1,o:0.6,d:2.0},{x:240,y:10,r:0.8,o:0.5,d:0.8},
+  {x:265,y:20,r:1.3,o:0.7,d:1.7},{x:88,y:25,r:0.6,o:0.4,d:0.3},{x:258,y:30,r:1.0,o:0.6,d:2.5},
+  {x:75,y:35,r:1.2,o:0.7,d:1.0},{x:270,y:38,r:0.7,o:0.4,d:0.2},{x:92,y:48,r:0.9,o:0.5,d:1.6},
+  {x:250,y:52,r:1.1,o:0.6,d:0.6},{x:78,y:60,r:0.6,o:0.3,d:2.7},{x:262,y:65,r:1.3,o:0.8,d:1.3},
+  {x:110,y:18,r:0.8,o:0.5,d:0.4},{x:235,y:22,r:1.0,o:0.6,d:2.1},{x:82,y:72,r:0.7,o:0.4,d:0.9},
+  {x:255,y:75,r:1.2,o:0.7,d:1.8},{x:95,y:35,r:0.9,o:0.5,d:0.1},{x:245,y:42,r:0.6,o:0.3,d:2.9},
+  {x:72,y:85,r:1.1,o:0.6,d:0.5},{x:268,y:88,r:0.8,o:0.5,d:1.4},{x:100,y:55,r:1.3,o:0.7,d:2.3},
+]
+
 function computeMapViewBoxHeight() {
   const markerStack =
     NODE_DOT_R + PROGRESS_MARKER_GAP_BELOW_DOT + PROGRESS_MARKER_OFFSET_DOWN + PROGRESS_MARKER_HEIGHT
@@ -221,8 +243,8 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
 
   return (
     <div
-      className={`glass-panel rounded-2xl p-4 text-white ${fillVertical ? 'flex min-h-0 flex-1 flex-col' : ''}`}
-      style={fillVertical ? { minHeight: '100%' } : undefined}
+      className={`home-gold-glass ${fillVertical ? 'flex min-h-0 flex-1 flex-col' : ''}`}
+      style={{ borderRadius: '20px', padding: '16px', ...(fillVertical ? { minHeight: '100%' } : {}) }}
     >
       <style>
         {`
@@ -243,43 +265,101 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
             0%, 100% { box-shadow: 0 0 14px rgba(212, 168, 67, 0.45), 0 0 28px rgba(212, 168, 67, 0.2); }
             50% { box-shadow: 0 0 22px rgba(212, 168, 67, 0.65), 0 0 40px rgba(212, 168, 67, 0.35); }
           }
+          @keyframes map-pulse {
+            0%, 100% { box-shadow: 0 0 12px rgba(212,175,55,0.9), 0 0 24px rgba(212,175,55,0.5); }
+            50% { box-shadow: 0 0 20px rgba(212,175,55,1), 0 0 40px rgba(212,175,55,0.7); }
+          }
+          @keyframes star-twinkle {
+            0%, 100% { opacity: var(--star-base-opacity, 0.4); }
+            50% { opacity: var(--star-peak-opacity, 0.9); }
+          }
+          @keyframes star-pulse {
+            0%, 100% { opacity: 0.15; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.15); }
+          }
+          @keyframes map-pulse-anchor {
+            0%, 100% { opacity: 0.55; filter: sepia(1) saturate(0.9) brightness(1) drop-shadow(0 0 4px rgba(212,175,55,0.4)); }
+            50% { opacity: 0.7; filter: sepia(1) saturate(1.2) brightness(1.1) drop-shadow(0 0 8px rgba(212,175,55,0.6)); }
+          }
+          @keyframes map-pulse-opacity {
+            0%, 100% { opacity: 0.15; }
+            50% { opacity: 0.5; }
+          }
+          @keyframes map-compass-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+          @keyframes dove-float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+          }
+          .jm-compass-spin {
+            transform-origin: center;
+            transform-box: fill-box;
+            animation: map-compass-spin 60s linear infinite;
+          }
+          .jm-dove-float {
+            animation: dove-float 4s ease-in-out infinite;
+          }
+          .jm-anchor-pulse {
+            animation: map-pulse-anchor 3s ease-in-out infinite;
+          }
         `}
       </style>
 
-      <div className="mb-3 flex shrink-0 items-center justify-between">
-        <p
-          className="text-xs font-semibold uppercase tracking-[0.14em]"
-          style={{ color: '#5c4018', fontFamily: 'Georgia, "Times New Roman", serif' }}
-        >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexShrink: 0 }}>
+        <p style={{ color: '#fbbf24', fontSize: '12px', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', margin: 0 }}>
           {t('journeyMap.ui.mapTitle')}
         </p>
-        <button
-          type="button"
-          onClick={onExit}
-          className="text-xs underline-offset-2 transition hover:opacity-80"
-          style={{ color: '#6b4a18', fontFamily: 'Georgia, "Times New Roman", serif' }}
+        <button type="button" onClick={onExit}
+          style={{ fontSize: '12px', color: 'rgba(212,175,55,0.7)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, transition: 'color 0.2s ease' }}
+          onMouseEnter={e => e.currentTarget.style.color = '#fbbf24'}
+          onMouseLeave={e => e.currentTarget.style.color = 'rgba(212,175,55,0.7)'}
         >
-          {t('journeyMap.ui.back')}
+          ← {t('journeyMap.ui.back')}
         </button>
       </div>
 
-      <div
-        className="mb-1 shrink-0 rounded-lg px-3 py-2.5 text-xs leading-relaxed shadow-sm"
-        style={{
-          background: 'rgba(232, 213, 163, 0.95)',
-          border: '1px solid #8B6914',
-          color: '#3d2000',
-          fontFamily: 'Georgia, "Times New Roman", serif',
-        }}
-      >
-        {t('journeyMap.ui.unlocksHelp')} <br />
-        <span style={{ color: '#6b4a12', fontWeight: 700 }}>{t('journeyMap.ui.unlockedLabel', { current: unlockedCount, total: stops.length })}</span>
+      <div className="home-gold-glass" style={{
+        borderRadius: '12px', padding: '10px 14px', marginBottom: '10px', flexShrink: 0,
+        borderLeft: '4px solid rgba(212,175,55,0.6)',
+        borderTop: '1px solid rgba(212,175,55,0.12)',
+        borderRight: '1px solid rgba(212,175,55,0.08)',
+        borderBottom: '1px solid rgba(212,175,55,0.08)',
+      }}>
+        <p style={{ color: '#cbd5e1', fontSize: '12px', margin: '0 0 6px 0', lineHeight: 1.6 }}>{t('journeyMap.ui.unlocksHelp')}</p>
+        <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+          <span style={{ color: '#fbbf24', fontSize: '13px', fontWeight: 700 }}>Unlocked:</span>
+          <span style={{ background: 'rgba(245,158,11,0.2)', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '50px', padding: '1px 10px', color: '#fcd34d', fontSize: '13px', fontWeight: 700 }}>
+            {unlockedCount}/{stops.length}
+          </span>
+        </p>
       </div>
 
       <div
-        className={`relative min-h-0 overflow-hidden rounded-xl border border-[#8B6914]/55 px-2 pb-2 pt-1 shadow-[inset_0_0_40px_rgba(80,45,15,0.12)] sm:px-3 sm:pb-3 sm:pt-1.5 ${fillVertical ? 'flex flex-1 flex-col' : ''}`}
+        className={`relative min-h-0 overflow-hidden rounded-2xl px-2 pb-2 pt-1 sm:px-3 sm:pb-3 sm:pt-1.5 ${fillVertical ? 'flex flex-1 flex-col' : ''}`}
+        style={{
+          border: '2px solid rgba(212,175,55,0.4)',
+          borderRadius: '16px',
+          boxShadow: '0 0 30px rgba(212,175,55,0.15), 0 8px 40px rgba(0,0,0,0.5)',
+        }}
       >
-        <JourneyMapParchmentScene />
+        {/* Layer 0 — deep space base */}
+        <div aria-hidden="true" style={{
+          position: 'absolute', inset: 0, borderRadius: '14px', pointerEvents: 'none',
+          background: 'radial-gradient(ellipse at 40% 30%, rgba(10,18,50,1) 0%, rgba(5,8,28,1) 55%, rgba(2,4,15,1) 100%)',
+        }} />
+        {/* Layer 1 — grain/noise */}
+        <div aria-hidden="true" style={{
+          position: 'absolute', inset: 0, borderRadius: '14px', pointerEvents: 'none',
+          backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E\")",
+          backgroundSize: '200px 200px', opacity: 0.6, mixBlendMode: 'overlay',
+        }} />
+        {/* Layer 3 — vignette */}
+        <div aria-hidden="true" style={{
+          position: 'absolute', inset: 0, borderRadius: '14px', pointerEvents: 'none', zIndex: 5,
+          background: 'radial-gradient(ellipse at center, transparent 40%, rgba(4,8,20,0.8) 100%)',
+        }} />
         <svg
           width="100%"
           viewBox={`0 0 ${MAP_VIEWBOX_W} ${mapViewBoxH}`}
@@ -288,90 +368,110 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
           style={{ display: 'block' }}
         >
           <defs>
+            <radialGradient id="jmpCurrentDotGrad" cx="35%" cy="35%" r="65%">
+              <stop offset="0%" stopColor="#FFE566" />
+              <stop offset="100%" stopColor="#C8960C" />
+            </radialGradient>
+            <radialGradient id="milkyWay" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="rgba(180,160,255,0.6)" />
+              <stop offset="100%" stopColor="rgba(180,160,255,0)" />
+            </radialGradient>
             <radialGradient id="jmpFigureFeetShadow" cx="50%" cy="45%" r="65%">
-              <stop offset="0%" stopColor="rgb(120, 80, 20)" stopOpacity="0.25" />
-              <stop offset="55%" stopColor="rgb(120, 80, 20)" stopOpacity="0.08" />
-              <stop offset="100%" stopColor="rgb(120, 80, 20)" stopOpacity="0" />
+              <stop offset="0%" stopColor="rgb(120,80,20)" stopOpacity="0.2" />
+              <stop offset="55%" stopColor="rgb(120,80,20)" stopOpacity="0.06" />
+              <stop offset="100%" stopColor="rgb(120,80,20)" stopOpacity="0" />
+            </radialGradient>
+            <radialGradient id="jmpFigureGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="rgba(212,175,55,0.15)" />
+              <stop offset="100%" stopColor="rgba(212,175,55,0)" />
             </radialGradient>
             <filter id="jmpFigureWarmGlow" x="-80%" y="-80%" width="260%" height="260%">
               <feGaussianBlur in="SourceGraphic" stdDeviation="9" result="b" />
-              <feMerge>
-                <feMergeNode in="b" />
-              </feMerge>
-            </filter>
-            <filter id="journeyMapParchmentLabelShadow" x="-25%" y="-25%" width="150%" height="150%">
-              <feDropShadow dx="0.35" dy="1.1" stdDeviation="1.15" floodColor="rgba(61, 32, 0, 0.32)" floodOpacity="1" />
+              <feMerge><feMergeNode in="b" /></feMerge>
             </filter>
           </defs>
 
-          {/* Faint mountain silhouettes — behind ink route */}
-          <g opacity={0.22} fill="rgba(90, 60, 35, 0.35)" stroke="none">
-            <path
-              d={`M-8 ${mapViewBoxH * 0.34} L42 ${mapViewBoxH * 0.2} L88 ${mapViewBoxH * 0.26} L130 ${mapViewBoxH * 0.18} L175 ${mapViewBoxH * 0.24} L220 ${mapViewBoxH * 0.17} L268 ${mapViewBoxH * 0.22} L328 ${mapViewBoxH * 0.28} L328 ${mapViewBoxH * 0.42} L-8 ${mapViewBoxH * 0.42} Z`}
+          {/* Hardcoded star field */}
+          {STAR_FIELD.map((s, i) => (
+            <circle
+              key={i}
+              cx={s.x}
+              cy={(s.y / 100) * mapViewBoxH}
+              r={s.r}
+              fill="white"
+              style={{
+                opacity: s.o,
+                animation: `star-twinkle ${2 + (i % 5) * 0.4}s ease-in-out ${s.d}s infinite`,
+                '--star-base-opacity': s.o * 0.5,
+                '--star-peak-opacity': Math.min(s.o + 0.2, 1),
+              }}
             />
-            <path
-              d={`M0 ${mapViewBoxH * 0.4} L55 ${mapViewBoxH * 0.3} L100 ${mapViewBoxH * 0.35} L155 ${mapViewBoxH * 0.28} L210 ${mapViewBoxH * 0.32} L280 ${mapViewBoxH * 0.27} L320 ${mapViewBoxH * 0.33} L320 ${mapViewBoxH * 0.48} L0 ${mapViewBoxH * 0.48} Z`}
-              opacity={0.65}
-            />
-          </g>
+          ))}
 
-          {/* Hand-drawn ink route */}
-          <path
-            d={pathD}
-            fill="none"
-            stroke="#8B6914"
-            strokeWidth="4.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeOpacity={0.72}
-            transform="translate(0.25, 0.2)"
-          />
-          <path
-            d={pathD}
-            fill="none"
-            stroke="#8B6914"
-            strokeWidth="4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeOpacity={0.92}
-            transform="translate(-0.15, -0.1)"
+          {/* Milky Way band */}
+          <ellipse
+            cx={MAP_VIEWBOX_W * 0.5}
+            cy={mapViewBoxH * 0.35}
+            rx={MAP_VIEWBOX_W * 0.45}
+            ry={mapViewBoxH * 0.18}
+            fill="url(#milkyWay)"
+            opacity="0.12"
+            transform={`rotate(-15, ${MAP_VIEWBOX_W * 0.5}, ${mapViewBoxH * 0.35})`}
           />
 
-          {/* Compass rose — ancient map corner */}
-          <g transform={`translate(24, ${mapViewBoxH * 0.06})`} opacity={0.72}>
-            <polygon points="0,-14 3,-2 0,14 -3,-2" fill="#D4A843" stroke="#8B6914" strokeWidth="0.6" />
-            <polygon points="-14,0 -2,-3 14,0 -2,3" fill="#c9a85c" stroke="#8B6914" strokeWidth="0.6" />
-            <circle r="3.2" fill="#e8d5a3" stroke="#8B6914" strokeWidth="0.5" />
+          {/* Constellation connector — outermost ambient */}
+          <path d={pathD} fill="none" stroke="rgba(180,160,255,0.06)" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" />
+          {/* Mid glow */}
+          <path d={pathD} fill="none" stroke="rgba(212,175,55,0.15)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+          {/* Core dashed constellation line */}
+          <path d={pathD} fill="none" stroke="rgba(212,175,55,0.7)" strokeWidth="1.5" strokeDasharray="6 3" strokeLinecap="round" strokeLinejoin="round" />
+
+          {/* 8-point compass rose — celestial violet, slow spin */}
+          <g transform={`translate(26, ${mapViewBoxH * 0.065})`} className="jm-compass-spin">
+            <polygon points="0,-16 3,-4 0,-8 -3,-4" fill="rgba(180,160,255,0.9)" />
+            <polygon points="0,16 3,4 0,8 -3,4" fill="rgba(180,160,255,0.7)" />
+            <polygon points="-16,0 -4,-3 -8,0 -4,3" fill="rgba(180,160,255,0.7)" />
+            <polygon points="16,0 4,-3 8,0 4,3" fill="rgba(180,160,255,0.7)" />
+            <g transform="rotate(45)">
+              <polygon points="0,-10 2,-4 0,-6 -2,-4" fill="rgba(180,160,255,0.4)" />
+              <polygon points="0,10 2,4 0,6 -2,4" fill="rgba(180,160,255,0.4)" />
+              <polygon points="-10,0 -4,-2 -6,0 -4,2" fill="rgba(180,160,255,0.4)" />
+              <polygon points="10,0 4,-2 6,0 4,2" fill="rgba(180,160,255,0.4)" />
+            </g>
+            <circle r="3" fill="rgba(180,160,255,0.9)" />
+            <circle r="1.5" fill="rgba(220,210,255,1)" />
           </g>
 
-          {/* Dove — asset tinted to match parchment ink */}
+          {/* Dove — celestial violet aura */}
           <image
             href="/dove.svg"
-            x={MAP_VIEWBOX_W - 55 - 10}
-            y={mapViewBoxH * 0.032}
-            width={55}
-            height={55}
+            x={MAP_VIEWBOX_W - 58 - 8}
+            y={mapViewBoxH * 0.028}
+            width={58}
+            height={58}
             pointerEvents="none"
-            style={{ filter: 'sepia(0.3) saturate(0.5) opacity(0.75)' }}
+            className="jm-dove-float"
+            style={{ filter: 'brightness(1.3) drop-shadow(0 0 6px rgba(200,190,255,0.5)) opacity(0.85)' }}
           />
 
-          {/* Cross near Jerusalem */}
+          {/* Cross near Jerusalem — brightened for dark bg */}
           {jerusalemStop ? (
-            <g transform={`translate(${jerusalemStop.x + 12}, ${jerusalemStop.y - 14})`} opacity={0.65}>
-              <rect x="-0.9" y="-10" width="1.8" height="12" rx="0.3" fill="#8B6914" />
-              <rect x="-6" y="-6" width="12" height="1.8" rx="0.3" fill="#8B6914" />
+            <g transform={`translate(${jerusalemStop.x + 12}, ${jerusalemStop.y - 14})`} opacity={0.5}>
+              <rect x="-0.9" y="-10" width="1.8" height="12" rx="0.3" fill="rgba(212,175,55,0.7)" />
+              <rect x="-6" y="-6" width="12" height="1.8" rx="0.3" fill="rgba(212,175,55,0.7)" />
             </g>
           ) : null}
 
-          {/* Anchor — bottom center; drawn before figures so it reads as parchment stamp */}
+          {/* Anchor */}
           <image
             href="/anchor.svg"
-            x={MAP_VIEWBOX_W / 2 - 22.5}
-            y={mapViewBoxH - 52}
-            width={45}
-            height={45}
+            x={MAP_VIEWBOX_W / 2 - 26}
+            y={mapViewBoxH - 58}
+            width={52}
+            height={52}
             pointerEvents="none"
-            style={{ filter: 'sepia(1) saturate(0.2) opacity(0.22)' }}
+            className="jm-anchor-pulse"
+            style={{ filter: 'sepia(1) saturate(1.0) brightness(1.2) drop-shadow(0 0 10px rgba(212,175,55,0.4)) opacity(0.45)' }}
           />
 
           {stops.map((stop, i) => {
@@ -405,29 +505,52 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
                   />
                 ) : null}
                 {!unlocked ? (
-                  <circle cx={stop.x} cy={stop.y} r="4" fill="rgba(100, 70, 20, 0.4)" />
+                  /* Locked stop — faint star with crosshairs */
+                  <g>
+                    <line x1={stop.x - 5} y1={stop.y} x2={stop.x + 5} y2={stop.y} stroke="rgba(180,170,220,0.15)" strokeWidth="1" />
+                    <line x1={stop.x} y1={stop.y - 5} x2={stop.x} y2={stop.y + 5} stroke="rgba(180,170,220,0.15)" strokeWidth="1" />
+                    <circle cx={stop.x} cy={stop.y} r="2.5" fill="rgba(150,140,200,0.3)" stroke="rgba(180,170,220,0.2)" strokeWidth="1" />
+                  </g>
                 ) : isCurrentProgress ? (
+                  /* Current position — layered star beacon */
                   <g transform={`translate(${stop.x} ${stop.y})`}>
-                    <circle
-                      r="10"
-                      fill="none"
-                      stroke="#D4A843"
-                      strokeWidth="2.25"
-                      className="journey-map-current-pulse-ring"
-                    />
-                    <circle r="10" fill="#D4A843" />
+                    <circle r="16" fill="none" stroke="rgba(212,175,55,0.12)" strokeWidth="2"
+                      style={{ animation: 'star-pulse 2.5s ease-in-out infinite', transformOrigin: 'center', transformBox: 'fill-box' }} />
+                    <circle r="10" fill="none" stroke="rgba(212,175,55,0.35)" strokeWidth="1.5" />
+                    {/* 8-point star body */}
+                    <g>
+                      <rect x="-5" y="-1.5" width="10" height="3" rx="1" fill="url(#jmpCurrentDotGrad)" />
+                      <rect x="-5" y="-1.5" width="10" height="3" rx="1" fill="url(#jmpCurrentDotGrad)" transform="rotate(45)" />
+                      <rect x="-5" y="-1.5" width="10" height="3" rx="1" fill="url(#jmpCurrentDotGrad)" transform="rotate(90)" />
+                      <rect x="-5" y="-1.5" width="10" height="3" rx="1" fill="url(#jmpCurrentDotGrad)" transform="rotate(135)" />
+                    </g>
+                    <circle r="2.5" fill="rgba(255,240,180,0.95)" />
                   </g>
                 ) : (
-                  <circle cx={stop.x} cy={stop.y} r="7" fill="#D4A843" fillOpacity={0.9} />
+                  /* Unlocked stop — gold star dot + halo */
+                  <g>
+                    <circle cx={stop.x} cy={stop.y} r="7" fill="none" stroke="rgba(212,175,55,0.2)" strokeWidth="1" />
+                    <circle cx={stop.x} cy={stop.y} r="4" fill="#D4AF37" stroke="rgba(255,220,100,0.5)" strokeWidth="1.5" />
+                  </g>
+                )}
+                {/* Label backing rect for current stop */}
+                {isCurrentProgress && (
+                  <rect
+                    x={la.x - (la.textAnchor === 'middle' ? 18 : la.textAnchor === 'end' ? 36 : 2)}
+                    y={stop.y + 4 - 9}
+                    width={36} height={13} rx={3}
+                    fill="rgba(2,4,15,0.8)"
+                  />
                 )}
                 <text
                   x={la.x}
                   y={stop.y + 4}
-                  fontSize="8.5"
+                  fontSize={isCurrentProgress ? '10.5' : (unlocked ? '8' : '8')}
+                  fontWeight={isCurrentProgress ? '700' : (unlocked ? '600' : '400')}
                   textAnchor={la.textAnchor}
                   fontFamily="Georgia, 'Times New Roman', serif"
-                  fill={unlocked ? '#3d2000' : 'rgba(80, 50, 10, 0.4)'}
-                  filter="url(#journeyMapParchmentLabelShadow)"
+                  fill={!unlocked ? 'rgba(150,140,200,0.4)' : (isCurrentProgress ? '#FFD700' : 'rgba(212,175,55,0.8)')}
+                  fontStyle={!unlocked ? 'italic' : 'normal'}
                 >
                   {unlocked ? stop.label : `${t('journeyMap.ui.lockedPrefix')}${stop.label}`}
                 </text>

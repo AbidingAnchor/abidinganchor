@@ -21,6 +21,7 @@ import FirstJournalEntryCelebration from '../components/FirstJournalEntryCelebra
 import GuestPreviewBanner from '../components/GuestPreviewBanner'
 import { useIsGuestSession } from '../hooks/useIsGuestSession'
 import { useGuestSignupModal } from '../context/GuestSignupModalContext'
+import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
 
 const ACCENT_GOLD = '#c9922a'
 const JOURNAL_MOUNT_DELAY_MS = 600
@@ -102,6 +103,8 @@ function Journal() {
   const { openGuestSignupModal } = useGuestSignupModal()
   const navigate = useNavigate()
   const location = useLocation()
+  const themeType = useThemeBackgroundType()
+  const isDaytime = themeType === 'day' || themeType === 'morning' || themeType === 'afternoon'
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -539,31 +542,73 @@ function Journal() {
 
   const dailyPrompt = useMemo(() => getPromptForEntryDate(null, prompts), [prompts])
 
+  const inspirationalQuotes = [
+    "What is God speaking to you today?",
+    "Where do you see His hand at work?",
+    "What grace are you grateful for?",
+    "How is He leading you forward?",
+    "What truth is He revealing?",
+    "Where do you need His peace?",
+    "What promise are you holding onto?",
+  ]
+
+  const dailyQuote = useMemo(() => {
+    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000)
+    return inspirationalQuotes[dayOfYear % inspirationalQuotes.length]
+  }, [])
+
   const visibleEntries = entriesExpanded ? filteredEntries : filteredEntries.slice(0, 5)
 
   return (
     <div style={{ background: 'transparent', minHeight: '100vh', animation: 'fadeIn 0.6s ease-out' }}>
-      <div className="content-scroll" style={{ padding: '60px 16px 100px', maxWidth: '680px', margin: '0 auto' }}>
+      <div className="content-scroll" style={{ padding: '60px 16px 80px', maxWidth: '680px', margin: '0 auto' }}>
         <GuestPreviewBanner />
         
         {/* Header */}
         {!showReaderModal && (
-          <div style={{ marginBottom: '24px', animation: 'fadeIn 0.6s ease-out' }}>
+          <div style={{ 
+            marginBottom: '32px', 
+            animation: 'fadeIn 0.6s ease-out',
+            position: 'relative',
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: '-20px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: '200px',
+              height: '120px',
+              background: 'radial-gradient(circle, rgba(212, 168, 67, 0.15) 0%, transparent 70%)',
+              pointerEvents: 'none',
+              zIndex: -1,
+            }} />
             <h1 style={{
-              color: '#ffffff',
-              fontSize: '32px',
-              fontWeight: 800,
-              marginBottom: '8px',
-              margin: '0 0 8px 0',
+              color: isDaytime ? '#1A1A1A' : '#ffffff',
+              fontSize: '42px',
+              fontWeight: 700,
+              marginBottom: '4px',
+              margin: '0 0 4px 0',
+              fontFamily: 'Georgia, "Times New Roman", serif',
+              letterSpacing: '-0.5px',
             }}>
               {t('journal.pageTitle')}
             </h1>
             <p style={{
-              color: 'rgba(255, 255, 255, 0.5)',
-              fontSize: '15px',
-              margin: 0,
+              color: isDaytime ? 'rgba(26, 26, 26, 0.6)' : 'rgba(255, 255, 255, 0.5)',
+              fontSize: '14px',
+              margin: '0 0 8px 0',
+              fontWeight: 500,
             }}>
               {t('journal.pageSubtitle')}
+            </p>
+            <p style={{
+              color: isDaytime ? 'rgba(212,168,67,0.7)' : 'rgba(212, 168, 67, 0.7)',
+              fontSize: '13px',
+              margin: 0,
+              fontStyle: 'italic',
+              fontWeight: 400,
+            }}>
+              {dailyQuote}
             </p>
           </div>
         )}
@@ -572,31 +617,63 @@ function Journal() {
         {showReaderModal ? null : (
           <div style={{
             display: 'flex',
-            alignItems: 'center',
-            gap: '24px',
+            flexDirection: 'column',
             marginBottom: '32px',
-            padding: '20px',
-            background: 'rgba(255, 255, 255, 0.06)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            border: '1px solid rgba(212, 168, 67, 0.2)',
-            borderRadius: '16px',
+            padding: '24px',
+            background: 'rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '24px',
             animation: 'fadeIn 0.6s ease-out 0.1s both',
           }}>
-            <div style={{ textAlign: 'center', minWidth: '60px' }}>
-              <p style={{ color: '#D4A843', fontSize: '28px', fontWeight: 800, margin: '0 0 4px 0', lineHeight: 1 }}>{totalEntries}</p>
-              <p style={{ color: 'rgba(255, 255, 255, 0.45)', fontSize: '11px', letterSpacing: '1.5px', margin: 0, fontWeight: 600, textTransform: 'uppercase' }}>{totalEntries === 1 ? t('journal.entrySingular') : t('journal.entryPlural')}</p>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-around',
+              marginBottom: '16px',
+            }}>
+              <div style={{ textAlign: 'center', flex: 1 }}>
+                <div style={{ fontSize: '24px', marginBottom: '4px' }}>📝</div>
+                <p style={{ color: '#fbbf24', fontSize: '30px', fontWeight: 700, margin: '0 0 4px 0', lineHeight: 1 }}>{totalEntries}</p>
+                <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '11px', letterSpacing: '1px', margin: 0, fontWeight: 500, textTransform: 'uppercase' }}>{totalEntries === 1 ? t('journal.entrySingular') : t('journal.entryPlural')}</p>
+              </div>
+              <div style={{ width: '1px', height: '40px', background: 'rgba(255, 255, 255, 0.1)' }} />
+              <div style={{ textAlign: 'center', flex: 1 }}>
+                <div style={{ fontSize: '24px', marginBottom: '4px' }}>📅</div>
+                <p style={{ color: '#fbbf24', fontSize: '30px', fontWeight: 700, margin: '0 0 4px 0', lineHeight: 1 }}>{writingStreak}</p>
+                <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '11px', letterSpacing: '1px', margin: 0, fontWeight: 500, textTransform: 'uppercase' }}>{writingStreak === 1 ? t('journal.day') : t('journal.days')}</p>
+              </div>
+              <div style={{ width: '1px', height: '40px', background: 'rgba(255, 255, 255, 0.1)' }} />
+              <div style={{ textAlign: 'center', flex: 1 }}>
+                <div style={{ fontSize: '24px', marginBottom: '4px' }}>🔥</div>
+                <p style={{ 
+                  color: '#fbbf24', 
+                  fontSize: '30px', 
+                  fontWeight: 700, 
+                  margin: '0 0 4px 0', 
+                  lineHeight: 1,
+                  textShadow: writingStreak > 0 ? '0 0 12px rgba(251,191,36,0.6)' : 'none'
+                }}>{writingStreak}</p>
+                <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '11px', letterSpacing: '1px', margin: 0, fontWeight: 500, textTransform: 'uppercase' }}>{t('journal.dayStreakLabel', { n: writingStreak })}</p>
+              </div>
             </div>
-            <div style={{ width: '1px', height: '32px', background: 'rgba(255, 255, 255, 0.1)' }} />
-            <div style={{ textAlign: 'center', minWidth: '60px' }}>
-              <p style={{ color: '#D4A843', fontSize: '28px', fontWeight: 800, margin: '0 0 4px 0', lineHeight: 1 }}>{writingStreak}</p>
-              <p style={{ color: 'rgba(255, 255, 255, 0.45)', fontSize: '11px', letterSpacing: '1.5px', margin: 0, fontWeight: 600, textTransform: 'uppercase' }}>{writingStreak === 1 ? t('journal.day') : t('journal.days')}</p>
-            </div>
-            <div style={{ width: '1px', height: '32px', background: 'rgba(255, 255, 255, 0.1)' }} />
-            <div style={{ textAlign: 'center', minWidth: '60px' }}>
-              <p style={{ color: '#D4A843', fontSize: '28px', fontWeight: 800, margin: '0 0 4px 0', lineHeight: 1 }}>{entries.length > 0 ? new Date(entries[entries.length - 1].created_at).toLocaleDateString(i18n.language, { month: 'short', year: 'numeric' }) : '—'}</p>
-              <p style={{ color: 'rgba(255, 255, 255, 0.45)', fontSize: '11px', letterSpacing: '1.5px', margin: 0, fontWeight: 600, textTransform: 'uppercase' }}>{t('journal.dayStreakLabel', { n: writingStreak })}</p>
-            </div>
+            {entries.length > 0 && (
+              <div style={{
+                textAlign: 'center',
+                paddingTop: '12px',
+                borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+              }}>
+                <p style={{
+                  color: 'rgba(255, 255, 255, 0.4)',
+                  fontSize: '12px',
+                  margin: 0,
+                  fontWeight: 400,
+                }}>
+                  {new Date(entries[entries.length - 1].created_at).toLocaleDateString(i18n.language, { month: 'long', year: 'numeric' })}
+                </p>
+              </div>
+            )}
           </div>
         )}
 
@@ -674,8 +751,8 @@ function Journal() {
             <div style={{
               display: 'flex',
               flexWrap: 'wrap',
-              gap: '8px',
-              marginBottom: '20px',
+              gap: '10px',
+              marginBottom: '24px',
             }}>
               {(['all', 'week', 'month']).map((key) => {
                 const label = key === 'all' ? t('journal.filterAll') : key === 'week' ? t('journal.filterWeek') : t('journal.filterMonth')
@@ -686,17 +763,20 @@ function Journal() {
                     type="button"
                     onClick={() => setEntryFilter(key)}
                     style={{
-                      padding: '8px 16px',
+                      padding: '12px 24px',
                       borderRadius: '50px',
-                      border: '1px solid rgba(212,168,67,0.3)',
+                      border: active ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
                       cursor: 'pointer',
-                      fontSize: '13px',
-                      fontWeight: active ? 700 : 500,
+                      fontSize: '14px',
+                      fontWeight: 600,
                       background: active
-                        ? '#D4A843'
-                        : '#F0E8D4',
-                      color: '#1A1A1A',
-                      transition: 'all 0.2s ease',
+                        ? 'linear-gradient(135deg, #D4A843 0%, #B8860B 100%)'
+                        : 'rgba(255, 255, 255, 0.05)',
+                      backdropFilter: active ? 'none' : 'blur(10px)',
+                      WebkitBackdropFilter: active ? 'none' : 'blur(10px)',
+                      color: active ? '#0a1428' : 'rgba(255, 255, 255, 0.6)',
+                      transition: 'all 0.3s ease',
+                      boxShadow: active ? '0 4px 16px rgba(212, 168, 67, 0.4)' : 'none',
                     }}
                   >
                     {label}
@@ -718,8 +798,8 @@ function Journal() {
               <>
                 {visibleEntries.map((entry, index) => {
                   const date = new Date(entry.created_at || Date.now())
-                  const dayName = date.toLocaleDateString(i18n.language, { weekday: 'long' }).toUpperCase()
-                  const monthDay = date.toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })
+                  const dateLabel = date.toLocaleDateString(i18n.language, { month: 'long', day: 'numeric' })
+                  const dayName = date.toLocaleDateString(i18n.language, { weekday: 'long' })
                   const wordCount = (entry.note || '').split(/\s+/).filter(w => w).length
                   const readTime = Math.max(1, Math.ceil(wordCount / 200))
                   const moodDisplay = getMoodDisplay(entry.mood)
@@ -728,35 +808,44 @@ function Journal() {
                       key={entry.id}
                       onClick={() => setShowReaderModal(entry)}
                       style={{
-                        background: 'rgba(255, 255, 255, 0.06)',
-                        backdropFilter: 'blur(12px)',
-                        WebkitBackdropFilter: 'blur(12px)',
-                        border: '1px solid rgba(212, 168, 67, 0.15)',
-                        borderRadius: '16px',
-                        padding: '16px 20px',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        backdropFilter: 'blur(16px)',
+                        WebkitBackdropFilter: 'blur(16px)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '24px',
+                        padding: '20px',
                         marginBottom: '16px',
                         cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        animation: `fadeIn 0.6s ease-out ${0.3 + index * 0.05}s both`,
+                        transition: 'all 0.3s ease',
+                        animation: `fadeIn 0.6s ease-out ${0.3 + index * 0.08}s both`,
+                        borderLeft: `3px solid ${moodDisplay.color}`,
+                        position: 'relative',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px)'
+                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'
                       }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                         <div>
                           <p style={{
                             color: '#ffffff',
-                            fontSize: '22px',
-                            fontWeight: 800,
-                            marginBottom: '4px',
+                            fontSize: '32px',
+                            fontWeight: 700,
+                            marginBottom: '2px',
                             lineHeight: 1,
                           }}>
-                            {monthDay}
+                            {dateLabel}
                           </p>
                           <p style={{
-                            color: '#D4A843',
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            letterSpacing: '1.5px',
-                            textTransform: 'uppercase',
+                            color: 'rgba(212, 168, 67, 0.7)',
+                            fontSize: '12px',
+                            fontWeight: 500,
+                            textTransform: 'capitalize',
                           }}>
                             {dayName}
                           </p>
@@ -764,10 +853,10 @@ function Journal() {
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                           <span
                             style={{
-                              padding: '6px 12px',
+                              padding: '6px 14px',
                               borderRadius: '20px',
-                              background: `${moodDisplay.color}25`,
-                              border: `1px solid ${moodDisplay.color}50`,
+                              background: `${moodDisplay.color}20`,
+                              border: `1px solid ${moodDisplay.color}40`,
                               color: moodDisplay.color,
                               fontSize: '13px',
                               fontWeight: 600,
@@ -798,20 +887,21 @@ function Journal() {
                       </div>
                       <p style={{
                         color: 'rgba(255, 255, 255, 0.7)',
-                        fontSize: '14px',
-                        lineHeight: 1.6,
+                        fontSize: '15px',
+                        lineHeight: 1.7,
                         marginTop: '8px',
                         marginBottom: '16px',
                         display: '-webkit-box',
                         WebkitLineClamp: 3,
                         WebkitBoxOrient: 'vertical',
                         overflow: 'hidden',
+                        position: 'relative',
                       }}>
                         {entry.note || getEntryBodyPreview(entry)}
                       </p>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', color: 'rgba(255, 255, 255, 0.4)', fontSize: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'rgba(255, 255, 255, 0.4)', fontSize: '12px' }}>
                         <span>{wordCount} {t('journal.wordsLabel', { count: wordCount })}</span>
-                        <span>•</span>
+                        <span style={{ color: 'rgba(255, 255, 255, 0.2)' }}>•</span>
                         <span>{readTime} {t('journal.minReadLabel')}</span>
                       </div>
                     </div>
@@ -842,37 +932,39 @@ function Journal() {
           </div>
         ) : (
           <div style={{
-            background: 'linear-gradient(145deg, rgba(15, 22, 55, 0.92), rgba(10, 15, 40, 0.97))',
+            background: isDaytime ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.03)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid rgba(212, 168, 67, 0.2)',
-            borderRadius: '20px',
-            padding: '48px 32px',
+            border: isDaytime ? '1px solid rgba(0, 0, 0, 0.08)' : '1px solid rgba(255, 255, 255, 0.08)',
+            borderRadius: '24px',
+            padding: '56px 32px',
             textAlign: 'center',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(212, 168, 67, 0.08)',
+            boxShadow: isDaytime ? '0 8px 32px rgba(0, 0, 0, 0.1)' : '0 8px 32px rgba(0, 0, 0, 0.3)',
             animation: 'fadeIn 0.6s ease-out 0.3s both',
           }}>
             <div style={{
-              fontSize: '48px',
+              fontSize: '64px',
               marginBottom: '24px',
-              filter: 'drop-shadow(0 0 20px rgba(212, 168, 67, 0.3))',
+              filter: 'drop-shadow(0 0 24px rgba(212, 168, 67, 0.4))',
             }}>
-              📓
+              🕯️
             </div>
             <h3 style={{
-              color: '#ffffff',
-              fontSize: '20px',
+              color: isDaytime ? '#1A1A1A' : '#ffffff',
+              fontSize: '24px',
               fontWeight: 600,
               marginBottom: '8px',
+              fontFamily: 'Georgia, "Times New Roman", serif',
             }}>
-              Your story is worth writing
+              Your story with God starts here
             </h3>
             <p style={{
-              color: 'rgba(255, 255, 255, 0.6)',
-              fontSize: '14px',
-              marginBottom: '24px',
+              color: isDaytime ? 'rgba(26, 26, 26, 0.6)' : 'rgba(255, 255, 255, 0.5)',
+              fontSize: '15px',
+              marginBottom: '32px',
+              lineHeight: 1.6,
             }}>
-              Every entry is a letter to your future self
+              Begin your journey of reflection and faith
             </p>
             <button
               type="button"
@@ -889,12 +981,20 @@ function Journal() {
                 transition: 'all 0.2s ease',
                 boxShadow: '0 4px 20px rgba(212, 168, 67, 0.4)',
               }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = '0 6px 24px rgba(212, 168, 67, 0.5)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 4px 20px rgba(212, 168, 67, 0.4)'
+              }}
             >
-              Write Your First Entry
+              Write your first entry
             </button>
           </div>
         )}
-        </>
+          </>
         ) : null}
 
         {/* Reader View (inline, not overlay) */}
@@ -939,27 +1039,36 @@ function Journal() {
       {!showReaderModal && (
         <button
           type="button"
+          className="journal-fab"
           onClick={handleOpenModal}
           style={{
             position: 'fixed',
             bottom: '90px',
             right: '20px',
-            width: '56px',
-            height: '56px',
+            width: '64px',
+            height: '64px',
             borderRadius: '50%',
             border: 'none',
-            background: '#D4A843',
+            background: 'linear-gradient(135deg, #f59e0b 0%, #ca8a04 100%)',
             color: '#0a1428',
-            fontSize: '28px',
+            fontSize: '32px',
             fontWeight: 600,
             cursor: 'pointer',
-            boxShadow: '0 4px 20px rgba(212, 168, 67, 0.4)',
+            boxShadow: '0 0 18px rgba(245, 158, 11, 0.45)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            transition: 'all 0.2s ease',
+            transition: 'all 0.3s ease',
             zIndex: 100,
-            animation: 'fadeIn 0.6s ease-out 0.4s both',
+            animation: 'fadeIn 0.6s ease-out 0.4s both, journalFabGlow 2.4s ease-in-out 1s infinite',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.05)'
+            e.currentTarget.style.boxShadow = '0 0 28px rgba(245, 158, 11, 0.75)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+            e.currentTarget.style.boxShadow = '0 0 18px rgba(245, 158, 11, 0.45)'
           }}
         >
           +

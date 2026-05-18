@@ -3,62 +3,6 @@ import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { GUIDED_PRAYERS } from '../data/guidedPrayers'
 
-const CATEGORY_STYLES = {
-  peace: {
-    gradient: 'linear-gradient(135deg, #1a3a4a, #0d2233, #1a4a3a)',
-    animation: 'breathing-circle',
-  },
-  worship: {
-    gradient: 'linear-gradient(135deg, #2a1a00, #3d2800, #1a1200)',
-    animation: 'gold-glow-pulse',
-  },
-  praise: {
-    gradient: 'linear-gradient(135deg, #2a1a00, #3d2800, #1a1200)',
-    animation: 'gold-glow-pulse',
-  },
-  protection: {
-    gradient: 'linear-gradient(135deg, #0a1628, #0d1f3c, #0a0f1e)',
-    animation: 'rotating-ring',
-  },
-  strength: {
-    gradient: 'linear-gradient(135deg, #0a1628, #0d1f3c, #0a0f1e)',
-    animation: 'rotating-ring',
-  },
-  healing: {
-    gradient: 'linear-gradient(135deg, #0a2a1a, #0d3320, #0a1f15)',
-    animation: 'ripple-wave',
-  },
-  gratitude: {
-    gradient: 'linear-gradient(135deg, #2a1800, #3d2400, #1f1000)',
-    animation: 'floating-particle',
-  },
-  thanksgiving: {
-    gradient: 'linear-gradient(135deg, #2a1800, #3d2400, #1f1000)',
-    animation: 'floating-particle',
-  },
-  morning: {
-    gradient: 'linear-gradient(135deg, #1a2a3a, #0d1a2a, #1a3a4a)',
-    animation: 'breathing-circle',
-  },
-  evening: {
-    gradient: 'linear-gradient(135deg, #0a1a2a, #0d0f1a, #0a0f1e)',
-    animation: 'breathing-circle',
-  },
-  guidance: {
-    gradient: 'linear-gradient(135deg, #1a1a3a, #0d1a2a, #1a2a4a)',
-    animation: 'breathing-circle',
-  },
-  family: {
-    gradient: 'linear-gradient(135deg, #1a2a3a, #0d1a2a, #1a3a4a)',
-    animation: 'breathing-circle',
-  },
-}
-
-const getDefaultStyle = () => ({
-  gradient: 'linear-gradient(135deg, #1a1a2a, #0d0d1a, #1a1a3a)',
-  animation: 'breathing-circle',
-})
-
 function formatTime(seconds) {
   if (!Number.isFinite(seconds) || seconds < 0) return '0:00'
   const m = Math.floor(seconds / 60)
@@ -238,17 +182,16 @@ export default function GuidedPrayersSection() {
 
       <h2
         id="guided-prayers-heading"
-        className="text-center font-semibold text-lg mb-1"
-        style={{ color: 'var(--section-title)' }}
+        className="font-semibold text-lg mb-4"
+        style={{
+          color: 'rgba(251, 191, 36, 0.86)',
+          fontSize: '11px',
+          letterSpacing: '0.18em',
+          textTransform: 'uppercase',
+        }}
       >
         {t('prayer.guided.title')}
       </h2>
-      <p
-        className="text-center text-sm mb-4"
-        style={{ color: 'var(--guided-prayer-card-muted)' }}
-      >
-        {t('prayer.guided.subtitle')}
-      </p>
 
       <div style={{
         display: 'flex',
@@ -259,45 +202,46 @@ export default function GuidedPrayersSection() {
         scrollbarWidth: 'none',
         msOverflowStyle: 'none',
         width: '100%',
+        scrollSnapType: 'x mandatory',
+        scrollBehavior: 'smooth',
       }}>
         {GUIDED_PRAYERS.map((prayer) => (
           <div
             key={prayer.id}
+            className="home-gold-glass rounded-2xl p-4"
             style={{
               minWidth: '160px',
               width: '160px',
-              height: '200px',
-              borderRadius: '20px',
-              background: prayer.gradient,
-              border: `1px solid ${prayer.border}`,
-              padding: '20px',
+              minHeight: '200px',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
               flexShrink: 0,
+              scrollSnapAlign: 'start',
             }}
             onClick={() => openPlayer(prayer)}
           >
             <div>
-              <div style={{ fontSize: '32px', marginBottom: '12px' }}>{prayer.emoji}</div>
-              <h3 style={{ color: '#ffffff', fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>{t(prayer.title)}</h3>
-              <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '12px' }}>
+              <div style={{ fontSize: '36px', marginBottom: '14px', textAlign: 'center' }}>{prayer.emoji}</div>
+              <h3 style={{ color: '#ffffff', fontSize: '16px', fontWeight: 700, marginBottom: '8px', textAlign: 'center' }}>{t(prayer.title)}</h3>
+              <p style={{ color: 'rgba(251, 191, 36, 0.72)', fontSize: '12px', textAlign: 'center', fontWeight: 600 }}>
                 {t('prayer.guided.durationMinutes', { count: prayer.duration, n: prayer.duration })}
               </p>
             </div>
             <div style={{
-              width: '40px',
-              height: '40px',
+              width: '44px',
+              height: '44px',
               borderRadius: '50%',
-              background: 'linear-gradient(135deg, #D4A843 0%, #B8860B 100%)',
+              background: 'linear-gradient(135deg, #FBBF24 0%, #D4A843 45%, #B8860B 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#0a0f28',
               fontSize: '18px',
+              margin: '0 auto',
+              boxShadow: '0 0 22px rgba(212, 168, 67, 0.45)',
             }}>▶</div>
           </div>
         ))}

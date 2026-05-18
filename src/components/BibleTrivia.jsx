@@ -187,7 +187,6 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
   const [triviaVerseText, setTriviaVerseText] = useState('')
   const [triviaVerseLoading, setTriviaVerseLoading] = useState(true)
   const [triviaShareVerseText, setTriviaShareVerseText] = useState('')
-  const [hoveredOption, setHoveredOption] = useState(null)
   
   const currentQuestion = roundQuestions[index]
   const progress = Math.round(((index + (done ? 1 : 0)) / roundQuestions.length) * 100)
@@ -289,8 +288,8 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
 
   return (
     <div
-      className={`glass-panel rounded-2xl p-4 text-white ${fillVertical ? 'flex min-h-0 flex-1 flex-col' : ''}`}
-      style={fillVertical ? { minHeight: '100%' } : undefined}
+      className={`home-gold-glass ${fillVertical ? 'flex min-h-0 flex-1 flex-col' : ''}`}
+      style={{ borderRadius: '20px', padding: '16px', ...(fillVertical ? { minHeight: '100%' } : {}) }}
     >
       <style>
         {`
@@ -298,100 +297,177 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
             0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
             100% { transform: translateY(220px) rotate(360deg); opacity: 0; }
           }
+          .trivia-opt {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 20px;
+            border-radius: 14px;
+            border-top: none;
+            border-right: none;
+            border-bottom: none;
+            border-left: 4px solid rgba(212,175,55,0.7);
+            background: rgba(15,20,45,0.9);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow: inset 3px 0 12px rgba(212,175,55,0.12), 0 2px 12px rgba(0,0,0,0.4);
+            color: #E8D5A3;
+            font-weight: 600;
+            font-size: 15px;
+            letter-spacing: 0.025em;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+          }
+          .trivia-opt:hover:not(:disabled) {
+            border-left: 4px solid rgba(212,175,55,1);
+            background: rgba(20,28,60,0.95);
+            box-shadow: inset 3px 0 18px rgba(212,175,55,0.25), 0 2px 12px rgba(0,0,0,0.4);
+            transform: scale(1.015);
+          }
+          .trivia-opt--chosen {
+            border-left: 5px solid #D4AF37 !important;
+            background: rgba(30,40,80,0.98) !important;
+            box-shadow: inset 4px 0 20px rgba(212,175,55,0.35), 0 0 20px rgba(212,175,55,0.1) !important;
+            color: #FFD700 !important;
+          }
+          .trivia-opt--correct {
+            border-left: 4px solid #4CAF50 !important;
+            background: rgba(15,45,20,0.9) !important;
+            box-shadow: inset 3px 0 16px rgba(76,175,80,0.3), 0 0 14px rgba(76,175,80,0.15) !important;
+            color: #a7f3a7 !important;
+          }
+          .trivia-opt--wrong {
+            border-left: 4px solid #C62828 !important;
+            background: rgba(45,10,10,0.9) !important;
+            box-shadow: inset 3px 0 16px rgba(198,40,40,0.3), 0 0 14px rgba(198,40,40,0.15) !important;
+            color: #fca5a5 !important;
+          }
+          .trivia-opt:disabled { cursor: default; }
+          .trivia-opt__badge {
+            width: 24px;
+            height: 24px;
+            min-width: 24px;
+            border-radius: 50%;
+            background: rgba(212,175,55,0.2);
+            border: 1px solid rgba(212,175,55,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: #D4AF37;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+          }
+          .trivia-opt--chosen .trivia-opt__badge {
+            background: rgba(212,175,55,0.35);
+            border-color: #D4AF37;
+            color: #FFD700;
+          }
+          .trivia-opt--correct .trivia-opt__badge {
+            background: rgba(76,175,80,0.25);
+            border-color: #4CAF50;
+            color: #4CAF50;
+          }
+          .trivia-opt--wrong .trivia-opt__badge {
+            background: rgba(198,40,40,0.25);
+            border-color: #C62828;
+            color: #f87171;
+          }
+          .trivia-opt--chosen-overlay {
+            position: absolute;
+            inset: 0;
+            border-radius: 14px;
+            background: linear-gradient(90deg, rgba(212,175,55,0.08) 0%, transparent 60%);
+            pointer-events: none;
+          }
         `}
       </style>
 
-      <div className="mb-3 flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: '#F0C040' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+        <p style={{ color: '#D4A843', fontSize: '11px', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', margin: 0 }}>
           {t('trivia.title')}
         </p>
-        <button type="button" onClick={onExit} className="text-xs text-white/70">
-          {t('common.back')}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ background: 'linear-gradient(135deg,#D4A843,#F0C040)', color: '#1A1200', fontSize: '12px', fontWeight: 700, padding: '4px 12px', borderRadius: '50px' }}>
+            {t('trivia.scoreLabel')}: {score}
+          </span>
+          <button type="button" onClick={onExit} style={{ fontSize: '12px', color: 'rgba(212,168,67,0.8)', background: 'none', border: 'none', cursor: 'pointer' }}>
+            ← {t('common.back')}
+          </button>
+        </div>
       </div>
 
       {!done ? (
         <>
-          <div className="mb-2 flex items-center justify-between text-xs text-white/70">
-            <span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.55)' }}>
               {t('trivia.questionOf', { current: index + 1, total: roundQuestions.length })}
             </span>
-            <span>{t('trivia.scoreLabel')}: {score}</span>
           </div>
-          <div className="mb-3 h-2 overflow-hidden rounded-full bg-white/20">
-            <div className="h-full rounded-full" style={{ width: `${progress}%`, background: '#F0C040' }} />
-          </div>
-
-          <div className="glass-panel rounded-2xl p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/70">{currentQuestion.category}</p>
-            <p className="mt-2 text-lg font-semibold text-white">{currentQuestion.q}</p>
+          {/* Progress bar */}
+          <div style={{ height: '6px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', marginBottom: '14px', overflow: 'hidden' }}>
+            <div style={{ height: '100%', borderRadius: '999px', width: `${progress}%`, background: 'linear-gradient(90deg,#D4A843,#F0C040)', transition: 'width 0.3s ease' }} />
           </div>
 
-          <div className="mt-3 grid grid-cols-1 gap-2">
+          {/* Question card */}
+          <div className="home-gold-glass" style={{ borderRadius: '20px', padding: '20px', marginBottom: '14px' }}>
+            <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'rgba(251,191,36,0.8)', margin: '0 0 8px 0' }}>{currentQuestion.category}</p>
+            <p style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff', margin: 0, lineHeight: 1.5, fontFamily: 'Georgia, serif' }}>{currentQuestion.q}</p>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {currentQuestion.options.map((opt, optIdx) => {
               const isChosen = selected === optIdx
-              const isHovered = hoveredOption === optIdx
-              const emphasized = isChosen || isHovered
-              const bg = emphasized ? 'rgba(212,168,67,0.15)' : '#F0E8D4'
-              const border = emphasized ? '#D4A843' : 'rgba(212,168,67,0.4)'
+              const isCorrect = selected !== null && optIdx === currentQuestion.a
+              const isWrong = isChosen && optIdx !== currentQuestion.a
+              const label = ['A', 'B', 'C', 'D'][optIdx] ?? String(optIdx + 1)
+              let cls = 'trivia-opt'
+              if (isCorrect && selected !== null) cls += ' trivia-opt--correct'
+              else if (isWrong) cls += ' trivia-opt--wrong'
+              else if (isChosen) cls += ' trivia-opt--chosen'
               return (
                 <button
                   key={opt}
                   type="button"
+                  className={cls}
                   onClick={() => handleAnswer(optIdx)}
-                  onMouseEnter={() => setHoveredOption(optIdx)}
-                  onMouseLeave={() => setHoveredOption(null)}
-                  className="rounded-xl text-left text-sm transition"
-                  style={{
-                    background: bg,
-                    border: `2px solid ${border}`,
-                    borderRadius: '12px',
-                    padding: '14px 16px',
-                    marginBottom: '8px',
-                    color: '#1A1A1A',
-                    fontWeight: 500,
-                  }}
+                  disabled={selected !== null}
+                  style={{ position: 'relative' }}
                 >
-                  {opt}
+                  {isChosen && !(isCorrect && selected !== null) && !isWrong && (
+                    <span className="trivia-opt--chosen-overlay" />
+                  )}
+                  <span className="trivia-opt__badge">{label}</span>
+                  <span>{opt}</span>
                 </button>
               )
             })}
           </div>
         </>
       ) : (
-        <div className="relative overflow-hidden glass-panel rounded-2xl border border-[#F0C040]/50 p-4 text-center">
+        <div className="home-gold-glass" style={{ borderRadius: '20px', padding: '24px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
           {confetti
             ? Array.from({ length: 22 }, (_, i) => (
-                <span
-                  key={`c-${i}`}
-                  style={{
-                    position: 'absolute',
-                    left: `${(i * 29) % 100}%`,
-                    top: '-10px',
-                    width: '6px',
-                    height: '10px',
-                    borderRadius: '2px',
-                    background: i % 2 === 0 ? '#F0C040' : '#facc15',
-                    animation: `trivia-confetti ${1100 + (i % 5) * 130}ms ease-out forwards`,
-                    pointerEvents: 'none',
-                  }}
-                />
+                <span key={`c-${i}`} style={{ position: 'absolute', left: `${(i * 29) % 100}%`, top: '-10px', width: '6px', height: '10px', borderRadius: '2px', background: i % 2 === 0 ? '#F0C040' : '#facc15', animation: `trivia-confetti ${1100 + (i % 5) * 130}ms ease-out forwards`, pointerEvents: 'none' }} />
               ))
             : null}
-          <p className="text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: '#F0C040' }}>
+          <p style={{ color: '#D4A843', fontSize: '11px', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', margin: '0 0 8px 0' }}>
             {t('trivia.roundComplete')}
           </p>
-          <p className="mt-2 text-3xl font-bold text-white">
+          <p style={{ fontSize: '40px', fontWeight: 800, color: '#ffffff', margin: '0 0 12px 0' }}>
             {score}/{roundQuestions.length}
           </p>
-          <p className="mt-2 text-sm text-white/80">
+          <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)', fontStyle: 'italic', margin: '0 0 20px 0', fontFamily: 'Georgia,serif', lineHeight: 1.6 }}>
             {triviaVerseLoading ? `"${t('trivia.fallbackVerse')}" — Colossians 3:16` : `"${triviaVerseText}…" — Colossians 3:16`}
           </p>
-          <div className="mt-4 flex flex-wrap justify-center gap-2">
-            <button type="button" onClick={restart} className="rounded-xl px-4 py-2 text-sm font-semibold text-[#1a1a1a]" style={{ background: '#F0C040' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '10px' }}>
+            <button type="button" onClick={restart} style={{ background: 'linear-gradient(135deg,#D4A843,#F0C040)', color: '#1A1200', border: 'none', borderRadius: '50px', padding: '10px 24px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
               {t('trivia.playAgain')}
             </button>
-            <button type="button" onClick={shareScore} className="rounded-xl border border-[#F0C040] px-4 py-2 text-sm font-semibold text-[#F0C040]">
+            <button type="button" onClick={shareScore} style={{ background: 'rgba(255,255,255,0.07)', color: '#D4A843', border: '1px solid rgba(212,168,67,0.4)', borderRadius: '50px', padding: '10px 20px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
               {t('trivia.shareScore')}
             </button>
           </div>

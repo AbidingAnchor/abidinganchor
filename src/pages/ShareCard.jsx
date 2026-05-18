@@ -8,12 +8,14 @@ import { Camera } from '@capacitor/camera'
 import FaithCard from '../components/FaithCard'
 import { useAuth } from '../context/AuthContext'
 import { userStorageKey } from '../utils/userStorage'
+import SaveToast from '../components/SaveToast'
 
 export default function ShareCard() {
   const { t } = useTranslation()
   const { user } = useAuth()
   const location = useLocation()
   const cardRef = useRef(null)
+  const exportRef = useRef(null)
   const [verseReference, setVerseReference] = useState('Psalm 23:1')
   const [verseText, setVerseText] = useState('The Lord is my shepherd; I shall not want.')
   const [userReflection, setUserReflection] = useState('This verse reminds me that I am never alone in my journey.')
@@ -22,6 +24,9 @@ export default function ShareCard() {
   const [textColorChoice, setTextColorChoice] = useState(null)
   const [generating, setGenerating] = useState(false)
   const [generatedImage, setGeneratedImage] = useState(null)
+  const [sizePreset, setSizePreset] = useState('square')
+  const [toastTrigger, setToastTrigger] = useState(0)
+  const [toastMessage, setToastMessage] = useState('')
 
   useEffect(() => {
     if (location.state) {
@@ -173,47 +178,36 @@ export default function ShareCard() {
   }
 
   const handleSaveToGallery = async () => {
-    if (!generatedImage) {
-      // Generate image first if not already generated
-      await handleGenerateAndShare()
-      return
-    }
-    
+    if (!exportRef.current) return
     try {
       setGenerating(true)
-      
-      // Convert base64 to blob
-      const response = await fetch(generatedImage)
-      const blob = await response.blob()
-      const base64Data = await blobToBase64(blob)
-      
-      // Request permissions and save to gallery
-      const permissions = await Camera.requestPermissions({ permissions: ['photos'] })
-      
-      if (!permissions.photos) {
-        alert(t('shareCard.permissionError'))
+      const dataUrl = await toPng(exportRef.current, { width: 1080, height: 1080, quality: 1, pixelRatio: 1 })
+      const base64Data = dataUrl.split(',')[1]
+      const fileName = `abiding-anchor-${Date.now()}.png`
+      const writeResult = await Filesystem.writeFile({
+        path: fileName,
+        data: base64Data,
+        directory: Directory.Documents,
+      })
+      await Share.share({
+        title: 'My Faith Card',
+        url: writeResult.uri,
+        dialogTitle: 'Save or Share your faith card',
+      })
+      setGeneratedImage(dataUrl)
+      setToastMessage('Card saved! 🙏')
+      setToastTrigger((n) => n + 1)
+      try { localStorage.setItem(userStorageKey(user?.id, 'verse-card-shared'), '1') } catch { /* ignore */ }
+    } catch (error) {
+      if (error?.message?.includes('cancel') || error?.message?.includes('Cancel') || error?.errorMessage?.includes('cancel')) {
+        /* user dismissed share sheet — not a real error */
         setGenerating(false)
         return
       }
-      
-      // Save to external storage (gallery)
-      const timestamp = new Date().getTime()
-      const fileName = `faith-card-${timestamp}.png`
-      await Filesystem.writeFile({
-        path: fileName,
-        data: base64Data,
-        directory: Directory.External,
-      })
-      
-      alert(t('shareCard.savedToGallery'))
-      setGenerating(false)
-    } catch (error) {
       console.error('Error saving to gallery:', error)
-      if (error.message?.includes('permission')) {
-        alert(t('shareCard.permissionError'))
-      } else {
-        alert(t('shareCard.saveError'))
-      }
+      setToastMessage(t('shareCard.saveError'))
+      setToastTrigger((n) => n + 1)
+    } finally {
       setGenerating(false)
     }
   }
@@ -227,21 +221,97 @@ export default function ShareCard() {
     })
   }
 
+  const sizePresets = [
+    { id: 'square', label: 'Square', aspect: '1 / 1' },
+    { id: 'story', label: 'Story', aspect: '9 / 16' },
+    { id: 'twitter', label: 'Twitter', aspect: '16 / 9' },
+  ]
+
+  const starDots =
+    'radial-gradient(1px 1px at 18% 28%, rgba(255,255,255,0.45), transparent), ' +
+    'radial-gradient(1px 1px at 72% 22%, rgba(255,255,255,0.35), transparent), ' +
+    'radial-gradient(1px 1px at 45% 62%, rgba(255,255,255,0.3), transparent), ' +
+    'radial-gradient(1px 1px at 88% 78%, rgba(255,255,255,0.25), transparent)'
+
+  const fontFamilyMap = {
+    serif: "'Georgia', serif",
+    modern: "'Inter', system-ui, sans-serif",
+    elegant: "'Cinzel', Georgia, serif",
+    handwritten: "'Segoe Print', cursive",
+  }
+
+  const sectionLabel = {
+    color: '#D4A843',
+    fontSize: '11px',
+    fontWeight: 700,
+    letterSpacing: '0.14em',
+    textTransform: 'uppercase',
+    margin: '0 0 14px 0',
+  }
+
+  const glassInput = {
+    width: '100%',
+    borderRadius: '14px',
+    padding: '13px 16px',
+    fontSize: '15px',
+    outline: 'none',
+    border: '1.5px solid rgba(212,168,67,0.3)',
+    background: 'rgba(255,255,255,0.05)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    color: '#ffffff',
+    resize: 'none',
+    transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+    boxSizing: 'border-box',
+  }
+
   return (
-    <div className="content-scroll px-4 pt-6 pb-40" style={{ minHeight: 'auto' }}>
-      {/* Screen Title */}
-      <div className="text-center mb-4">
-        <h1 className="text-page-title text-gold-accent mb-2">
+    <div className="content-scroll" style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden', boxSizing: 'border-box', padding: '20px 16px 80px' }}>
+      <style>{`
+        .sc-input:focus { border-color: rgba(251,191,36,0.5) !important; box-shadow: 0 0 12px rgba(251,191,36,0.2) !important; }
+        .sc-style-card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+        .sc-style-card:hover { transform: translateY(-2px); }
+        .sc-font-card { transition: all 0.15s ease; }
+        .sc-font-card:hover { border-color: rgba(212,168,67,0.45) !important; }
+        .sc-color-btn { transition: transform 0.15s ease; }
+        .sc-color-btn:hover { transform: scale(1.08); }
+        .sc-preset-btn { transition: all 0.15s ease; }
+      `}</style>
+
+      {/* ── Header ── */}
+      <div style={{ marginBottom: '24px', position: 'relative' }}>
+        <div style={{
+          position: 'absolute', top: '-16px', left: '50%', transform: 'translateX(-50%)',
+          width: '240px', height: '90px',
+          background: 'radial-gradient(ellipse, rgba(212,168,67,0.1) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }} />
+        <h1 style={{ color: '#ffffff', fontSize: '30px', fontWeight: 800, margin: '0 0 5px 0', letterSpacing: '-0.4px' }}>
           {t('shareCard.title')}
         </h1>
-        <p className="text-white/80 italic text-sm">
+        <p style={{ color: 'rgba(251,191,36,0.7)', fontSize: '14px', fontStyle: 'italic', margin: 0 }}>
           {t('shareCard.subtitle')}
         </p>
       </div>
 
-      {/* FaithCard Preview — fixed height clips scaled card excess */}
-      <div className="flex justify-center mb-4" style={{ height: '450px', overflow: 'hidden' }}>
-        <div ref={cardRef} style={{ transform: 'scale(0.38)', transformOrigin: 'top center', flexShrink: 0 }}>
+      {/* ── Live Preview Card ── */}
+      <div style={{
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        paddingLeft: '16px',
+        paddingRight: '16px',
+        boxSizing: 'border-box',
+        marginTop: '16px',
+        marginBottom: '16px',
+      }}>
+        <div
+          ref={cardRef}
+          style={{
+            width: '100%',
+            maxWidth: '300px',
+          }}
+        >
           <FaithCard
             verseReference={verseReference}
             verseText={verseText}
@@ -249,61 +319,88 @@ export default function ShareCard() {
             cardStyle={cardStyle}
             contentFont={contentFont}
             textColorChoice={textColorChoice}
+            previewMode
           />
         </div>
       </div>
 
-      {/* Loading State */}
+      {/* ── Size Presets ── */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', justifyContent: 'center' }}>
+        {sizePresets.map((p) => (
+          <button
+            key={p.id}
+            type="button"
+            className="sc-preset-btn"
+            onClick={() => setSizePreset(p.id)}
+            style={{
+              borderRadius: '50px',
+              padding: '7px 18px',
+              fontSize: '12px',
+              fontWeight: 600,
+              background: sizePreset === p.id ? 'linear-gradient(135deg,#D4A843,#F0C040)' : 'rgba(255,255,255,0.06)',
+              border: sizePreset === p.id ? 'none' : '1px solid rgba(255,255,255,0.12)',
+              color: sizePreset === p.id ? '#1A1200' : 'rgba(255,255,255,0.7)',
+              cursor: 'pointer',
+            }}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Generating spinner ── */}
       {generating && (
-        <div className="glass p-4 rounded-2xl text-center mb-2">
-          <p className="text-gold-accent text-lg font-semibold mb-2">
-            {t('shareCard.preparing')}
-          </p>
-          <div className="w-12 h-12 mx-auto rounded-full border-4 border-[#D4A843]/30 border-t-[#D4A843] animate-spin" />
+        <div className="home-gold-glass" style={{ borderRadius: '16px', padding: '16px', textAlign: 'center', marginBottom: '20px' }}>
+          <p style={{ color: '#D4A843', fontWeight: 600, marginBottom: '10px' }}>{t('shareCard.preparing')}</p>
+          <div style={{ width: '36px', height: '36px', margin: '0 auto', borderRadius: '50%', border: '3px solid rgba(212,168,67,0.25)', borderTopColor: '#D4A843', animation: 'spin 0.8s linear infinite' }} />
         </div>
       )}
 
-      {/* Card Style Options - 2x2 grid */}
-      <div className="mb-2">
-        <p className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--section-title)' }}>
-          {t('shareCard.cardStyle')}
-        </p>
-        <div className="grid grid-cols-2 gap-3">
+      {/* ── Card Style ── */}
+      <div style={{ marginBottom: '24px' }}>
+        <p style={sectionLabel}>{t('shareCard.cardStyle')}</p>
+        <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '4px' }}>
           {cardStyles.map((style) => {
             const selected = cardStyle === style.id
-            const starDots =
-              'radial-gradient(1px 1px at 18% 28%, rgba(255,255,255,0.45), transparent), radial-gradient(1px 1px at 72% 22%, rgba(255,255,255,0.35), transparent), radial-gradient(1px 1px at 45% 62%, rgba(255,255,255,0.3), transparent), radial-gradient(1px 1px at 88% 78%, rgba(255,255,255,0.25), transparent)'
             return (
               <button
                 key={style.id}
                 type="button"
+                className="sc-style-card"
                 onClick={() => setCardStyle(style.id)}
-                className="relative overflow-hidden rounded-xl border-2 p-4 text-left transition-all min-h-[5.5rem] shadow-md hover:brightness-[1.03] active:scale-[0.99]"
                 style={{
-                  borderColor: selected ? '#D4A843' : style.idleBorder,
-                  background: style.previewBg,
-                  boxShadow: selected
-                    ? '0 0 0 2px rgba(212,168,67,0.45), 0 8px 24px rgba(0,0,0,0.35)'
-                    : '0 4px 14px rgba(0,0,0,0.2)',
+                  flexShrink: 0,
+                  width: '90px',
+                  borderRadius: '14px',
+                  overflow: 'hidden',
+                  border: selected ? '2px solid #D4A843' : '2px solid rgba(255,255,255,0.1)',
+                  boxShadow: selected ? '0 0 14px rgba(212,168,67,0.4)' : 'none',
+                  background: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  transition: 'all 0.15s ease',
                 }}
               >
-                {style.previewStars ? (
-                  <div
-                    className="pointer-events-none absolute inset-0 opacity-[0.55]"
-                    style={{
-                      backgroundImage: starDots,
-                      backgroundSize: '120% 120%',
-                    }}
-                    aria-hidden
-                  />
-                ) : null}
-                <div className="relative z-[1]" style={{ textShadow: style.labelColor === '#FFFFFF' ? '0 1px 3px rgba(0,0,0,0.65)' : '0 1px 2px rgba(255,255,255,0.5)' }}>
-                  <div style={{ color: style.labelColor, fontWeight: 600, marginBottom: '4px', fontSize: '15px' }}>
+                <div style={{
+                  height: '64px',
+                  background: style.previewBg,
+                  position: 'relative',
+                }}>
+                  {style.previewStars && (
+                    <div style={{
+                      position: 'absolute', inset: 0, opacity: 0.55,
+                      backgroundImage: starDots, backgroundSize: '120% 120%',
+                    }} />
+                  )}
+                </div>
+                <div style={{
+                  padding: '6px 8px 8px',
+                  background: 'rgba(255,255,255,0.04)',
+                  backdropFilter: 'blur(8px)',
+                }}>
+                  <p style={{ color: '#ffffff', fontSize: '11px', fontWeight: 600, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {style.name}
-                  </div>
-                  <div style={{ color: style.subColor, fontSize: '12px', lineHeight: 1.35 }}>
-                    {style.description}
-                  </div>
+                  </p>
                 </div>
               </button>
             )
@@ -311,148 +408,216 @@ export default function ShareCard() {
         </div>
       </div>
 
-      {/* Font */}
-      <div className="mb-4">
-        <p className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--section-title)' }}>
-          {t('shareCard.font')}
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          {fontOptions.map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              onClick={() => setContentFont(f.id)}
-              className={`
-                p-4 rounded-xl border-2 transition-all text-left
-                ${contentFont === f.id
-                  ? 'border-[#D4A843] bg-[#D4A843]/10 shadow-[0_0_20px_rgba(212,168,67,0.3)]'
-                  : 'hover:border-white/20'
-                }
-              `}
-              style={{
-                borderColor: contentFont === f.id ? 'var(--gold-border)' : 'var(--glass-border)',
-                background: contentFont === f.id ? 'rgba(212,168,67,0.1)' : 'var(--card-parchment)',
-              }}
-            >
-              <p style={{ color: 'var(--text-primary)', fontWeight: 600, marginBottom: '4px' }}>{f.name}</p>
-              <p style={{ color: 'var(--text-primary)', fontSize: '12px', opacity: 0.7 }}>{f.description}</p>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Text color */}
-      <div className="mb-4">
-        <p className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--section-title)' }}>
-          {t('shareCard.textColor')}
-        </p>
-        <div className="flex flex-wrap gap-4 justify-center sm:justify-start">
-          {textColorOptions.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => setTextColorChoice(c.id)}
-              className="flex flex-col items-center gap-2 min-w-[4.5rem]"
-              aria-label={t('shareCard.textColorAria', { color: c.label })}
-              aria-pressed={textColorChoice === c.id}
-            >
-              <span
-                className="rounded-full border-2 transition-all shadow-md"
+      {/* ── Font ── */}
+      <div style={{ marginBottom: '24px' }}>
+        <p style={sectionLabel}>{t('shareCard.font')}</p>
+        <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '4px' }}>
+          {fontOptions.map((f) => {
+            const selected = contentFont === f.id
+            return (
+              <button
+                key={f.id}
+                type="button"
+                className="sc-font-card home-gold-glass"
+                onClick={() => setContentFont(f.id)}
                 style={{
-                  width: '44px',
-                  height: '44px',
-                  background: c.swatch,
-                  borderColor: textColorChoice === c.id ? 'var(--gold-border)' : 'var(--glass-border)',
-                  boxShadow: textColorChoice === c.id ? '0 0 0 3px rgba(212,168,67,0.35)' : undefined,
+                  flexShrink: 0,
+                  borderRadius: '14px',
+                  padding: '14px 18px',
+                  border: selected ? '2px solid #D4A843' : '2px solid rgba(255,255,255,0.1)',
+                  boxShadow: selected ? '0 0 12px rgba(212,168,67,0.35)' : 'none',
+                  cursor: 'pointer',
+                  background: selected ? 'rgba(212,168,67,0.08)' : undefined,
+                  textAlign: 'center',
+                  minWidth: '90px',
+                  transition: 'all 0.15s ease',
                 }}
-              />
-              <span className="text-xs" style={{ color: 'var(--text-primary)', opacity: 0.85 }}>
-                {c.label}
-              </span>
-            </button>
-          ))}
+              >
+                <p style={{
+                  fontFamily: fontFamilyMap[f.id],
+                  fontSize: '17px',
+                  color: selected ? '#D4A843' : '#ffffff',
+                  margin: '0 0 2px 0',
+                  fontWeight: 600,
+                }}>
+                  {f.name}
+                </p>
+                <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '10px', margin: 0 }}>{f.description}</p>
+              </button>
+            )
+          })}
         </div>
       </div>
 
-      {/* Customization Fields */}
-      <div className="mb-4">
-        <p className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--section-title)' }}>
-          {t('shareCard.customize')}
-        </p>
-        
-        {/* Verse Reference */}
-        <div className="mb-3">
-          <label className="text-sm mb-2 block" style={{ color: 'var(--text-primary)' }}>{t('shareCard.verseReference')}</label>
+      {/* ── Text Color ── */}
+      <div style={{ marginBottom: '24px' }}>
+        <p style={sectionLabel}>{t('shareCard.textColor')}</p>
+        <div style={{ display: 'flex', gap: '14px', overflowX: 'auto', paddingBottom: '4px', alignItems: 'flex-end' }}>
+          {textColorOptions.map((c) => {
+            const selected = textColorChoice === c.id
+            return (
+              <button
+                key={c.id}
+                type="button"
+                className="sc-color-btn"
+                onClick={() => setTextColorChoice(c.id)}
+                aria-label={t('shareCard.textColorAria', { color: c.label })}
+                aria-pressed={selected}
+                style={{
+                  flexShrink: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                }}
+              >
+                <span style={{
+                  display: 'block',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  background: c.swatch,
+                  border: selected ? '2.5px solid #D4A843' : '2px solid rgba(255,255,255,0.15)',
+                  boxShadow: selected ? '0 0 0 3px rgba(212,168,67,0.3)' : 'none',
+                  transition: 'all 0.15s ease',
+                }} />
+                <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '10px', whiteSpace: 'nowrap' }}>{c.label}</span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* ── Customize ── */}
+      <div style={{ marginBottom: '24px' }}>
+        <p style={sectionLabel}>{t('shareCard.customize')}</p>
+
+        <div style={{ marginBottom: '12px' }}>
+          <label style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '6px', letterSpacing: '0.05em' }}>
+            {t('shareCard.verseReference')}
+          </label>
           <input
             type="text"
             value={verseReference}
             onChange={(e) => setVerseReference(e.target.value)}
             placeholder={t('shareCard.verseReferencePlaceholder')}
-            className="w-full rounded-xl p-3 text-base outline-none transition-all"
-            style={{
-              background: 'var(--input-bg)',
-              border: '1px solid var(--input-border)',
-              color: 'var(--text-primary)'
-            }}
+            className="sc-input"
+            style={glassInput}
           />
         </div>
 
-        {/* Verse Text */}
-        <div className="mb-3">
-          <label className="text-sm mb-2 block" style={{ color: 'var(--text-primary)' }}>{t('shareCard.verseText')}</label>
+        <div style={{ marginBottom: '12px' }}>
+          <label style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '6px', letterSpacing: '0.05em' }}>
+            {t('shareCard.verseText')}
+          </label>
           <textarea
             value={verseText}
             onChange={(e) => setVerseText(e.target.value)}
             placeholder={t('shareCard.verseTextPlaceholder')}
             rows={3}
-            className="w-full rounded-xl p-3 text-base outline-none resize-none transition-all"
-            style={{
-              background: 'var(--input-bg)',
-              border: '1px solid var(--input-border)',
-              color: 'var(--text-primary)'
-            }}
+            className="sc-input"
+            style={glassInput}
           />
         </div>
 
-        {/* Personal Reflection */}
-        <div className="mb-4">
-          <label className="text-sm mb-2 block" style={{ color: 'var(--text-primary)' }}>{t('shareCard.personalReflection')}</label>
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '6px', letterSpacing: '0.05em' }}>
+            {t('shareCard.personalReflection')}
+          </label>
           <textarea
             value={userReflection}
             onChange={(e) => setUserReflection(e.target.value)}
             placeholder={t('shareCard.reflectionPlaceholder')}
             rows={3}
-            className="w-full rounded-xl p-3 text-base outline-none resize-none transition-all"
-            style={{
-              background: 'var(--input-bg)',
-              border: '1px solid var(--input-border)',
-              color: 'var(--text-primary)'
-            }}
+            className="sc-input"
+            style={glassInput}
           />
         </div>
 
-        {/* Generate & Share Button */}
-        <button 
+        {/* Generate & Share */}
+        <button
+          type="button"
           onClick={handleGenerateAndShare}
           disabled={generating}
-          className="btn-primary w-full gold-glow-pulse disabled:opacity-50 disabled:cursor-not-allowed mb-3"
+          style={{
+            width: '100%',
+            borderRadius: '50px',
+            padding: '15px',
+            fontSize: '15px',
+            fontWeight: 700,
+            background: 'linear-gradient(135deg,#D4A843,#F0C040)',
+            border: 'none',
+            color: '#1A1200',
+            cursor: generating ? 'not-allowed' : 'pointer',
+            opacity: generating ? 0.6 : 1,
+            marginBottom: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+          }}
         >
+          <span>↑</span>
           {generating ? t('shareCard.generating') : t('shareCard.generateAndShare')}
         </button>
 
-        {/* Save to Gallery Button */}
-        <button 
+        {/* Save to Gallery */}
+        <button
+          type="button"
           onClick={handleSaveToGallery}
           disabled={generating}
-          className="w-full py-3 rounded-xl border-none text-[#0a1a3e] font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
-            background: 'linear-gradient(135deg, #D4A843, #f0c060)',
-            borderRadius: '12px',
+            width: '100%',
+            borderRadius: '50px',
+            padding: '15px',
+            fontSize: '15px',
+            fontWeight: 700,
+            background: 'rgba(255,255,255,0.06)',
+            border: '1.5px solid rgba(212,168,67,0.4)',
+            color: '#D4A843',
+            cursor: generating ? 'not-allowed' : 'pointer',
+            opacity: generating ? 0.6 : 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
           }}
         >
+          <span>⬇</span>
           {t('shareCard.saveToGallery')}
         </button>
       </div>
+
+      {/* Hidden full-res export card — never visible, captured by toPng for Save to Gallery */}
+      <div
+        ref={exportRef}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: '-9999px',
+          width: '1080px',
+          height: '1080px',
+          pointerEvents: 'none',
+          opacity: 0,
+          zIndex: -1,
+        }}
+        aria-hidden="true"
+      >
+        <FaithCard
+          verseReference={verseReference}
+          verseText={verseText}
+          userReflection={userReflection}
+          cardStyle={cardStyle}
+          contentFont={contentFont}
+          textColorChoice={textColorChoice}
+        />
+      </div>
+
+      <SaveToast trigger={toastTrigger} message={toastMessage} />
     </div>
   )
 }

@@ -58,6 +58,7 @@ export default function FaithCard({
   cardStyle = 'celestial',
   contentFont = 'serif',
   textColorChoice = null,
+  previewMode = false,
 }) {
   const bodyFont = CONTENT_FONTS[contentFont] ?? CONTENT_FONTS.serif
 
@@ -181,16 +182,24 @@ export default function FaithCard({
     '--faith-accent': currentStyle.accentColor,
   }
 
+  const previewStyle = previewMode ? {
+    width: '100%',
+    aspectRatio: '1',
+    padding: '20px',
+  } : {
+    width: '1080px',
+    height: '1080px',
+    padding: '60px',
+  }
+
   return (
     <div 
       data-faith-card
       style={{
-        width: '1080px',
-        height: '1080px',
+        ...previewStyle,
         background: currentStyle.background,
         border: `${currentStyle.borderWidth}px solid ${currentStyle.borderColor}`,
         borderRadius: '24px',
-        padding: '60px',
         position: 'relative',
         overflow: 'hidden',
         boxShadow: '0 25px 80px rgba(0, 0, 0, 0.5)',
@@ -198,6 +207,7 @@ export default function FaithCard({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'space-between',
+        boxSizing: 'border-box',
         ...faithCardCssVars,
       }}
     >
@@ -255,7 +265,7 @@ export default function FaithCard({
             className="faith-preview-text-accent"
             style={{
               fontFamily: CONTENT_FONTS.elegant,
-              fontSize: '28px',
+              fontSize: previewMode ? '10px' : '28px',
               fontWeight: 700,
               color: currentStyle.accentColor,
               letterSpacing: '0.15em',
@@ -271,13 +281,14 @@ export default function FaithCard({
         {/* Main content */}
         <div style={{
           textAlign: 'center',
-          maxWidth: '900px',
+          maxWidth: previewMode ? '100%' : '900px',
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          padding: '40px 0',
+          padding: previewMode ? '8px 0' : '40px 0',
+          overflow: 'hidden',
         }}>
           {/* Verse reference */}
           {verseReference && (
@@ -285,11 +296,11 @@ export default function FaithCard({
               className="faith-preview-text-ref"
               style={{
                 fontFamily: bodyFont,
-                fontSize: '48px',
+                fontSize: previewMode ? '11px' : '48px',
                 fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
                 fontWeight: darkFontWeight,
                 color: referenceColor,
-                marginBottom: '40px',
+                marginBottom: previewMode ? '6px' : '40px',
                 textShadow: previewTextShadow,
               }}
             >
@@ -303,12 +314,16 @@ export default function FaithCard({
               className="faith-preview-text-body"
               style={{
                 fontFamily: bodyFont,
-                fontSize: '54px',
+                fontSize: previewMode ? '14px' : '54px',
                 fontWeight: isDarkTheme ? 700 : (contentFont === 'modern' ? 600 : 500),
                 color: verseReflectionColor,
                 lineHeight: '1.5',
-                marginBottom: '50px',
+                marginBottom: previewMode ? '8px' : '50px',
                 textShadow: previewTextShadow,
+                overflow: 'hidden',
+                display: previewMode ? '-webkit-box' : undefined,
+                WebkitLineClamp: previewMode ? 4 : undefined,
+                WebkitBoxOrient: previewMode ? 'vertical' : undefined,
               }}
             >
               {verseText}
@@ -317,10 +332,10 @@ export default function FaithCard({
 
           {/* Gold divider line */}
           <div style={{
-            width: '200px',
+            width: previewMode ? '60px' : '200px',
             height: '2px',
             background: `linear-gradient(90deg, transparent, ${currentStyle.accentColor}, transparent)`,
-            margin: '20px 0',
+            margin: previewMode ? '4px 0' : '20px 0',
             boxShadow: isDarkTheme ? 'none' : '0 0 10px rgba(212, 168, 67, 0.5)',
           }} />
 
@@ -330,13 +345,17 @@ export default function FaithCard({
               className="faith-preview-text-body"
               style={{
                 fontFamily: bodyFont,
-                fontSize: '40px',
+                fontSize: previewMode ? '11px' : '40px',
                 fontStyle: contentFont === 'elegant' ? 'normal' : 'italic',
                 fontWeight: darkFontWeight,
                 color: verseReflectionColor,
                 lineHeight: '1.6',
-                maxWidth: '800px',
+                maxWidth: previewMode ? '100%' : '800px',
                 textShadow: previewTextShadow,
+                overflow: 'hidden',
+                display: previewMode ? '-webkit-box' : undefined,
+                WebkitLineClamp: previewMode ? 2 : undefined,
+                WebkitBoxOrient: previewMode ? 'vertical' : undefined,
               }}
             >
               {userReflection}

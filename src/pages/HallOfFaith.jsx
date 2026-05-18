@@ -62,38 +62,73 @@ function StarField({ count = 120 }) {
 function NameRow({ name, color, tier, isOwn }) {
   const isLifetime = tier === 'lifetime'
   const badge = isLifetime ? '👑' : tier === 'monthly' ? '⭐' : null
-  const shimmer = String(color || '').toLowerCase() === 'shimmer-gold'
   const hasCustomColor = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(String(color || ''))
+
+  if (isOwn) {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: '28px',
+        animation: 'hof-fade-in 0.6s ease',
+      }}>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '8px 20px',
+          borderRadius: '999px',
+          background: 'rgba(10,16,40,0.7)',
+          border: '1px solid rgba(212,175,55,0.4)',
+          boxShadow: '0 4px 20px rgba(212,175,55,0.15)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+        }}>
+          {badge && <span style={{ fontSize: '16px', flexShrink: 0 }}>{badge}</span>}
+          <span style={{
+            fontSize: '16px',
+            fontWeight: 700,
+            fontFamily: 'Georgia, serif',
+            color: '#D4AF37',
+            letterSpacing: '0.05em',
+            textShadow: '0 0 10px rgba(212,175,55,0.3)',
+          }}>{name}</span>
+          <span style={{ fontSize: '12px', color: 'rgba(212,175,55,0.5)', fontWeight: 500 }}>← You</span>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={{
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: '10px',
-      padding: '10px 0',
-      animation: isOwn ? 'hof-fade-in 0.6s ease' : undefined,
+      gap: '8px',
+      marginBottom: '28px',
     }}>
-      {badge && <span style={{ fontSize: '18px', flexShrink: 0 }}>{badge}</span>}
+      {badge && <span style={{ fontSize: '16px', flexShrink: 0, filter: 'drop-shadow(0 0 4px rgba(212,175,55,0.4))' }}>{badge}</span>}
       <span
         style={{
-          fontSize: '18px',
-          fontWeight: 700,
-          color: hasCustomColor ? color : undefined,
-          background: shimmer
+          fontSize: '16px',
+          fontWeight: 600,
+          fontFamily: 'Georgia, serif',
+          letterSpacing: '0.05em',
+          color: hasCustomColor ? color : 'rgba(212,175,55,0.85)',
+          background: (!hasCustomColor)
             ? 'linear-gradient(90deg, #B8860B, #D4A843, #F0C96A, #D4A843, #B8860B)'
-            : 'linear-gradient(90deg, #B8860B, #D4A843, #F0C96A, #D4A843, #B8860B)',
-          backgroundSize: '200% auto',
-          WebkitBackgroundClip: hasCustomColor ? undefined : 'text',
-          WebkitTextFillColor: hasCustomColor ? undefined : 'transparent',
-          backgroundClip: hasCustomColor ? undefined : 'text',
-          animation: hasCustomColor ? undefined : 'shimmer 2s linear infinite',
-          letterSpacing: isOwn ? '0.03em' : '0.01em',
+            : undefined,
+          backgroundSize: (!hasCustomColor) ? '200% auto' : undefined,
+          WebkitBackgroundClip: (!hasCustomColor) ? 'text' : undefined,
+          WebkitTextFillColor: (!hasCustomColor) ? 'transparent' : undefined,
+          backgroundClip: (!hasCustomColor) ? 'text' : undefined,
+          animation: (!hasCustomColor) ? 'shimmer 2s linear infinite' : undefined,
+          textShadow: hasCustomColor ? undefined : undefined,
         }}
       >
         {name}
       </span>
-      {isOwn && <span style={{ fontSize: '14px', color: '#1A1A1A', fontWeight: 500 }}>← You</span>}
     </div>
   )
 }
@@ -101,7 +136,9 @@ function NameRow({ name, color, tier, isOwn }) {
 export default function HallOfFaith() {
   const navigate = useNavigate()
   const themeType = useThemeBackgroundType()
+  console.log('themeType:', themeType)
   const isDaytime = themeType === 'day' || themeType === 'morning' || themeType === 'afternoon'
+  const isEvening = themeType === 'sunset'
   const { user, profile } = useAuth()
   const [supporters, setSupporters] = useState([])
   const [totalCount, setTotalCount] = useState(0)
@@ -159,7 +196,11 @@ export default function HallOfFaith() {
     <div style={{
       position: 'fixed',
       inset: 0,
-      background: isDaytime ? '#F5EFE0' : 'transparent',
+      background: themeType === 'night'
+        ? 'radial-gradient(ellipse at 40% 30%, rgba(10,18,50,1) 0%, rgba(5,8,28,1) 55%, rgba(2,4,15,1) 100%)'
+        : themeType === 'sunset'
+          ? 'linear-gradient(180deg, rgba(30,20,60,1) 0%, rgba(60,30,80,1) 50%, rgba(20,10,40,1) 100%)'
+          : '#F5EFE0',
       color: isDaytime ? '#1A1A1A' : '#fff',
       overflow: 'hidden',
       display: 'flex',
@@ -167,7 +208,7 @@ export default function HallOfFaith() {
     }}>
       <style>{HALL_STYLES}</style>
       {isDaytime ? <DayBackground /> : null}
-      <StarField />
+      <StarField count={isDaytime ? 0 : 120} />
 
       {/* Close button */}
       <button
@@ -181,15 +222,18 @@ export default function HallOfFaith() {
           marginTop: '56px',
           width: '40px',
           height: '40px',
-          background: isDaytime ? '#F0E8D4' : 'rgba(255,255,255,0.08)',
-          border: '1px solid rgba(212,168,67,0.3)',
+          background: isDaytime ? 'rgba(245,239,224,0.9)' : 'rgba(10,16,40,0.7)',
+          border: '1px solid rgba(212,175,55,0.5)',
           borderRadius: '50%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'pointer',
-          color: '#D4A843',
-          fontSize: '20px',
+          color: '#D4AF37',
+          fontSize: '18px',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          boxShadow: '0 2px 12px rgba(212,175,55,0.15)',
         }}
       >
         ←
@@ -205,24 +249,37 @@ export default function HallOfFaith() {
         textAlign: 'center',
         paddingTop: '72px',
         paddingBottom: '20px',
-        background: isDaytime ? 'linear-gradient(180deg, #F5EFE0 65%, transparent 100%)' : 'linear-gradient(180deg, #010409 60%, transparent 100%)',
+        background: themeType === 'night'
+          ? 'linear-gradient(180deg, rgba(2,4,15,1) 60%, transparent 100%)'
+          : themeType === 'sunset'
+            ? 'linear-gradient(180deg, rgba(30,20,60,1) 60%, transparent 100%)'
+            : 'linear-gradient(180deg, #F5EFE0 65%, transparent 100%)',
       }}>
         <h1 style={{
-          margin: '0 0 4px',
+          margin: '0 0 6px',
           fontSize: '28px',
           fontWeight: 900,
-          color: isDaytime ? '#1A1A1A' : 'transparent',
+          fontFamily: 'Georgia, serif',
           background: 'linear-gradient(90deg, #b8860b, #ffd700, #ffec8b, #ffd700, #b8860b)',
           backgroundSize: '200%',
-          WebkitBackgroundClip: isDaytime ? undefined : 'text',
-          WebkitTextFillColor: isDaytime ? undefined : 'transparent',
-          backgroundClip: isDaytime ? undefined : 'text',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
           animation: isDaytime ? undefined : 'hof-shimmer 3s infinite linear',
           letterSpacing: '0.05em',
+          textShadow: isDaytime ? undefined : '0 0 20px rgba(212,175,55,0.4), 0 0 40px rgba(212,175,55,0.15)',
         }}>
           Hall of Faith
         </h1>
-        <p style={{ margin: 0, color: isDaytime ? '#4A4A4A' : 'rgba(255,255,255,0.5)', fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+        <p style={{
+          margin: 0,
+          color: 'rgba(212,175,55,0.5)',
+          fontSize: '11px',
+          letterSpacing: '0.25em',
+          textTransform: 'uppercase',
+          fontFamily: 'Georgia, serif',
+          fontStyle: 'italic',
+        }}>
           Hebrews 11
         </p>
       </div>
@@ -309,21 +366,30 @@ export default function HallOfFaith() {
         left: 0,
         right: 0,
         zIndex: 10,
-        background: 'linear-gradient(transparent, #020810 60%)',
-        paddingBottom: 'env(safe-area-inset-bottom, 20px)',
+        background: isDaytime
+          ? 'linear-gradient(transparent, #F5EFE0 60%)'
+          : isEvening
+            ? 'linear-gradient(transparent, rgba(20,10,40,0.98) 55%)'
+            : 'linear-gradient(transparent, rgba(2,4,15,0.98) 55%)',
+        borderTop: isDaytime ? 'none' : '1px solid rgba(212,175,55,0.3)',
         paddingTop: '60px',
+        paddingBottom: 'env(safe-area-inset-bottom, 16px)',
+        paddingLeft: '20px',
+        paddingRight: '20px',
         textAlign: 'center',
+        backdropFilter: isDaytime ? undefined : 'blur(8px)',
+        WebkitBackdropFilter: isDaytime ? undefined : 'blur(8px)',
       }}>
         {totalCount > 0 && (
           <p style={{
             margin: '0 0 8px',
-            color: 'rgba(255,255,255,0.6)',
-            fontSize: '13px',
-            letterSpacing: '0.02em',
-            padding: '0 20px',
+            color: isDaytime ? 'rgba(0,0,0,0.55)' : 'rgba(212,175,55,0.7)',
+            fontSize: '12px',
+            letterSpacing: '0.05em',
+            padding: '0 4px',
           }}>
             Among{' '}
-            <span style={{ color: '#D4A843', fontWeight: 800 }}>{totalCount.toLocaleString()}</span>
+            <span style={{ color: '#D4AF37', fontWeight: 700 }}>{totalCount.toLocaleString()}</span>
             {' '}faithful supporters keeping God's Word free for the world 🌍
           </p>
         )}

@@ -278,14 +278,6 @@ export default function TestimonyWall() {
     }
   }
 
-  const cardStyle = useMemo(
-    () => ({
-      background: 'var(--card-bg, rgba(255,255,255,0.08))',
-      border: '1px solid var(--glass-border, rgba(212,168,67,0.25))',
-      borderRadius: '16px',
-    }),
-    [],
-  )
 
   return (
     <div
@@ -299,60 +291,48 @@ export default function TestimonyWall() {
       style={{
         padding: '16px',
         paddingBottom: '80px',
-        maxWidth: '680px',
-        margin: '0 auto',
         width: '100%',
-        color: 'var(--text-primary)',
-        border: '1.5px solid rgba(212,168,67,0.35)',
-        borderRadius: '20px',
-        background: 'rgba(240,232,212,0.5)',
+        boxSizing: 'border-box',
       }}
     >
-      <header style={{ marginBottom: '20px' }}>
-        <p style={{ margin: '0 0 8px 0', textAlign: 'center', fontSize: '28px' }}>
-          <span style={{ filter: 'sepia(1) saturate(3) hue-rotate(5deg)' }}>⚓</span>
-        </p>
-        <h1 style={{
-          color: '#1A1A1A',
-          fontSize: '28px',
-          fontWeight: 700,
-          marginBottom: '8px',
-          margin: '0 0 8px 0',
-          textAlign: 'center',
-        }}>
-          Testimony Wall
-        </h1>
+      <style>{`
+        .tw-input:focus { border-color: rgba(251,191,36,0.5) !important; box-shadow: 0 0 12px rgba(251,191,36,0.2) !important; }
+        .tw-pill-btn { transition: all 0.15s ease; }
+        .tw-card { transition: transform 0.15s ease; }
+        .tw-card:hover { transform: translateY(-1px); }
+      `}</style>
+
+      {/* ── Header ── */}
+      <header style={{ marginBottom: '24px', textAlign: 'center', position: 'relative' }}>
+        <div style={{
+          position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)',
+          width: '200px', height: '80px',
+          background: 'radial-gradient(ellipse, rgba(212,168,67,0.12) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }} />
         <p style={{
-          color: '#8B6200',
-          fontSize: '14px',
-          fontStyle: 'italic',
-          margin: '0 0 4px 0',
-          textAlign: 'center',
+          fontSize: '32px', margin: '0 0 8px 0',
+          filter: 'drop-shadow(0 0 8px rgba(212,168,67,0.6))',
+        }}>⚓</p>
+        <h1 style={{
+          color: '#ffffff', fontSize: '28px', fontWeight: 800,
+          margin: '0 0 8px 0', fontFamily: 'Georgia, serif', letterSpacing: '-0.3px',
         }}>
+          {t('testimony.title') || 'Testimony Wall'}
+        </h1>
+        <p style={{ color: 'rgba(251,191,36,0.7)', fontSize: '14px', fontStyle: 'italic', margin: '0 0 4px 0' }}>
           Let the redeemed of the Lord say so.
         </p>
-        <p style={{
-          color: '#D4A843',
-          fontSize: '14px',
-          margin: 0,
-          textAlign: 'center',
-        }}>
-          — Psalm 107:2
-        </p>
+        <p style={{ color: 'rgba(212,168,67,0.55)', fontSize: '13px', margin: 0 }}>— Psalm 107:2</p>
       </header>
 
-      <section className="testimony-input-section" style={{
-        background: '#F0E8D4',
-        border: '1.5px solid rgba(212,168,67,0.35)',
-        borderRadius: '20px',
-        padding: '20px',
-        marginBottom: '20px',
-      }}>
-        <label htmlFor="testimony-input" style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>
+      {/* ── Share Your Testimony ── */}
+      <section className="testimony-input-section home-gold-glass" style={{ borderRadius: '24px', padding: '20px', marginBottom: '20px' }}>
+        <p style={{ color: '#D4A843', fontSize: '10px', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', margin: '0 0 14px 0' }}>
           {t('testimony.shareYourTestimony')}
-        </label>
+        </p>
         <textarea
-          className="testimony-textarea-day"
+          className="tw-input"
           id="testimony-input"
           value={content}
           onChange={(e) => setContent(e.target.value.slice(0, CONTENT_MAX))}
@@ -360,76 +340,56 @@ export default function TestimonyWall() {
           placeholder={t('testimony.placeholder')}
           style={{
             width: '100%',
-            borderRadius: '12px',
-            padding: '14px',
-            resize: 'vertical',
-            color: '#1A1A1A',
+            borderRadius: '16px',
+            padding: '14px 16px',
+            resize: 'none',
+            color: '#ffffff',
             fontSize: '15px',
-            background: '#FFFFFF',
-            border: '1px solid rgba(212,168,67,0.3)',
+            background: 'rgba(255,255,255,0.05)',
+            border: '1.5px solid rgba(255,255,255,0.1)',
             outline: 'none',
             boxSizing: 'border-box',
             fontFamily: 'inherit',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
           }}
         />
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '12px',
-            marginTop: '12px',
-            flexWrap: 'wrap',
-          }}
+        <style>{`.tw-input::placeholder { color: rgba(255,255,255,0.3); }`}</style>
+
+        {/* Anonymous toggle */}
+        <label
+          htmlFor="testimony-anonymous"
+          style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '13px', color: 'rgba(255,255,255,0.7)', userSelect: 'none', marginTop: '12px' }}
         >
-          <label
-            htmlFor="testimony-anonymous"
+          <button
+            id="testimony-anonymous"
+            type="button"
+            role="switch"
+            aria-checked={postAnonymous}
+            onClick={() => setPostAnonymous((v) => !v)}
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              cursor: 'pointer',
-              fontSize: '13px',
-              color: '#1A1A1A',
-              userSelect: 'none',
+              width: '44px', height: '26px', borderRadius: '999px',
+              border: '1px solid rgba(212,168,67,0.45)',
+              background: postAnonymous ? 'rgba(212,175,55,0.45)' : 'rgba(255,255,255,0.08)',
+              padding: '3px', cursor: 'pointer', flexShrink: 0,
+              transition: 'background 0.15s ease',
             }}
           >
-            <button
-              id="testimony-anonymous"
-              type="button"
-              role="switch"
-              aria-checked={postAnonymous}
-              onClick={() => setPostAnonymous((v) => !v)}
-              style={{
-                width: '44px',
-                height: '26px',
-                borderRadius: '999px',
-                border: '1px solid rgba(212,168,67,0.45)',
-                background: postAnonymous ? 'rgba(212,175,55,0.45)' : 'rgba(255,255,255,0.08)',
-                padding: '3px',
-                cursor: 'pointer',
-                flexShrink: 0,
-                transition: 'background 0.15s ease',
-              }}
-            >
-              <span
-                style={{
-                  display: 'block',
-                  width: '20px',
-                  height: '20px',
-                  borderRadius: '50%',
-                  background: postAnonymous ? '#D4AF37' : 'var(--text-secondary)',
-                  marginLeft: postAnonymous ? '18px' : '0',
-                  transition: 'margin-left 0.15s ease, background 0.15s ease',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
-                }}
-              />
-            </button>
-            <span>{t('testimony.postAnonymously')}</span>
-          </label>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-          <span style={{ fontSize: '12px', color: '#6B6B6B' }}>
+            <span style={{
+              display: 'block', width: '20px', height: '20px', borderRadius: '50%',
+              background: postAnonymous ? '#D4AF37' : 'rgba(255,255,255,0.4)',
+              marginLeft: postAnonymous ? '18px' : '0',
+              transition: 'margin-left 0.15s ease, background 0.15s ease',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
+            }} />
+          </button>
+          <span>{t('testimony.postAnonymously')}</span>
+        </label>
+
+        {/* Char count + post button */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
+          <span style={{ fontSize: '12px', color: 'rgba(212,168,67,0.6)' }}>
             {trimmed.length}/{CONTENT_MAX}
           </span>
           <button
@@ -437,67 +397,51 @@ export default function TestimonyWall() {
             onClick={handlePost}
             disabled={posting || !trimmed}
             style={{
-              background: '#D4A843',
-              color: '#1A1A1A',
+              background: 'linear-gradient(135deg,#D4A843,#F0C040)',
+              color: '#1A1200',
               border: 'none',
               borderRadius: '50px',
-              padding: '10px 24px',
+              padding: '10px 28px',
               fontWeight: 700,
+              fontSize: '14px',
               cursor: posting || !trimmed ? 'not-allowed' : 'pointer',
-              opacity: posting || !trimmed ? 0.65 : 1,
+              opacity: posting || !trimmed ? 0.55 : 1,
             }}
           >
             {posting ? t('testimony.posting') : t('testimony.post')}
           </button>
         </div>
       </section>
-      <style>{`
-        .testimony-textarea-day::placeholder {
-          color: rgba(0,0,0,0.35);
-        }
-      `}</style>
 
       {error ? (
         <p style={{ color: 'rgba(255,160,160,0.95)', fontSize: '14px', marginBottom: '16px' }}>{error}</p>
       ) : null}
 
       <section>
-        <h2
-          className="testimony-section-h2"
-          style={{
-          fontSize: '12px',
-          letterSpacing: '0.12em',
-          color: '#1A1A1A',
-          textTransform: 'uppercase',
-          marginBottom: '12px',
-          margin: '0 0 12px 0',
-          fontWeight: 700,
-        }}
-        >
+        <h2 className="testimony-section-h2" style={{
+          fontSize: '10px', letterSpacing: '0.18em', color: '#D4A843',
+          textTransform: 'uppercase', margin: '0 0 12px 0', fontWeight: 700,
+        }}>
           {t('testimony.testimonies')}
         </h2>
-        <div
-          style={{
-            display: 'flex',
-            gap: '8px',
-            overflowX: 'auto',
-            paddingBottom: '8px',
-            marginBottom: '12px',
-          }}
-        >
+
+        {/* Filter pills */}
+        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '16px' }}>
           {TESTIMONY_CATEGORIES.map((category) => {
             const active = category === activeCategory
             return (
               <button
                 key={category}
                 type="button"
+                className="tw-pill-btn"
                 onClick={() => setActiveCategory(category)}
                 style={{
-                  background: active ? '#D4A843' : '#F0E8D4',
-                  color: '#1A1A1A',
-                  border: active ? '1px solid rgba(212,168,67,0.3)' : '1px solid rgba(212,168,67,0.4)',
+                  background: active ? 'linear-gradient(135deg,#D4A843,#F0C040)' : 'rgba(255,255,255,0.05)',
+                  color: active ? '#1A1200' : 'rgba(255,255,255,0.6)',
+                  border: active ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                  boxShadow: active ? '0 0 10px rgba(212,168,67,0.3)' : 'none',
                   borderRadius: '50px',
-                  padding: '6px 16px',
+                  padding: '7px 16px',
                   fontSize: '12px',
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -510,25 +454,19 @@ export default function TestimonyWall() {
             )
           })}
         </div>
+
         {loading ? (
-          <p style={{ color: 'var(--text-secondary)' }}>{t('common.loading')}</p>
+          <p style={{ color: 'rgba(255,255,255,0.45)', padding: '20px 0' }}>{t('common.loading')}</p>
         ) : filteredRows.length === 0 ? (
-          <article className="testimony-empty-card" style={{
-            background: '#F0E8D4',
-            border: '1px solid rgba(212,168,67,0.2)',
-            borderRadius: '16px',
-            padding: '40px',
-            textAlign: 'center',
-          }}>
-            <div style={{ fontSize: '32px', marginBottom: '12px' }}>🕊️</div>
-            <p style={{
-              margin: 0,
-              color: '#1A1A1A',
-              fontSize: '16px',
-              fontWeight: 500,
-              textAlign: 'center',
-            }}>Be the first to share!</p>
-          </article>
+          <div className="home-gold-glass" style={{ borderRadius: '16px', padding: '48px 20px', textAlign: 'center' }}>
+            <p style={{ fontSize: '40px', margin: '0 0 12px 0', filter: 'drop-shadow(0 0 10px rgba(212,168,67,0.5))' }}>⚓</p>
+            <p style={{ color: '#ffffff', fontSize: '16px', fontWeight: 600, margin: '0 0 6px 0' }}>
+              Be the first to share
+            </p>
+            <p style={{ color: 'rgba(251,191,36,0.6)', fontSize: '13px', margin: 0 }}>
+              Your testimony encourages others
+            </p>
+          </div>
         ) : (
           <div className="testimony-list-stack" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <style>{SUPPORTER_BORDER_KEYFRAMES}{SHIMMER_KEYFRAMES}</style>
@@ -574,7 +512,7 @@ export default function TestimonyWall() {
                 return { color: 'var(--text-primary)' }
               }
               return (
-                <article key={testimony.id} className="app-card" style={{ ...cardStyle, padding: '16px', position: 'relative' }}>
+                <article key={testimony.id} className="tw-card home-gold-glass" style={{ borderRadius: '16px', padding: '16px', position: 'relative' }}>
                   {isOwnPost && (
                     <button
                       type="button"
@@ -588,7 +526,7 @@ export default function TestimonyWall() {
                         top: '12px',
                         right: '12px',
                         background: 'transparent',
-                        color: 'rgba(26,26,26,0.7)',
+                        color: 'rgba(255,255,255,0.5)',
                         fontSize: '18px',
                         cursor: 'pointer',
                         padding: '4px 8px',
@@ -596,8 +534,8 @@ export default function TestimonyWall() {
                         border: 'none',
                         transition: 'color 0.15s ease',
                       }}
-                      onMouseEnter={(e) => e.currentTarget.style.color = 'rgba(26,26,26,0.9)'}
-                      onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(26,26,26,0.7)'}
+                      onMouseEnter={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.9)'}
+                      onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
                     >
                       ⋮
                     </button>
@@ -708,165 +646,94 @@ export default function TestimonyWall() {
                     {avatarUrl ? (
                       <img src={avatarUrl} alt="" style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0, ...avatarBorderStyle }} />
                     ) : (
-                      <span
-                        style={{
-                          width: '44px',
-                          height: '44px',
-                          borderRadius: '50%',
-                          background: 'rgba(212,175,55,0.2)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: 700,
-                          color: '#D4AF37',
-                          flexShrink: 0,
-                          fontSize: isAnon ? '18px' : undefined,
-                          ...avatarBorderStyle,
-                        }}
-                        aria-hidden={isAnon}
-                      >
-                        {isAnon ? '\u271D\uFE0F' : (name[0] || 'A').toUpperCase()}
+                      <span style={{
+                        width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
+                        background: 'linear-gradient(135deg,#78350f,#D4A843)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 700, color: '#ffffff', fontSize: isAnon ? '18px' : '17px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                        ...avatarBorderStyle,
+                      }} aria-hidden={isAnon}>
+                        {isAnon ? '✝️' : (name[0] || 'A').toUpperCase()}
                       </span>
                     )}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      {isAnon ? (
-                        <p
-                          style={{
-                            margin: 0,
-                            fontWeight: 700,
-                            fontSize: '15px',
-                            color: 'var(--text-primary)',
-                          }}
-                        >
-                          {name}
-                        </p>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => testimony.user_id && navigate(`/profile/${testimony.user_id}`)}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            padding: 0,
-                            cursor: testimony.user_id ? 'pointer' : 'default',
-                            fontWeight: 700,
-                            fontSize: '15px',
-                            ...getNameStyle(authorTier),
-                            textAlign: 'left',
-                          }}
-                        >
-                          {name}
-                          {authorTier === 'monthly' && <span style={{ marginLeft: '4px', fontSize: '12px' }}>⭐</span>}
-                          {authorTier === 'lifetime' && <span style={{ marginLeft: '4px', fontSize: '12px' }}>👑</span>}
-                        </button>
-                      )}
+                      {/* Name row */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                        {isAnon ? (
+                          <p style={{ margin: 0, fontWeight: 700, fontSize: '15px', color: '#ffffff' }}>{name}</p>
+                        ) : (
+                          <button type="button" onClick={() => testimony.user_id && navigate(`/profile/${testimony.user_id}`)}
+                            style={{ background: 'none', border: 'none', padding: 0, cursor: testimony.user_id ? 'pointer' : 'default', fontWeight: 700, fontSize: '15px', ...getNameStyle(authorTier), textAlign: 'left' }}>
+                            {name}
+                            {authorTier === 'monthly' && <span style={{ marginLeft: '4px', fontSize: '12px' }}>⭐</span>}
+                            {authorTier === 'lifetime' && <span style={{ marginLeft: '4px', fontSize: '12px' }}>👑</span>}
+                          </button>
+                        )}
+                        <span style={{ fontSize: '11px', color: 'rgba(212,168,67,0.6)', flexShrink: 0 }}>{timeAgo(testimony.created_at)}</span>
+                      </div>
+
+                      {/* Edit mode or content */}
                       {editingId === testimony.id ? (
-                        <div style={{ marginTop: '6px' }}>
+                        <div style={{ marginTop: '8px' }}>
                           <textarea
                             value={editContent}
                             onChange={(e) => setEditContent(e.target.value.slice(0, CONTENT_MAX))}
                             rows={4}
                             style={{
-                              width: '100%',
-                              borderRadius: '8px',
-                              padding: '10px',
-                              resize: 'vertical',
-                              color: '#1A1A1A',
-                              fontSize: '14px',
-                              background: '#FFFFFF',
-                              border: '1px solid rgba(212,168,67,0.3)',
-                              outline: 'none',
-                              boxSizing: 'border-box',
-                              fontFamily: 'inherit',
+                              width: '100%', borderRadius: '12px', padding: '10px 14px', resize: 'none',
+                              color: '#ffffff', fontSize: '14px', background: 'rgba(255,255,255,0.07)',
+                              border: '1.5px solid rgba(212,168,67,0.35)', outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit',
                             }}
                           />
-                          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                            <button
-                              type="button"
-                              onClick={() => handleEditSave(testimony.id)}
-                              disabled={saving || !editContent.trim()}
-                              style={{
-                                flex: 1,
-                                padding: '6px 12px',
-                                background: '#D4A843',
-                                color: '#1A1A1A',
-                                border: 'none',
-                                borderRadius: '6px',
-                                fontSize: '13px',
-                                fontWeight: 600,
-                                cursor: saving || !editContent.trim() ? 'not-allowed' : 'pointer',
-                                opacity: saving || !editContent.trim() ? 0.6 : 1,
-                              }}
-                            >
+                          <div style={{ display: 'flex', gap: '8px', marginTop: '8px', alignItems: 'center' }}>
+                            <span style={{ fontSize: '11px', color: 'rgba(212,168,67,0.5)', flex: 1 }}>{editContent.length}/{CONTENT_MAX}</span>
+                            <button type="button" onClick={() => handleEditSave(testimony.id)} disabled={saving || !editContent.trim()}
+                              style={{ padding: '6px 16px', background: 'linear-gradient(135deg,#D4A843,#F0C040)', color: '#1A1200', border: 'none', borderRadius: '50px', fontSize: '12px', fontWeight: 700, cursor: saving || !editContent.trim() ? 'not-allowed' : 'pointer', opacity: saving || !editContent.trim() ? 0.6 : 1 }}>
                               {saving ? t('testimony.saving') : t('testimony.save')}
                             </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setEditingId(null)
-                                setEditContent('')
-                              }}
-                              style={{
-                                flex: 1,
-                                padding: '6px 12px',
-                                background: 'rgba(255,255,255,0.1)',
-                                color: 'rgba(255,255,255,0.7)',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: '6px',
-                                fontSize: '13px',
-                                cursor: 'pointer',
-                              }}
-                            >
+                            <button type="button" onClick={() => { setEditingId(null); setEditContent('') }}
+                              style={{ padding: '6px 14px', background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '50px', fontSize: '12px', cursor: 'pointer' }}>
                               {t('testimony.cancel')}
                             </button>
                           </div>
-                          <span style={{ fontSize: '11px', color: 'rgba(26,26,26,0.5)' }}>
-                            {editContent.length}/{CONTENT_MAX}
-                          </span>
                         </div>
                       ) : (
-                        <p style={{ margin: '6px 0 0', fontSize: '14px', lineHeight: 1.55, color: 'var(--text-primary)' }}>{testimony.content}</p>
+                        <p style={{ margin: '8px 0 0', fontSize: '14px', lineHeight: 1.65, color: 'rgba(220,220,220,0.92)' }}>{testimony.content}</p>
                       )}
-                      <p style={{ margin: '8px 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>{timeAgo(testimony.created_at)}</p>
-                      <div
-                        style={{
-                          display: 'flex',
-                          flexWrap: 'wrap',
-                          gap: '8px',
-                          marginTop: '12px',
-                          alignItems: 'center',
-                        }}
-                      >
+
+                      {/* Reactions + category tag */}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '12px', alignItems: 'center' }}>
                         {reactions.map((r) => {
                           const active = my === r.key
                           const n = counts[r.key] ?? 0
                           return (
-                            <button
-                              key={r.key}
-                              type="button"
+                            <button key={r.key} type="button"
                               disabled={!user?.id || reactionBusy === testimony.id}
                               onClick={() => toggleReaction(testimony.id, r.key)}
                               title={r.label}
                               style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                borderRadius: '50px',
-                                padding: '4px 10px',
-                                fontSize: '16px',
-                                border: active ? '1px solid rgba(212,168,67,0.3)' : '1px solid rgba(255,255,255,0.1)',
-                                background: active ? 'rgba(212,168,67,0.15)' : 'rgba(255,255,255,0.06)',
-                                color: active ? '#D4A843' : 'var(--text-primary)',
+                                display: 'flex', alignItems: 'center', gap: '4px',
+                                borderRadius: '50px', padding: '5px 10px', fontSize: '15px',
+                                border: active ? '1px solid rgba(212,168,67,0.45)' : '1px solid rgba(255,255,255,0.1)',
+                                background: active ? 'rgba(212,168,67,0.18)' : 'rgba(255,255,255,0.06)',
+                                color: active ? '#D4A843' : 'rgba(255,255,255,0.7)',
                                 cursor: user?.id ? 'pointer' : 'not-allowed',
-                              }}
-                            >
+                                backdropFilter: 'blur(6px)',
+                              }}>
                               <span aria-hidden>{r.icon}</span>
-                              {n > 0 && (
-                                <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>{n}</span>
-                              )}
+                              {n > 0 && <span style={{ fontSize: '12px' }}>{n}</span>}
                             </button>
                           )
                         })}
+                        {/* Category tag */}
+                        <span style={{
+                          marginLeft: 'auto', padding: '4px 10px', borderRadius: '50px',
+                          background: 'rgba(255,255,255,0.1)', fontSize: '11px',
+                          color: '#D4A843', fontWeight: 600,
+                        }}>
+                          {categorizeTestimony(testimony.content)}
+                        </span>
                       </div>
                     </div>
                   </div>

@@ -244,15 +244,19 @@ export default function WeeklyRecap({ weekStorageKey, autoGenerate = false, user
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoGenerate, dismissed])
 
+  const recapStats = [
+    ['📖', stats.chaptersRead, t('weeklyRecap.chapters')],
+    ['📝', stats.journals, t('weeklyRecap.journal')],
+    ['🙏', stats.prayers, t('weeklyRecap.prayers')],
+    ['🔥', stats.streak, t('weeklyRecap.streak')],
+  ]
+
   if (dismissed) {
     return (
       <article
-        className="home-gold-glass rounded-[20px] p-5"
+        className="home-gold-glass rounded-3xl p-5"
         style={{
-          marginTop: '12px',
-          marginBottom: '28px',
-          animation: 'fadeInUp 0.6s ease forwards',
-          animationDelay: '0.25s',
+          borderRadius: '24px',
         }}
       >
         <button
@@ -262,11 +266,11 @@ export default function WeeklyRecap({ weekStorageKey, autoGenerate = false, user
             setDismissed(false)
           }}
           style={{
-            backgroundColor: '#D4AF37',
-            color: '#1a1a1a',
+            background: 'linear-gradient(135deg, #f59e0b 0%, #ca8a04 100%)',
+            color: '#111827',
             fontWeight: 'bold',
             border: 'none',
-            borderRadius: '12px',
+            borderRadius: '999px',
             padding: '14px',
             width: '100%',
             cursor: 'pointer',
@@ -281,16 +285,13 @@ export default function WeeklyRecap({ weekStorageKey, autoGenerate = false, user
 
   return (
     <article
-      className="home-gold-glass rounded-[20px] p-5"
+      className="home-gold-glass rounded-3xl p-5"
       style={{
-        marginTop: '12px',
-        marginBottom: '28px',
-        animation: 'fadeInUp 0.6s ease forwards',
-        animationDelay: '0.25s',
+        borderRadius: '24px',
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', alignItems: 'center' }}>
-        <p style={{ margin: 0, color: 'var(--text-primary)', fontWeight: 800, fontSize: '14px' }}>
+        <p style={{ margin: 0, color: '#fbbf24', fontWeight: 800, fontSize: '16px' }}>
           {t('weeklyRecap.title')} ✨
         </p>
         <button
@@ -301,11 +302,11 @@ export default function WeeklyRecap({ weekStorageKey, autoGenerate = false, user
             if (onDismiss) onDismiss()
           }}
           style={{
-            border: '1px solid rgba(212, 168, 67, 0.35)',
+            border: '1px solid rgba(255, 255, 255, 0.14)',
             borderRadius: '999px',
             background: 'transparent',
-            color: 'var(--text-secondary)',
-            padding: '4px 10px',
+            color: 'rgba(255, 255, 255, 0.58)',
+            padding: '5px 10px',
             cursor: 'pointer',
             fontSize: '11px',
           }}
@@ -314,17 +315,41 @@ export default function WeeklyRecap({ weekStorageKey, autoGenerate = false, user
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '8px', marginTop: '10px' }}>
+      <div style={{ display: 'none', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: '8px', marginTop: '10px' }}>
         <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>📖 {stats.chaptersRead} {t('weeklyRecap.chapters')}</div>
         <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>📝 {stats.journals} {t('weeklyRecap.journal')}</div>
         <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>🙏 {stats.prayers} {t('weeklyRecap.prayers')}</div>
         <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>🔥 {stats.streak} {t('weeklyRecap.streak')}</div>
       </div>
 
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0,1fr))', gap: '8px', marginTop: '14px' }}>
+        {recapStats.map(([icon, value, label]) => (
+          <div
+            key={label}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              background: 'transparent',
+              borderRadius: '999px',
+              padding: '8px 10px',
+              fontSize: '12px',
+              color: 'rgba(229, 231, 235, 0.78)',
+              minWidth: 0,
+            }}
+          >
+            <span aria-hidden>{icon}</span>
+            <span style={{ color: '#fbbf24', fontWeight: 800 }}>{value}</span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
+          </div>
+        ))}
+      </div>
+
       {recap ? (
-        <p style={{ margin: '10px 0 0', color: 'var(--text-primary)', fontSize: '14px', lineHeight: 1.6 }}>{recap}</p>
+        <p style={{ margin: '14px 0 0', color: 'rgba(229, 231, 235, 0.88)', fontSize: '14px', lineHeight: 1.6 }}>{recap}</p>
       ) : (
-        <p style={{ margin: '10px 0 0', color: 'var(--text-secondary)', fontSize: '13px', lineHeight: 1.5 }}>
+        <p style={{ margin: '14px 0 0', color: 'rgba(229, 231, 235, 0.62)', fontSize: '13px', lineHeight: 1.5 }}>
           {loading ? t('weeklyRecap.generating') : t('weeklyRecap.generatePrompt')}
         </p>
       )}
@@ -338,12 +363,12 @@ export default function WeeklyRecap({ weekStorageKey, autoGenerate = false, user
         onClick={generateRecap}
         disabled={loading}
         style={{
-          marginTop: '12px',
-          backgroundColor: '#D4AF37',
-          color: '#1a1a1a',
+          marginTop: '14px',
+          background: 'linear-gradient(135deg, #f59e0b 0%, #ca8a04 100%)',
+          color: '#111827',
           fontWeight: 'bold',
           border: 'none',
-          borderRadius: '12px',
+          borderRadius: '999px',
           padding: '14px',
           width: '100%',
           cursor: loading ? 'not-allowed' : 'pointer',

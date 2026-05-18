@@ -3,15 +3,26 @@ import { getBackgroundTypeForTime } from '../components/DayBackground'
 import {
   THEME_PREFERENCE_CHANGED_EVENT,
   THEME_PREFERENCE_STORAGE_KEY,
+  MANUAL_THEME_PREFERENCE_KEY,
   readManualThemePreference,
+  readThemePreferenceFromStorage,
 } from '../utils/themePreferenceStorage'
 
 /**
- * Reactive sky period for UI that should match BackgroundManager (local time, same bands).
+ * Resolves theme: manual selection takes priority over time-based detection.
  */
-function safeBackgroundType() {
+function safeResolvedTheme() {
   if (typeof window === 'undefined') return 'night'
   try {
+    // Check manual key first, then fall back to theme-preference key, then time-based
+    const manualPref = readManualThemePreference()
+    if (manualPref && manualPref !== 'auto') {
+      return manualPref === 'evening' ? 'sunset' : manualPref
+    }
+    const storedPref = readThemePreferenceFromStorage()
+    if (storedPref && storedPref !== 'auto') {
+      return storedPref === 'evening' ? 'sunset' : storedPref
+    }
     return getBackgroundTypeForTime()
   } catch {
     return 'night'
@@ -19,25 +30,17 @@ function safeBackgroundType() {
 }
 
 export function useThemeBackgroundType() {
-  const [sky, setSky] = useState(safeBackgroundType)
+  const [sky, setSky] = useState(safeResolvedTheme)
 
   useEffect(() => {
     const sync = () => {
-      // Check for manual theme preference FIRST - before ANY other code runs
-      const manualPref = readManualThemePreference()
-      if (manualPref && manualPref !== 'auto') {
-        // User has manually selected a theme - preserve it
-        const theme = manualPref === 'evening' ? 'sunset' : manualPref
-        setSky(theme)
-        return
-      }
-      setSky(safeBackgroundType())
+      setSky(safeResolvedTheme())
     }
 
     sync()
     window.addEventListener(THEME_PREFERENCE_CHANGED_EVENT, sync)
     const onStorage = (e) => {
-      if (e.key === THEME_PREFERENCE_STORAGE_KEY || e.key === null) sync()
+      if (e.key === THEME_PREFERENCE_STORAGE_KEY || e.key === MANUAL_THEME_PREFERENCE_KEY || e.key === null) sync()
     }
     window.addEventListener('storage', onStorage)
     const interval = setInterval(sync, 30 * 1000)

@@ -474,9 +474,10 @@ export default function PrayerWall() {
     <div className="w-full pt-4">
       <style>{SHIMMER_KEYFRAMES}</style>
       {/* Screen Title */}
-      <div className="flex items-center gap-3 mb-4">
-        <span className="text-3xl">🙏</span>
-        <h1 className="text-page-title text-gold-accent">{t('prayerWall.title')}</h1>
+      <div className="mb-4">
+        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(251, 191, 36, 0.86)' }}>
+          {t('prayerWall.title')}
+        </p>
       </div>
 
       {/* Subtitle */}
@@ -490,10 +491,23 @@ export default function PrayerWall() {
           setSubmitError('')
           setShowShareModal(true)
         }}
-        className="btn-primary w-full mb-6"
+        className="w-full mb-6"
+        style={{
+          border: 'none',
+          borderRadius: '999px',
+          padding: '14px 18px',
+          background: 'linear-gradient(135deg, #FBBF24 0%, #D4A843 45%, #B8860B 100%)',
+          color: '#0a1428',
+          fontWeight: 800,
+          boxShadow: '0 0 24px rgba(212, 168, 67, 0.25)',
+        }}
       >
         🙏 {t('prayerWall.shareRequest')}
       </button>
+
+      <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'rgba(251, 191, 36, 0.86)' }}>
+        SOMEONE IS PRAYING FOR...
+      </p>
 
       {/* Prayer Cards List */}
       {loading ? (
@@ -507,7 +521,7 @@ export default function PrayerWall() {
             return (
             <div
               key={prayer.id}
-              className="glass p-5 rounded-2xl"
+              className="home-gold-glass rounded-2xl p-5"
             >
               <div className="mb-2 flex items-center justify-between gap-3">
                 <p className="text-gold-accent text-xs font-semibold uppercase tracking-wider">
@@ -577,7 +591,7 @@ export default function PrayerWall() {
                   </p>
                 </button>
               </div>
-              <p className="text-white text-base mb-4 leading-relaxed">
+              <p className="text-white/85 text-base mb-4 leading-relaxed">
                 {prayer.content}
               </p>
               <div className="flex items-center justify-between">
@@ -602,7 +616,7 @@ export default function PrayerWall() {
                       px-4 py-2 rounded-full text-sm font-semibold transition-all
                       ${prayedPrayers.has(prayer.id)
                         ? 'bg-[#D4A843] text-[#1a0533] cursor-default'
-                        : 'bg-[#D4A843]/20 border border-[#D4A843]/50 text-[#D4A843] hover:bg-[#D4A843]/30 cursor-pointer'
+                        : 'bg-white/5 border border-white/10 text-[#D4A843] hover:bg-white/10 cursor-pointer'
                       }
                       ${animatingPrayer === prayer.id ? 'animate-prayer-pulse' : ''}
                     `}
@@ -619,7 +633,7 @@ export default function PrayerWall() {
           })}
         </div>
       ) : (
-        <div className="glass p-8 rounded-2xl text-center">
+        <div className="home-gold-glass p-8 rounded-2xl text-center">
           <p className="text-white/60 text-sm">
             {t('prayerWall.empty')}
           </p>
@@ -755,7 +769,7 @@ export default function PrayerWall() {
               Select a reason for reporting this content.
             </p>
             <div className="space-y-2 mb-4">
-              {REPORT_REASONS.map((reason) => (
+              {reportReasons.map((reason) => (
                 <button
                   key={reason}
                   type="button"
@@ -834,7 +848,7 @@ export default function PrayerWall() {
 
               <p className="text-white/70 text-xs mb-2">Mute duration</p>
               <div className="space-y-2 mb-4">
-                {MUTE_OPTIONS.map((opt) => (
+                {muteOptions.map((opt) => (
                   <button
                     key={opt.id}
                     type="button"

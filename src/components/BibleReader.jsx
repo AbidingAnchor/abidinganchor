@@ -40,7 +40,6 @@ const APP_BAR_HEIGHT_PX = 56
 const CHAPTER_ZONE_HEIGHT_PX = 118
 const BOTTOM_CHROME_NAV_PX = 60
 const BOTTOM_TAB_BAR_PX = 60
-const OLD_TESTAMENT_LAST_INDEX = 38
 const APP_BAR_TOP_OFFSET = `calc(env(safe-area-inset-top, 0px) + ${APP_BAR_HEIGHT_PX}px)`
 const BIBLE_SCROLL_TOP_OFFSET = `calc(env(safe-area-inset-top, 0px) + ${APP_BAR_HEIGHT_PX + CHAPTER_ZONE_HEIGHT_PX}px)`
 const BIBLE_SCROLL_BOTTOM_PX = BOTTOM_CHROME_NAV_PX + BOTTOM_TAB_BAR_PX
@@ -48,6 +47,23 @@ const BIBLE_SCROLL_BOTTOM_PX = BOTTOM_CHROME_NAV_PX + BOTTOM_TAB_BAR_PX
 function clampBibleFontSize(n) {
   if (!Number.isFinite(n)) return BIBLE_FONT_DEFAULT
   return Math.min(BIBLE_FONT_MAX, Math.max(BIBLE_FONT_MIN, Math.round(n)))
+}
+
+function cleanVerseText(text) {
+  if (!text) return ''
+  return text
+    // Remove patterns like "word: Heb." or "phrase: Heb." at end of sentence
+    .replace(/\s*[\w\s]+:\s*(Heb|Gr|Or|Lit|Marg|i\.e|Aram|Lat)\./gi, '')
+    // Remove standalone "Heb." "Gr." etc
+    .replace(/\b(Heb|Gr|Or|Lit|Marg|Aram|Lat)\./gi, '')
+    // Remove bracketed content
+    .replace(/\[.*?\]/g, '')
+    // Remove parenthetical translator notes
+    .replace(/\(.*?(Heb|Gr|Or|Lit).*?\)/gi, '')
+    // Clean up double spaces and trailing punctuation artifacts
+    .replace(/\s{2,}/g, ' ')
+    .replace(/\.\s*\./g, '.')
+    .trim()
 }
 
 /** Default for bible-api.com when no API.Bible key or when using non-getBible English texts — WEB is reliable on bible-api.com. */
@@ -64,7 +80,7 @@ const BIBLE_READER_TRANSLATIONS = [
   { id: 'bbe', labelKey: 'bible.bbe', subtitleKey: 'bible.subtitleBbe', denomination: 'Protestant' },
   { id: 'darby', labelKey: 'bible.darby', subtitleKey: 'bible.subtitleDarby', denomination: 'Protestant' },
   { id: 'dra', label: 'Douay-Rheims 1899 (DRA)', subtitle: 'Catholic translation with Deuterocanonical books', isCatholic: true, denomination: 'Catholic' },
-  { id: 'orthodox-coming-soon', label: 'Orthodox Bible', subtitle: 'Coming soon', isOrthodox: true, disabled: true, denomination: 'Orthodox' },
+  { id: 'lxxe', label: 'Orthodox', subtitle: 'Brenton Septuagint with Deuterocanonical books', isOrthodox: true, denomination: 'Orthodox' },
 ]
 
 function translationStorageKey(userId) {
@@ -99,91 +115,254 @@ function getStoredTranslationId(userId) {
   return DEFAULT_BIBLE_API_COM_TRANSLATION
 }
 
-const BOOKS = [
-  {name:'Genesis',cdnName:'genesis',chapters:50},
-  {name:'Exodus',cdnName:'exodus',chapters:40},
-  {name:'Leviticus',cdnName:'leviticus',chapters:27},
-  {name:'Numbers',cdnName:'numbers',chapters:36},
-  {name:'Deuteronomy',cdnName:'deuteronomy',chapters:34},
-  {name:'Joshua',cdnName:'joshua',chapters:24},
-  {name:'Judges',cdnName:'judges',chapters:21},
-  {name:'Ruth',cdnName:'ruth',chapters:4},
-  {name:'1 Samuel',cdnName:'1samuel',chapters:31},
-  {name:'2 Samuel',cdnName:'2samuel',chapters:24},
-  {name:'1 Kings',cdnName:'1kings',chapters:22},
-  {name:'2 Kings',cdnName:'2kings',chapters:25},
-  {name:'1 Chronicles',cdnName:'1chronicles',chapters:29},
-  {name:'2 Chronicles',cdnName:'2chronicles',chapters:36},
-  {name:'Ezra',cdnName:'ezra',chapters:10},
-  {name:'Nehemiah',cdnName:'nehemiah',chapters:13},
-  {name:'Esther',cdnName:'esther',chapters:10},
-  {name:'Job',cdnName:'job',chapters:42},
-  {name:'Psalms',cdnName:'psalms',chapters:150},
-  {name:'Proverbs',cdnName:'proverbs',chapters:31},
-  {name:'Ecclesiastes',cdnName:'ecclesiastes',chapters:12},
-  {name:'Song of Solomon',cdnName:'songofsolomon',chapters:8},
-  {name:'Isaiah',cdnName:'isaiah',chapters:66},
-  {name:'Jeremiah',cdnName:'jeremiah',chapters:52},
-  {name:'Lamentations',cdnName:'lamentations',chapters:5},
-  {name:'Ezekiel',cdnName:'ezekiel',chapters:48},
-  {name:'Daniel',cdnName:'daniel',chapters:12},
-  {name:'Hosea',cdnName:'hosea',chapters:14},
-  {name:'Joel',cdnName:'joel',chapters:3},
-  {name:'Amos',cdnName:'amos',chapters:9},
-  {name:'Obadiah',cdnName:'obadiah',chapters:1},
-  {name:'Jonah',cdnName:'jonah',chapters:4},
-  {name:'Micah',cdnName:'micah',chapters:7},
-  {name:'Nahum',cdnName:'nahum',chapters:3},
-  {name:'Habakkuk',cdnName:'habakkuk',chapters:3},
-  {name:'Zephaniah',cdnName:'zephaniah',chapters:3},
-  {name:'Haggai',cdnName:'haggai',chapters:2},
-  {name:'Zechariah',cdnName:'zechariah',chapters:14},
-  {name:'Malachi',cdnName:'malachi',chapters:4},
-  {name:'Tobit',cdnName:'tobit',chapters:14,deuterocanonical:true},
-  {name:'Judith',cdnName:'judith',chapters:16,deuterocanonical:true},
-  {name:'Wisdom',cdnName:'wisdom',chapters:19,deuterocanonical:true},
-  {name:'Sirach',cdnName:'sirach',chapters:51,deuterocanonical:true},
-  {name:'Baruch',cdnName:'baruch',chapters:6,deuterocanonical:true},
-  {name:'1 Maccabees',cdnName:'1maccabees',chapters:16,deuterocanonical:true},
-  {name:'2 Maccabees',cdnName:'2maccabees',chapters:15,deuterocanonical:true},
-  {name:'Matthew',cdnName:'matthew',chapters:28},
-  {name:'Mark',cdnName:'mark',chapters:16},
-  {name:'Luke',cdnName:'luke',chapters:24},
-  {name:'John',cdnName:'john',chapters:21},
-  {name:'Acts',cdnName:'acts',chapters:28},
-  {name:'Romans',cdnName:'romans',chapters:16},
-  {name:'1 Corinthians',cdnName:'1corinthians',chapters:16},
-  {name:'2 Corinthians',cdnName:'2corinthians',chapters:13},
-  {name:'Galatians',cdnName:'galatians',chapters:6},
-  {name:'Ephesians',cdnName:'ephesians',chapters:6},
-  {name:'Philippians',cdnName:'philippians',chapters:4},
-  {name:'Colossians',cdnName:'colossians',chapters:4},
-  {name:'1 Thessalonians',cdnName:'1thessalonians',chapters:5},
-  {name:'2 Thessalonians',cdnName:'2thessalonians',chapters:3},
-  {name:'1 Timothy',cdnName:'1timothy',chapters:6},
-  {name:'2 Timothy',cdnName:'2timothy',chapters:4},
-  {name:'Titus',cdnName:'titus',chapters:3},
-  {name:'Philemon',cdnName:'philemon',chapters:1},
-  {name:'Hebrews',cdnName:'hebrews',chapters:13},
-  {name:'James',cdnName:'james',chapters:5},
-  {name:'1 Peter',cdnName:'1peter',chapters:5},
-  {name:'2 Peter',cdnName:'2peter',chapters:3},
-  {name:'1 John',cdnName:'1john',chapters:5},
-  {name:'2 John',cdnName:'2john',chapters:1},
-  {name:'3 John',cdnName:'3john',chapters:1},
-  {name:'Jude',cdnName:'jude',chapters:1},
-  {name:'Revelation',cdnName:'revelation',chapters:22},
+// Protestant books - 66 books only (Genesis to Revelation), no Deuterocanonical books
+const PROTESTANT_BOOKS = [
+  {name:'Genesis',cdnName:'genesis',chapters:50,bookNumber:1},
+  {name:'Exodus',cdnName:'exodus',chapters:40,bookNumber:2},
+  {name:'Leviticus',cdnName:'leviticus',chapters:27,bookNumber:3},
+  {name:'Numbers',cdnName:'numbers',chapters:36,bookNumber:4},
+  {name:'Deuteronomy',cdnName:'deuteronomy',chapters:34,bookNumber:5},
+  {name:'Joshua',cdnName:'joshua',chapters:24,bookNumber:6},
+  {name:'Judges',cdnName:'judges',chapters:21,bookNumber:7},
+  {name:'Ruth',cdnName:'ruth',chapters:4,bookNumber:8},
+  {name:'1 Samuel',cdnName:'1samuel',chapters:31,bookNumber:9},
+  {name:'2 Samuel',cdnName:'2samuel',chapters:24,bookNumber:10},
+  {name:'1 Kings',cdnName:'1kings',chapters:22,bookNumber:11},
+  {name:'2 Kings',cdnName:'2kings',chapters:25,bookNumber:12},
+  {name:'1 Chronicles',cdnName:'1chronicles',chapters:29,bookNumber:13},
+  {name:'2 Chronicles',cdnName:'2chronicles',chapters:36,bookNumber:14},
+  {name:'Ezra',cdnName:'ezra',chapters:10,bookNumber:15},
+  {name:'Nehemiah',cdnName:'nehemiah',chapters:13,bookNumber:16},
+  {name:'Esther',cdnName:'esther',chapters:10,bookNumber:17},
+  {name:'Job',cdnName:'job',chapters:42,bookNumber:18},
+  {name:'Psalms',cdnName:'psalms',chapters:150,bookNumber:19},
+  {name:'Proverbs',cdnName:'proverbs',chapters:31,bookNumber:20},
+  {name:'Ecclesiastes',cdnName:'ecclesiastes',chapters:12,bookNumber:21},
+  {name:'Song of Solomon',cdnName:'songofsolomon',chapters:8,bookNumber:22},
+  {name:'Isaiah',cdnName:'isaiah',chapters:66,bookNumber:23},
+  {name:'Jeremiah',cdnName:'jeremiah',chapters:52,bookNumber:24},
+  {name:'Lamentations',cdnName:'lamentations',chapters:5,bookNumber:25},
+  {name:'Ezekiel',cdnName:'ezekiel',chapters:48,bookNumber:26},
+  {name:'Daniel',cdnName:'daniel',chapters:12,bookNumber:27},
+  {name:'Hosea',cdnName:'hosea',chapters:14,bookNumber:28},
+  {name:'Joel',cdnName:'joel',chapters:3,bookNumber:29},
+  {name:'Amos',cdnName:'amos',chapters:9,bookNumber:30},
+  {name:'Obadiah',cdnName:'obadiah',chapters:1,bookNumber:31},
+  {name:'Jonah',cdnName:'jonah',chapters:4,bookNumber:32},
+  {name:'Micah',cdnName:'micah',chapters:7,bookNumber:33},
+  {name:'Nahum',cdnName:'nahum',chapters:3,bookNumber:34},
+  {name:'Habakkuk',cdnName:'habakkuk',chapters:3,bookNumber:35},
+  {name:'Zephaniah',cdnName:'zephaniah',chapters:3,bookNumber:36},
+  {name:'Haggai',cdnName:'haggai',chapters:2,bookNumber:37},
+  {name:'Zechariah',cdnName:'zechariah',chapters:14,bookNumber:38},
+  {name:'Malachi',cdnName:'malachi',chapters:4,bookNumber:39},
+  {name:'Matthew',cdnName:'matthew',chapters:28,bookNumber:40},
+  {name:'Mark',cdnName:'mark',chapters:16,bookNumber:41},
+  {name:'Luke',cdnName:'luke',chapters:24,bookNumber:42},
+  {name:'John',cdnName:'john',chapters:21,bookNumber:43},
+  {name:'Acts',cdnName:'acts',chapters:28,bookNumber:44},
+  {name:'Romans',cdnName:'romans',chapters:16,bookNumber:45},
+  {name:'1 Corinthians',cdnName:'1corinthians',chapters:16,bookNumber:46},
+  {name:'2 Corinthians',cdnName:'2corinthians',chapters:13,bookNumber:47},
+  {name:'Galatians',cdnName:'galatians',chapters:6,bookNumber:48},
+  {name:'Ephesians',cdnName:'ephesians',chapters:6,bookNumber:49},
+  {name:'Philippians',cdnName:'philippians',chapters:4,bookNumber:50},
+  {name:'Colossians',cdnName:'colossians',chapters:4,bookNumber:51},
+  {name:'1 Thessalonians',cdnName:'1thessalonians',chapters:5,bookNumber:52},
+  {name:'2 Thessalonians',cdnName:'2thessalonians',chapters:3,bookNumber:53},
+  {name:'1 Timothy',cdnName:'1timothy',chapters:6,bookNumber:54},
+  {name:'2 Timothy',cdnName:'2timothy',chapters:4,bookNumber:55},
+  {name:'Titus',cdnName:'titus',chapters:3,bookNumber:56},
+  {name:'Philemon',cdnName:'philemon',chapters:1,bookNumber:57},
+  {name:'Hebrews',cdnName:'hebrews',chapters:13,bookNumber:58},
+  {name:'James',cdnName:'james',chapters:5,bookNumber:59},
+  {name:'1 Peter',cdnName:'1peter',chapters:5,bookNumber:60},
+  {name:'2 Peter',cdnName:'2peter',chapters:3,bookNumber:61},
+  {name:'1 John',cdnName:'1john',chapters:5,bookNumber:62},
+  {name:'2 John',cdnName:'2john',chapters:1,bookNumber:63},
+  {name:'3 John',cdnName:'3john',chapters:1,bookNumber:64},
+  {name:'Jude',cdnName:'jude',chapters:1,bookNumber:65},
+  {name:'Revelation',cdnName:'revelation',chapters:22,bookNumber:66},
 ]
 
-// Mapping of Deuterocanonical books to their bolls.life book numbers
-const DEUTEROCANONICAL_BOOK_MAP = {
+// Catholic books - 73 books (Protestant 66 + 7 Deuterocanonical)
+const CATHOLIC_BOOKS = [
+  {name:'Genesis',cdnName:'genesis',chapters:50,bookNumber:1},
+  {name:'Exodus',cdnName:'exodus',chapters:40,bookNumber:2},
+  {name:'Leviticus',cdnName:'leviticus',chapters:27,bookNumber:3},
+  {name:'Numbers',cdnName:'numbers',chapters:36,bookNumber:4},
+  {name:'Deuteronomy',cdnName:'deuteronomy',chapters:34,bookNumber:5},
+  {name:'Joshua',cdnName:'joshua',chapters:24,bookNumber:6},
+  {name:'Judges',cdnName:'judges',chapters:21,bookNumber:7},
+  {name:'Ruth',cdnName:'ruth',chapters:4,bookNumber:8},
+  {name:'1 Samuel',cdnName:'1samuel',chapters:31,bookNumber:9},
+  {name:'2 Samuel',cdnName:'2samuel',chapters:24,bookNumber:10},
+  {name:'1 Kings',cdnName:'1kings',chapters:22,bookNumber:11},
+  {name:'2 Kings',cdnName:'2kings',chapters:25,bookNumber:12},
+  {name:'1 Chronicles',cdnName:'1chronicles',chapters:29,bookNumber:13},
+  {name:'2 Chronicles',cdnName:'2chronicles',chapters:36,bookNumber:14},
+  {name:'Ezra',cdnName:'ezra',chapters:10,bookNumber:15},
+  {name:'Nehemiah',cdnName:'nehemiah',chapters:13,bookNumber:16},
+  {name:'Tobit',cdnName:'tobit',chapters:14,bookNumber:68,deuterocanonical:true},
+  {name:'Judith',cdnName:'judith',chapters:16,bookNumber:69,deuterocanonical:true},
+  {name:'Wisdom',cdnName:'wisdom',chapters:19,bookNumber:72,deuterocanonical:true},
+  {name:'Sirach',cdnName:'sirach',chapters:51,bookNumber:73,deuterocanonical:true},
+  {name:'Baruch',cdnName:'baruch',chapters:6,bookNumber:74,deuterocanonical:true},
+  {name:'1 Maccabees',cdnName:'1maccabees',chapters:16,bookNumber:70,deuterocanonical:true},
+  {name:'2 Maccabees',cdnName:'2maccabees',chapters:15,bookNumber:71,deuterocanonical:true},
+  {name:'Esther',cdnName:'esther',chapters:10,bookNumber:17},
+  {name:'Job',cdnName:'job',chapters:42,bookNumber:18},
+  {name:'Psalms',cdnName:'psalms',chapters:150,bookNumber:19},
+  {name:'Proverbs',cdnName:'proverbs',chapters:31,bookNumber:20},
+  {name:'Ecclesiastes',cdnName:'ecclesiastes',chapters:12,bookNumber:21},
+  {name:'Song of Solomon',cdnName:'songofsolomon',chapters:8,bookNumber:22},
+  {name:'Isaiah',cdnName:'isaiah',chapters:66,bookNumber:23},
+  {name:'Jeremiah',cdnName:'jeremiah',chapters:52,bookNumber:24},
+  {name:'Lamentations',cdnName:'lamentations',chapters:5,bookNumber:25},
+  {name:'Ezekiel',cdnName:'ezekiel',chapters:48,bookNumber:26},
+  {name:'Daniel',cdnName:'daniel',chapters:12,bookNumber:27},
+  {name:'Hosea',cdnName:'hosea',chapters:14,bookNumber:28},
+  {name:'Joel',cdnName:'joel',chapters:3,bookNumber:29},
+  {name:'Amos',cdnName:'amos',chapters:9,bookNumber:30},
+  {name:'Obadiah',cdnName:'obadiah',chapters:1,bookNumber:31},
+  {name:'Jonah',cdnName:'jonah',chapters:4,bookNumber:32},
+  {name:'Micah',cdnName:'micah',chapters:7,bookNumber:33},
+  {name:'Nahum',cdnName:'nahum',chapters:3,bookNumber:34},
+  {name:'Habakkuk',cdnName:'habakkuk',chapters:3,bookNumber:35},
+  {name:'Zephaniah',cdnName:'zephaniah',chapters:3,bookNumber:36},
+  {name:'Haggai',cdnName:'haggai',chapters:2,bookNumber:37},
+  {name:'Zechariah',cdnName:'zechariah',chapters:14,bookNumber:38},
+  {name:'Malachi',cdnName:'malachi',chapters:4,bookNumber:39},
+  {name:'Matthew',cdnName:'matthew',chapters:28,bookNumber:40},
+  {name:'Mark',cdnName:'mark',chapters:16,bookNumber:41},
+  {name:'Luke',cdnName:'luke',chapters:24,bookNumber:42},
+  {name:'John',cdnName:'john',chapters:21,bookNumber:43},
+  {name:'Acts',cdnName:'acts',chapters:28,bookNumber:44},
+  {name:'Romans',cdnName:'romans',chapters:16,bookNumber:45},
+  {name:'1 Corinthians',cdnName:'1corinthians',chapters:16,bookNumber:46},
+  {name:'2 Corinthians',cdnName:'2corinthians',chapters:13,bookNumber:47},
+  {name:'Galatians',cdnName:'galatians',chapters:6,bookNumber:48},
+  {name:'Ephesians',cdnName:'ephesians',chapters:6,bookNumber:49},
+  {name:'Philippians',cdnName:'philippians',chapters:4,bookNumber:50},
+  {name:'Colossians',cdnName:'colossians',chapters:4,bookNumber:51},
+  {name:'1 Thessalonians',cdnName:'1thessalonians',chapters:5,bookNumber:52},
+  {name:'2 Thessalonians',cdnName:'2thessalonians',chapters:3,bookNumber:53},
+  {name:'1 Timothy',cdnName:'1timothy',chapters:6,bookNumber:54},
+  {name:'2 Timothy',cdnName:'2timothy',chapters:4,bookNumber:55},
+  {name:'Titus',cdnName:'titus',chapters:3,bookNumber:56},
+  {name:'Philemon',cdnName:'philemon',chapters:1,bookNumber:57},
+  {name:'Hebrews',cdnName:'hebrews',chapters:13,bookNumber:58},
+  {name:'James',cdnName:'james',chapters:5,bookNumber:59},
+  {name:'1 Peter',cdnName:'1peter',chapters:5,bookNumber:60},
+  {name:'2 Peter',cdnName:'2peter',chapters:3,bookNumber:61},
+  {name:'1 John',cdnName:'1john',chapters:5,bookNumber:62},
+  {name:'2 John',cdnName:'2john',chapters:1,bookNumber:63},
+  {name:'3 John',cdnName:'3john',chapters:1,bookNumber:64},
+  {name:'Jude',cdnName:'jude',chapters:1,bookNumber:65},
+  {name:'Revelation',cdnName:'revelation',chapters:22,bookNumber:66},
+]
+
+// Orthodox books - 76 books (Catholic 73 + 3 additional Orthodox additions)
+const ORTHODOX_BOOKS = [
+  {name:'Genesis',cdnName:'genesis',chapters:50,bookNumber:1},
+  {name:'Exodus',cdnName:'exodus',chapters:40,bookNumber:2},
+  {name:'Leviticus',cdnName:'leviticus',chapters:27,bookNumber:3},
+  {name:'Numbers',cdnName:'numbers',chapters:36,bookNumber:4},
+  {name:'Deuteronomy',cdnName:'deuteronomy',chapters:34,bookNumber:5},
+  {name:'Joshua',cdnName:'joshua',chapters:24,bookNumber:6},
+  {name:'Judges',cdnName:'judges',chapters:21,bookNumber:7},
+  {name:'Ruth',cdnName:'ruth',chapters:4,bookNumber:8},
+  {name:'1 Samuel',cdnName:'1samuel',chapters:31,bookNumber:9},
+  {name:'2 Samuel',cdnName:'2samuel',chapters:24,bookNumber:10},
+  {name:'1 Kings',cdnName:'1kings',chapters:22,bookNumber:11},
+  {name:'2 Kings',cdnName:'2kings',chapters:25,bookNumber:12},
+  {name:'1 Chronicles',cdnName:'1chronicles',chapters:29,bookNumber:13},
+  {name:'2 Chronicles',cdnName:'2chronicles',chapters:36,bookNumber:14},
+  {name:'Ezra',cdnName:'ezra',chapters:10,bookNumber:15},
+  {name:'Nehemiah',cdnName:'nehemiah',chapters:13,bookNumber:16},
+  {name:'Tobit',cdnName:'tobit',chapters:14,bookNumber:68,deuterocanonical:true},
+  {name:'Judith',cdnName:'judith',chapters:16,bookNumber:69,deuterocanonical:true},
+  {name:'Wisdom',cdnName:'wisdom',chapters:19,bookNumber:70,deuterocanonical:true},
+  {name:'Sirach',cdnName:'sirach',chapters:51,bookNumber:71,deuterocanonical:true},
+  {name:'Baruch',cdnName:'baruch',chapters:6,bookNumber:73,deuterocanonical:true},
+  {name:'1 Maccabees',cdnName:'1maccabees',chapters:16,bookNumber:74,deuterocanonical:true},
+  {name:'2 Maccabees',cdnName:'2maccabees',chapters:15,bookNumber:75,deuterocanonical:true},
+  {name:'1 Esdras',cdnName:'1esdras',chapters:9,bookNumber:67,deuterocanonical:true},
+  {name:'3 Maccabees',cdnName:'3maccabees',chapters:7,bookNumber:76,deuterocanonical:true},
+  {name:'Esther',cdnName:'esther',chapters:10,bookNumber:17},
+  {name:'Job',cdnName:'job',chapters:42,bookNumber:18},
+  {name:'Psalms',cdnName:'psalms',chapters:150,bookNumber:19},
+  {name:'Proverbs',cdnName:'proverbs',chapters:31,bookNumber:20},
+  {name:'Ecclesiastes',cdnName:'ecclesiastes',chapters:12,bookNumber:21},
+  {name:'Song of Solomon',cdnName:'songofsolomon',chapters:8,bookNumber:22},
+  {name:'Isaiah',cdnName:'isaiah',chapters:66,bookNumber:23},
+  {name:'Jeremiah',cdnName:'jeremiah',chapters:52,bookNumber:24},
+  {name:'Lamentations',cdnName:'lamentations',chapters:5,bookNumber:25},
+  {name:'Ezekiel',cdnName:'ezekiel',chapters:48,bookNumber:26},
+  {name:'Daniel',cdnName:'daniel',chapters:12,bookNumber:27},
+  {name:'Hosea',cdnName:'hosea',chapters:14,bookNumber:28},
+  {name:'Joel',cdnName:'joel',chapters:3,bookNumber:29},
+  {name:'Amos',cdnName:'amos',chapters:9,bookNumber:30},
+  {name:'Obadiah',cdnName:'obadiah',chapters:1,bookNumber:31},
+  {name:'Jonah',cdnName:'jonah',chapters:4,bookNumber:32},
+  {name:'Micah',cdnName:'micah',chapters:7,bookNumber:33},
+  {name:'Nahum',cdnName:'nahum',chapters:3,bookNumber:34},
+  {name:'Habakkuk',cdnName:'habakkuk',chapters:3,bookNumber:35},
+  {name:'Zephaniah',cdnName:'zephaniah',chapters:3,bookNumber:36},
+  {name:'Haggai',cdnName:'haggai',chapters:2,bookNumber:37},
+  {name:'Zechariah',cdnName:'zechariah',chapters:14,bookNumber:38},
+  {name:'Malachi',cdnName:'malachi',chapters:4,bookNumber:39},
+  {name:'Matthew',cdnName:'matthew',chapters:28,bookNumber:40},
+  {name:'Mark',cdnName:'mark',chapters:16,bookNumber:41},
+  {name:'Luke',cdnName:'luke',chapters:24,bookNumber:42},
+  {name:'John',cdnName:'john',chapters:21,bookNumber:43},
+  {name:'Acts',cdnName:'acts',chapters:28,bookNumber:44},
+  {name:'Romans',cdnName:'romans',chapters:16,bookNumber:45},
+  {name:'1 Corinthians',cdnName:'1corinthians',chapters:16,bookNumber:46},
+  {name:'2 Corinthians',cdnName:'2corinthians',chapters:13,bookNumber:47},
+  {name:'Galatians',cdnName:'galatians',chapters:6,bookNumber:48},
+  {name:'Ephesians',cdnName:'ephesians',chapters:6,bookNumber:49},
+  {name:'Philippians',cdnName:'philippians',chapters:4,bookNumber:50},
+  {name:'Colossians',cdnName:'colossians',chapters:4,bookNumber:51},
+  {name:'1 Thessalonians',cdnName:'1thessalonians',chapters:5,bookNumber:52},
+  {name:'2 Thessalonians',cdnName:'2thessalonians',chapters:3,bookNumber:53},
+  {name:'1 Timothy',cdnName:'1timothy',chapters:6,bookNumber:54},
+  {name:'2 Timothy',cdnName:'2timothy',chapters:4,bookNumber:55},
+  {name:'Titus',cdnName:'titus',chapters:3,bookNumber:56},
+  {name:'Philemon',cdnName:'philemon',chapters:1,bookNumber:57},
+  {name:'Hebrews',cdnName:'hebrews',chapters:13,bookNumber:58},
+  {name:'James',cdnName:'james',chapters:5,bookNumber:59},
+  {name:'1 Peter',cdnName:'1peter',chapters:5,bookNumber:60},
+  {name:'2 Peter',cdnName:'2peter',chapters:3,bookNumber:61},
+  {name:'1 John',cdnName:'1john',chapters:5,bookNumber:62},
+  {name:'2 John',cdnName:'2john',chapters:1,bookNumber:63},
+  {name:'3 John',cdnName:'3john',chapters:1,bookNumber:64},
+  {name:'Jude',cdnName:'jude',chapters:1,bookNumber:65},
+  {name:'Revelation',cdnName:'revelation',chapters:22,bookNumber:66},
+]
+
+// Mapping of Deuterocanonical books to their bolls.life book numbers (for Orthodox LXXE)
+const ORTHODOX_DEUTEROCANONICAL_BOOK_MAP = {
   'tobit': 68,
   'judith': 69,
-  '1maccabees': 70,
-  '2maccabees': 71,
+  'wisdom': 70,
+  'sirach': 71,
+  'baruch': 73,
+  '1maccabees': 74,
+  '2maccabees': 75,
+  '1esdras': 67,
+  '3maccabees': 76,
+}
+
+// Mapping of Deuterocanonical books to their bolls.life book numbers (for Catholic DRA)
+const CATHOLIC_DEUTEROCANONICAL_BOOK_MAP = {
+  'tobit': 68,
+  'judith': 69,
   'wisdom': 72,
   'sirach': 73,
   'baruch': 74,
+  '1maccabees': 70,
+  '2maccabees': 71,
 }
 
 // Mapping of Deuterocanonical CDN names to their local JSON data
@@ -262,6 +441,7 @@ export default function BibleReader({ open, onModeChange }) {
   const [showBookPicker, setShowBookPicker] = useState(false)
   const [testamentFilter, setTestamentFilter] = useState('old')
   const [bibleCategory, setBibleCategory] = useState('protestant')
+  const [currentBooks, setCurrentBooks] = useState(PROTESTANT_BOOKS)
   const [showChapterPicker, setShowChapterPicker] = useState(false)
   const [showTranslationPicker, setShowTranslationPicker] = useState(false)
   const [translationDropdownRect, setTranslationDropdownRect] = useState(null)
@@ -275,14 +455,19 @@ export default function BibleReader({ open, onModeChange }) {
   const [showHindiBiblePicker, setShowHindiBiblePicker] = useState(false)
   const [cachedHindiCatalogId, setCachedHindiCatalogId] = useState(null)
   const [hindiSavedBibleId, setHindiSavedBibleId] = useState(null)
+  const [immersiveMode, setImmersiveMode] = useState(false)
+  const [showImmersiveHint, setShowImmersiveHint] = useState(false)
+  const verseContainerRef = useRef(null)
+  const prefetchedChaptersRef = useRef(new Set())
 
   const selectedBook = useMemo(() => {
-    const book = BOOKS[bookIndex];
+    const book = currentBooks[bookIndex];
     if (book) {
-      return { ...book, bookNumber: bookIndex + 1 };
+      // bookNumber is already set correctly in each denomination's book list
+      return book;
     }
     return null;
-  }, [bookIndex]);
+  }, [bookIndex, currentBooks]);
 
   const getBibleSlug = resolveGetBibleTranslationId(uiLang, activeTranslationId)
   const showEnglishBibleVersions = uiLang === 'en'
@@ -369,6 +554,67 @@ export default function BibleReader({ open, onModeChange }) {
     }
 
     try {
+      // For LXXE (Orthodox), always route to bolls.life API
+      if (activeTranslationId === 'lxxe') {
+        if (isDeuterocanonicalBook) {
+          // Use specific bolls.life book numbers for Deuterocanonical books
+          const bollsBookNumber = ORTHODOX_DEUTEROCANONICAL_BOOK_MAP[currentBook.cdnName]
+          console.log(`[BibleReader] LXXE Deuterocanonical book fetch: book=${currentBook.cdnName}, bollsBookNumber=${bollsBookNumber}, chapter=${currentChapter}`)
+          if (bollsBookNumber) {
+            const bollsUrl = `https://bolls.life/get-text/LXXE/${bollsBookNumber}/${currentChapter}/`
+            console.log(`[BibleReader] LXXE Deuterocanonical fetch URL: ${bollsUrl}`)
+            const response = await fetch(bollsUrl)
+            console.log(`[BibleReader] LXXE Deuterocanonical response status: ${response.status}, ok: ${response.ok}`)
+            if (response.ok) {
+              const data = await response.json()
+              console.log(`[BibleReader] LXXE Deuterocanonical raw response:`, data)
+              if (Array.isArray(data) && data.length) {
+                const normalized = data.map((v) => ({
+                  verse: v.verse,
+                  text: prepareBibleReaderVerseText(v.text),
+                }))
+                setVerses(normalized)
+                setIsCurrentChapterOffline(true)
+                setLoading(false)
+                return
+              }
+            }
+            console.log('[BibleReader] bolls.life returned non-OK for LXXE Deuterocanonical book')
+          } else {
+            console.log(`[BibleReader] No bollsBookNumber found for ${currentBook.cdnName} in ORTHODOX_DEUTEROCANONICAL_BOOK_MAP`)
+          }
+        } else {
+          // Use regular book number for non-Deuterocanonical books
+          console.log(`[BibleReader] LXXE regular book fetch: book=${currentBook.cdnName}, bookNumber=${currentBook.bookNumber}, chapter=${currentChapter}`)
+          const bollsUrl = `https://bolls.life/get-text/LXXE/${currentBook.bookNumber}/${currentChapter}/`
+          console.log(`[BibleReader] LXXE regular fetch URL: ${bollsUrl}`)
+          const response = await fetch(bollsUrl)
+          console.log(`[BibleReader] LXXE regular response status: ${response.status}, ok: ${response.ok}`)
+          if (response.ok) {
+            const data = await response.json()
+            console.log(`[BibleReader] LXXE regular raw response:`, data)
+            if (Array.isArray(data) && data.length) {
+              const normalized = data.map((v) => ({
+                verse: v.verse,
+                text: prepareBibleReaderVerseText(v.text),
+              }))
+              setVerses(normalized)
+              setIsCurrentChapterOffline(true)
+              setLoading(false)
+              return
+            }
+          }
+          console.log('[BibleReader] bolls.life returned non-OK for LXXE book')
+        }
+        // If bolls.life fails for LXXE, show error and don't fall through to other APIs
+        if (!cancelled) {
+          setVerses([{ verse: 1, text: 'Unable to load chapter. Please try again.' }])
+          setIsCurrentChapterOffline(false)
+          setLoading(false)
+        }
+        return
+      }
+
       // For Deuterocanonical books with DRA or Catholic translations, use local JSON
       if (isDeuterocanonicalBook && (isDraTranslation || activeTranslationId === 'cpdv')) {
         const localData = DEUTEROCANONICAL_JSON_MAP[currentBook.cdnName]
@@ -397,15 +643,15 @@ export default function BibleReader({ open, onModeChange }) {
         try {
           if (isDraTranslation && isDeuterocanonicalBook) {
             // For Deuterocanonical books with DRA, use specific bolls.life book numbers
-            const bollsBookNumber = DEUTEROCANONICAL_BOOK_MAP[currentBook.cdnName]
+            const bollsBookNumber = CATHOLIC_DEUTEROCANONICAL_BOOK_MAP[currentBook.cdnName]
             if (bollsBookNumber) {
               console.log(`[BibleReader] Fetching Deuterocanonical book from bolls.life: DRA/${bollsBookNumber}/${currentChapter}`)
               const bollsUrl = `https://bolls.life/get-text/DRA/${bollsBookNumber}/${currentChapter}/`
               const response = await fetch(bollsUrl)
               if (response.ok) {
                 const data = await response.json()
-                if (data?.verses?.length) {
-                  bollsRows = data.verses
+                if (Array.isArray(data) && data.length) {
+                  bollsRows = data
                 }
               } else {
                 console.log('[BibleReader] bolls.life returned non-OK for Deuterocanonical book')
@@ -675,22 +921,24 @@ export default function BibleReader({ open, onModeChange }) {
     }
   }, [open, uiLang])
 
+  const OLD_TESTAMENT_LAST_INDEX = useMemo(() => {
+    // Find the index of Matthew (first NT book) in currentBooks
+    const matthewIndex = currentBooks.findIndex(book => book.cdnName === 'matthew')
+    return matthewIndex !== -1 ? matthewIndex - 1 : currentBooks.length - 1
+  }, [currentBooks])
+
   const filteredBooks = useMemo(() => {
+    // For Protestant, Catholic, and Orthodox, each has its own book list
+    // No filtering needed since each denomination has its own complete list
     const start = testamentFilter === 'old' ? 0 : OLD_TESTAMENT_LAST_INDEX + 1
-    const end = testamentFilter === 'old' ? OLD_TESTAMENT_LAST_INDEX : BOOKS.length - 1
-    const booksInTestament = BOOKS.slice(start, end + 1)
+    const end = testamentFilter === 'old' ? OLD_TESTAMENT_LAST_INDEX : currentBooks.length - 1
+    const booksInTestament = currentBooks.slice(start, end + 1)
     
-    // Filter out Deuterocanonical books if Protestant is selected
-    // Catholic and Orthodox both include Deuterocanonical books
-    const filtered = bibleCategory === 'catholic' || bibleCategory === 'orthodox'
-      ? booksInTestament 
-      : booksInTestament.filter(book => !book.deuterocanonical)
-    
-    return filtered.map((book, offset) => ({
+    return booksInTestament.map((book, offset) => ({
       book,
       index: start + offset,
     }))
-  }, [testamentFilter, bibleCategory])
+  }, [testamentFilter, currentBooks, OLD_TESTAMENT_LAST_INDEX])
 
   const translationOptions = useMemo(
     () =>
@@ -729,10 +977,27 @@ export default function BibleReader({ open, onModeChange }) {
   useEffect(() => {
     if (activeTranslationId === 'cpdv' || activeTranslationId === 'dra') {
       setBibleCategory('catholic')
-    } else if (activeTranslationId === 'bst') {
+    } else if (activeTranslationId === 'lxxe') {
       setBibleCategory('orthodox')
+    } else {
+      setBibleCategory('protestant')
     }
   }, [activeTranslationId])
+
+  // Switch book lists when denomination changes and reset to Genesis chapter 1
+  useEffect(() => {
+    if (bibleCategory === 'catholic') {
+      setCurrentBooks(CATHOLIC_BOOKS)
+    } else if (bibleCategory === 'orthodox') {
+      setCurrentBooks(ORTHODOX_BOOKS)
+    } else {
+      setCurrentBooks(PROTESTANT_BOOKS)
+    }
+    // Reset to Genesis chapter 1 when denomination changes
+    setBookIndex(0)
+    setChapter(1)
+    setVerses([])
+  }, [bibleCategory])
 
 
   const measureTranslationDropdownPosition = useCallback(() => {
@@ -794,10 +1059,52 @@ export default function BibleReader({ open, onModeChange }) {
     loadChapter(null, selectedBook, chapter)
   }, [open, selectedBook, chapter, activeTranslationId])
 
+  // Pre-fetch next chapter in background when current chapter loads
+  useEffect(() => {
+    if (!open || !selectedBook || loading || !chapter) return
+
+    const prefetchKey = `${activeTranslationId}-${selectedBook.bookNumber}-${chapter}`
+    if (prefetchedChaptersRef.current.has(prefetchKey)) return
+
+    prefetchedChaptersRef.current.add(prefetchKey)
+
+    const prefetchNextChapter = async () => {
+      const maxChapter = selectedBook.chapters
+      let nextBook = selectedBook
+      let nextChapter = chapter + 1
+
+      if (nextChapter > maxChapter && bookIndex < currentBooks.length - 1) {
+        nextBook = currentBooks[bookIndex + 1]
+        nextChapter = 1
+      }
+
+      if (nextBook && nextChapter <= nextBook.chapters) {
+        const nextPrefetchKey = `${activeTranslationId}-${nextBook.bookNumber}-${nextChapter}`
+        if (!prefetchedChaptersRef.current.has(nextPrefetchKey)) {
+          try {
+            const url = `https://bible-api.com/${nextBook.cdnName}+${nextChapter}?translation=${activeTranslationId}`
+            await fetch(url).then(r => r.json())
+            prefetchedChaptersRef.current.add(nextPrefetchKey)
+          } catch {
+            // Silent fail for pre-fetch
+          }
+        }
+      }
+    }
+
+    prefetchNextChapter()
+  }, [open, selectedBook, chapter, loading, activeTranslationId, bookIndex, currentBooks])
+
+  useEffect(() => {
+    if (verseContainerRef.current) {
+      verseContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [chapter])
+
   useEffect(() => {
     if (!showBookPicker) return
     setTestamentFilter(bookIndex <= OLD_TESTAMENT_LAST_INDEX ? 'old' : 'new')
-  }, [showBookPicker, bookIndex])
+  }, [showBookPicker, bookIndex, OLD_TESTAMENT_LAST_INDEX])
 
   useEffect(() => {
     if (!open) return
@@ -955,7 +1262,7 @@ export default function BibleReader({ open, onModeChange }) {
     setShowNoteViewer(true)
   }
 
-  const resolveBookFromCdn = (cdnName) => BOOKS.find((b) => b.cdnName === cdnName)
+  const resolveBookFromCdn = (cdnName) => currentBooks.find((b) => b.cdnName === cdnName)
 
   const fetchReferenceVerseText = async (ref) => {
     try {
@@ -997,7 +1304,7 @@ export default function BibleReader({ open, onModeChange }) {
                 ? `${book?.name || ref.book} ${ref.chapter}:${ref.verseStart}`
                 : `${book?.name || ref.book} ${ref.chapter}:${ref.verseStart}-${ref.chapterEnd}:${ref.verseEnd}`,
             text: text || 'Verse text unavailable for this translation.',
-            bookIndex: book ? BOOKS.findIndex((b) => b.cdnName === ref.book) : -1,
+            bookIndex: book ? currentBooks.findIndex((b) => b.cdnName === ref.book) : -1,
           }
         }),
       )
@@ -1160,7 +1467,7 @@ export default function BibleReader({ open, onModeChange }) {
         ZONE 2 — Chapter header + Read/Listen (fixed below app bar)
       */}
       <div
-        className="bible-reader-header"
+        className="bible-reader-header home-gold-glass"
         style={{
           position: 'fixed',
           top: APP_BAR_TOP_OFFSET,
@@ -1168,47 +1475,49 @@ export default function BibleReader({ open, onModeChange }) {
           right: 0,
           height: 'auto',
           zIndex: 90,
-          background: 'rgba(6, 15, 38, 0.75)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
           boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'flex-start',
-          paddingTop: 12,
-          paddingBottom: 12,
+          paddingTop: 16,
+          paddingBottom: 16,
           paddingLeft: 20,
           paddingRight: 20,
+          transition: 'opacity 0.3s ease',
+          opacity: immersiveMode ? 0 : 1,
         }}
       >
         <div style={{ maxWidth: '680px', margin: '0 auto', width: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '0 16px' }}>
             <button
               type="button"
-              className="bible-nav-arrow"
+              className="home-gold-glass rounded-full px-4 py-2"
               onClick={() => {
                 if (chapter > 1) {
                   setChapter(chapter - 1)
                 } else if (bookIndex > 0) {
                   setBookIndex(bookIndex - 1)
-                  setChapter(BOOKS[bookIndex - 1]?.chapters || 1)
+                  setChapter(currentBooks[bookIndex - 1]?.chapters || 1)
                 }
               }}
               disabled={bookIndex === 0 && chapter === 1}
               style={{
-                background: 'rgba(240, 192, 64, 0.1)',
-                border: '1px solid rgba(240, 192, 64, 0.3)',
-                borderRadius: '12px',
-                color: dayTheme ? '#D4A843' : '#F0C040',
-                borderColor: dayTheme ? '#D4A843' : 'rgba(240, 192, 64, 0.3)',
-                fontSize: '24px',
+                color: dayTheme ? '#8B6914' : '#D4A843',
+                fontSize: dayTheme ? '18px' : '20px',
                 cursor: (bookIndex === 0 && chapter === 1) ? 'not-allowed' : 'pointer',
-                padding: '6px 12px',
                 lineHeight: '1',
                 opacity: (bookIndex === 0 && chapter === 1) ? 0.3 : 1,
                 transition: 'all 0.2s ease',
                 alignSelf: 'center',
+                border: dayTheme ? '1px solid rgba(212,175,55,0.4)' : 'none',
+                background: dayTheme ? 'rgba(212,175,55,0.15)' : 'transparent',
+                borderRadius: '999px',
+                width: dayTheme ? '36px' : undefined,
+                height: dayTheme ? '36px' : undefined,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
               ←
@@ -1221,13 +1530,15 @@ export default function BibleReader({ open, onModeChange }) {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: '#ffffff',
-                  fontSize: '28px',
-                  fontWeight: 600,
+                  color: dayTheme ? '#2C1810' : '#ffffff',
+                  fontSize: '32px',
+                  fontWeight: 700,
                   cursor: 'pointer',
                   padding: '0 8px',
                   letterSpacing: '-0.02em',
                   lineHeight: '1.1',
+                  fontFamily: 'Georgia, serif',
+                  textShadow: dayTheme ? '0 1px 3px rgba(180,120,60,0.15)' : 'none',
                 }}
               >
                 {selectedBook ? bookDisplayName(selectedBook) : t('bible.loading')}
@@ -1238,12 +1549,14 @@ export default function BibleReader({ open, onModeChange }) {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: '#F0C040',
-                  fontSize: '16px',
-                  fontWeight: 600,
+                  color: dayTheme ? 'rgba(160,100,40,0.8)' : 'rgba(251, 191, 36, 0.7)',
+                  fontSize: '13px',
+                  fontWeight: 400,
                   cursor: 'pointer',
                   padding: '0 8px',
                   lineHeight: '1.2',
+                  fontStyle: 'italic',
+                  fontFamily: dayTheme ? 'Georgia, serif' : undefined,
                 }}
               >
                 {t('bible.chapter', { n: chapter })}
@@ -1252,29 +1565,32 @@ export default function BibleReader({ open, onModeChange }) {
             
             <button
               type="button"
-              className="bible-nav-arrow"
+              className="home-gold-glass rounded-full px-4 py-2"
               onClick={() => {
                 if (chapter < maxChapter) {
                   setChapter(chapter + 1)
-                } else if (bookIndex < BOOKS.length - 1) {
+                } else if (bookIndex < currentBooks.length - 1) {
                   setBookIndex(bookIndex + 1)
                   setChapter(1)
                 }
               }}
-              disabled={bookIndex === BOOKS.length - 1 && chapter === maxChapter}
+              disabled={bookIndex === currentBooks.length - 1 && chapter === maxChapter}
               style={{
-                background: 'rgba(240, 192, 64, 0.1)',
-                border: '1px solid rgba(240, 192, 64, 0.3)',
-                borderRadius: '12px',
-                color: dayTheme ? '#D4A843' : '#F0C040',
-                borderColor: dayTheme ? '#D4A843' : 'rgba(240, 192, 64, 0.3)',
-                fontSize: '24px',
-                cursor: (bookIndex === BOOKS.length - 1 && chapter === maxChapter) ? 'not-allowed' : 'pointer',
-                padding: '6px 12px',
+                color: dayTheme ? '#8B6914' : '#D4A843',
+                fontSize: dayTheme ? '18px' : '20px',
+                cursor: (bookIndex === currentBooks.length - 1 && chapter === maxChapter) ? 'not-allowed' : 'pointer',
                 lineHeight: '1',
-                opacity: (bookIndex === BOOKS.length - 1 && chapter === maxChapter) ? 0.3 : 1,
+                opacity: (bookIndex === currentBooks.length - 1 && chapter === maxChapter) ? 0.3 : 1,
                 transition: 'all 0.2s ease',
                 alignSelf: 'center',
+                border: dayTheme ? '1px solid rgba(212,175,55,0.4)' : 'none',
+                background: dayTheme ? 'rgba(212,175,55,0.15)' : 'transparent',
+                borderRadius: '999px',
+                width: dayTheme ? '36px' : undefined,
+                height: dayTheme ? '36px' : undefined,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
               →
@@ -1295,18 +1611,23 @@ export default function BibleReader({ open, onModeChange }) {
                     }
                   }}
                   style={{
-                    background: bibleCategory === 'protestant' ? 'rgba(240, 192, 64, 0.25)' : 'rgba(240, 192, 64, 0.08)',
-                    border: bibleCategory === 'protestant' ? '1.5px solid rgba(240, 192, 64, 0.5)' : '1px solid rgba(240, 192, 64, 0.25)',
-                    borderRadius: '50px',
-                    color: bibleCategory === 'protestant' ? '#D4A843' : (dayTheme ? 'rgba(212, 168, 67, 0.7)' : 'rgba(255, 255, 255, 0.5)'),
-                    fontSize: '10px',
+                    background: bibleCategory === 'protestant'
+                      ? 'linear-gradient(135deg, #C8960C, #D4AF37)'
+                      : (dayTheme ? 'transparent' : 'rgba(255, 255, 255, 0.05)'),
+                    border: bibleCategory === 'protestant'
+                      ? 'none'
+                      : (dayTheme ? 'none' : '1px solid rgba(255, 255, 255, 0.1)'),
+                    borderRadius: '999px',
+                    color: bibleCategory === 'protestant' ? '#1A0F00' : (dayTheme ? 'rgba(100,70,20,0.7)' : 'rgba(255, 255, 255, 0.6)'),
+                    fontSize: '11px',
                     fontWeight: bibleCategory === 'protestant' ? 700 : 500,
                     cursor: 'pointer',
-                    padding: '0 10px',
-                    height: '36px',
+                    padding: '6px 16px',
+                    height: '32px',
                     display: 'flex',
                     alignItems: 'center',
                     transition: 'all 0.2s ease',
+                    boxShadow: bibleCategory === 'protestant' ? '0 2px 8px rgba(212,175,55,0.4)' : 'none',
                   }}
                 >
                   Protestant
@@ -1322,18 +1643,23 @@ export default function BibleReader({ open, onModeChange }) {
                     }
                   }}
                   style={{
-                    background: bibleCategory === 'catholic' ? 'rgba(192, 64, 64, 0.25)' : 'rgba(192, 64, 64, 0.08)',
-                    border: bibleCategory === 'catholic' ? '1.5px solid rgba(192, 64, 64, 0.5)' : '1px solid rgba(192, 64, 64, 0.25)',
-                    borderRadius: '50px',
-                    color: bibleCategory === 'catholic' ? '#E06666' : (dayTheme ? 'rgba(224, 102, 102, 0.7)' : 'rgba(255, 255, 255, 0.5)'),
-                    fontSize: '10px',
+                    background: bibleCategory === 'catholic'
+                      ? 'linear-gradient(135deg, #C8960C, #D4AF37)'
+                      : (dayTheme ? 'transparent' : 'rgba(255, 255, 255, 0.05)'),
+                    border: bibleCategory === 'catholic'
+                      ? 'none'
+                      : (dayTheme ? 'none' : '1px solid rgba(255, 255, 255, 0.1)'),
+                    borderRadius: '999px',
+                    color: bibleCategory === 'catholic' ? '#1A0F00' : (dayTheme ? 'rgba(100,70,20,0.7)' : 'rgba(255, 255, 255, 0.6)'),
+                    fontSize: '11px',
                     fontWeight: bibleCategory === 'catholic' ? 700 : 500,
                     cursor: 'pointer',
-                    padding: '0 10px',
-                    height: '36px',
+                    padding: '6px 16px',
+                    height: '32px',
                     display: 'flex',
                     alignItems: 'center',
                     transition: 'all 0.2s ease',
+                    boxShadow: bibleCategory === 'catholic' ? '0 2px 8px rgba(212,175,55,0.4)' : 'none',
                   }}
                 >
                   Catholic
@@ -1349,18 +1675,23 @@ export default function BibleReader({ open, onModeChange }) {
                     }
                   }}
                   style={{
-                    background: bibleCategory === 'orthodox' ? 'rgba(64, 128, 192, 0.25)' : 'rgba(64, 128, 192, 0.08)',
-                    border: bibleCategory === 'orthodox' ? '1.5px solid rgba(64, 128, 192, 0.5)' : '1px solid rgba(64, 128, 192, 0.25)',
-                    borderRadius: '50px',
-                    color: bibleCategory === 'orthodox' ? '#6699CC' : (dayTheme ? 'rgba(102, 153, 204, 0.7)' : 'rgba(255, 255, 255, 0.5)'),
-                    fontSize: '10px',
+                    background: bibleCategory === 'orthodox'
+                      ? 'linear-gradient(135deg, #C8960C, #D4AF37)'
+                      : (dayTheme ? 'transparent' : 'rgba(255, 255, 255, 0.05)'),
+                    border: bibleCategory === 'orthodox'
+                      ? 'none'
+                      : (dayTheme ? 'none' : '1px solid rgba(255, 255, 255, 0.1)'),
+                    borderRadius: '999px',
+                    color: bibleCategory === 'orthodox' ? '#1A0F00' : (dayTheme ? 'rgba(100,70,20,0.7)' : 'rgba(255, 255, 255, 0.6)'),
+                    fontSize: '11px',
                     fontWeight: bibleCategory === 'orthodox' ? 700 : 500,
                     cursor: 'pointer',
-                    padding: '0 10px',
-                    height: '36px',
+                    padding: '6px 16px',
+                    height: '32px',
                     display: 'flex',
                     alignItems: 'center',
                     transition: 'all 0.2s ease',
+                    boxShadow: bibleCategory === 'orthodox' ? '0 2px 8px rgba(212,175,55,0.4)' : 'none',
                   }}
                 >
                   Orthodox
@@ -1464,15 +1795,11 @@ export default function BibleReader({ open, onModeChange }) {
             
             <button
               type="button"
-              className="bible-settings-btn"
+              className="home-gold-glass rounded-full"
               onClick={() => setShowReadingControls(true)}
               style={{
-                background: 'rgba(240, 192, 64, 0.1)',
-                border: '1px solid rgba(240, 192, 64, 0.4)',
-                borderRadius: '50px',
-                color: dayTheme ? '#D4A843' : '#F0C040',
-                borderColor: dayTheme ? '#D4A843' : 'rgba(240, 192, 64, 0.4)',
-                fontSize: '16px',
+                color: '#D4A843',
+                fontSize: '18px',
                 cursor: 'pointer',
                 width: '40px',
                 height: '40px',
@@ -1480,6 +1807,8 @@ export default function BibleReader({ open, onModeChange }) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 transition: 'all 0.2s ease',
+                border: 'none',
+                background: 'transparent',
               }}
               aria-label="Reading settings"
             >
@@ -1491,6 +1820,16 @@ export default function BibleReader({ open, onModeChange }) {
 
       {/* ZONE 3 — Scrollable Bible text only */}
       <div
+        ref={verseContainerRef}
+        onClick={() => {
+          if (!immersiveMode) {
+            setImmersiveMode(true)
+            setShowImmersiveHint(true)
+            setTimeout(() => setShowImmersiveHint(false), 2000)
+          } else {
+            setImmersiveMode(false)
+          }
+        }}
         style={{
           position: 'fixed',
           top: BIBLE_SCROLL_TOP_OFFSET,
@@ -1499,25 +1838,43 @@ export default function BibleReader({ open, onModeChange }) {
           right: 0,
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch',
-          padding: '24px 20px',
+          paddingTop: '8px',
+          paddingBottom: '0',
+          paddingLeft: '16px',
+          paddingRight: '16px',
           zIndex: 40,
           boxSizing: 'border-box',
           background: 'transparent',
         }}
       >
-        <div style={{ maxWidth: '680px', margin: '0 auto', width: '100%', animation: 'fadeIn 0.6s ease-out' }}>
+        <div style={{ maxWidth: '680px', margin: '0 auto', width: '100%', animation: 'fadeIn 0.6s ease-out', padding: '0', minHeight: '50vh' }}>
           {loading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', paddingBottom: '80px', padding: '80px 24px' }}>
-              <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '15px' }}>{t('bible.loading')}</p>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '50vh', paddingBottom: '80px', padding: '80px 24px' }}>
+              {/* Gold skeleton loading state */}
+              {[...Array(8)].map((_, i) => (
+                <div
+                  key={i}
+                  style={{
+                    width: `${60 + Math.random() * 30}%`,
+                    height: '12px',
+                    background: 'rgba(212, 168, 67, 0.2)',
+                    borderRadius: '4px',
+                    marginBottom: '12px',
+                    animation: 'pulse 1.5s ease-in-out infinite',
+                    animationDelay: `${i * 0.1}s`,
+                  }}
+                />
+              ))}
             </div>
           ) : (
             <div
               className="bible-verse-well"
               style={{
-                color: 'var(--bible-verse-text)',
+                color: dayTheme ? '#1C1008' : 'rgba(255, 255, 255, 0.92)',
                 fontSize: `${fontSize}px`,
-                lineHeight: '1.8',
-                fontFamily: 'Lora, serif',
+                lineHeight: dayTheme ? '1.75' : '1.9',
+                fontFamily: 'Georgia, serif',
+                minHeight: '50vh',
               }}
             >
               {verses.map((v) => (
@@ -1530,36 +1887,48 @@ export default function BibleReader({ open, onModeChange }) {
                   return (
                 <p
                   key={v.verse}
-                  onClick={(e) => openVerseMenu(v.verse, e.clientX, e.clientY)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    openVerseMenu(v.verse, e.clientX, e.clientY)
+                  }}
                   style={{
-                    marginBottom: '10px',
+                    marginBottom: dayTheme ? '8px' : '16px',
                     textAlign: 'left',
                     cursor: 'pointer',
-                    padding: '14px 18px',
-                    borderRadius: '12px',
-                    background: highlightsByVerse[String(v.verse)] || isJumpHighlight
-                      ? 'rgba(212, 168, 67, 0.15)'
-                      : 'rgba(10, 20, 50, 0.6)',
-                    color: 'rgba(255, 255, 255, 0.9)',
-                    borderLeft: highlightsByVerse[String(v.verse)] || isJumpHighlight
-                      ? '3px solid rgba(212, 168, 67, 0.6)'
-                      : '3px solid transparent',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
+                    background: dayTheme
+                      ? 'transparent'
+                      : (highlightsByVerse[String(v.verse)] || isJumpHighlight ? 'rgba(251, 191, 36, 0.08)' : 'transparent'),
+                    color: dayTheme ? '#1C1008' : 'rgba(255, 255, 255, 0.92)',
+                    borderLeft: dayTheme
+                      ? (highlightsByVerse[String(v.verse)] || isJumpHighlight ? '3px solid rgba(251,191,36,0.6)' : 'none')
+                      : (highlightsByVerse[String(v.verse)] || isJumpHighlight ? '3px solid rgba(251, 191, 36, 0.6)' : 'none'),
+                    borderTop: 'none',
+                    borderRight: 'none',
+                    borderBottom: 'none',
+                    paddingTop: '4px',
+                    paddingBottom: '4px',
+                    paddingLeft: (highlightsByVerse[String(v.verse)] || isJumpHighlight) ? '12px' : '0',
+                    paddingRight: '0',
+                    borderRadius: dayTheme ? '0' : (highlightsByVerse[String(v.verse)] || isJumpHighlight ? '0' : '0'),
+                    boxShadow: 'none',
+                    backdropFilter: 'none',
+                    WebkitBackdropFilter: 'none',
                     transition: 'all 0.2s ease',
                   }}
                 >
                   <sup
                     style={{
-                      color: '#F0C040',
+                      color: dayTheme ? '#C8960C' : '#FBBF24',
                       fontSize: '11px',
                       fontWeight: 700,
-                      marginRight: '5px',
+                      marginRight: '6px',
                       verticalAlign: 'super',
+                      fontFamily: dayTheme ? 'Georgia, serif' : undefined,
                     }}
                   >
                     {v.verse}
                   </sup>
-                  {v.text}
+                  {cleanVerseText(v.text)}
                   {notesByVerse[String(v.verse)] ? (
                     <button
                       type="button"
@@ -1568,12 +1937,12 @@ export default function BibleReader({ open, onModeChange }) {
                         openNoteViewer(v.verse)
                       }}
                       style={{
-                        background: 'rgba(240, 192, 64, 0.15)',
-                        border: '1px solid rgba(240, 192, 64, 0.3)',
+                        background: 'rgba(251, 191, 36, 0.15)',
+                        border: '1px solid rgba(251, 191, 36, 0.3)',
                         cursor: 'pointer',
                         padding: '4px 10px',
                         margin: '0 0 0 8px',
-                        color: '#F0C040',
+                        color: '#FBBF24',
                         fontSize: '12px',
                         fontWeight: 600,
                         borderRadius: '99px',
@@ -2132,147 +2501,171 @@ export default function BibleReader({ open, onModeChange }) {
           )
         : null}
 
-      {/* ZONE 4 — Chapter / font nav (fixed above bottom tab bar). ZONE 5 — tab bar: fixed in App. */}
+      {/* ZONE 4 — Chapter / font nav (floating pill above bottom tab bar). ZONE 5 — tab bar: fixed in App. */}
       <div
-        className="bible-reader-bottom-controls"
+        className="bible-reader-bottom-controls home-gold-glass rounded-full"
         style={{
           position: 'fixed',
-          bottom: BOTTOM_TAB_BAR_PX,
-          left: 0,
-          right: 0,
-          height: BOTTOM_CHROME_NAV_PX,
+          bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
+          left: 16,
+          right: 16,
+          height: 'auto',
           zIndex: 90,
-          background: 'var(--bible-nav-bar-bg)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          borderTop: '1px solid var(--glass-border)',
+          paddingTop: '8px',
+          paddingBottom: '8px',
+          paddingLeft: '24px',
+          paddingRight: '24px',
           boxSizing: 'border-box',
           display: 'flex',
           alignItems: 'center',
-          padding: '0 16px',
+          justifyContent: 'space-between',
+          gap: '12px',
+          maxWidth: '680px',
+          margin: '0 auto',
+          background: dayTheme ? 'rgba(255,248,230,0.92)' : undefined,
+          backdropFilter: dayTheme ? 'blur(16px)' : undefined,
+          WebkitBackdropFilter: dayTheme ? 'blur(16px)' : undefined,
+          border: dayTheme ? '1px solid rgba(212,175,55,0.35)' : undefined,
+          borderRadius: '999px',
+          boxShadow: dayTheme
+            ? '0 4px 24px rgba(180,140,60,0.2), inset 0 1px 0 rgba(255,255,255,0.8)'
+            : '0 8px 32px rgba(0, 0, 0, 0.4)',
+          transition: 'opacity 0.3s ease, transform 0.3s ease',
+          opacity: immersiveMode ? 0 : 1,
+          transform: immersiveMode ? 'translateY(20px)' : 'translateY(0)',
+          animation: 'slideUp 0.4s ease-out 0.2s both',
         }}
       >
-        <div
-          style={{
-            maxWidth: '680px',
-            margin: '0 auto',
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '8px',
-          }}
-        >
-          <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'flex-start', minWidth: 0 }}>
-            <button
-              type="button"
-              className="reader-chapter-nav-day"
-              onClick={goToPreviousChapter}
-              disabled={chapter === 1 || loading}
-              style={{
-                background: '#D4A843',
-                border: 'none',
-                borderRadius: '16px',
-                color: '#0a1a3e',
-                fontSize: '13px',
-                fontWeight: 600,
-                cursor: chapter === 1 || loading ? 'not-allowed' : 'pointer',
-                padding: '6px 14px',
-                lineHeight: 1.2,
-                opacity: 1,
-              }}
-            >
-              {t('bible.previous')}
-            </button>
-          </div>
-          <div
-            style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: '8px', padding: '0 4px' }}
-            aria-label="Bible text size"
+        <div style={{ flex: '0 0 auto', display: 'flex', justifyContent: 'flex-start' }}>
+          <button
+            type="button"
+            onClick={goToPreviousChapter}
+            disabled={chapter === 1 || loading}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: dayTheme ? '#8B6914' : 'rgba(255, 255, 255, 0.6)',
+              fontSize: '14px',
+              fontWeight: dayTheme ? 600 : 500,
+              cursor: chapter === 1 || loading ? 'not-allowed' : 'pointer',
+              padding: '4px 12px',
+              lineHeight: 1.2,
+              opacity: chapter === 1 || loading ? 0.3 : 1,
+              transition: 'all 0.2s ease',
+            }}
           >
-            <button
-              type="button"
-              className="reader-font-btn-day"
-              onClick={() => {
-                setFontSize((s) => {
-                  const next = clampBibleFontSize(s - BIBLE_FONT_STEP)
-                  try {
-                    localStorage.setItem(userStorageKey(user?.id, 'bible-font-size'), String(next))
-                  } catch {
-                    /* ignore */
-                  }
-                  return next
-                })
-              }}
-              disabled={fontSize <= BIBLE_FONT_MIN}
-              style={{
-                backgroundColor: '#D4A843',
-                border: 'none',
-                color: '#0a1a3e',
-                fontSize: '14px',
-                fontWeight: 700,
-                cursor: fontSize <= BIBLE_FONT_MIN ? 'not-allowed' : 'pointer',
-                padding: '4px 6px',
-                opacity: fontSize <= BIBLE_FONT_MIN ? 0.35 : 1,
-                borderRadius: '16px',
-              }}
-            >
-              A-
-            </button>
-            <div style={{ width: '1px', height: '14px', background: 'rgba(255,255,255,0.2)' }} />
-            <button
-              type="button"
-              className="reader-font-btn-day"
-              onClick={() => {
-                setFontSize((s) => {
-                  const next = clampBibleFontSize(s + BIBLE_FONT_STEP)
-                  try {
-                    localStorage.setItem(userStorageKey(user?.id, 'bible-font-size'), String(next))
-                  } catch {
-                    /* ignore */
-                  }
-                  return next
-                })
-              }}
-              disabled={fontSize >= BIBLE_FONT_MAX}
-              style={{
-                backgroundColor: '#D4A843',
-                border: 'none',
-                color: '#0a1a3e',
-                fontSize: '14px',
-                fontWeight: 700,
-                cursor: fontSize >= BIBLE_FONT_MAX ? 'not-allowed' : 'pointer',
-                padding: '4px 6px',
-                opacity: fontSize >= BIBLE_FONT_MAX ? 0.35 : 1,
-                borderRadius: '16px',
-              }}
-            >
-              A+
-            </button>
-          </div>
-          <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'flex-end', minWidth: 0 }}>
-            <button
-              type="button"
-              className="reader-chapter-nav-day"
-              onClick={goToNextChapter}
-              disabled={chapter === maxChapter || loading}
-              style={{
-                background: '#D4A843',
-                border: 'none',
-                borderRadius: '16px',
-                color: '#0a1a3e',
-                fontSize: '13px',
-                fontWeight: 600,
-                cursor: chapter === maxChapter || loading ? 'not-allowed' : 'pointer',
-                padding: '6px 14px',
-                lineHeight: 1.2,
-                opacity: 1,
-              }}
-            >
-              {t('bible.next')}
-            </button>
-          </div>
+            ← Prev
+          </button>
+        </div>
+        <div
+          style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: '8px' }}
+          aria-label="Bible text size"
+        >
+          <button
+            type="button"
+            onClick={() => {
+              setFontSize((s) => {
+                const next = clampBibleFontSize(s - BIBLE_FONT_STEP)
+                try {
+                  localStorage.setItem(userStorageKey(user?.id, 'bible-font-size'), String(next))
+                } catch {
+                  /* ignore */
+                }
+                return next
+              })
+            }}
+            disabled={fontSize <= BIBLE_FONT_MIN}
+            style={{
+              background: dayTheme ? 'rgba(212,175,55,0.15)' : 'transparent',
+              border: dayTheme ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(255, 255, 255, 0.2)',
+              color: dayTheme ? '#8B6914' : 'rgba(255, 255, 255, 0.8)',
+              fontSize: '14px',
+              fontWeight: 700,
+              cursor: fontSize <= BIBLE_FONT_MIN ? 'not-allowed' : 'pointer',
+              padding: '4px 12px',
+              opacity: fontSize <= BIBLE_FONT_MIN ? 0.35 : 1,
+              borderRadius: '8px',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            A-
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setFontSize((s) => {
+                const next = clampBibleFontSize(s + BIBLE_FONT_STEP)
+                try {
+                  localStorage.setItem(userStorageKey(user?.id, 'bible-font-size'), String(next))
+                } catch {
+                  /* ignore */
+                }
+                return next
+              })
+            }}
+            disabled={fontSize >= BIBLE_FONT_MAX}
+            style={{
+              background: dayTheme ? 'rgba(212,175,55,0.15)' : 'transparent',
+              border: dayTheme ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(255, 255, 255, 0.2)',
+              color: dayTheme ? '#8B6914' : 'rgba(255, 255, 255, 0.8)',
+              fontSize: '14px',
+              fontWeight: 700,
+              cursor: fontSize >= BIBLE_FONT_MAX ? 'not-allowed' : 'pointer',
+              padding: '4px 12px',
+              opacity: fontSize >= BIBLE_FONT_MAX ? 0.35 : 1,
+              borderRadius: '8px',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            A+
+          </button>
+        </div>
+        <div style={{ flex: '0 0 auto', display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            type="button"
+            onClick={goToNextChapter}
+            disabled={chapter === maxChapter || loading}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: dayTheme ? '#8B6914' : '#D4A843',
+              fontSize: '14px',
+              fontWeight: dayTheme ? 600 : 600,
+              cursor: chapter === maxChapter || loading ? 'not-allowed' : 'pointer',
+              padding: '4px 12px',
+              lineHeight: 1.2,
+              opacity: chapter === maxChapter || loading ? 0.3 : 1,
+              transition: 'all 0.2s ease',
+            }}
+          >
+            Next →
+          </button>
         </div>
       </div>
+
+      {/* Immersive mode hint indicator */}
+      {showImmersiveHint && immersiveMode && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 'calc(140px + env(safe-area-inset-bottom, 0px))',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 100,
+            background: 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            padding: '8px 16px',
+            borderRadius: '999px',
+            color: 'rgba(255, 255, 255, 0.8)',
+            fontSize: '12px',
+            fontWeight: 500,
+            animation: 'fadeIn 0.3s ease-out',
+          }}
+        >
+          Tap to exit
+        </div>
+      )}
 
       {/* Book Picker Modal */}
       {showBookPicker && typeof document !== 'undefined' ? createPortal(
@@ -2350,8 +2743,7 @@ export default function BibleReader({ open, onModeChange }) {
                     gridTemplateColumns: 'repeat(3, 1fr)',
                     gap: '12px',
                   }}>
-                    {BOOKS.slice(0, OLD_TESTAMENT_LAST_INDEX + 1)
-                      .filter(book => !book.deuterocanonical)
+                    {currentBooks.slice(0, OLD_TESTAMENT_LAST_INDEX + 1)
                       .map((book, idx) => (
                         <button
                           key={book.name}
@@ -2382,57 +2774,7 @@ export default function BibleReader({ open, onModeChange }) {
                   </div>
                 </div>
 
-                {/* Deuterocanonical Section - Catholic/Orthodox only */}
-                {(bibleCategory === 'catholic' || bibleCategory === 'orthodox') && (
-                  <div style={{ marginBottom: '20px' }}>
-                    <h3 style={{
-                      color: '#F0C040',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      margin: '0 0 12px 0',
-                      textTransform: 'uppercase',
-                      letterSpacing: '1px',
-                    }}>
-                      Deuterocanonical
-                    </h3>
-                    <div style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(3, 1fr)',
-                      gap: '12px',
-                    }}>
-                      {BOOKS.filter(book => book.deuterocanonical).map((book, idx) => {
-                        const actualIndex = BOOKS.findIndex(b => b.name === book.name)
-                        return (
-                          <button
-                            key={book.name}
-                            type="button"
-                            onClick={() => handleBookSelect(actualIndex)}
-                            style={{
-                              background: actualIndex === bookIndex
-                                ? (dayTheme ? 'rgba(212, 168, 67, 0.2)' : 'rgba(240, 192, 64, 0.15)')
-                                : (dayTheme ? 'rgba(212, 168, 67, 0.08)' : 'rgba(255, 255, 255, 0.04)'),
-                              border: actualIndex === bookIndex
-                                ? (dayTheme ? '1px solid rgba(212, 168, 67, 0.5)' : '1px solid rgba(240, 192, 64, 0.4)')
-                                : (dayTheme ? '1px solid rgba(212, 168, 67, 0.2)' : '1px solid rgba(255, 255, 255, 0.1)'),
-                              color: actualIndex === bookIndex
-                                ? (dayTheme ? '#D4A843' : '#F0C040')
-                                : (dayTheme ? 'rgba(10, 20, 50, 0.85)' : 'rgba(255, 255, 255, 0.85)'),
-                              fontSize: '14px',
-                              fontWeight: actualIndex === bookIndex ? 600 : 500,
-                              cursor: 'pointer',
-                              padding: '14px 12px',
-                              borderRadius: '12px',
-                              textAlign: 'left',
-                              transition: 'all 0.2s ease',
-                            }}
-                          >
-                            {bookDisplayName(book)}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
+                {/* Deuterocanonical Section - shown inline in OT for Catholic/Orthodox since each denomination has its own list */}
 
                 {/* New Testament Section */}
                 <div>
@@ -2451,10 +2793,9 @@ export default function BibleReader({ open, onModeChange }) {
                     gridTemplateColumns: 'repeat(3, 1fr)',
                     gap: '12px',
                   }}>
-                    {BOOKS.slice(OLD_TESTAMENT_LAST_INDEX + 1)
-                      .filter(book => !book.deuterocanonical)
+                    {currentBooks.slice(OLD_TESTAMENT_LAST_INDEX + 1)
                       .map((book, idx) => {
-                        const actualIndex = BOOKS.findIndex(b => b.name === book.name)
+                        const actualIndex = OLD_TESTAMENT_LAST_INDEX + 1 + idx
                         return (
                           <button
                             key={book.name}

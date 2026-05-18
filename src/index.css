@@ -1492,34 +1492,45 @@ body.theme-evening .fj-hub-streak-dot--idle,
 /* Prayer page — My Prayers / Prayer Wall (night default stays inline Tailwind; day = cream) */
 .prayer-page-main-tabs {
   display: flex;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 12px;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 16px;
   margin-bottom: 24px;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  background: rgba(10, 16, 40, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 .prayer-page-main-tab {
   flex: 1;
   padding: 12px 8px;
-  border-radius: 8px;
+  border-radius: 999px;
   font-size: 14px;
-  font-weight: 600;
-  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
-  border: 1px solid transparent;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.55);
+  font-weight: 700;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.6);
 }
 .prayer-page-main-tab:hover:not(.prayer-page-main-tab--active) {
   color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.07);
 }
 .prayer-page-main-tab--active {
-  background: rgba(30, 27, 58, 1);
-  color: #d4a843;
-  border-color: rgba(212, 168, 67, 0.35);
-  box-shadow: 0 0 20px rgba(212, 168, 67, 0.12);
+  background: linear-gradient(135deg, #FBBF24 0%, #D4A843 45%, #B8860B 100%);
+  color: #0a1428;
+  border-color: transparent;
+  box-shadow: 0 0 22px rgba(212, 168, 67, 0.28);
+  transform: translateY(-1px);
+}
+
+@keyframes prayerFabPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 8px rgba(212, 168, 67, 0.08), 0 0 32px rgba(212, 168, 67, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 14px rgba(212, 168, 67, 0.03), 0 0 44px rgba(251, 191, 36, 0.72);
+  }
 }
 
 .theme-day .prayer-page-main-tabs,
@@ -1544,10 +1555,10 @@ body.theme-evening .fj-hub-streak-dot--idle,
 .theme-day .prayer-page-main-tab--active,
 .theme-morning .prayer-page-main-tab--active,
 .theme-afternoon .prayer-page-main-tab--active {
-  background: #d4a843 !important;
-  color: #ffffff !important;
+  background: linear-gradient(135deg, #FBBF24 0%, #D4A843 45%, #B8860B 100%) !important;
+  color: #0a1428 !important;
   border-color: transparent !important;
-  box-shadow: none !important;
+  box-shadow: 0 0 20px rgba(212, 168, 67, 0.22) !important;
 }
 
 /* Settings — Bible translation select: cream on day sky only */
@@ -2347,11 +2358,11 @@ html[data-theme="night"] .settings-section-label,
 body.theme-night .text-section-header,
 body.theme-night .settings-section-label,
 html[data-theme="night"] .prayer-section-rail,
-html[data-theme="night"] .testimony-section-h2,
+html[data-theme="night"] .prayer-section-rail,
 body.theme-night .prayer-section-rail,
 body.theme-night .testimony-section-h2 {
-  color: rgba(150, 170, 255, 0.8) !important;
-  -webkit-text-fill-color: rgba(150, 170, 255, 0.8) !important;
+  color: rgba(251, 191, 36, 0.86) !important;
+  -webkit-text-fill-color: rgba(251, 191, 36, 0.86) !important;
 }
 
 /* Shared “night card” treatment (mirrors evening coverage; different chrome) */
@@ -3378,6 +3389,15 @@ body.theme-evening .notifications-settings-row-chevron,
   50% {
     opacity: 0.7;
     transform: scale(1.1);
+  }
+}
+
+@keyframes journalFabGlow {
+  0%, 100% {
+    box-shadow: 0 0 18px rgba(245, 158, 11, 0.45), 0 0 34px rgba(245, 158, 11, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 26px rgba(245, 158, 11, 0.68), 0 0 48px rgba(245, 158, 11, 0.28);
   }
 }
 

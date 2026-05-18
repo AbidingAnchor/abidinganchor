@@ -1,7 +1,7 @@
 // src/components/SaveToast.jsx
 import { useEffect, useState } from 'react';
 
-export default function SaveToast({ trigger }) {
+export default function SaveToast({ trigger, message }) {
   // `trigger` is a number that increments each time a save happens.
   // Every time trigger changes (and is > 0), show the toast.
   const [visible, setVisible] = useState(false);
@@ -39,7 +39,7 @@ export default function SaveToast({ trigger }) {
       }}
     >
       <span>✝</span>
-      <span>Saved to your journal</span>
+      <span>{message || 'Saved to your journal'}</span>
     </div>
   );
 }

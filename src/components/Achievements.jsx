@@ -176,8 +176,8 @@ export default function Achievements({ onExit, fillVertical = false }) {
 
   return (
     <div
-      className={`glass-panel rounded-2xl p-4 text-white ${fillVertical ? 'flex min-h-0 flex-1 flex-col' : ''}`}
-      style={fillVertical ? { minHeight: '100%' } : undefined}
+      className={`home-gold-glass ${fillVertical ? 'flex min-h-0 flex-1 flex-col' : ''}`}
+      style={{ borderRadius: '20px', padding: '16px', ...(fillVertical ? { minHeight: '100%' } : {}) }}
     >
       <style>
         {`
@@ -189,54 +189,70 @@ export default function Achievements({ onExit, fillVertical = false }) {
         `}
       </style>
 
-      <div className="mb-3 flex shrink-0 items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: '#F0C040' }}>
-          🏆 {t('achievements.title')}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexShrink: 0 }}>
+        <p style={{ color: '#fbbf24', fontSize: '13px', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', margin: 0 }}>
+          {t('achievements.title')}
         </p>
-        <button type="button" onClick={onExit} className="text-xs text-white/70">
-          {t('common.back')}
+        <button type="button" onClick={onExit}
+          style={{ fontSize: '12px', color: 'rgba(212,175,55,0.7)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, transition: 'color 0.2s' }}
+          onMouseEnter={e => e.currentTarget.style.color = '#D4AF37'}
+          onMouseLeave={e => e.currentTarget.style.color = 'rgba(212,175,55,0.7)'}>
+          ← {t('common.back')}
         </button>
       </div>
 
-      <div className="mb-3 shrink-0 glass-panel rounded-xl p-3 text-xs text-white/80">
-        {t('achievements.badgesEarned', { n: earned, total: computed.length })}
+      <div className="home-gold-glass" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(212,175,55,0.4)', borderRadius: '999px', padding: '10px 20px', marginBottom: '14px', flexShrink: 0, boxShadow: '0 0 16px rgba(212,175,55,0.1)', width: '100%', boxSizing: 'border-box' }}>
+        <span style={{ color: 'rgba(212,175,55,0.9)', fontSize: '14px', fontWeight: 600 }}>
+          <span style={{ color: '#FFD700', fontWeight: 700 }}>{earned}</span>
+          {' of '}
+          <span style={{ color: '#FFD700', fontWeight: 700 }}>{computed.length}</span>
+          {' badges earned'}
+        </span>
       </div>
 
-      <div className={`grid grid-cols-2 gap-2 sm:grid-cols-3 ${fillVertical ? 'min-h-0 flex-1 content-start overflow-y-auto pb-1' : ''}`}>
+      <div className={`grid grid-cols-2 sm:grid-cols-3 ${fillVertical ? 'min-h-0 flex-1 content-start overflow-y-auto pb-1' : ''}`} style={{ gap: '12px', alignItems: 'stretch' }}>
         {computed.map((b) => {
           const unlocked = !!b.unlockedAt
           return (
             <div
               key={b.id}
-              className="relative glass-panel rounded-2xl p-3"
+              className="home-gold-glass"
               style={{
-                filter: unlocked ? 'none' : 'grayscale(1)',
-                opacity: unlocked ? 1 : 0.55,
-                boxShadow: unlocked ? '0 0 0 1px rgba(240,192,64,0.6), 0 0 20px rgba(240,192,64,0.18)' : 'none',
+                borderRadius: '16px',
+                padding: '14px',
+                position: 'relative',
+                borderTop: unlocked ? '1px solid rgba(212,175,55,0.45)' : '1px solid rgba(255,255,255,0.06)',
+                borderRight: unlocked ? '1px solid rgba(212,175,55,0.45)' : '1px solid rgba(255,255,255,0.06)',
+                borderBottom: unlocked ? '1px solid rgba(212,175,55,0.45)' : '1px solid rgba(255,255,255,0.06)',
+                borderLeft: unlocked ? '4px solid rgba(212,175,55,0.7)' : '4px solid rgba(255,255,255,0.08)',
+                boxShadow: unlocked
+                  ? '0 0 16px rgba(212,175,55,0.12), 0 4px 20px rgba(0,0,0,0.4)'
+                  : '0 4px 16px rgba(0,0,0,0.3)',
                 animation: unlocked ? 'badge-unlock 520ms ease' : 'none',
+                opacity: unlocked ? 1 : 0.75,
               }}
             >
-              {!unlocked ? (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '8px',
-                    right: '8px',
-                    fontSize: '12px',
-                    color: 'rgba(255,255,255,0.8)',
-                  }}
-                  aria-hidden="true"
-                >
-                  🔒
-                </div>
-              ) : null}
-              <p className="text-2xl">{b.icon}</p>
-              <p className="mt-1 text-sm font-semibold" style={{ color: unlocked ? '#F0C040' : 'rgba(255,255,255,0.85)' }}>
+              {/* Icon square */}
+              <div style={{
+                width: '40px', height: '40px', borderRadius: '14px', marginBottom: '8px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px',
+                background: unlocked
+                  ? 'linear-gradient(135deg, rgba(212,175,55,0.3), rgba(180,120,0,0.2))'
+                  : 'rgba(255,255,255,0.05)',
+                padding: '10px',
+                position: 'relative',
+              }}>
+                {b.icon}
+                {!unlocked && (
+                  <span style={{ position: 'absolute', bottom: '-2px', right: '-2px', fontSize: '10px', opacity: 0.6 }} aria-hidden>🔒</span>
+                )}
+              </div>
+              <p style={{ fontSize: '15px', fontWeight: unlocked ? 700 : 600, margin: '0 0 4px 0', color: unlocked ? '#D4AF37' : 'rgba(255,255,255,0.5)' }}>
                 {b.name}
               </p>
-              <p className="mt-1 text-xs text-white/75">{b.desc}</p>
+              <p style={{ fontSize: '12px', color: unlocked ? 'rgba(220,200,150,0.8)' : 'rgba(255,255,255,0.3)', margin: '0 0 6px 0', lineHeight: 1.4 }}>{b.desc}</p>
               {unlocked ? (
-                <p className="mt-2 text-[10px] text-white/60">{t('achievements.unlocked', { date: new Date(b.unlockedAt).toLocaleDateString() })}</p>
+                <p style={{ fontSize: '11px', color: 'rgba(212,175,55,0.55)', margin: 0, fontStyle: 'italic' }}>{t('achievements.unlocked', { date: new Date(b.unlockedAt).toLocaleDateString() })}</p>
               ) : null}
             </div>
           )

@@ -288,22 +288,6 @@ function Search({ onOpenWorship }) {
   const keyword = trimmedSearch.toLowerCase()
   const curatedResults = keywordVerses[keyword] ?? []
 
-  // Define style objects that were missing
-  const glassCard = {
-    background: 'var(--card-parchment)',
-    border: '1px solid var(--glass-border)',
-  }
-
-  const bodyStyle = {
-    color: '#1A1A1A',
-    fontSize: '14px',
-  }
-
-  const headingStyle = {
-    color: '#1A1A1A',
-    textShadow: 'none',
-  }
-
   useEffect(() => {
     if (searchMode === 'topic') return
     if (!trimmedSearch) {
@@ -406,8 +390,66 @@ function Search({ onOpenWorship }) {
     }
   }
 
+  const pillActive = {
+    background: 'linear-gradient(135deg, #D4A843 0%, #F0C040 100%)',
+    border: 'none',
+    color: '#1A1200',
+    fontWeight: 700,
+    cursor: 'pointer',
+  }
+  const pillInactive = {
+    background: 'rgba(255,255,255,0.06)',
+    border: '1px solid rgba(255,255,255,0.12)',
+    color: 'rgba(255,255,255,0.7)',
+    fontWeight: 500,
+    cursor: 'pointer',
+  }
+  const pillBase = {
+    borderRadius: '50px',
+    height: '40px',
+    padding: '0 20px',
+    fontSize: '14px',
+    transition: 'all 0.2s ease',
+  }
+
+  const resultCardStyle = {
+    background: 'rgba(255,255,255,0.04)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    border: '1px solid rgba(212,168,67,0.2)',
+    borderRadius: '16px',
+    padding: '16px',
+    animation: 'searchFadeIn 0.3s ease both',
+  }
+
+  const highlightKeyword = (text, kw) => {
+    if (!kw || kw.length < 2) return text
+    const regex = new RegExp(`(${kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
+    const parts = text.split(regex)
+    return parts.map((part, i) =>
+      regex.test(part)
+        ? <mark key={i} style={{ background: 'rgba(251,191,36,0.25)', color: '#F0C040', borderRadius: '3px', padding: '0 2px' }}>{part}</mark>
+        : part
+    )
+  }
+
   return (
     <div style={{ position: 'relative' }}>
+      <style>{`
+        @keyframes searchFadeIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .search-book-card-dark:hover {
+          transform: translateY(-2px);
+          border-color: rgba(212,168,67,0.45) !important;
+          background: rgba(212,168,67,0.08) !important;
+        }
+        .search-input-dark:focus-within {
+          border-color: rgba(251,191,36,0.5) !important;
+          box-shadow: 0 0 12px rgba(251,191,36,0.2) !important;
+        }
+      `}</style>
       <div
         className="content-scroll search-page"
         style={{ padding: '16px 16px 0', maxWidth: '680px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}
@@ -429,406 +471,400 @@ function Search({ onOpenWorship }) {
             onOpenWorship={onOpenWorship}
           />
         ) : (
-          <div className="flex flex-col gap-3">
-            <header style={{ marginBottom: '20px' }}>
+          <div className="flex flex-col" style={{ gap: '20px' }}>
+
+            {/* ── Header ── */}
+            <header style={{ position: 'relative', marginBottom: '4px' }}>
+              <div style={{
+                position: 'absolute', top: '-20px', left: '50%', transform: 'translateX(-50%)',
+                width: '260px', height: '100px',
+                background: 'radial-gradient(ellipse at center, rgba(212,168,67,0.12) 0%, transparent 70%)',
+                pointerEvents: 'none',
+              }} />
               <h1 style={{
-                color: '#1A1A1A',
+                color: '#ffffff',
                 fontSize: '32px',
                 fontWeight: 800,
-                marginBottom: '8px',
-                margin: '0 0 8px 0',
+                margin: '0 0 6px 0',
+                letterSpacing: '-0.5px',
               }}>
                 {t('search.title')}
               </h1>
               <p style={{
-                color: '#1A1A1A',
-                fontSize: '15px',
+                color: 'rgba(251,191,36,0.7)',
+                fontSize: '14px',
+                fontStyle: 'italic',
                 margin: 0,
               }}>
                 {t('search.subtitle')}
               </p>
             </header>
 
-            <section className="space-y-3">
-              <div style={{ display: 'inline-flex', gap: '8px' }}>
-                <button type="button" onClick={() => setSearchMode('keyword')} style={{
-                  borderRadius: '50px',
-                  height: '44px',
-                  padding: '0 20px',
-                  fontSize: '14px',
-                  fontWeight: searchMode === 'keyword' ? 700 : 500,
-                  background: searchMode === 'keyword' ? '#D4A843' : '#F0E8D4',
-                  border: '1px solid rgba(212,168,67,0.3)',
-                  color: '#1A1A1A',
-                  cursor: 'pointer',
-                }}>{t('search.byKeyword')}</button>
-                <button type="button" onClick={() => setSearchMode('topic')} style={{
-                  borderRadius: '50px',
-                  height: '44px',
-                  padding: '0 20px',
-                  fontSize: '14px',
-                  fontWeight: searchMode === 'topic' ? 700 : 500,
-                  background: searchMode === 'topic' ? '#D4A843' : '#F0E8D4',
-                  border: '1px solid rgba(212,168,67,0.3)',
-                  color: '#1A1A1A',
-                  cursor: 'pointer',
-                }}>{t('search.byTopic')}</button>
-              </div>
+            {/* ── Mode Tabs ── */}
+            <div style={{ display: 'inline-flex', gap: '8px' }}>
+              <button type="button" onClick={() => setSearchMode('keyword')}
+                style={{ ...pillBase, ...(searchMode === 'keyword' ? pillActive : pillInactive) }}>
+                {t('search.byKeyword')}
+              </button>
+              <button type="button" onClick={() => setSearchMode('topic')}
+                style={{ ...pillBase, ...(searchMode === 'topic' ? pillActive : pillInactive) }}>
+                {t('search.byTopic')}
+              </button>
+            </div>
+
+            {/* ── Search Input (keyword mode only) ── */}
+            {searchMode === 'keyword' && (
+              <label htmlFor="scripture-search" className="search-input-dark" style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                borderRadius: '16px',
+                padding: '14px 18px',
+                border: '1.5px solid rgba(212,168,67,0.3)',
+                background: 'rgba(255,255,255,0.05)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+              }}>
+                <span style={{ fontSize: 18, color: 'rgba(212,168,67,0.7)', lineHeight: 1, flexShrink: 0 }}>🔍</span>
+                <input
+                  id="scripture-search"
+                  className="search-scripture-input"
+                  type="text"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
+                  placeholder={t('search.placeholder')}
+                  style={{
+                    width: '100%',
+                    background: 'transparent',
+                    color: '#ffffff',
+                    fontSize: 15,
+                    outline: 'none',
+                    border: 'none',
+                  }}
+                />
+                {searchTerm && (
+                  <button type="button" onClick={() => setSearchTerm('')} style={{
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: 'rgba(255,255,255,0.4)', fontSize: '16px', flexShrink: 0, lineHeight: 1, padding: 0,
+                  }}>✕</button>
+                )}
+              </label>
+            )}
+
+            {/* ── Keyword suggestion pills / Topic grid ── */}
+            <div className="home-gold-glass" style={{ borderRadius: '16px', padding: '16px', background: undefined }}>
               {searchMode === 'keyword' ? (
-                <label htmlFor="scripture-search" className="search-keyword-shell" style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  borderRadius: 16,
-                  padding: '14px 18px',
-                  border: '1.5px solid rgba(212,168,67,0.4)',
-                  background: '#FFFFFF',
-                  boxShadow: '0 2px 12px rgba(212,168,67,0.12)',
-                }}>
-                  <span style={{ fontSize: 18, color: '#1A1A1A', lineHeight: 1 }}>🔍</span>
-                  <input
-                    id="scripture-search"
-                    className="search-scripture-input"
-                    type="text"
-                    value={searchTerm}
-                    onChange={(event) => setSearchTerm(event.target.value)}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
-                    placeholder={t('search.placeholder')}
-                    style={{
-                      width: '100%',
-                      background: 'transparent',
-                      color: '#1A1A1A',
-                      fontSize: 15,
-                      outline: 'none',
-                      border: 'none',
-                    }}
-                  />
-                </label>
-              ) : null}
-
-              <div
-                className="glass-panel"
-                style={{
-                  border: '1px solid rgba(212,168,67,0.2)',
-                  borderRadius: '16px',
-                  padding: '16px',
-                  marginBottom: searchMode === 'topic' ? 0 : 12,
-                }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {searchMode === 'keyword' ? (
-                    <>
-                      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-                        {quickSuggestionsRow1.map((suggestion) => (
-                          <button key={suggestion} type="button" className="search-keyword-chip" onClick={() => setSearchTerm(suggestion)} style={{
-                            background: 'rgba(212,168,67,0.1)',
-                            border: '1px solid rgba(212,168,67,0.25)',
-                            borderRadius: '50px',
-                            color: '#1A1A1A',
-                            WebkitTextFillColor: '#1A1A1A',
-                            fontWeight: 600,
-                            padding: '8px 16px',
-                            fontSize: '13px',
-                            flexShrink: 0,
-                            cursor: 'pointer'
-                          }}>
-                            {t(`search.topics.${suggestion}`)}
-                          </button>
-                        ))}
-                      </div>
-                      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-                        {quickSuggestionsRow2.map((suggestion) => (
-                          <button key={suggestion} type="button" className="search-keyword-chip" onClick={() => setSearchTerm(suggestion)} style={{
-                            background: 'rgba(212,168,67,0.1)',
-                            border: '1px solid rgba(212,168,67,0.25)',
-                            borderRadius: '50px',
-                            color: '#1A1A1A',
-                            WebkitTextFillColor: '#1A1A1A',
-                            fontWeight: 600,
-                            padding: '8px 16px',
-                            fontSize: '13px',
-                            flexShrink: 0,
-                            cursor: 'pointer'
-                          }}>
-                            {t(`search.topics.${suggestion}`)}
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  ) : (
-                    <div className="search-topic-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-                      {topics.map((topic) => (
-                        <button
-                          key={topic}
-                          type="button"
-                          className={`search-topic-pill${selectedTopic === topic ? ' search-topic-pill--selected' : ''}`}
-                          onClick={() => setSelectedTopic(topic)}
-                          style={{
-                          borderRadius: '50px',
-                          padding: '8px 16px',
-                          fontSize: '13px',
-                          fontWeight: 600,
-                          background: selectedTopic === topic ? '#D4A843' : '#F0E8D4',
-                          border: '1px solid rgba(212,168,67,0.25)',
-                          color: '#1A1A1A',
-                          cursor: 'pointer'
-                        }}
-                        >
-                          {topic}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '2px' }}>
+                    {quickSuggestionsRow1.map((s) => (
+                      <button key={s} type="button" onClick={() => setSearchTerm(s)} style={{
+                        background: searchTerm === s ? 'linear-gradient(135deg,#D4A843,#F0C040)' : 'rgba(255,255,255,0.05)',
+                        border: `1px solid ${searchTerm === s ? 'transparent' : 'rgba(255,255,255,0.1)'}`,
+                        borderRadius: '50px',
+                        color: searchTerm === s ? '#1A1200' : 'rgba(255,255,255,0.7)',
+                        fontWeight: 600,
+                        padding: '7px 16px',
+                        fontSize: '13px',
+                        flexShrink: 0,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                      }}>
+                        {t(`search.topics.${s}`)}
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '2px' }}>
+                    {quickSuggestionsRow2.map((s) => (
+                      <button key={s} type="button" onClick={() => setSearchTerm(s)} style={{
+                        background: searchTerm === s ? 'linear-gradient(135deg,#D4A843,#F0C040)' : 'rgba(255,255,255,0.05)',
+                        border: `1px solid ${searchTerm === s ? 'transparent' : 'rgba(255,255,255,0.1)'}`,
+                        borderRadius: '50px',
+                        color: searchTerm === s ? '#1A1200' : 'rgba(255,255,255,0.7)',
+                        fontWeight: 600,
+                        padding: '7px 16px',
+                        fontSize: '13px',
+                        flexShrink: 0,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                      }}>
+                        {t(`search.topics.${s}`)}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </section>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                  {topics.map((topic) => (
+                    <button
+                      key={topic}
+                      type="button"
+                      onClick={() => setSelectedTopic(topic)}
+                      style={{
+                        borderRadius: '50px',
+                        padding: '8px 12px',
+                        fontSize: '13px',
+                        fontWeight: selectedTopic === topic ? 700 : 500,
+                        background: selectedTopic === topic
+                          ? 'linear-gradient(135deg,#D4A843,#F0C040)'
+                          : 'rgba(255,255,255,0.05)',
+                        border: `1px solid ${selectedTopic === topic ? 'transparent' : 'rgba(255,255,255,0.1)'}`,
+                        color: selectedTopic === topic ? '#1A1200' : 'rgba(255,255,255,0.7)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        boxShadow: selectedTopic === topic ? '0 0 10px rgba(212,168,67,0.3)' : 'none',
+                      }}
+                    >
+                      {topic}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
+            {/* ── TOPIC MODE RESULTS ── */}
             {searchMode === 'topic' ? (
-              <section className="space-y-3">
-                <h2 className="text-section-header m-0">{t('search.results')}</h2>
+              <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <p style={{ color: 'rgba(212,168,67,0.8)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', margin: 0 }}>
+                  {t('search.results')}
+                </p>
                 {selectedTopic ? (
-                  <div className="space-y-3">
-                    <p className="search-curated-heading text-sm font-semibold uppercase tracking-[0.15em]" style={{ color: '#1A1A1A' }}>
+                  <>
+                    <p style={{ color: 'rgba(212,168,67,0.7)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', margin: 0 }}>
                       {t('search.curatedVerses', { keyword: selectedTopic })}
                     </p>
                     {(TOPIC_VERSES[selectedTopic.toLowerCase()] || []).map((result) => (
-                      <article key={result.ref} className="search-result-card app-card rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4">
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: '#1A1A1A' }}>{result.ref}</p>
-                        <p className="text-scripture mt-2 [font-family:'Lora',serif] italic" style={{ color: '#1A1A1A' }}>{result.text}</p>
-                        <div className="mt-3 flex justify-end gap-2">
-                          <button type="button" onClick={() => handleSaveToJournal({ reference: result.ref, text: result.text })} className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium" style={{ color: '#1A1A1A', WebkitTextFillColor: '#1A1A1A' }}>
+                      <article key={result.ref} style={resultCardStyle}>
+                        <p style={{ color: '#D4A843', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', margin: '0 0 8px 0' }}>{result.ref}</p>
+                        <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '15px', fontFamily: "'Lora', serif", fontStyle: 'italic', lineHeight: 1.7, margin: '0 0 12px 0' }}>{result.text}</p>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                          <button type="button" onClick={() => handleSaveToJournal({ reference: result.ref, text: result.text })} style={{
+                            borderRadius: '8px', border: '1px solid rgba(212,168,67,0.4)', padding: '6px 14px',
+                            fontSize: '12px', fontWeight: 600, color: '#D4A843', background: 'transparent', cursor: 'pointer',
+                          }}>
                             {t('search.saveToJournal')}
                           </button>
-                          <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.ref })} className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium" style={{ color: '#1A1A1A', WebkitTextFillColor: '#1A1A1A' }}>
+                          <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.ref })} style={{
+                            borderRadius: '8px', border: '1px solid rgba(212,168,67,0.4)', padding: '6px 14px',
+                            fontSize: '12px', fontWeight: 600, color: '#D4A843', background: 'transparent', cursor: 'pointer',
+                          }}>
                             {t('search.shareAsImage')}
                           </button>
                         </div>
                       </article>
                     ))}
-                  </div>
+                  </>
                 ) : (
-                  <article
-                    className="rounded-xl p-4"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.3)',
-                      border: '1px solid #D4A843',
-                      color: '#1a1a2e',
-                    }}
-                  >
-                    {t('search.pickTopic')}
-                  </article>
+                  <div style={{ ...resultCardStyle, textAlign: 'center', padding: '32px 16px' }}>
+                    <p style={{ fontSize: '36px', marginBottom: '12px' }}>✦</p>
+                    <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '15px', margin: '0 0 4px 0' }}>{t('search.pickTopic')}</p>
+                    <p style={{ color: 'rgba(212,168,67,0.6)', fontSize: '13px', margin: 0 }}>Select a topic above to explore verses</p>
+                  </div>
                 )}
               </section>
-            ) : trimmedSearch ? (
-              <>
-              <section className="space-y-3">
-                <h2 className="text-section-header">{t('search.resultsFor', { query: trimmedSearch })}</h2>
-                {isLoading ? (
-                  <div className="rounded-xl p-4" style={{ ...glassCard, ...bodyStyle }}>{t('search.searching')}</div>
-                ) : keywordHint ? (
-                  <article className="rounded-xl p-4" style={{ ...glassCard, ...bodyStyle }}>{keywordHint}</article>
-                ) : null}
 
-                {isVerseReference && results.length > 0 && (
-                  <div className="space-y-3">
-                    {results.map((result) => (
-                      <article key={result.id} className="search-result-card app-card rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4">
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: '#1A1A1A' }}>{result.reference}</p>
-                        <p className="text-scripture mt-2 [font-family:'Lora',serif] italic" style={{ color: '#1A1A1A' }}>{result.text}</p>
-                        <div className="mt-3 flex justify-end">
-                          <button type="button" onClick={() => handleSaveToJournal(result)} className="rounded-lg border border-gold px-3 py-1.5 text-xs font-medium" style={{ color: '#1A1A1A', WebkitTextFillColor: '#1A1A1A' }}>
-                            {t('search.saveToJournal')}
-                          </button>
-                          <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.reference })} className="ml-2 rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium" style={{ color: '#1A1A1A', WebkitTextFillColor: '#1A1A1A' }}>
-                            {t('search.shareAsImage')}
-                          </button>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
+            ) : trimmedSearch ? (
+              /* ── KEYWORD SEARCH RESULTS ── */
+              <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <p style={{ color: 'rgba(212,168,67,0.8)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', margin: 0 }}>
+                  {t('search.resultsFor', { query: trimmedSearch })}
+                </p>
+
+                {isLoading && (
+                  <div style={{ ...resultCardStyle, color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>{t('search.searching')}</div>
+                )}
+                {!isLoading && keywordHint && (
+                  <div style={{ ...resultCardStyle, color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>{keywordHint}</div>
                 )}
 
+                {isVerseReference && results.length > 0 && results.map((result) => (
+                  <article key={result.id} style={resultCardStyle}>
+                    <p style={{ color: '#D4A843', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', margin: '0 0 8px 0' }}>{result.reference}</p>
+                    <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '15px', fontFamily: "'Lora', serif", fontStyle: 'italic', lineHeight: 1.7, margin: '0 0 12px 0' }}>
+                      {highlightKeyword(result.text, trimmedSearch)}
+                    </p>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                      <button type="button" onClick={() => handleSaveToJournal(result)} style={{
+                        borderRadius: '8px', border: '1px solid rgba(212,168,67,0.4)', padding: '6px 14px',
+                        fontSize: '12px', fontWeight: 600, color: '#D4A843', background: 'transparent', cursor: 'pointer',
+                      }}>{t('search.saveToJournal')}</button>
+                      <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.reference })} style={{
+                        borderRadius: '8px', border: '1px solid rgba(212,168,67,0.4)', padding: '6px 14px',
+                        fontSize: '12px', fontWeight: 600, color: '#D4A843', background: 'transparent', cursor: 'pointer',
+                      }}>{t('search.shareAsImage')}</button>
+                    </div>
+                  </article>
+                ))}
+
                 {!isVerseReference && (
-                  <div className="space-y-3">
-                    {curatedResults.length > 0 ? (
+                  <>
+                    {curatedResults.length > 0 && (
                       <>
-                        <p className="text-sm font-semibold uppercase tracking-[0.15em]" style={{ color: '#1A1A1A' }}>{t('search.curatedVerses', { keyword })}</p>
+                        <p style={{ color: 'rgba(212,168,67,0.7)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', margin: 0 }}>
+                          {t('search.curatedVerses', { keyword })}
+                        </p>
                         {curatedResults.map((result) => (
-                          <article key={result.ref} className="search-result-card app-card rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4">
-                            <p className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: '#1A1A1A' }}>{result.ref}</p>
-                            <p className="text-scripture mt-2 [font-family:'Lora',serif] italic" style={{ color: '#1A1A1A' }}>{result.text}</p>
-                            <div className="mt-3 flex justify-end">
-                              <button type="button" onClick={() => handleSaveToJournal({ reference: result.ref, text: result.text })} className="rounded-lg border border-gold px-3 py-1.5 text-xs font-medium" style={{ color: '#1A1A1A', WebkitTextFillColor: '#1A1A1A' }}>
-                                {t('search.saveToJournal')}
-                              </button>
-                              <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.ref })} className="ml-2 rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium" style={{ color: '#1A1A1A', WebkitTextFillColor: '#1A1A1A' }}>
-                                {t('search.shareAsImage')}
-                              </button>
+                          <article key={result.ref} style={resultCardStyle}>
+                            <p style={{ color: '#D4A843', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', margin: '0 0 8px 0' }}>{result.ref}</p>
+                            <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '15px', fontFamily: "'Lora', serif", fontStyle: 'italic', lineHeight: 1.7, margin: '0 0 12px 0' }}>
+                              {highlightKeyword(result.text, keyword)}
+                            </p>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                              <button type="button" onClick={() => handleSaveToJournal({ reference: result.ref, text: result.text })} style={{
+                                borderRadius: '8px', border: '1px solid rgba(212,168,67,0.4)', padding: '6px 14px',
+                                fontSize: '12px', fontWeight: 600, color: '#D4A843', background: 'transparent', cursor: 'pointer',
+                              }}>{t('search.saveToJournal')}</button>
+                              <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.ref })} style={{
+                                borderRadius: '8px', border: '1px solid rgba(212,168,67,0.4)', padding: '6px 14px',
+                                fontSize: '12px', fontWeight: 600, color: '#D4A843', background: 'transparent', cursor: 'pointer',
+                              }}>{t('search.shareAsImage')}</button>
                             </div>
                           </article>
                         ))}
                       </>
-                    ) : null}
+                    )}
 
-                    <button type="button" onClick={handleSearchFullBible} className="w-full rounded-xl border border-gold bg-gold px-4 py-2 text-sm font-semibold text-primary-purple">
-                       {t('search.searchFullBible')}
-                     </button>
-                  </div>
+                    <button type="button" onClick={handleSearchFullBible} style={{
+                      width: '100%', borderRadius: '12px', padding: '13px',
+                      background: 'linear-gradient(135deg,#D4A843,#F0C040)',
+                      border: 'none', color: '#1A1200', fontWeight: 700, fontSize: '14px', cursor: 'pointer',
+                    }}>
+                      {t('search.searchFullBible')}
+                    </button>
+                  </>
                 )}
 
                 {!isVerseReference && showFullBibleResults && (
-                  <div className="space-y-3">
-                    <p className="text-sm font-semibold uppercase tracking-[0.15em] text-accent-gold">{t('search.moreFromFullBible')}</p>
+                  <>
+                    <p style={{ color: 'rgba(212,168,67,0.7)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', margin: 0 }}>
+                      {t('search.moreFromFullBible')}
+                    </p>
                     {isFullBibleLoading ? (
-                      <article className="rounded-xl p-4" style={{ ...glassCard, ...bodyStyle }}>{t('search.searchingFullBible')}</article>
+                      <div style={{ ...resultCardStyle, color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>{t('search.searchingFullBible')}</div>
                     ) : fullBibleResults.length > 0 ? (
                       pagedFullBibleResults.map((result, index) => (
-                        <article key={`${result.reference}-${index}`} className="search-result-card app-card rounded-r-2xl rounded-l-md border-l-[3px] border-accent-gold p-4">
-                          <p className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: '#1A1A1A' }}>{result.reference}</p>
-                          <p className="text-scripture mt-2 [font-family:'Lora',serif] italic" style={{ color: '#1A1A1A' }}>{result.text}</p>
-                          <div className="mt-3 flex justify-end">
-                            <button type="button" onClick={() => handleSaveToJournal(result)} className="rounded-lg border border-gold px-3 py-1.5 text-xs font-medium" style={{ color: '#1A1A1A', WebkitTextFillColor: '#1A1A1A' }}>
-                              {t('search.saveToJournal')}
-                            </button>
-                            <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.reference })} className="ml-2 rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-medium" style={{ color: '#1A1A1A', WebkitTextFillColor: '#1A1A1A' }}>
-                              {t('search.shareAsImage')}
-                            </button>
+                        <article key={`${result.reference}-${index}`} style={resultCardStyle}>
+                          <p style={{ color: '#D4A843', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', margin: '0 0 8px 0' }}>{result.reference}</p>
+                          <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '15px', fontFamily: "'Lora', serif", fontStyle: 'italic', lineHeight: 1.7, margin: '0 0 12px 0' }}>
+                            {highlightKeyword(result.text, keyword)}
+                          </p>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                            <button type="button" onClick={() => handleSaveToJournal(result)} style={{
+                              borderRadius: '8px', border: '1px solid rgba(212,168,67,0.4)', padding: '6px 14px',
+                              fontSize: '12px', fontWeight: 600, color: '#D4A843', background: 'transparent', cursor: 'pointer',
+                            }}>{t('search.saveToJournal')}</button>
+                            <button type="button" onClick={() => setShareVerse({ text: result.text, reference: result.reference })} style={{
+                              borderRadius: '8px', border: '1px solid rgba(212,168,67,0.4)', padding: '6px 14px',
+                              fontSize: '12px', fontWeight: 600, color: '#D4A843', background: 'transparent', cursor: 'pointer',
+                            }}>{t('search.shareAsImage')}</button>
                           </div>
                         </article>
                       ))
                     ) : (
-                      <article className="rounded-xl p-4" style={{ ...glassCard, ...bodyStyle }}>
-                        {fullBibleError || t('search.noVersesFoundSearch')}
-                      </article>
+                      <div style={{ ...resultCardStyle, textAlign: 'center', padding: '32px 16px' }}>
+                        <p style={{ fontSize: '40px', marginBottom: '12px' }}>🔍</p>
+                        <p style={{ color: '#ffffff', fontSize: '16px', fontWeight: 600, margin: '0 0 6px 0' }}>No verses found</p>
+                        <p style={{ color: 'rgba(212,168,67,0.6)', fontSize: '13px', margin: 0 }}>
+                          {fullBibleError || t('search.noVersesFoundSearch')}
+                        </p>
+                      </div>
                     )}
-                    {fullBibleResults.length > FULL_BIBLE_PAGE_SIZE ? (
-                      <div className="flex items-center justify-between gap-3 rounded-xl p-3" style={glassCard}>
-                        <button
-                          type="button"
-                          onClick={() => setFullBiblePage((prev) => Math.max(1, prev - 1))}
-                          disabled={fullBiblePage === 1}
-                          className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
-                          style={{ color: '#1A1A1A' }}
-                        >
-                          {t('common.back')}
-                        </button>
-                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-accent-gold">
+                    {fullBibleResults.length > FULL_BIBLE_PAGE_SIZE && (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                        <button type="button" onClick={() => setFullBiblePage((prev) => Math.max(1, prev - 1))} disabled={fullBiblePage === 1} style={{
+                          borderRadius: '8px', border: '1px solid rgba(212,168,67,0.4)', padding: '7px 16px',
+                          fontSize: '12px', fontWeight: 600, color: '#D4A843', background: 'transparent', cursor: 'pointer', opacity: fullBiblePage === 1 ? 0.4 : 1,
+                        }}>{t('common.back')}</button>
+                        <p style={{ color: 'rgba(212,168,67,0.7)', fontSize: '12px', fontWeight: 700, margin: 0 }}>
                           {fullBiblePage}/{totalFullBiblePages}
                         </p>
-                        <button
-                          type="button"
-                          onClick={() => setFullBiblePage((prev) => Math.min(totalFullBiblePages, prev + 1))}
-                          disabled={fullBiblePage === totalFullBiblePages}
-                          className="rounded-lg border border-accent-gold px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
-                          style={{ color: '#1A1A1A' }}
-                        >
-                          {t('common.next')}
-                        </button>
+                        <button type="button" onClick={() => setFullBiblePage((prev) => Math.min(totalFullBiblePages, prev + 1))} disabled={fullBiblePage === totalFullBiblePages} style={{
+                          borderRadius: '8px', border: '1px solid rgba(212,168,67,0.4)', padding: '7px 16px',
+                          fontSize: '12px', fontWeight: 600, color: '#D4A843', background: 'transparent', cursor: 'pointer', opacity: fullBiblePage === totalFullBiblePages ? 0.4 : 1,
+                        }}>{t('common.next')}</button>
                       </div>
-                    ) : null}
-                  </div>
+                    )}
+                  </>
                 )}
 
-                {isVerseReference && results.length === 0 && !keywordHint && !isLoading ? (
-                  <article className="rounded-xl p-4" style={{ ...glassCard, ...bodyStyle }}>{t('search.noVersesFoundSearch')}</article>
-                ) : null}
-              </section>
-              </>
-            ) : (
-              <>
-              <section className="space-y-3">
-                <h2 style={{ color: '#1A1A1A', fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', margin: '0 0 12px 0' }}>
-                  ✦ {t('search.askAI')}
-                </h2>
-                <div
-                  className="search-ask-ai-card"
-                  style={{
-                    background: '#F0E8D4',
-                    border: '1px solid rgba(212,168,67,0.3)',
-                    borderRadius: '16px',
-                    padding: '16px',
-                  }}
-                >
-                  <p style={{ color: '#1A1A1A', fontSize: '13px', marginBottom: '12px', margin: '0 0 12px 0' }}>
-                    {t('search.aiSubtitle')}
-                  </p>
-                  <Link
-                    to="/ai-companion"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRadius: '50px',
-                      border: '1px solid rgba(212,168,67,0.3)',
-                      background: '#D4A843',
-                      color: '#1A1A1A',
-                      fontWeight: 700,
-                      padding: '12px 24px',
-                      fontSize: '14px',
-                      textDecoration: 'none',
-                    }}
-                  >
-                    {t('search.openAI')}
-                  </Link>
-                </div>
+                {isVerseReference && results.length === 0 && !keywordHint && !isLoading && (
+                  <div style={{ ...resultCardStyle, textAlign: 'center', padding: '32px 16px' }}>
+                    <p style={{ fontSize: '40px', marginBottom: '12px' }}>🔍</p>
+                    <p style={{ color: '#ffffff', fontSize: '16px', fontWeight: 600, margin: '0 0 6px 0' }}>No verses found</p>
+                    <p style={{ color: 'rgba(212,168,67,0.6)', fontSize: '13px', margin: 0 }}>{t('search.noVersesFoundSearch')}</p>
+                  </div>
+                )}
               </section>
 
-              <section className="space-y-3">
-                <h2 style={{ color: '#1A1A1A', fontSize: '18px', fontWeight: 700, marginBottom: '12px', margin: '0 0 12px 0' }}>{t('search.browseByBook')}</h2>
-                <div style={{ display: 'inline-flex', gap: '8px' }}>
-                  <button type="button" onClick={() => setTestament('old')} style={{
-                    borderRadius: '50px',
-                    padding: '8px 20px',
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    background: testament === 'old' ? '#D4A843' : 'rgba(255,255,255,0.06)',
-                    border: testament === 'old' ? 'none' : '1px solid rgba(212,168,67,0.2)',
-                    color: '#1A1A1A',
-                    cursor: 'pointer'
-                  }}>{t('search.oldTestament')}</button>
-                  <button type="button" onClick={() => setTestament('new')} style={{
-                    borderRadius: '50px',
-                    padding: '8px 20px',
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    background: testament === 'new' ? '#D4A843' : 'rgba(255,255,255,0.06)',
-                    border: testament === 'new' ? 'none' : '1px solid rgba(212,168,67,0.2)',
-                    color: '#1A1A1A',
-                    cursor: 'pointer'
-                  }}>{t('search.newTestament')}</button>
-                </div>
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                    gap: '8px',
-                  }}
-                >
-                  {visibleBooks.map((book) => (
-                    <article key={book.name} className="search-book-card" style={{
-                      background: '#F0E8D4',
-                      border: '1px solid rgba(212,168,67,0.2)',
-                      borderRadius: '12px',
-                      padding: '12px 16px',
-                      marginBottom: '8px',
-                      textAlign: 'left',
-                      transition: 'all 0.2s',
-                    }} onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(212,168,67,0.08)'
-                    }} onMouseLeave={(e) => {
-                      e.currentTarget.style.background = '#F0E8D4'
-                    }}>
-                      <button type="button" onClick={() => handleBookTap(book)} style={{ background: 'none', border: 'none', textAlign: 'left', padding: 0, width: '100%', cursor: 'pointer' }}>
-                        <p style={{ fontSize: '13px', fontWeight: 700, color: '#1A1A1A', margin: 0 }}>{t(`bible.books.${book.apiName}`)}</p>
-                        <p style={{ fontSize: '11px', color: '#4A4A4A', margin: '4px 0 0 0' }}>
-                          {book.chapters} {t('search.chapters')}
-                        </p>
-                      </button>
-                    </article>
-                  ))}
-                </div>
-              </section>
+            ) : (
+              /* ── DEFAULT STATE (no search active) ── */
+              <>
+                {/* Ask AI card */}
+                <section>
+                  <div className="home-gold-glass" style={{ borderRadius: '16px', padding: '20px' }}>
+                    <p style={{ color: '#D4A843', fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', margin: '0 0 6px 0' }}>
+                      ✦ {t('search.askAI')}
+                    </p>
+                    <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '14px', margin: '0 0 16px 0' }}>
+                      {t('search.aiSubtitle')}
+                    </p>
+                    <Link
+                      to="/ai-companion"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        borderRadius: '50px', border: 'none',
+                        background: 'linear-gradient(135deg,#D4A843,#F0C040)',
+                        color: '#1A1200', fontWeight: 700, padding: '11px 24px',
+                        fontSize: '14px', textDecoration: 'none',
+                      }}
+                    >
+                      {t('search.openAI')}
+                    </Link>
+                  </div>
+                </section>
+
+                {/* Browse by Book */}
+                <section style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <p style={{ color: 'rgba(212,168,67,0.85)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', margin: 0 }}>
+                    {t('search.browseByBook')}
+                  </p>
+
+                  <div style={{ display: 'inline-flex', gap: '8px' }}>
+                    <button type="button" onClick={() => setTestament('old')}
+                      style={{ ...pillBase, ...(testament === 'old' ? pillActive : pillInactive) }}>
+                      {t('search.oldTestament')}
+                    </button>
+                    <button type="button" onClick={() => setTestament('new')}
+                      style={{ ...pillBase, ...(testament === 'new' ? pillActive : pillInactive) }}>
+                      {t('search.newTestament')}
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+                    {visibleBooks.map((book) => (
+                      <article key={book.name} className="search-book-card-dark home-gold-glass" style={{ backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+                        borderRadius: '14px',
+                        padding: '14px 16px',
+                        textAlign: 'left',
+                        transition: 'all 0.2s ease',
+                        cursor: 'pointer',
+                      }}>
+                        <button type="button" onClick={() => handleBookTap(book)} style={{
+                          background: 'none', border: 'none', textAlign: 'left', padding: 0, width: '100%', cursor: 'pointer',
+                        }}>
+                          <p style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff', margin: '0 0 4px 0' }}>
+                            {t(`bible.books.${book.apiName}`)}
+                          </p>
+                          <p style={{ fontSize: '12px', color: 'rgba(212,168,67,0.7)', margin: 0 }}>
+                            {book.chapters} {t('search.chapters')}
+                          </p>
+                        </button>
+                      </article>
+                    ))}
+                  </div>
+                </section>
               </>
             )}
           </div>

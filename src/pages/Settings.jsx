@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
+import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
 import { useNameStyle, SHIMMER_KEYFRAMES } from '../hooks/useNameStyle'
 import { getAvatarBorderStyle, SUPPORTER_BORDER_KEYFRAMES } from '../utils/supporterBorder'
 import { supabase } from '../lib/supabase'
@@ -11,6 +12,9 @@ import { LANGUAGE_STORAGE_KEY } from '../i18n.js'
 import {
   readThemePreferenceFromStorage,
   writeThemePreferenceToStorage,
+  readManualThemePreference,
+  writeManualThemePreference,
+  clearManualThemePreference,
   emitThemePreferenceChanged,
 } from '../utils/themePreferenceStorage'
 
@@ -26,6 +30,8 @@ export default function Settings() {
   const { t, i18n: i18nHook } = useTranslation()
   const navigate = useNavigate()
   const { user, profile, signOut, refreshProfile } = useAuth()
+  const skyPeriod = useThemeBackgroundType()
+  const dayTheme = skyPeriod === 'day' || skyPeriod === 'morning' || skyPeriod === 'afternoon'
   const nameStyle = useNameStyle(profile?.supporter_tier, profile?.name_color)
   const [uploadStatus, setUploadStatus] = useState('idle') // idle, uploading, success
   const [uploadError, setUploadError] = useState('')
@@ -174,24 +180,21 @@ export default function Settings() {
     }
   }, [avatarPreviewUrl])
 
-  // Clear any manual theme preference from localStorage to ensure auto theming
+  // Load theme preference — manual selection takes priority over auto
   useEffect(() => {
-    try {
-      localStorage.removeItem('manualThemePreference')
-    } catch {
-      /* ignore */
-    }
-  }, [])
-
-  // Load theme preference from localStorage
-  useEffect(() => {
-    const savedPreference = readThemePreferenceFromStorage()
+    const manualPref = readManualThemePreference()
+    const savedPreference = manualPref || readThemePreferenceFromStorage()
     setThemePreference(savedPreference || 'auto')
   }, [])
 
   const handleThemePreferenceChange = (value) => {
     setThemePreference(value)
     writeThemePreferenceToStorage(value)
+    if (value === 'auto') {
+      clearManualThemePreference()
+    } else {
+      writeManualThemePreference(value)
+    }
     emitThemePreferenceChanged()
   }
 
@@ -365,6 +368,26 @@ export default function Settings() {
     setAvatarPreviewUrl(URL.createObjectURL(file))
   }
 
+  const nightRowStyle = dayTheme ? null : {
+    display: 'flex',
+    alignItems: 'center',
+    background: 'rgba(15, 20, 45, 0.88)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    borderTop: '1px solid rgba(212,175,55,0.2)',
+    borderRight: '1px solid rgba(212,175,55,0.2)',
+    borderBottom: '1px solid rgba(212,175,55,0.2)',
+    borderLeft: '4px solid rgba(212,175,55,0.35)',
+    borderRadius: '14px',
+    padding: '14px 16px',
+    marginBottom: '8px',
+    boxShadow: '0 2px 12px rgba(0,0,0,0.3)',
+    width: '100%',
+    cursor: 'pointer',
+    boxSizing: 'border-box',
+    textAlign: 'left',
+  }
+
   const displayName =
     localUsername ||
     profile?.username ||
@@ -425,19 +448,91 @@ export default function Settings() {
         }
         ${SHIMMER_KEYFRAMES}
         ${SUPPORTER_BORDER_KEYFRAMES}
+        .st-row {
+          display: flex; align-items: center;
+          padding: 14px 16px;
+          border-top: 1px solid rgba(212,175,55,0.2);
+          border-right: 1px solid rgba(212,175,55,0.2);
+          border-bottom: 1px solid rgba(212,175,55,0.2);
+          border-left: 4px solid rgba(212,175,55,0.35);
+          border-radius: 14px;
+          margin-bottom: 8px;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+          background: rgba(15,20,45,0.85) !important;
+          backdrop-filter: blur(12px) !important;
+          -webkit-backdrop-filter: blur(12px) !important;
+          width: 100%; cursor: pointer; box-sizing: border-box; text-align: left;
+        }
+        .st-row-day {
+          display: flex; align-items: center;
+          padding: 14px 16px;
+          border-top: 1px solid rgba(180,140,60,0.3);
+          border-right: 1px solid rgba(180,140,60,0.3);
+          border-bottom: 1px solid rgba(180,140,60,0.3);
+          border-left: 4px solid rgba(180,140,60,0.5);
+          border-radius: 14px;
+          margin-bottom: 8px;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+          background: rgba(255,252,240,0.85);
+          width: 100%; cursor: pointer; box-sizing: border-box; text-align: left;
+        }
+        .st-icon {
+          width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center; font-size: 18px;
+        }
+        .st-label { font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.9); margin: 0; }
+        .st-label-day { font-size: 15px; font-weight: 600; color: #1C1008; margin: 0; }
+        .st-sub { font-size: 12px; color: rgba(255,255,255,0.45); margin: 3px 0 0 0; }
+        .st-sub-day { font-size: 12px; color: rgba(100,70,20,0.6); margin: 3px 0 0 0; }
+        .st-chevron { color: rgba(212,175,55,0.5); font-size: 20px; }
+        .st-select {
+          background: rgba(15,20,45,0.8); backdrop-filter: blur(8px);
+          border: 1px solid rgba(212,175,55,0.35); border-radius: 10px;
+          color: #E8D5A3; font-weight: 500; padding: 8px 28px 8px 12px;
+          width: 100%; margin-top: 6px; appearance: none; -webkit-appearance: none; font-size: 13px;
+          cursor: pointer;
+        }
+        .st-select-day {
+          background: rgba(255,252,240,0.9);
+          border: 1px solid rgba(180,140,60,0.4); border-radius: 10px;
+          color: #1C1008; font-weight: 500; padding: 8px 28px 8px 12px;
+          width: 100%; margin-top: 6px; appearance: none; -webkit-appearance: none; font-size: 13px;
+          cursor: pointer;
+        }
+        .st-select-wrap { position: relative; }
+        .st-select-wrap::after {
+          content: '\u25bc'; position: absolute; right: 10px; top: 50%;
+          transform: translateY(-50%); color: rgba(212,175,55,0.7);
+          font-size: 10px; pointer-events: none;
+        }
+        .st-section-hdr { display: flex; align-items: center; margin-top: 24px; margin-bottom: 10px; }
       `}</style>
       <section>
 
         {/* SECTION 1 - PROFILE CARD */}
         <div
-          className="settings-theme-panel"
-          style={{
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(212,168,67,0.2)',
-            borderRadius: '16px',
-            backdropFilter: 'blur(12px)',
-            padding: '20px',
+          style={dayTheme ? {
+            borderTop: '1px solid rgba(212,175,55,0.45)',
+            borderRight: '1px solid rgba(212,175,55,0.45)',
+            borderBottom: '1px solid rgba(212,175,55,0.45)',
+            borderLeft: '4px solid rgba(212,175,55,0.6)',
+            borderRadius: '20px',
+            boxShadow: '0 0 30px rgba(212,175,55,0.12), 0 4px 20px rgba(0,0,0,0.3)',
+            padding: '16px',
             marginBottom: '24px',
+          } : {
+            background: 'rgba(15, 20, 45, 1.0)',
+            borderTop: '1px solid rgba(212,175,55,0.35)',
+            borderRight: '1px solid rgba(212,175,55,0.35)',
+            borderBottom: '1px solid rgba(212,175,55,0.35)',
+            borderLeft: '4px solid rgba(212,175,55,0.6)',
+            borderRadius: '20px',
+            padding: '16px',
+            boxShadow: '0 0 30px rgba(212,175,55,0.12), 0 4px 20px rgba(0,0,0,0.3)',
+            marginBottom: '8px',
+            isolation: 'isolate',
+            position: 'relative',
+            zIndex: 1,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -445,8 +540,8 @@ export default function Settings() {
               <div
                 onClick={() => fileInputRef.current?.click()}
                 style={{
-                  width: '60px',
-                  height: '60px',
+                  width: '64px',
+                  height: '64px',
                   borderRadius: '50%',
                   background: '#D4A843',
                   position: 'relative',
@@ -454,7 +549,8 @@ export default function Settings() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  border: '2px solid #D4A843',
+                  border: '2px solid rgba(212,175,55,0.6)',
+                  boxShadow: '0 0 16px rgba(212,175,55,0.4)',
                   cursor: 'pointer',
                   ...avatarBorderStyle,
                 }}
@@ -522,23 +618,24 @@ export default function Settings() {
               />
             </div>
             <div style={{ flex: 1 }}>
-              <p style={{ color: '#ffffff', fontSize: '18px', fontWeight: 700, marginBottom: '4px' }}>
+              <p style={{ color: '#D4AF37', fontSize: '18px', fontWeight: 700, marginBottom: '4px' }}>
                 <span style={nameStyle}>{displayName}</span>
               </p>
-              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px', marginBottom: '8px' }}>
+              <p style={{ color: 'rgba(212,175,55,0.6)', fontSize: '13px', marginBottom: '8px' }}>
                 @{localUsername || 'user'}
               </p>
               <div
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  background: 'rgba(212,168,67,0.15)',
-                  border: '1px solid rgba(212,168,67,0.4)',
-                  borderRadius: '50px',
+                  background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(180,100,0,0.2))',
+                  border: '1px solid rgba(212,175,55,0.5)',
+                  borderRadius: '999px',
                   fontSize: '12px',
-                  color: '#D4A843',
-                  paddingLeft: '10px',
-                  paddingRight: '10px',
+                  color: '#FFD700',
+                  fontWeight: 600,
+                  paddingLeft: '12px',
+                  paddingRight: '12px',
                   paddingTop: '4px',
                   paddingBottom: '4px',
                 }}
@@ -549,7 +646,7 @@ export default function Settings() {
             <div
               onClick={() => navigate('/edit-profile')}
               style={{
-                color: '#D4A843',
+                color: 'rgba(212,175,55,0.6)',
                 fontSize: '24px',
                 cursor: 'pointer',
                 padding: '8px',
@@ -560,7 +657,7 @@ export default function Settings() {
           </div>
           {pendingAvatarFile && (
             <div
-              className="settings-theme-panel"
+              className="settings-avatar-wrap"
               style={{
                 marginTop: '16px',
                 background: 'rgba(255,255,255,0.06)',
@@ -647,146 +744,51 @@ export default function Settings() {
         </div>
 
         {/* SECTION 2 - ACCOUNT */}
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-          <div style={{ width: '24px', height: '2px', background: 'rgba(212,168,67,0.6)', marginRight: '8px' }} />
-          <p
-            className="settings-section-label"
-            style={{
-            fontSize: '12px',
-            letterSpacing: '1.5px',
-            color: 'rgba(212,168,67,0.9)',
-            textTransform: 'uppercase',
-            fontWeight: 700,
-            margin: 0,
-          }}
-          >
-            {t('settings.sectionAccount')}
-          </p>
+        <div className="st-section-hdr">
+          <div style={{ width: '20px', height: '2px', background: 'rgba(212,175,55,0.4)', marginRight: '8px', flexShrink: 0 }} />
+          <p style={{ fontSize: '11px', letterSpacing: '0.2em', color: 'rgba(212,175,55,0.7)', textTransform: 'uppercase', fontWeight: 700, margin: 0, fontFamily: 'Georgia, serif', whiteSpace: 'nowrap' }}>{t('settings.sectionAccount')}</p>
+          <div style={{ flex: 1, height: '1px', background: 'rgba(212,175,55,0.15)', marginLeft: '8px' }} />
         </div>
-        <div
-          className="settings-theme-panel"
-          style={{
-          background: 'rgba(255,255,255,0.06)',
-          border: '1px solid rgba(212,168,67,0.2)',
-          borderRadius: '16px',
-          backdropFilter: 'blur(12px)',
-          marginBottom: '24px',
-        }}
-        >
+        <div style={{ marginBottom: '8px' }}>
           {/* Edit Profile */}
           <button
             type="button"
+            className={dayTheme ? 'st-row-day' : ''}
+            style={nightRowStyle || undefined}
             onClick={() => navigate('/edit-profile')}
-            style={{
-              minHeight: '52px',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0 16px',
-              width: '100%',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              borderBottom: '1px solid rgba(212,168,67,0.2)',
-            }}
           >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: 'rgba(59,130,246,0.2)',
-              color: '#3B82F6',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              👤
-            </div>
+            <div className="st-icon" style={{ background: 'linear-gradient(135deg, #4A90D9, #2C5F8A)' }}>👤</div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
-              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                {t('settings.editProfile')}
-              </p>
+              <p className={dayTheme ? 'st-label-day' : 'st-label'}>{t('settings.editProfile')}</p>
             </div>
-            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+            <span className="st-chevron">›</span>
           </button>
           {/* Notifications */}
           <button
             type="button"
+            className={dayTheme ? 'st-row-day' : ''}
+            style={nightRowStyle || undefined}
             onClick={() => navigate('/notifications-settings')}
-            style={{
-              minHeight: '52px',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0 16px',
-              width: '100%',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              borderBottom: '1px solid rgba(212,168,67,0.2)',
-            }}
           >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: 'rgba(249,115,22,0.2)',
-              color: '#F97316',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              🔔
-            </div>
+            <div className="st-icon" style={{ background: 'linear-gradient(135deg, #D4A843, #8B6914)' }}>🔔</div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
-              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                {t('settings.notifications')}
-              </p>
+              <p className={dayTheme ? 'st-label-day' : 'st-label'}>{t('settings.notifications')}</p>
             </div>
-            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+            <span className="st-chevron">›</span>
           </button>
           {/* App Language */}
           <div
-            style={{
-              minHeight: '52px',
-              display: 'flex',
-              alignItems: 'flex-start',
-              padding: '12px 16px',
-              width: '100%',
-              borderTop: '1px solid rgba(212,168,67,0.2)',
-            }}
+            className={dayTheme ? 'st-row-day' : ''}
+            style={dayTheme ? { alignItems: 'flex-start' } : { ...nightRowStyle, alignItems: 'flex-start' }}
           >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: 'rgba(16,185,129,0.2)',
-              color: '#10B981',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}>
-              🌐
-            </div>
-            <div style={{ marginLeft: '14px', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0, whiteSpace: 'nowrap' }}>
-                {t('settings.uiLanguage')}
-              </p>
+            <div className="st-icon" style={{ background: 'linear-gradient(135deg, #43A89A, #2C6B64)', marginTop: '2px' }}>🌐</div>
+            <div style={{ marginLeft: '14px', flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <p className={dayTheme ? 'st-label-day' : 'st-label'}>{t('settings.uiLanguage')}</p>
+              <div className="st-select-wrap">
               <select
                 value={(i18nHook.resolvedLanguage || i18nHook.language || 'en').split('-')[0]}
                 onChange={(e) => handleLanguageChange(e.target.value)}
-                style={{
-                  background: '#F0E8D4',
-                  color: '#1A1A1A',
-                  border: '1px solid rgba(212,168,67,0.3)',
-                  borderRadius: '8px',
-                  padding: '8px 10px',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  width: '100%',
-                }}
+                className={dayTheme ? 'st-select-day' : 'st-select'}
               >
                 <option value="en">English</option>
                 <option value="es">Spanish</option>
@@ -801,488 +803,178 @@ export default function Settings() {
                 <option value="tl">Tagalog</option>
                 <option value="ro">Romanian</option>
               </select>
+              </div>
             </div>
           </div>
           {/* Theme Preference */}
           <div
-            style={{
-              minHeight: '52px',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0 16px',
-              width: '100%',
-              borderBottom: '1px solid rgba(212,168,67,0.2)',
-            }}
+            className={dayTheme ? 'st-row-day' : ''}
+            style={nightRowStyle || undefined}
           >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: 'rgba(245,158,11,0.2)',
-              color: '#F59E0B',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              🌅
-            </div>
+            <div className="st-icon" style={{ background: 'linear-gradient(135deg, #9B59B6, #6C3483)' }}>🌅</div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
-              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                Theme
-              </p>
+              <p className={dayTheme ? 'st-label-day' : 'st-label'}>Theme</p>
             </div>
+            <div className="st-select-wrap" style={{ minWidth: '110px' }}>
             <select
               value={themePreference}
               onChange={(e) => handleThemePreferenceChange(e.target.value)}
-              style={{
-                background: 'rgba(12,20,38,0.98)',
-                color: '#ffffff',
-                border: '1px solid rgba(212,168,67,0.35)',
-                borderRadius: '8px',
-                padding: '8px 10px',
-                fontSize: '13px',
-                fontWeight: 600,
-              }}
+              className={dayTheme ? 'st-select-day' : 'st-select'}
+              style={{ marginTop: 0 }}
             >
               <option value="auto">Auto</option>
               <option value="day">Day</option>
               <option value="evening">Evening</option>
               <option value="night">Night</option>
             </select>
+            </div>
           </div>
         </div>
 
         {/* SECTION 3 - READING */}
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-          <div style={{ width: '24px', height: '2px', background: 'rgba(212,168,67,0.6)', marginRight: '8px' }} />
-          <p
-            className="settings-section-label"
-            style={{
-            fontSize: '12px',
-            letterSpacing: '1.5px',
-            color: 'rgba(212,168,67,0.9)',
-            textTransform: 'uppercase',
-            fontWeight: 700,
-            margin: 0,
-          }}
-          >
-            {t('settings.sectionReading')}
-          </p>
+        <div className="st-section-hdr">
+          <div style={{ width: '20px', height: '2px', background: 'rgba(212,175,55,0.4)', marginRight: '8px', flexShrink: 0 }} />
+          <p style={{ fontSize: '11px', letterSpacing: '0.2em', color: 'rgba(212,175,55,0.7)', textTransform: 'uppercase', fontWeight: 700, margin: 0, fontFamily: 'Georgia, serif', whiteSpace: 'nowrap' }}>{t('settings.sectionReading')}</p>
+          <div style={{ flex: 1, height: '1px', background: 'rgba(212,175,55,0.15)', marginLeft: '8px' }} />
         </div>
-        <div
-          className="settings-theme-panel"
-          style={{
-          background: 'rgba(255,255,255,0.06)',
-          border: '1px solid rgba(212,168,67,0.2)',
-          borderRadius: '16px',
-          backdropFilter: 'blur(12px)',
-          marginBottom: '24px',
-        }}
-        >
+        <div style={{ marginBottom: '8px' }}>
           {/* Offline Bible */}
           <button
             type="button"
+            className={dayTheme ? 'st-row-day' : ''}
+            style={nightRowStyle || undefined}
             onClick={() => setOfflineBibleOpen(true)}
-            style={{
-              minHeight: '52px',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0 16px',
-              width: '100%',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              borderBottom: '1px solid rgba(212,168,67,0.2)',
-            }}
           >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: 'rgba(6,182,212,0.2)',
-              color: '#06B6D4',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              📥
-            </div>
+            <div className="st-icon" style={{ background: 'linear-gradient(135deg, #E74C3C, #922B21)' }}>📥</div>
             <div style={{ marginLeft: '14px', flex: 1, textAlign: 'left' }}>
-              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                Offline Bible
-              </p>
-              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0 0' }}>
-                Download Bible books to read without internet
-              </p>
+              <p className={dayTheme ? 'st-label-day' : 'st-label'}>Offline Bible</p>
+              <p className={dayTheme ? 'st-sub-day' : 'st-sub'}>Download Bible books to read without internet</p>
             </div>
-            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+            <span className="st-chevron">›</span>
           </button>
         </div>
 
         {/* SECTION 4 - COMMUNITY */}
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-          <div style={{ width: '24px', height: '2px', background: 'rgba(212,168,67,0.6)', marginRight: '8px' }} />
-          <p
-            className="settings-section-label"
-            style={{
-            fontSize: '12px',
-            letterSpacing: '1.5px',
-            color: 'rgba(212,168,67,0.9)',
-            textTransform: 'uppercase',
-            fontWeight: 700,
-            margin: 0,
-          }}
-          >
-            {t('settings.sectionCommunity')}
-          </p>
+        <div className="st-section-hdr">
+          <div style={{ width: '20px', height: '2px', background: 'rgba(212,175,55,0.4)', marginRight: '8px', flexShrink: 0 }} />
+          <p style={{ fontSize: '11px', letterSpacing: '0.2em', color: 'rgba(212,175,55,0.7)', textTransform: 'uppercase', fontWeight: 700, margin: 0, fontFamily: 'Georgia, serif', whiteSpace: 'nowrap' }}>{t('settings.sectionCommunity')}</p>
+          <div style={{ flex: 1, height: '1px', background: 'rgba(212,175,55,0.15)', marginLeft: '8px' }} />
         </div>
-        <div
-          className="settings-theme-panel"
-          style={{
-          background: 'rgba(255,255,255,0.06)',
-          border: '1px solid rgba(212,168,67,0.2)',
-          borderRadius: '16px',
-          backdropFilter: 'blur(12px)',
-          marginBottom: '24px',
-        }}
-        >
+        <div style={{ marginBottom: '8px' }}>
           {/* Public Profile */}
           <button
             type="button"
+            className={dayTheme ? 'st-row-day' : ''}
+            style={nightRowStyle || undefined}
             onClick={() => showComingSoonToast('Coming Soon')}
-            style={{
-              minHeight: '52px',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0 16px',
-              width: '100%',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-            }}
           >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: 'rgba(236,72,153,0.2)',
-              color: '#EC4899',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              🌍
-            </div>
+            <div className="st-icon" style={{ background: 'linear-gradient(135deg, #27AE60, #1A6B3C)' }}>🌍</div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
-              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                {t('settings.publicProfile')}
-              </p>
+              <p className={dayTheme ? 'st-label-day' : 'st-label'}>{t('settings.publicProfile')}</p>
             </div>
-            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+            <span className="st-chevron">›</span>
           </button>
         </div>
 
         {/* SECTION 5 - SUPPORT */}
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-          <div style={{ width: '24px', height: '2px', background: 'rgba(212,168,67,0.6)', marginRight: '8px' }} />
-          <p
-            className="settings-section-label"
-            style={{
-            fontSize: '12px',
-            letterSpacing: '1.5px',
-            color: 'rgba(212,168,67,0.9)',
-            textTransform: 'uppercase',
-            fontWeight: 700,
-            margin: 0,
-          }}
-          >
-            {t('settings.sectionSupport')}
-          </p>
+        <div className="st-section-hdr">
+          <div style={{ width: '20px', height: '2px', background: 'rgba(212,175,55,0.4)', marginRight: '8px', flexShrink: 0 }} />
+          <p style={{ fontSize: '11px', letterSpacing: '0.2em', color: 'rgba(212,175,55,0.7)', textTransform: 'uppercase', fontWeight: 700, margin: 0, fontFamily: 'Georgia, serif', whiteSpace: 'nowrap' }}>{t('settings.sectionSupport')}</p>
+          <div style={{ flex: 1, height: '1px', background: 'rgba(212,175,55,0.15)', marginLeft: '8px' }} />
         </div>
-        <div
-          className="settings-theme-panel"
-          style={{
-          background: 'rgba(255,255,255,0.06)',
-          border: '1px solid rgba(212,168,67,0.2)',
-          borderRadius: '16px',
-          backdropFilter: 'blur(12px)',
-          marginBottom: '24px',
-        }}
-        >
+        <div style={{ marginBottom: '8px' }}>
           {/* Share App */}
           <button
             type="button"
+            className={dayTheme ? 'st-row-day' : ''}
+            style={nightRowStyle || undefined}
             onClick={() => setShareAppOpen(true)}
-            style={{
-              minHeight: '52px',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0 16px',
-              width: '100%',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              borderBottom: '1px solid rgba(212,168,67,0.2)',
-            }}
           >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: 'rgba(20,184,166,0.2)',
-              color: '#14B8A6',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              📤
-            </div>
+            <div className="st-icon" style={{ background: 'linear-gradient(135deg, #D4AF37, #8B6914)' }}>📤</div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
-              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                {t('settings.shareApp')}
-              </p>
+              <p className={dayTheme ? 'st-label-day' : 'st-label'}>{t('settings.shareApp')}</p>
             </div>
-            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+            <span className="st-chevron">›</span>
           </button>
           {/* Rate Us */}
           <button
             type="button"
+            className={dayTheme ? 'st-row-day' : ''}
+            style={nightRowStyle || undefined}
             onClick={() => setRateUsOpen(true)}
-            style={{
-              minHeight: '52px',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0 16px',
-              width: '100%',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              borderBottom: '1px solid rgba(212,168,67,0.2)',
-            }}
           >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: 'rgba(234,179,8,0.2)',
-              color: '#EAB308',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              ⭐
-            </div>
+            <div className="st-icon" style={{ background: 'linear-gradient(135deg, #F59E0B, #B45309)' }}>⭐</div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
-              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                {t('settings.rateUs')}
-              </p>
+              <p className={dayTheme ? 'st-label-day' : 'st-label'}>{t('settings.rateUs')}</p>
             </div>
-            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+            <span className="st-chevron">›</span>
           </button>
           {/* Contact Support */}
           <button
             type="button"
+            className={dayTheme ? 'st-row-day' : ''}
+            style={nightRowStyle || undefined}
             onClick={openFeedbackModal}
-            style={{
-              minHeight: '52px',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0 16px',
-              width: '100%',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-            }}
           >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: 'rgba(239,68,68,0.2)',
-              color: '#EF4444',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              💬
-            </div>
+            <div className="st-icon" style={{ background: 'linear-gradient(135deg, #6366F1, #4338CA)' }}>💬</div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
-              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                {t('settings.contactSupport')}
-              </p>
+              <p className={dayTheme ? 'st-label-day' : 'st-label'}>{t('settings.contactSupport')}</p>
             </div>
-            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+            <span className="st-chevron">›</span>
           </button>
         </div>
 
         {/* SECTION 6 - ABOUT */}
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-          <div style={{ width: '24px', height: '2px', background: 'rgba(212,168,67,0.6)', marginRight: '8px' }} />
-          <p
-            className="settings-section-label"
-            style={{
-            fontSize: '12px',
-            letterSpacing: '1.5px',
-            color: 'rgba(212,168,67,0.9)',
-            textTransform: 'uppercase',
-            fontWeight: 700,
-            margin: 0,
-          }}
-          >
-            {t('settings.sectionAbout')}
-          </p>
+        <div className="st-section-hdr">
+          <div style={{ width: '20px', height: '2px', background: 'rgba(212,175,55,0.4)', marginRight: '8px', flexShrink: 0 }} />
+          <p style={{ fontSize: '11px', letterSpacing: '0.2em', color: 'rgba(212,175,55,0.7)', textTransform: 'uppercase', fontWeight: 700, margin: 0, fontFamily: 'Georgia, serif', whiteSpace: 'nowrap' }}>{t('settings.sectionAbout')}</p>
+          <div style={{ flex: 1, height: '1px', background: 'rgba(212,175,55,0.15)', marginLeft: '8px' }} />
         </div>
-        <div
-          className="settings-theme-panel"
-          style={{
-          background: 'rgba(255,255,255,0.06)',
-          border: '1px solid rgba(212,168,67,0.2)',
-          borderRadius: '16px',
-          backdropFilter: 'blur(12px)',
-          marginBottom: '24px',
-        }}
-        >
+        <div style={{ marginBottom: '8px' }}>
           {/* What's New */}
           <button
             type="button"
+            className={dayTheme ? 'st-row-day' : ''}
+            style={nightRowStyle || undefined}
             onClick={() => setWhatsNewOpen(true)}
-            style={{
-              minHeight: '52px',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0 16px',
-              width: '100%',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              borderBottom: '1px solid rgba(212,168,67,0.2)',
-            }}
           >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: 'rgba(99,102,241,0.2)',
-              color: '#6366F1',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              📢
-            </div>
+            <div className="st-icon" style={{ background: 'linear-gradient(135deg, #6366F1, #4338CA)' }}>📢</div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
-              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                {t('settings.whatsNew')}
-              </p>
+              <p className={dayTheme ? 'st-label-day' : 'st-label'}>{t('settings.whatsNew')}</p>
             </div>
-            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+            <span className="st-chevron">›</span>
           </button>
           {/* Privacy Policy */}
           <Link
             to="/privacy"
-            style={{
-              minHeight: '52px',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0 16px',
-              width: '100%',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              textDecoration: 'none',
-              borderBottom: '1px solid rgba(212,168,67,0.2)',
-            }}
+            className={dayTheme ? 'st-row-day' : ''}
+            style={dayTheme ? { textDecoration: 'none' } : { ...nightRowStyle, textDecoration: 'none' }}
           >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: 'rgba(71,85,105,0.2)',
-              color: '#475569',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              🔒
-            </div>
+            <div className="st-icon" style={{ background: 'linear-gradient(135deg, #475569, #2D3748)' }}>🔒</div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
-              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                {t('settings.privacyPolicy')}
-              </p>
+              <p className={dayTheme ? 'st-label-day' : 'st-label'}>{t('settings.privacyPolicy')}</p>
             </div>
-            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+            <span className="st-chevron">›</span>
           </Link>
           {/* Terms of Service */}
           <Link
             to="/legal"
-            style={{
-              minHeight: '52px',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0 16px',
-              width: '100%',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              textDecoration: 'none',
-              borderBottom: '1px solid rgba(212,168,67,0.2)',
-            }}
+            className={dayTheme ? 'st-row-day' : ''}
+            style={dayTheme ? { textDecoration: 'none' } : { ...nightRowStyle, textDecoration: 'none' }}
           >
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: 'rgba(16,185,129,0.2)',
-              color: '#10B981',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              📄
-            </div>
+            <div className="st-icon" style={{ background: 'linear-gradient(135deg, #10B981, #065F46)' }}>📄</div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
-              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                {t('settings.termsOfService')}
-              </p>
+              <p className={dayTheme ? 'st-label-day' : 'st-label'}>{t('settings.termsOfService')}</p>
             </div>
-            <span style={{ color: '#D4A843', fontSize: '18px' }}>›</span>
+            <span className="st-chevron">›</span>
           </Link>
           {/* Version */}
-          <div style={{
-            minHeight: '52px',
-            display: 'flex',
-            alignItems: 'center',
-            padding: '0 16px',
-            width: '100%',
-          }}>
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: 'rgba(107,114,128,0.2)',
-              color: '#6B7280',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              ℹ️
-            </div>
+          <div className={dayTheme ? 'st-row-day' : ''} style={nightRowStyle || undefined}>
+            <div className="st-icon" style={{ background: 'linear-gradient(135deg, #6B7280, #374151)' }}>ℹ️</div>
             <div style={{ marginLeft: '14px', flex: 1 }}>
-              <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: 500, margin: 0 }}>
-                {t('settings.version')}
-              </p>
+              <p className={dayTheme ? 'st-label-day' : 'st-label'}>{t('settings.version')}</p>
             </div>
-            <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}>1.0.0</span>
+            <span style={{ color: 'rgba(212,175,55,0.4)', fontSize: '14px' }}>1.0.0</span>
           </div>
         </div>
 

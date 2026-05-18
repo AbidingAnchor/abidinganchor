@@ -6,8 +6,10 @@ import { StatusBar } from '@capacitor/status-bar';
 import {
   THEME_PREFERENCE_CHANGED_EVENT,
   THEME_PREFERENCE_STORAGE_KEY,
+  MANUAL_THEME_PREFERENCE_KEY,
   readThemePreferenceFromStorage,
   readManualThemePreference,
+  emitThemePreferenceChanged,
 } from "../utils/themePreferenceStorage";
 
 const FADE_DURATION_MS = 800;
@@ -145,10 +147,10 @@ export default function BackgroundManager() {
     let fadeTimeout;
 
     const updateBackground = () => {
+      // Manual preference always wins — check both keys
+      const manualPref = readManualThemePreference();
+      if (manualPref && manualPref !== 'auto') return;
       const themePreference = readThemePreferenceFromStorage();
-      console.log('theme-preference:', themePreference);
-      console.log('applying theme:', themePreference === 'auto' || !themePreference ? 'time-based' : themePreference);
-      // Skip automatic updates if manual theme preference is set
       if (themePreference && themePreference !== 'auto') return;
 
       const nextBg = getBackgroundTypeForTime();
@@ -193,7 +195,8 @@ export default function BackgroundManager() {
 
     updateBackground();
     updateThemeColorMeta(currentBgRef.current);
-    const interval = setInterval(updateBackground, 30 * 1000);
+    // Use applyThemePreference on interval — it correctly respects manual selection
+    const interval = setInterval(applyThemePreference, 30 * 1000);
 
     const handleVisibilityChange = () => {
       if (!document.hidden) {
@@ -215,13 +218,8 @@ export default function BackgroundManager() {
 
     const onThemePreferenceChanged = () => applyThemePreference();
     const onStorage = (e) => {
-      if (e.key === THEME_PREFERENCE_STORAGE_KEY || e.key === null) {
-        const manualPref = readManualThemePreference();
-        const themePreference = manualPref || readThemePreferenceFromStorage();
-        // Only update background if preference is auto
-        if (!themePreference || themePreference === 'auto') {
-          updateBackground();
-        }
+      if (e.key === THEME_PREFERENCE_STORAGE_KEY || e.key === MANUAL_THEME_PREFERENCE_KEY || e.key === null) {
+        applyThemePreference();
       }
     };
 

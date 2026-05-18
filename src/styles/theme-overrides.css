@@ -266,10 +266,10 @@
   background: #F0E8D4 !important;
 }
 
-/* Bible Reader verse cards */
+/* Bible Reader verse cards — transparent flowing text on day theme */
 [data-theme="day"] .bible-verse-well p {
-  background: #F0E8D4 !important;
-  color: #0a1a3e !important;
+  background: transparent !important;
+  color: #1C1008 !important;
 }
 
 /* Testimony Wall cards */

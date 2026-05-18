@@ -709,6 +709,51 @@ function Home() {
       || profile?.full_name?.split(' ')[0]
       || friendFallback)
 
+  const toolCards = [
+    {
+      to: '/bible-videos',
+      icon: '🎬',
+      title: t('home.toolBibleVideos'),
+      subtitle: t('home.toolBibleVideosSub'),
+      gradient: 'linear-gradient(135deg, #0f2a5f 0%, #1d4ed8 100%)',
+    },
+    {
+      to: '/worship',
+      icon: '🎵',
+      title: t('home.worshipMode'),
+      subtitle: t('home.worshipSubtitle'),
+      gradient: 'linear-gradient(135deg, #4c1d95 0%, #8b5cf6 100%)',
+    },
+    {
+      to: '/reading-plans',
+      icon: '📅',
+      title: t('home.toolReadingPlans'),
+      subtitle: t('home.toolReadingPlansSub'),
+      gradient: 'linear-gradient(135deg, #0f766e 0%, #2dd4bf 100%)',
+    },
+    {
+      to: '/fasting',
+      icon: '🕐',
+      title: t('home.toolFasting'),
+      subtitle: t('home.toolFastingSub'),
+      gradient: 'linear-gradient(135deg, #9a3412 0%, #f97316 100%)',
+    },
+    {
+      to: '/supporter-upgrade',
+      icon: '👑',
+      title: 'Become a Supporter',
+      subtitle: 'Help keep this ministry free',
+      gradient: 'linear-gradient(135deg, #b45309 0%, #facc15 100%)',
+    },
+    {
+      to: '/testimony-wall',
+      icon: '📜',
+      title: t('home.toolCommunity'),
+      subtitle: t('home.toolCommunitySub'),
+      gradient: 'linear-gradient(135deg, #9f1239 0%, #fb7185 100%)',
+    },
+  ]
+
   return (
     <>
       <style>{SHIMMER_KEYFRAMES}</style>
@@ -730,25 +775,39 @@ function Home() {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
           <GuestPreviewBanner />
           <section style={{ marginBottom: 0 }}>
-            <div style={{ marginBottom: '20px' }}>
+            <div style={{ marginBottom: '22px', position: 'relative', paddingTop: '8px' }}>
+              <div
+                aria-hidden="true"
+                style={{
+                  position: 'absolute',
+                  top: '-40px',
+                  left: '50%',
+                  width: '280px',
+                  height: '150px',
+                  transform: 'translateX(-50%)',
+                  background: 'radial-gradient(circle, rgba(245, 158, 11, 0.22) 0%, rgba(245, 158, 11, 0.08) 34%, transparent 72%)',
+                  filter: 'blur(8px)',
+                  pointerEvents: 'none',
+                  zIndex: -1,
+                }}
+              />
               <p style={{
-                color: 'var(--heading-text)',
-                fontSize: '28px',
-                fontWeight: 800,
+                color: '#ffffff',
+                fontSize: '30px',
+                fontWeight: 700,
                 marginBottom: '4px',
-                letterSpacing: '-0.02em',
-                lineHeight: 1.22,
+                lineHeight: 1.18,
+                textShadow: '0 8px 32px rgba(0, 0, 0, 0.28)',
               }}>
                 {timeGreeting}, <span style={nameStyle}>{firstName}</span> {timeEmoji}
               </p>
               <p style={{
-                color: 'var(--text-secondary)',
-                fontSize: '15px',
+                color: 'rgba(251, 191, 36, 0.7)',
+                fontSize: '13px',
                 fontWeight: 400,
-                marginBottom: '32px',
-                opacity: 0.8,
-                letterSpacing: '0.02em',
+                marginBottom: '28px',
                 lineHeight: 1.5,
+                fontStyle: 'italic',
               }}>
                 {t('home.enc2')}
               </p>
@@ -776,10 +835,12 @@ function Home() {
               onPresenceComplete={handlePresenceComplete}
             />
 
-            <DailyStreakCard
-              activeDays={mergedWeekActiveDays}
-              consecutiveStreak={dailyStreakCount}
-            />
+            <div style={{ marginBottom: '16px' }}>
+              <DailyStreakCard
+                activeDays={mergedWeekActiveDays}
+                consecutiveStreak={dailyStreakCount}
+              />
+            </div>
 
             {user?.id && (mergedWeekActiveDays.length > 0 || journalCount > 0 || dailyStreakCount > 0) ? (
               <WeeklyRecap
@@ -790,231 +851,91 @@ function Home() {
               />
             ) : null}
 
-            <div style={{ marginBottom: '28px', animation: 'fadeInUp 0.6s ease forwards', animationDelay: '0.3s' }}>
-              <h2 style={{ color: 'var(--section-title)', fontSize: '13px', letterSpacing: '0.12em', fontWeight: 500, textTransform: 'uppercase' }}>{t('home.toolsHeading')}</h2>
-            <div className="home-tools-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
-              <Link
-                to="/bible-videos"
-                style={{
-                  background: '#F0E8D4',
-                  border: '1px solid rgba(212,168,67,0.15)',
-                  borderRadius: '16px',
-                  backdropFilter: 'blur(8px)',
-                  padding: '16px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  textDecoration: 'none',
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                <div style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '12px',
-                  background: 'rgba(212,168,67,0.12)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '24px',
-                  marginBottom: '8px',
-                }}>🎬</div>
-                <p style={{ fontSize: '14px', fontWeight: 700, color: '#1A1A1A', margin: 0 }}>{t('home.toolBibleVideos')}</p>
-                <p style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0', textAlign: 'center' }}>{t('home.toolBibleVideosSub')}</p>
-              </Link>
-              <Link
-                to="/worship"
-                style={{
-                  background: '#F0E8D4',
-                  border: '1px solid rgba(212,168,67,0.15)',
-                  borderRadius: '16px',
-                  backdropFilter: 'blur(8px)',
-                  padding: '16px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  textDecoration: 'none',
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                <div style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '12px',
-                  background: 'rgba(212,168,67,0.12)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '24px',
-                  marginBottom: '8px',
-                }}>🎵</div>
-                <p style={{ fontSize: '14px', fontWeight: 700, color: '#1A1A1A', margin: 0 }}>{t('home.worshipMode')}</p>
-                <p style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0', textAlign: 'center' }}>{t('home.worshipSubtitle')}</p>
-              </Link>
-              <Link
-                to="/reading-plans"
-                style={{
-                  background: '#F0E8D4',
-                  border: '1px solid rgba(212,168,67,0.15)',
-                  borderRadius: '16px',
-                  backdropFilter: 'blur(8px)',
-                  padding: '16px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  textDecoration: 'none',
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                <div style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '12px',
-                  background: 'rgba(212,168,67,0.12)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '24px',
-                  marginBottom: '8px',
-                }}>📅</div>
-                <p style={{ fontSize: '14px', fontWeight: 700, color: '#1A1A1A', margin: 0 }}>{t('home.toolReadingPlans')}</p>
-                <p style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0', textAlign: 'center' }}>{t('home.toolReadingPlansSub')}</p>
-              </Link>
-              <Link
-                to="/fasting"
-                style={{
-                  background: '#F0E8D4',
-                  border: '1px solid rgba(212,168,67,0.15)',
-                  borderRadius: '16px',
-                  backdropFilter: 'blur(8px)',
-                  padding: '16px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  textDecoration: 'none',
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                <div style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '12px',
-                  background: 'rgba(212,168,67,0.12)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '24px',
-                  marginBottom: '8px',
-                }}>🕐</div>
-                <p style={{ fontSize: '14px', fontWeight: 700, color: '#1A1A1A', margin: 0 }}>{t('home.toolFasting')}</p>
-                <p style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0', textAlign: 'center' }}>{t('home.toolFastingSub')}</p>
-              </Link>
-              <Link
-                to="/supporter-upgrade"
-                className="home-tool-supporter-card"
-                style={{
-                  background: '#F0E8D4',
-                  border: '1px solid rgba(212,168,67,0.15)',
-                  borderRadius: '16px',
-                  backdropFilter: 'blur(8px)',
-                  padding: '16px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  textDecoration: 'none',
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                <div
-                  className="home-tool-supporter-icon"
-                  style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '12px',
-                    background: 'rgba(212,168,67,0.12)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '24px',
-                    marginBottom: '8px',
-                  }}
-                >
-                  👑
-                </div>
-                <p className="home-tool-supporter-title" style={{ fontSize: '14px', fontWeight: 700, color: '#1A1A1A', margin: 0, textAlign: 'center' }}>
-                  Become a Supporter
-                </p>
-                <p
-                  className="home-tool-supporter-sub"
-                  style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0', textAlign: 'center' }}
-                >
-                  Help keep this ministry free
-                </p>
-              </Link>
-              <Link
-                to="/testimony-wall"
-                style={{
-                  background: '#F0E8D4',
-                  border: '1px solid rgba(212,168,67,0.15)',
-                  borderRadius: '16px',
-                  backdropFilter: 'blur(8px)',
-                  padding: '16px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  textDecoration: 'none',
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                <div style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '12px',
-                  background: 'rgba(212,168,67,0.12)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '24px',
-                  marginBottom: '8px',
-                }}>📜</div>
-                <p style={{ fontSize: '14px', fontWeight: 700, color: '#1A1A1A', margin: 0 }}>{t('home.toolCommunity')}</p>
-                <p style={{ fontSize: '12px', color: '#4A4A4A', margin: '4px 0 0 0', textAlign: 'center' }}>{t('home.toolCommunitySub')}</p>
-              </Link>
+            <div style={{ marginBottom: '24px', animation: 'fadeInUp 0.6s ease forwards', animationDelay: '0.3s' }}>
+              <h2 style={{ color: 'rgba(251, 191, 36, 0.86)', fontSize: '12px', letterSpacing: '0.18em', fontWeight: 700, textTransform: 'uppercase', margin: '0 0 12px', marginTop: '24px' }}>{t('home.toolsHeading')}</h2>
+              <div className="home-tools-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                {toolCards.map((tool) => (
+                  <Link
+                    key={tool.to}
+                    to={tool.to}
+                    style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      backdropFilter: 'blur(12px)',
+                      WebkitBackdropFilter: 'blur(12px)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: '24px',
+                      boxShadow: 'none',
+                      padding: '16px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      textDecoration: 'none',
+                      transition: 'transform 0.2s ease, border-color 0.2s ease, background 0.2s ease',
+                      minHeight: '136px',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-3px)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)'
+                    }}
+                  >
+                    <div style={{
+                      width: '46px',
+                      height: '46px',
+                      borderRadius: '12px',
+                      background: tool.gradient,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '23px',
+                      marginBottom: '12px',
+                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.16), 0 12px 24px rgba(0,0,0,0.18)',
+                    }}>{tool.icon}</div>
+                    <p style={{ fontSize: '14px', fontWeight: 800, color: '#ffffff', margin: 0, lineHeight: 1.25 }}>{tool.title}</p>
+                    <p style={{ fontSize: '12px', color: 'rgba(209, 213, 219, 0.72)', margin: '5px 0 0 0', lineHeight: 1.35 }}>{tool.subtitle}</p>
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
 
           <div
-            className="home-gold-glass verse-of-week-card rounded-2xl p-6"
+            className="verse-of-week-card rounded-3xl p-6"
             style={{
-              borderRadius: '16px',
-              background: '#F0E8D4',
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: '24px',
+              boxShadow: 'none',
+              marginBottom: '24px',
               animation: 'fadeInUp 0.6s ease forwards',
               animationDelay: '0.4s'
             }}
           >
-            <div className="relative" style={{ borderLeft: '3px solid #D4A843', paddingLeft: '16px' }}>
+            <div className="relative" style={{ paddingLeft: '16px' }}>
               <span style={{ 
                 position: 'absolute', 
                 top: '-20px', 
                 left: 0, 
                 fontSize: '60px', 
                 lineHeight: 1, 
-                color: 'rgba(212,168,67,0.3)',
+                color: 'rgba(251, 191, 36, 0.35)',
                 fontFamily: 'Georgia, serif'
               }}>"</span>
               <p className="verse-of-week-label" style={{ 
                 fontSize: '12px', 
-                fontWeight: 500, 
-                letterSpacing: '0.12em',
-                color: 'var(--section-title)',
+                fontWeight: 700, 
+                letterSpacing: '0.18em',
+                color: 'rgba(251, 191, 36, 0.86)',
                 textTransform: 'uppercase',
                 marginBottom: '16px'
               }}>{t('home.verseOfWeek')}</p>
               <p className="verse-of-week-verse" style={{ 
                 marginTop: '16px', 
-                fontSize: '17px', 
-                lineHeight: 1.6,
-                color: '#1A1A1A',
+                fontSize: '18px', 
+                lineHeight: 1.7,
+                color: '#ffffff',
                 fontStyle: 'italic',
                 fontFamily: 'Georgia, serif',
               }}>
@@ -1022,11 +943,11 @@ function Home() {
               </p>
             </div>
             <p className="verse-of-week-ref" style={{ 
-              marginTop: '8px', 
+              marginTop: '10px', 
               fontSize: '13px', 
               fontWeight: 700, 
               letterSpacing: '0.1em',
-              color: '#D4A843'
+              color: 'rgba(251, 191, 36, 0.78)'
             }}>{verseOfWeekLoading ? t('home.verseWeekRef') : `${t('bible.books.psalms')} 23:1`}</p>
             <div className="mt-4 flex justify-end">
               <button

@@ -9,15 +9,6 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { userStorageKey } from '../utils/userStorage'
 
-const JOURNEY_NIGHT_CARD_STYLE = {
-  background: 'rgba(255, 255, 255, 0.06)',
-  border: '1px solid rgba(255, 255, 255, 0.09)',
-  borderRadius: '12px',
-  color: 'rgba(255, 255, 255, 0.92)',
-  backdropFilter: 'blur(20px)',
-  WebkitBackdropFilter: 'blur(20px)',
-  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
-}
 
 function readJson(key, fallback) {
   try {
@@ -41,86 +32,65 @@ function getDayIndexForWeek() {
   return day - 1 // Monday=0, Friday=4
 }
 
-const LearningPathCard = ({ icon, title, subtitle, accentColor, iconBg, featured, badge, onStart }) => (
+const FEATURE_ICON_GRADIENTS = {
+  trivia:       'linear-gradient(135deg,#4c1d95,#7c3aed)',
+  flashcards:   'linear-gradient(135deg,#1e3a6e,#2563eb)',
+  map:          'linear-gradient(135deg,#0f4c40,#0d9488)',
+  achievements: 'linear-gradient(135deg,#78350f,#D4A843)',
+}
+
+const LearningPathCard = ({ icon, title, subtitle, featureKey, badge, onStart }) => (
   <article
     role="button"
     tabIndex={0}
     onClick={onStart}
     onKeyDown={(e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault()
-        onStart()
-      }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onStart() }
     }}
-    className={`fj-hub-card ${featured ? 'fj-hub-card--featured' : ''}`}
+    className="fj-hub-card home-gold-glass"
     style={{
       borderRadius: '16px',
-      padding: '12px 14px',
+      padding: '14px 16px',
       display: 'flex',
       alignItems: 'center',
-      gap: '12px',
+      gap: '14px',
       cursor: 'pointer',
-      transition: 'background 0.2s',
+      transition: 'transform 0.15s ease, box-shadow 0.15s ease',
       position: 'relative',
       overflow: 'hidden',
-      background: 'rgba(255,255,255,0.05)',
-      border: '1px solid rgba(212,168,67,0.15)',
-      backdropFilter: 'blur(8px)',
-      WebkitBackdropFilter: 'blur(8px)',
     }}
   >
-    {/* Left accent bar */}
-    <div
-      style={{
-        width: '3px',
-        height: '100%',
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        background: 'rgba(212,168,67,0.5)',
-        borderRadius: '16px 0 0 16px',
-      }}
-    />
-
-    {/* Icon box */}
-    <div
-      style={{
-        width: '44px',
-        height: '44px',
-        borderRadius: '12px',
-        background: 'rgba(212,168,67,0.1)',
-        border: '1px solid rgba(212,168,67,0.25)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '22px',
-        marginLeft: '6px',
-        flexShrink: 0,
-      }}
-    >
+    {/* Icon box with unique gradient */}
+    <div style={{
+      width: '46px',
+      height: '46px',
+      borderRadius: '12px',
+      background: FEATURE_ICON_GRADIENTS[featureKey] ?? FEATURE_ICON_GRADIENTS.achievements,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '22px',
+      flexShrink: 0,
+      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+    }}>
       {icon}
     </div>
 
-    {/* Title + subtitle (divs — not p — avoids global day/form resets; no faux "input" look) */}
-    <div className="fj-hub-copy" style={{ flex: 1, minWidth: 0 }}>
-      <div className="fj-hub-title">{title}</div>
-      <div className="fj-hub-subtitle">{subtitle}</div>
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ color: '#ffffff', fontWeight: 700, fontSize: '15px', marginBottom: '3px' }}>{title}</div>
+      <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '12px' }}>{subtitle}</div>
     </div>
 
     {badge ? (
-      <span
-        className={`fj-hub-badge ${featured ? 'fj-hub-badge--featured' : ''}`}
-        style={{
-          padding: '8px 20px',
-          borderRadius: '50px',
-          fontSize: '13px',
-          fontWeight: 700,
-          background: 'transparent',
-          border: '1px solid rgba(212,168,67,0.4)',
-          color: '#D4A843',
-          flexShrink: 0,
-        }}
-      >
+      <span style={{
+        padding: '7px 16px',
+        borderRadius: '50px',
+        fontSize: '12px',
+        fontWeight: 700,
+        background: 'linear-gradient(135deg,#D4A843,#F0C040)',
+        color: '#1A1200',
+        flexShrink: 0,
+      }}>
         {badge}
       </span>
     ) : null}
@@ -221,80 +191,51 @@ export default function FaithJourney() {
       }}
     >
       {view === 'hub' ? (
-        <div style={{ padding: '0 16px', paddingTop: '16px', paddingBottom: '100px', maxWidth: '680px', margin: '0 auto', width: '100%', flex: 1 }}>
-          
-          {/* Hero Section */}
-          <header className="glass-panel" style={{ marginBottom: '20px', position: 'relative', borderRadius: '16px', overflow: 'hidden', minHeight: '160px' }}>
-            <div style={{ position: 'relative', zIndex: 2, padding: '24px' }}>
-              <p style={{ 
-                color: '#D4A843', 
-                fontSize: '9px', 
-                fontWeight: 600, 
-                letterSpacing: '0.15em', 
-                textTransform: 'uppercase', 
-                marginBottom: '8px' 
-              }}>
-                {t('faithJourney.heroKicker')}
-              </p>
-              <h1 style={{ color: '#FFFFFF', fontSize: '26px', fontWeight: 700, marginBottom: '8px', lineHeight: 1.2 }}>
-                {t('faithJourney.heroLine1')}<span style={{ color: '#D4A843' }}>{t('faithJourney.heroLine1Accent')}</span>{t('faithJourney.heroLine2')}
-              </h1>
-              <p style={{ 
-                color: 'rgba(255,255,255,0.38)', 
-                fontSize: '11px', 
-                fontStyle: 'italic' 
-              }}>
-                {t('faithJourney.heroSubtitle')}
-              </p>
-            </div>
+        <div style={{ padding: '0 16px', paddingTop: '16px', paddingBottom: '100px', width: '100%', flex: 1, boxSizing: 'border-box' }}>
+
+          {/* ── Header Card ── */}
+          <header className="home-gold-glass" style={{ borderRadius: '24px', padding: '24px', marginBottom: '20px', position: 'relative', overflow: 'hidden' }}>
+            <div style={{
+              position: 'absolute', top: '-24px', right: '-24px',
+              width: '140px', height: '140px',
+              background: 'radial-gradient(circle, rgba(212,168,67,0.12) 0%, transparent 70%)',
+              pointerEvents: 'none',
+            }} />
+            <p style={{ color: '#D4A843', fontSize: '10px', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', margin: '0 0 10px 0' }}>
+              {t('faithJourney.heroKicker')}
+            </p>
+            <h1 style={{ color: '#FFFFFF', fontSize: '24px', fontWeight: 800, margin: '0 0 10px 0', lineHeight: 1.25, fontFamily: 'Georgia, serif' }}>
+              {t('faithJourney.heroLine1')}<span style={{ color: '#D4A843' }}>{t('faithJourney.heroLine1Accent')}</span>{t('faithJourney.heroLine2')}
+            </h1>
+            <p style={{ color: 'rgba(251,191,36,0.65)', fontSize: '13px', fontStyle: 'italic', margin: 0 }}>
+              {t('faithJourney.heroSubtitle')}
+            </p>
           </header>
 
-          {/* Gold Divider */}
-          <div style={{
-            height: '1px',
-            background: 'linear-gradient(90deg, transparent, rgba(212,168,67,0.3), transparent)',
-            marginBottom: '20px'
-          }} />
-
-          {/* Streak Bar */}
-          <div
-            className="fj-hub-streak"
-            style={{
-            ...JOURNEY_NIGHT_CARD_STYLE,
-            padding: '12px 14px',
-            marginBottom: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px'
-          }}
-          >
-            <span style={{ fontSize: '22px' }}>🔥</span>
+          {/* ── Streak Card ── */}
+          <div className="home-gold-glass fj-hub-streak" style={{ borderRadius: '16px', padding: '16px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', flexShrink: 0 }}>
+              <span style={{ fontSize: '26px', lineHeight: 1 }}>🔥</span>
+              <span style={{ color: '#D4A843', fontSize: '22px', fontWeight: 800, lineHeight: 1 }}>
+                {loading ? '—' : streakCount}
+              </span>
+            </div>
             <div style={{ flex: 1 }}>
-              <p className="fj-hub-streak__line" style={{ color: '#FFFFFF', fontSize: '13px', fontWeight: 600, marginBottom: '2px' }}>
-                {loading ? t('faithJourney.streakLoading') : t('faithJourney.streakLine', { n: streakCount })}
+              <p className="fj-hub-streak__line" style={{ color: '#ffffff', fontSize: '13px', fontWeight: 600, margin: '0 0 2px 0' }}>
+                {loading ? t('faithJourney.streakLoading') : streakCount === 0 ? t('faithJourney.streakSubZero') : t('faithJourney.streakSubActive')}
               </p>
-              <p className="fj-hub-streak__sub" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px' }}>
-                {loading ? t('faithJourney.streakSubLoading') : streakCount === 0 ? t('faithJourney.streakSubZero') : t('faithJourney.streakSubActive')}
+              <p className="fj-hub-streak__sub" style={{ color: 'rgba(255,255,255,0.45)', fontSize: '11px', margin: 0 }}>
+                {t('faithJourney.statStreak')}
               </p>
             </div>
-            {/* Day of week dots */}
-            <div className="fj-hub-streak-dots" style={{ display: 'flex', gap: '6px' }}>
+            <div className="fj-hub-streak-dots" style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
               {days.map((day, i) => {
                 const isToday = i === dayIndex
                 const isPast = i < dayIndex && dayIndex !== -1
                 const isCompleted = !loading && isPast
-                const dotState = loading
-                  ? 'loading'
-                  : isToday
-                    ? 'today'
-                    : isCompleted
-                      ? 'done'
-                      : 'idle'
+                const dotState = loading ? 'loading' : isToday ? 'today' : isCompleted ? 'done' : 'idle'
                 return (
-                  <div
-                    key={`${day}-${i}`}
-                    className={`fj-hub-streak-dot fj-hub-streak-dot--${dotState}`}
-                  >
+                  <div key={`${day}-${i}`} className={`fj-hub-streak-dot fj-hub-streak-dot--${dotState}`}>
                     {day}
                   </div>
                 )
@@ -302,62 +243,48 @@ export default function FaithJourney() {
             </div>
           </div>
 
+          {/* ── Answered Prayers Card ── */}
           <button
             type="button"
             onClick={() => navigate('/prayer')}
-            className="fj-hub-prayers"
+            className="fj-hub-prayers home-gold-glass"
             style={{
               width: '100%',
-              marginBottom: '24px',
-              padding: '14px 16px',
-              ...JOURNEY_NIGHT_CARD_STYLE,
+              marginBottom: '20px',
+              padding: '16px',
+              borderRadius: '16px',
               cursor: 'pointer',
               textAlign: 'left',
               display: 'flex',
               alignItems: 'center',
-              gap: '12px',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.25)',
+              gap: '14px',
+              border: 'none',
             }}
           >
-            <span
-              style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '12px',
-                background: 'rgba(212,168,67,0.2)',
-                border: '1px solid rgba(212,168,67,0.45)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '20px',
-                flexShrink: 0,
-              }}
-              aria-hidden
-            >
-              ✓
-            </span>
+            <span style={{
+              width: '44px', height: '44px', borderRadius: '12px', flexShrink: 0,
+              background: 'linear-gradient(135deg,#78350f,#D4A843)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '22px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            }} aria-hidden>✓</span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ color: '#D4A843', fontSize: '15px', fontWeight: 700, margin: '0 0 4px', lineHeight: 1.3 }}>
+              <p style={{ color: '#D4A843', fontSize: '15px', fontWeight: 700, margin: '0 0 3px 0' }}>
                 {t('faithJourney.prayersAnsweredBadge', { count: answeredPrayersCount })}
               </p>
-              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '11px', margin: 0, lineHeight: 1.4 }}>
+              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '12px', margin: 0 }}>
                 {t('faithJourney.prayersAnsweredHint')}
               </p>
             </div>
-            <span className="fj-hub-prayers__arrow" style={{ color: 'rgba(212,168,67,0.8)', fontSize: '18px', flexShrink: 0 }} aria-hidden>
-              →
-            </span>
+            <span className="fj-hub-prayers__arrow" style={{ color: '#D4A843', fontSize: '20px', flexShrink: 0 }} aria-hidden>→</span>
           </button>
 
-          {/* Learning Paths */}
-          <div style={{ marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {/* ── Feature Cards ── */}
+          <div style={{ marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <LearningPathCard
               icon="❓"
               title={t('faithJourney.cardTrivia')}
               subtitle={t('faithJourney.cardTriviaSub')}
-              accentColor="#D4A843"
-              iconBg="rgba(212,168,67,0.15)"
-              featured={true}
+              featureKey="trivia"
               badge={t('faithJourney.badgeToday')}
               onStart={() => setView('trivia')}
             />
@@ -365,9 +292,7 @@ export default function FaithJourney() {
               icon="📖"
               title={t('faithJourney.cardFlash')}
               subtitle={t('faithJourney.cardFlashSub')}
-              accentColor="#D4A843"
-              iconBg="rgba(212,168,67,0.15)"
-              featured={false}
+              featureKey="flashcards"
               badge={t('faithJourney.badgeStart')}
               onStart={() => setView('flashcards')}
             />
@@ -375,9 +300,7 @@ export default function FaithJourney() {
               icon="🗺️"
               title={t('faithJourney.cardMap')}
               subtitle={t('faithJourney.cardMapSub')}
-              accentColor="#D4A843"
-              iconBg="rgba(212,168,67,0.15)"
-              featured={false}
+              featureKey="map"
               badge={t('faithJourney.badgeStart')}
               onStart={() => setView('map')}
             />
@@ -385,114 +308,35 @@ export default function FaithJourney() {
               icon="🏆"
               title={t('faithJourney.cardAchievements')}
               subtitle={t('faithJourney.cardAchievementsSub')}
-              accentColor="#D4A843"
-              iconBg="rgba(212,168,67,0.15)"
-              featured={false}
+              featureKey="achievements"
               badge={t('faithJourney.badgeStart')}
               onStart={() => setView('achievements')}
             />
           </div>
 
-          {/* Stats Row */}
-          <div style={{
-            display: 'flex',
-            gap: '10px',
-            marginBottom: '24px'
-          }}>
-            <div
-              className="fj-hub-stat-card"
-              style={{
-              flex: 1,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(212,168,67,0.2)',
-              borderRadius: '16px',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              padding: '14px',
-              textAlign: 'center'
-            }}>
-              <p style={{ color: '#D4A843', fontSize: '28px', fontWeight: 800, marginBottom: '2px' }}>{stats.versesRead}</p>
-              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 600 }}>{t('faithJourney.statVerses')}</p>
-            </div>
-            <div
-              className="fj-hub-stat-card"
-              style={{
-              flex: 1,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(212,168,67,0.2)',
-              borderRadius: '16px',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              padding: '14px',
-              textAlign: 'center'
-            }}>
-              <p style={{ color: '#D4A843', fontSize: '28px', fontWeight: 800, marginBottom: '2px' }}>{streakCount}</p>
-              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 600 }}>{t('faithJourney.statStreak')}</p>
-            </div>
-            <div
-              className="fj-hub-stat-card"
-              style={{
-              flex: 1,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(212,168,67,0.2)',
-              borderRadius: '16px',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              padding: '14px',
-              textAlign: 'center'
-            }}>
-              <p style={{ color: '#D4A843', fontSize: '28px', fontWeight: 800, marginBottom: '2px' }}>{stats.badges}</p>
-              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 600 }}>{t('faithJourney.statBadges')}</p>
-            </div>
+          {/* ── Stats Row ── */}
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+            {[
+              { value: stats.versesRead, label: t('faithJourney.statVerses') },
+              { value: streakCount,      label: t('faithJourney.statStreak') },
+              { value: stats.badges,     label: t('faithJourney.statBadges') },
+            ].map(({ value, label }) => (
+              <div key={label} className="fj-hub-stat-card home-gold-glass" style={{ flex: 1, borderRadius: '16px', padding: '14px', textAlign: 'center' }}>
+                <p style={{ color: '#D4A843', fontSize: '28px', fontWeight: 800, margin: '0 0 3px 0' }}>{loading ? '—' : value}</p>
+                <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1.4px', fontWeight: 600, margin: 0 }}>{label}</p>
+              </div>
+            ))}
           </div>
 
-          {/* Verse of the Day */}
-          <div
-            className="fj-hub-vod-card"
-            style={{
-            ...JOURNEY_NIGHT_CARD_STYLE,
-            padding: '16px',
-            position: 'relative',
-            overflow: 'hidden',
-            marginBottom: '20px'
-          }}>
-            {/* Left accent */}
-            <div style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: '3px',
-              background: '#D4A843'
-            }} />
-            
-            <p style={{ 
-              color: '#D4A843', 
-              fontSize: '9px', 
-              fontWeight: 600, 
-              letterSpacing: '0.15em', 
-              textTransform: 'uppercase', 
-              marginBottom: '10px',
-              marginLeft: '8px'
-            }}>
+          {/* ── Verse of the Day ── */}
+          <div className="fj-hub-vod-card home-gold-glass" style={{ borderRadius: '16px', padding: '20px', marginBottom: '20px' }}>
+            <p style={{ color: '#D4A843', fontSize: '10px', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', margin: '0 0 12px 0' }}>
               {t('faithJourney.vodLabel')}
             </p>
-            <p style={{ 
-              color: 'var(--text-primary)', 
-              fontSize: '13px', 
-              fontStyle: 'italic',
-              lineHeight: 1.6,
-              marginBottom: '8px',
-              marginLeft: '8px'
-            }}>
+            <p style={{ color: '#ffffff', fontSize: '15px', fontStyle: 'italic', lineHeight: 1.7, fontFamily: 'Georgia, serif', margin: '0 0 12px 0' }}>
               {t('faithJourney.vodQuote')}
             </p>
-            <p style={{ 
-              color: '#D4A843', 
-              fontSize: '11px', 
-              fontWeight: 600,
-              textAlign: 'right'
-            }}>
+            <p style={{ color: 'rgba(212,168,67,0.75)', fontSize: '12px', fontWeight: 600, textAlign: 'right', margin: 0 }}>
               {t('faithJourney.vodRef')}
             </p>
           </div>
@@ -511,7 +355,7 @@ export default function FaithJourney() {
           <JourneyMap onExit={() => setView('hub')} fillVertical />
         </div>
       ) : (
-        <div style={subShellStyle}>
+        <div style={{ ...subShellStyle, paddingTop: '0px' }}>
           <Achievements onExit={() => setView('hub')} fillVertical />
         </div>
       )}

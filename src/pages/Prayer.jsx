@@ -207,71 +207,50 @@ export default function Prayer() {
         <GuestPreviewBanner />
         
         {/* Header */}
-        <div style={{ marginBottom: '32px', animation: 'fadeIn 0.6s ease-out' }}>
+        <div style={{ marginBottom: '32px', animation: 'fadeIn 0.6s ease-out', position: 'relative', textAlign: 'center' }}>
+          <div style={{
+            position: 'absolute',
+            inset: '-36px 20% auto',
+            height: '120px',
+            background: 'radial-gradient(circle, rgba(212, 168, 67, 0.22) 0%, rgba(212, 168, 67, 0.08) 38%, transparent 72%)',
+            filter: 'blur(14px)',
+            pointerEvents: 'none',
+          }} />
           <h1 style={{
             color: '#ffffff',
-            fontSize: '32px',
-            fontWeight: 800,
+            fontSize: '42px',
+            fontWeight: 900,
             marginBottom: '8px',
             letterSpacing: '-0.02em',
+            fontFamily: 'Georgia, "Lora", serif',
+            position: 'relative',
           }}>
             {t('prayer.prayer')}
           </h1>
           <p style={{
-            color: 'rgba(255, 255, 255, 0.5)',
-            fontSize: '15px',
+            color: 'rgba(251, 191, 36, 0.7)',
+            fontSize: '14px',
+            fontStyle: 'italic',
             marginBottom: '20px',
+            position: 'relative',
           }}>
-            {t('prayer.prayerSubtitle')}
+            Cast your cares on Him
           </p>
         </div>
 
         {/* Main Tabs */}
-        <div style={{
-          display: 'flex',
-          gap: '12px',
-          marginBottom: '32px',
-          animation: 'fadeIn 0.6s ease-out 0.1s both',
-        }}>
+        <div className="prayer-page-main-tabs" style={{ animation: 'fadeIn 0.6s ease-out 0.1s both' }}>
           <button
             type="button"
+            className={`prayer-page-main-tab ${mainTab === 'mine' ? 'prayer-page-main-tab--active' : ''}`}
             onClick={() => setMainTab('mine')}
-            style={{
-              flex: 1,
-              padding: '12px 20px',
-              borderRadius: '50px',
-              height: '44px',
-              border: '1px solid rgba(212,168,67,0.3)',
-              background: mainTab === 'mine'
-                ? '#D4A843'
-                : '#F0E8D4',
-              color: '#1A1A1A',
-              fontSize: '15px',
-              fontWeight: mainTab === 'mine' ? 700 : 500,
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
           >
             {t('prayer.tabMyPrayers')}
           </button>
           <button
             type="button"
+            className={`prayer-page-main-tab ${mainTab === 'wall' ? 'prayer-page-main-tab--active' : ''}`}
             onClick={() => setMainTab('wall')}
-            style={{
-              flex: 1,
-              padding: '12px 20px',
-              borderRadius: '50px',
-              height: '44px',
-              border: '1px solid rgba(212,168,67,0.3)',
-              background: mainTab === 'wall'
-                ? '#D4A843'
-                : '#F0E8D4',
-              color: '#1A1A1A',
-              fontSize: '15px',
-              fontWeight: mainTab === 'wall' ? 700 : 500,
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
           >
             {t('prayer.tabPrayerWall')}
           </button>
@@ -287,7 +266,7 @@ export default function Prayer() {
               <p
                 className="prayer-section-rail"
                 style={{
-                color: '#D4A843',
+                color: 'rgba(251, 191, 36, 0.86)',
                 fontSize: '11px',
                 fontWeight: 600,
                 textTransform: 'uppercase',
@@ -309,52 +288,39 @@ export default function Prayer() {
               </div>
             ) : items.length === 0 ? (
               <>
-                <div className="prayer-empty-card" style={{
-                  background: 'linear-gradient(145deg, rgba(15, 22, 55, 0.92), rgba(10, 15, 40, 0.97))',
-                  backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(212, 168, 67, 0.2)',
-                  borderRadius: '20px',
-                  padding: '48px 32px',
+                <div className="home-gold-glass prayer-empty-card rounded-3xl p-8" style={{
                   textAlign: 'center',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(212, 168, 67, 0.08)',
                   animation: 'fadeIn 0.6s ease-out 0.3s both',
                 }}>
                   <div style={{
-                    width: '64px',
-                    height: '64px',
-                    background: 'rgba(212,168,67,0.12)',
-                    border: '1px solid rgba(212,168,67,0.3)',
-                    borderRadius: '20px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '32px',
+                    fontSize: '56px',
                     margin: '0 auto 24px',
+                    filter: 'drop-shadow(0 0 22px rgba(212, 168, 67, 0.55))',
                   }}>
                     🙏
                   </div>
                   <h3 style={{
                     color: '#ffffff',
-                    fontSize: '22px',
-                    fontWeight: 800,
+                    fontSize: '26px',
+                    fontWeight: 700,
                     marginBottom: '8px',
+                    fontFamily: 'Georgia, "Lora", serif',
                   }}>
-                    {t('prayer.prayersHeard')}
+                    Prayers Heard
                   </h3>
                   <p style={{
-                    color: 'rgba(255, 255, 255, 0.5)',
+                    color: 'rgba(209, 213, 219, 0.72)',
                     fontSize: '15px',
                     marginBottom: '24px',
                   }}>
-                    {t('prayer.prayersEmpty')}
+                    Your prayers are seen by God
                   </p>
                   <button
                     type="button"
                     onClick={() => setShowAddModal(true)}
                     style={{
                       padding: '14px 32px',
-                      borderRadius: '50px',
+                      borderRadius: '999px',
                       border: 'none',
                       background: 'linear-gradient(135deg, #D4A843 0%, #B8860B 100%)',
                       color: '#0a0f28',
@@ -370,18 +336,15 @@ export default function Prayer() {
                 </div>
                 
                 {/* Inspirational Verse Card */}
-                <div className="prayer-for-today-card" style={{
-                  background: '#F0E8D4',
-                  border: '1px solid rgba(212,168,67,0.3)',
-                  borderRadius: '16px',
-                  padding: '16px',
+                <div className="home-gold-glass prayer-for-today-card rounded-2xl p-5" style={{
                   marginTop: '16px',
+                  paddingBottom: '24px',
                   animation: 'fadeIn 0.6s ease-out 0.4s both',
                 }}>
                   <p style={{
                     fontSize: '11px',
                     letterSpacing: '1.5px',
-                    color: '#1A1A1A',
+                    color: '#D4A843',
                     textTransform: 'uppercase',
                     marginBottom: '12px',
                     fontWeight: 600,
@@ -389,17 +352,18 @@ export default function Prayer() {
                     {t('prayer.prayerForToday')}
                   </p>
                   <p style={{
-                    fontSize: '15px',
+                    fontSize: '17px',
                     fontStyle: 'italic',
-                    color: '#1A1A1A',
-                    lineHeight: 1.7,
+                    color: '#ffffff',
+                    lineHeight: 1.85,
                     marginBottom: '12px',
+                    fontFamily: 'Georgia, "Lora", serif',
                   }}>
                     {dailyVerseLoading ? '...' : dailyVerseText}
                   </p>
                   <p style={{
                     fontSize: '13px',
-                    color: '#1A1A1A',
+                    color: '#D4A843',
                     fontWeight: 700,
                   }}>
                     {dailyVerseLoading ? '...' : `${t('bible.books.philippians')} 4:6`}
@@ -411,16 +375,9 @@ export default function Prayer() {
                 {items.map((row, index) => (
                   <li
                     key={row.id}
-                    className="prayer-list-card"
+                    className="home-gold-glass prayer-list-card rounded-2xl p-4"
                     style={{
-                      background: 'linear-gradient(145deg, rgba(15, 22, 55, 0.92), rgba(10, 15, 40, 0.97))',
-                      backdropFilter: 'blur(20px)',
-                      WebkitBackdropFilter: 'blur(20px)',
-                      border: '1px solid rgba(212, 168, 67, 0.2)',
-                      borderLeft: `3px solid ${row.answered ? '#10B981' : '#D4A843'}`,
-                      borderRadius: '20px',
-                      padding: '24px',
-                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(212, 168, 67, 0.08)',
+                      borderLeft: `4px solid ${row.answered ? '#14B8A6' : '#FBBF24'}`,
                       animation: `fadeIn 0.6s ease-out ${0.3 + index * 0.05}s both`,
                       transition: 'all 0.2s ease',
                     }}
@@ -430,10 +387,10 @@ export default function Prayer() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         {row.answered ? (
                           <div style={{
-                            width: '32px',
-                            height: '32px',
+                            width: '28px',
+                            height: '28px',
                             borderRadius: '50%',
-                            background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                            background: 'linear-gradient(135deg, #14B8A6 0%, #059669 100%)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -474,7 +431,7 @@ export default function Prayer() {
 
                     {/* Prayer content */}
                     <p style={{
-                      color: 'rgba(255, 255, 255, 0.9)',
+                      color: 'rgba(209, 213, 219, 0.82)',
                       fontSize: '15px',
                       lineHeight: 1.6,
                       marginBottom: '20px',
@@ -484,6 +441,10 @@ export default function Prayer() {
                     </p>
 
                     {/* Action buttons */}
+                    <p style={{ color: 'rgba(251, 191, 36, 0.66)', fontSize: '11px', textAlign: 'right', marginBottom: '14px' }}>
+                      {new Date(row.created_at).toLocaleDateString(i18n.language)}
+                    </p>
+
                     <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                       {!row.answered ? (
                         <>
@@ -626,22 +587,22 @@ export default function Prayer() {
             position: 'fixed',
             bottom: '90px',
             right: '20px',
-            width: '56px',
-            height: '56px',
+            width: '64px',
+            height: '64px',
             borderRadius: '50%',
             border: 'none',
-            background: '#D4A843',
+            background: 'linear-gradient(135deg, #FBBF24 0%, #D4A843 45%, #B8860B 100%)',
             color: '#0a1428',
             fontSize: '28px',
             fontWeight: 600,
             cursor: 'pointer',
-            boxShadow: '0 4px 20px rgba(212, 168, 67, 0.4)',
+            boxShadow: '0 0 0 8px rgba(212, 168, 67, 0.08), 0 0 32px rgba(212, 168, 67, 0.5)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             transition: 'all 0.2s ease',
             zIndex: 100,
-            animation: 'fadeIn 0.6s ease-out 0.4s both',
+            animation: 'fadeIn 0.6s ease-out 0.4s both, prayerFabPulse 2.4s ease-in-out infinite',
           }}
         >
           +
