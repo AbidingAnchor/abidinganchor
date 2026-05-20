@@ -13,6 +13,7 @@ export default function AuthCallback() {
       if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code)
         if (!error) {
+          await new Promise((resolve) => setTimeout(resolve, 500))
           const isNewUser = localStorage.getItem('pending_onboarding') === 'true'
           if (isNewUser) {
             localStorage.removeItem('pending_onboarding')

@@ -129,17 +129,32 @@ async function ensureProfile(user) {
   // Add BEFORE the await to block any concurrent calls
   profileSyncedUserIds.add(user.id)
 
+  const isLockError = (e) =>
+    typeof e?.message === 'string' &&
+    (e.message.includes('lock') || e.message.includes('stole it'))
+
   try {
-    const { data: existingProfile, error: selectError } = await supabase
+    let selectResult = await supabase
       .from('profiles')
       .select('onboarding_complete, onboarding_completed')
       .eq('id', user.id)
       .maybeSingle()
 
-    if (selectError) {
-      console.warn('ensureProfile select error (will attempt upsert anyway):', selectError)
+    if (selectResult.error && isLockError(selectResult.error)) {
+      console.warn('ensureProfile select lock conflict — retrying in 1s')
+      await new Promise((r) => setTimeout(r, 1000))
+      selectResult = await supabase
+        .from('profiles')
+        .select('onboarding_complete, onboarding_completed')
+        .eq('id', user.id)
+        .maybeSingle()
     }
 
+    if (selectResult.error) {
+      console.warn('ensureProfile select error (will attempt upsert anyway):', selectResult.error)
+    }
+
+    const existingProfile = selectResult.data ?? null
     const isNewProfile = !existingProfile
     const googleAvatarUrl =
       isNewProfile && user.app_metadata?.provider === 'google'
@@ -180,13 +195,22 @@ async function ensureProfile(user) {
       } catch { /* ignore */ }
     }
 
-    const { error } = await supabase.from('profiles').upsert(
+    let upsertResult = await supabase.from('profiles').upsert(
       { ...baseRow, ...newUserDefaults },
       { onConflict: 'id' },
     )
 
-    if (error) {
-      console.error('Profile upsert error:', error)
+    if (upsertResult.error && isLockError(upsertResult.error)) {
+      console.warn('ensureProfile upsert lock conflict — retrying in 1s')
+      await new Promise((r) => setTimeout(r, 1000))
+      upsertResult = await supabase.from('profiles').upsert(
+        { ...baseRow, ...newUserDefaults },
+        { onConflict: 'id' },
+      )
+    }
+
+    if (upsertResult.error) {
+      console.error('Profile upsert error:', upsertResult.error)
       profileSyncedUserIds.delete(user.id)
     }
   } catch (err) {
