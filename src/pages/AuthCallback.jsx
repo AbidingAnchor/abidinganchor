@@ -7,13 +7,20 @@ export default function AuthCallback() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate('/', { replace: true })
-      } else {
-        navigate('/auth', { replace: true })
+    const handleCallback = async () => {
+      const code = new URLSearchParams(window.location.search).get('code')
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code)
+        if (!error) {
+          navigate('/', { replace: true })
+          return
+        }
       }
-    })
+      // Fallback: check if a session already exists (e.g. implicit flow)
+      const { data: { session } } = await supabase.auth.getSession()
+      navigate(session ? '/' : '/auth', { replace: true })
+    }
+    handleCallback()
   }, [navigate])
 
   return <LoadingScreen />

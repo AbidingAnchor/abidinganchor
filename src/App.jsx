@@ -42,6 +42,7 @@ import WorshipPlayer from './components/WorshipPlayer'
 import Footer from './components/Footer'
 import Onboarding from './components/Onboarding'
 import Auth from './pages/Auth'
+import AuthCallback from './pages/AuthCallback'
 import ResetPassword from './pages/ResetPassword'
 import { useAuth } from './context/AuthContext'
 import LoadingScreen from './components/LoadingScreen'
@@ -194,6 +195,7 @@ function AppShell() {
   const showNav =
     !loading &&
     location.pathname !== '/auth' &&
+    location.pathname !== '/auth/callback' &&
     location.pathname !== '/reset-password' &&
     location.pathname !== '/onboarding'
   const showFooter =
@@ -202,6 +204,7 @@ function AppShell() {
   const showHeader =
     !loading &&
     location.pathname !== '/auth' &&
+    location.pathname !== '/auth/callback' &&
     location.pathname !== '/reset-password' &&
     location.pathname !== '/onboarding'
 
@@ -314,6 +317,7 @@ function AppShell() {
           >
             <Routes>
               <Route path="/auth" element={<Auth />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route
                 path="/"
