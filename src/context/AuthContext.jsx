@@ -173,6 +173,13 @@ async function ensureProfile(user) {
         }
       : {}
 
+    if (isNewProfile) {
+      try {
+        localStorage.removeItem(ONBOARDING_COMPLETED_KEY)
+        localStorage.setItem('pending_onboarding', 'true')
+      } catch { /* ignore */ }
+    }
+
     const { error } = await supabase.from('profiles').upsert(
       { ...baseRow, ...newUserDefaults },
       { onConflict: 'id' },

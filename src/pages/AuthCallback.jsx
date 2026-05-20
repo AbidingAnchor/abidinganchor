@@ -13,7 +13,13 @@ export default function AuthCallback() {
       if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code)
         if (!error) {
-          navigate('/', { replace: true })
+          const isNewUser = localStorage.getItem('pending_onboarding') === 'true'
+          if (isNewUser) {
+            localStorage.removeItem('pending_onboarding')
+            navigate('/onboarding', { replace: true })
+          } else {
+            navigate('/', { replace: true })
+          }
           return
         }
       }
