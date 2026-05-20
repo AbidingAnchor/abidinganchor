@@ -137,12 +137,14 @@ async function ensureProfile(user) {
       .maybeSingle()
 
     if (selectError) {
-      console.error('ensureProfile select error:', selectError)
-      profileSyncedUserIds.delete(user.id)
-      return
+      console.warn('ensureProfile select error (will attempt upsert anyway):', selectError)
     }
 
     const isNewProfile = !existingProfile
+    const googleAvatarUrl =
+      isNewProfile && user.app_metadata?.provider === 'google'
+        ? (user.user_metadata?.avatar_url ?? user.user_metadata?.picture ?? null)
+        : null
     const baseRow = {
       id: user.id,
       email: user.email ?? '',
@@ -151,6 +153,7 @@ async function ensureProfile(user) {
       onboarding_complete: existingProfile?.onboarding_complete ?? false,
       onboarding_completed:
         existingProfile?.onboarding_completed ?? existingProfile?.onboarding_complete ?? false,
+      ...(googleAvatarUrl ? { avatar_url: googleAvatarUrl } : {}),
     }
     /**
      * New rows: no last_active_date until the first daily check-in (local calendar).
