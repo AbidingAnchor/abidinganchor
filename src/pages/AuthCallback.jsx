@@ -8,6 +8,7 @@ export default function AuthCallback() {
 
   useEffect(() => {
     const handleCallback = async () => {
+      console.log('AuthCallback mounted, URL:', window.location.href)
       const code = new URLSearchParams(window.location.search).get('code')
       if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code)
