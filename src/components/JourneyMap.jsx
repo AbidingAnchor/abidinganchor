@@ -316,7 +316,7 @@ export default function JourneyMap({ onExit, fillVertical = false }) {
           onMouseEnter={e => e.currentTarget.style.color = '#fbbf24'}
           onMouseLeave={e => e.currentTarget.style.color = 'rgba(212,175,55,0.7)'}
         >
-          ← {t('journeyMap.ui.back')}
+          {t('journeyMap.ui.back')}
         </button>
       </div>
 

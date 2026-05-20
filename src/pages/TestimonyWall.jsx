@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { SHIMMER_KEYFRAMES } from '../hooks/useNameStyle'
 import { supabase } from '../lib/supabase'
 import { getAvatarBorderStyle, SUPPORTER_BORDER_KEYFRAMES } from '../utils/supporterBorder'
+import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
 
 const CONTENT_MAX = 300
 const TESTIMONY_CATEGORIES = ['Healing', 'Salvation', 'Answered Prayer', 'Provision', 'Protection', 'All']
@@ -40,6 +41,8 @@ export default function TestimonyWall() {
   const { t } = useTranslation()
   const { user } = useAuth()
   const navigate = useNavigate()
+  const themeType = useThemeBackgroundType()
+  const isDaytime = themeType === 'day' || themeType === 'morning' || themeType === 'afternoon'
   const [content, setContent] = useState('')
   const [postAnonymous, setPostAnonymous] = useState(false)
   const [rows, setRows] = useState([])
@@ -436,9 +439,9 @@ export default function TestimonyWall() {
                 className="tw-pill-btn"
                 onClick={() => setActiveCategory(category)}
                 style={{
-                  background: active ? 'linear-gradient(135deg,#D4A843,#F0C040)' : 'rgba(255,255,255,0.05)',
-                  color: active ? '#1A1200' : 'rgba(255,255,255,0.6)',
-                  border: active ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                  background: active ? 'linear-gradient(135deg,#D4A843,#F0C040)' : (isDaytime ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.05)'),
+                  color: active ? '#1A1200' : (isDaytime ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.6)'),
+                  border: active ? 'none' : (isDaytime ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.1)'),
                   boxShadow: active ? '0 0 10px rgba(212,168,67,0.3)' : 'none',
                   borderRadius: '50px',
                   padding: '7px 16px',

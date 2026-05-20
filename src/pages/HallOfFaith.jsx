@@ -172,14 +172,20 @@ export default function HallOfFaith() {
         .order('is_founding_member', { ascending: false })
         .limit(50)
 
-      const mappedSupporters = (data || []).map((p) => ({
-        id: p.id,
-        name: (p.display_name || p.full_name || p.username || 'Faithful Believer').trim().replace(/^'/, ''),
-        color: p.name_color || '#ffffff',
-        tier: p.supporter_tier,
-        border: p.profile_border,
-        isOwn: p.id === user?.id,
-      }))
+      const seenIds = new Set()
+      const mappedSupporters = (data || []).reduce((acc, p) => {
+        if (seenIds.has(p.id)) return acc
+        seenIds.add(p.id)
+        acc.push({
+          id: p.id,
+          name: (p.display_name || p.full_name || p.username || 'Faithful Believer').trim().replace(/^'/, ''),
+          color: p.name_color || '#ffffff',
+          tier: p.supporter_tier,
+          border: p.profile_border,
+          isOwn: p.id === user?.id,
+        })
+        return acc
+      }, [])
 
       setSupporters(mappedSupporters)
     } catch (err) {
@@ -342,7 +348,7 @@ export default function HallOfFaith() {
               animation: `hof-scroll ${scrollDuration}s linear infinite`,
             }}
           >
-            {/* Duplicate for seamless loop */}
+            {/* Duplicate for seamless loop — own user excluded from second pass so it renders only once */}
             {[...rows, ...rows.filter(r => !r.isOwn)].map((row, i) => (
               <NameRow
                 key={`${row.id}-${i}`}

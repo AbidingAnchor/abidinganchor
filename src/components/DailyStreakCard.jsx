@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { WEEK_DAY_SHORT } from '../hooks/useStreakTracker'
+import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
 
 /**
  * @param {object} props
@@ -8,6 +9,8 @@ import { WEEK_DAY_SHORT } from '../hooks/useStreakTracker'
  */
 export default function DailyStreakCard({ activeDays = [], consecutiveStreak }) {
   const { t } = useTranslation()
+  const themeType = useThemeBackgroundType()
+  const isDaytime = themeType === 'day' || themeType === 'morning' || themeType === 'afternoon'
   const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
   const today = new Date()
@@ -120,7 +123,7 @@ export default function DailyStreakCard({ activeDays = [], consecutiveStreak }) 
               >
                 <span
                   style={{
-                    color: isLit ? 'rgba(251, 191, 36, 0.8)' : 'rgba(255,255,255,0.45)',
+                    color: isLit ? 'rgba(251, 191, 36, 0.8)' : (isDaytime ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.45)'),
                     fontSize: '10px',
                     fontWeight: 600,
                   }}
@@ -133,7 +136,7 @@ export default function DailyStreakCard({ activeDays = [], consecutiveStreak }) 
                     height: '30px',
                     borderRadius: '50%',
                     background: isLit ? 'linear-gradient(135deg, #f59e0b 0%, #ca8a04 100%)' : 'transparent',
-                    border: isLit ? '1px solid rgba(251, 191, 36, 0.5)' : '1px solid rgba(255, 255, 255, 0.2)',
+                    border: isLit ? '1px solid rgba(251, 191, 36, 0.5)' : (isDaytime ? '1px solid rgba(0,0,0,0.2)' : '1px solid rgba(255, 255, 255, 0.2)'),
                     boxShadow: isLit ? '0 0 18px rgba(245, 158, 11, 0.35)' : 'none',
                     display: 'flex',
                     alignItems: 'center',

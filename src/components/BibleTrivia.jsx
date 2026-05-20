@@ -3,6 +3,7 @@ import { useMemo, useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { userStorageKey } from '../utils/userStorage'
 import { fetchVerse } from '../utils/bibleTranslation'
+import { useThemeBackgroundType } from '../hooks/useThemeBackgroundType'
 
 function todayKey() {
   return new Date().toISOString().slice(0, 10)
@@ -30,6 +31,8 @@ function writeJson(key, value) {
 export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = false }) {
   const { t } = useTranslation()
   const { user } = useAuth()
+  const themeType = useThemeBackgroundType()
+  const isDaytime = themeType === 'day' || themeType === 'morning' || themeType === 'afternoon'
   const storageKeys = useMemo(
     () => ({
       streak: userStorageKey(user?.id, 'trivia-streak'),
@@ -308,11 +311,11 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
             border-right: none;
             border-bottom: none;
             border-left: 4px solid rgba(212,175,55,0.7);
-            background: rgba(15,20,45,0.9);
+            background: ${isDaytime ? 'rgba(255,255,255,0.85)' : 'rgba(15,20,45,0.9)'};
             backdrop-filter: blur(14px);
             -webkit-backdrop-filter: blur(14px);
-            box-shadow: inset 3px 0 12px rgba(212,175,55,0.12), 0 2px 12px rgba(0,0,0,0.4);
-            color: #E8D5A3;
+            box-shadow: ${isDaytime ? 'inset 3px 0 12px rgba(212,175,55,0.15), 0 2px 8px rgba(0,0,0,0.12)' : 'inset 3px 0 12px rgba(212,175,55,0.12), 0 2px 12px rgba(0,0,0,0.4)'};
+            color: ${isDaytime ? '#1A1200' : '#E8D5A3'};
             font-weight: 600;
             font-size: 15px;
             letter-spacing: 0.025em;
@@ -322,15 +325,15 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
           }
           .trivia-opt:hover:not(:disabled) {
             border-left: 4px solid rgba(212,175,55,1);
-            background: rgba(20,28,60,0.95);
-            box-shadow: inset 3px 0 18px rgba(212,175,55,0.25), 0 2px 12px rgba(0,0,0,0.4);
+            background: ${isDaytime ? 'rgba(255,255,255,0.98)' : 'rgba(20,28,60,0.95)'};
+            box-shadow: ${isDaytime ? 'inset 3px 0 18px rgba(212,175,55,0.25), 0 2px 8px rgba(0,0,0,0.15)' : 'inset 3px 0 18px rgba(212,175,55,0.25), 0 2px 12px rgba(0,0,0,0.4)'};
             transform: scale(1.015);
           }
           .trivia-opt--chosen {
             border-left: 5px solid #D4AF37 !important;
-            background: rgba(30,40,80,0.98) !important;
+            background: ${isDaytime ? 'rgba(255,248,220,0.98)' : 'rgba(30,40,80,0.98)'} !important;
             box-shadow: inset 4px 0 20px rgba(212,175,55,0.35), 0 0 20px rgba(212,175,55,0.1) !important;
-            color: #FFD700 !important;
+            color: ${isDaytime ? '#6b4a00' : '#FFD700'} !important;
           }
           .trivia-opt--correct {
             border-left: 4px solid #4CAF50 !important;
@@ -403,19 +406,19 @@ export default function BibleTrivia({ onExit, onRoundComplete, fillVertical = fa
       {!done ? (
         <>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.55)' }}>
+            <span style={{ fontSize: '12px', color: isDaytime ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.55)' }}>
               {t('trivia.questionOf', { current: index + 1, total: roundQuestions.length })}
             </span>
           </div>
           {/* Progress bar */}
-          <div style={{ height: '6px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', marginBottom: '14px', overflow: 'hidden' }}>
+          <div style={{ height: '6px', borderRadius: '999px', background: isDaytime ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.1)', marginBottom: '14px', overflow: 'hidden' }}>
             <div style={{ height: '100%', borderRadius: '999px', width: `${progress}%`, background: 'linear-gradient(90deg,#D4A843,#F0C040)', transition: 'width 0.3s ease' }} />
           </div>
 
           {/* Question card */}
           <div className="home-gold-glass" style={{ borderRadius: '20px', padding: '20px', marginBottom: '14px' }}>
             <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'rgba(251,191,36,0.8)', margin: '0 0 8px 0' }}>{currentQuestion.category}</p>
-            <p style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff', margin: 0, lineHeight: 1.5, fontFamily: 'Georgia, serif' }}>{currentQuestion.q}</p>
+            <p style={{ fontSize: '18px', fontWeight: 700, color: isDaytime ? '#1A1200' : '#ffffff', margin: 0, lineHeight: 1.5, fontFamily: 'Georgia, serif' }}>{currentQuestion.q}</p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

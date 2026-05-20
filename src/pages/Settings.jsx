@@ -628,12 +628,14 @@ export default function Settings() {
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(180,100,0,0.2))',
+                  background: dayTheme
+                    ? 'linear-gradient(135deg, #D4A843, #b8860b)'
+                    : 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(180,100,0,0.2))',
                   border: '1px solid rgba(212,175,55,0.5)',
                   borderRadius: '999px',
                   fontSize: '12px',
-                  color: '#FFD700',
-                  fontWeight: 600,
+                  color: dayTheme ? '#1A1200' : '#FFD700',
+                  fontWeight: 700,
                   paddingLeft: '12px',
                   paddingRight: '12px',
                   paddingTop: '4px',
