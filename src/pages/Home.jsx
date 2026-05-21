@@ -682,24 +682,22 @@ function Home() {
   }, [user?.id, toastTrigger])
 
   // Presence streak + last_active_date use getLocalCalendarDateKey() — same local Date as this (not UTC).
+  // Theme windows: day 06:00–17:59 | evening/sunset 18:00–19:59 | night 20:00–05:59
   const hour = new Date().getHours()
   let timeGreeting = ''
   let timeEmoji = ''
   if (skyPeriod === 'night') {
-    timeGreeting = t('home.greetEvening')
+    timeGreeting = t('home.greetNight')
     timeEmoji = '🌙'
   } else if (skyPeriod === 'sunset') {
     timeGreeting = t('home.greetEvening')
     timeEmoji = '🌇'
-  } else if (hour >= 5 && hour < 12) {
+  } else if (hour < 12) {
     timeGreeting = t('home.greetMorning')
     timeEmoji = '🌅'
-  } else if (hour >= 12 && hour < 18) {
+  } else {
     timeGreeting = t('home.greetAfternoon')
     timeEmoji = '☀️'
-  } else {
-    timeGreeting = t('home.greetEvening')
-    timeEmoji = '🌇'
   }
 
   const friendFallback = t('home.friendFallback')
