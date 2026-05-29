@@ -7,10 +7,20 @@ import { supabase } from '../lib/supabase'
 import { userStorageKey } from '../utils/userStorage'
 import { initialDisplayNameFromAuth } from '../utils/profileDisplay'
 
-function isAtLeast13FromDobString(dobYmd) {
-  if (!dobYmd || typeof dobYmd !== 'string') return false
-  const parts = dobYmd.split('-').map((x) => parseInt(x, 10))
-  if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n))) return false
+function isAtLeast13FromDobString(dobInput) {
+  if (!dobInput || typeof dobInput !== 'string') return false
+  // Handle both MM/DD/YYYY and YYYY-MM-DD formats
+  let parts
+  if (dobInput.includes('/')) {
+    parts = dobInput.split('/').map((x) => parseInt(x, 10))
+    if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n))) return false
+    const [m, d, y] = parts
+    // Reorder to [y, m, d] for Date constructor
+    parts = [y, m, d]
+  } else {
+    parts = dobInput.split('-').map((x) => parseInt(x, 10))
+    if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n))) return false
+  }
   const [y, m, d] = parts
   const birth = new Date(y, m - 1, d)
   if (!Number.isFinite(birth.getTime())) return false
@@ -491,13 +501,24 @@ export default function Onboarding({ onComplete }) {
                 <label style={{ color: onboardingTheme.mutedText, fontSize: '13px', fontWeight: 600 }}>
                   {t('onboarding.dateOfBirth')}
                   <input
-                    type="date"
+                    type="text"
                     value={dateOfBirth}
                     onChange={(e) => {
-                      setDateOfBirth(e.target.value)
+                      let value = e.target.value.replace(/\D/g, '') // Remove non-digits
+                      // Auto-format as MM/DD/YYYY
+                      if (value.length >= 2) {
+                        value = value.slice(0, 2) + '/' + value.slice(2)
+                      }
+                      if (value.length >= 5) {
+                        value = value.slice(0, 5) + '/' + value.slice(5, 9)
+                      }
+                      // Limit to MM/DD/YYYY (10 chars)
+                      value = value.slice(0, 10)
+                      setDateOfBirth(value)
                       if (formError) setFormError('')
                     }}
-                    max={new Date().toISOString().slice(0, 10)}
+                    placeholder="MM/DD/YYYY"
+                    maxLength={10}
                     style={{
                       marginTop: '6px',
                       width: '100%',
